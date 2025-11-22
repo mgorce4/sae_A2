@@ -1,6 +1,7 @@
 CREATE TABLE INSTITUTION(
     id_institution SERIAL PRIMARY KEY,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    location TEXT NOT NULL
 )
 
 CREATE TABLE USER(
