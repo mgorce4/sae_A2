@@ -21,9 +21,9 @@
 </script>
 
 <template>
+  <header-application/>
   <a href="#/">Login</a>
   <a href="#/dashboard-administration">dashboard administration</a>
   <component :is="currentView" />
+  <footer-application/>
 </template>
-
-<style scoped></style>

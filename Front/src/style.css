@@ -1,0 +1,29 @@
+body {
+    width: 100%;
+    height: 100%;
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 8vw 0 3vw 0;
+}
+
+.container-fluid {
+    display: flex;
+    flex-wrap: inherit;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.spb {
+    justify-content: space-between;
+}
+
+.spa {
+    justify-content: space-around;
+}
+
+.spe {
+    justify-content: space-evenly;
+}
