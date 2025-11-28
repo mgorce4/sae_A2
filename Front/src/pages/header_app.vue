@@ -1,7 +1,5 @@
 <script setup>
-    import { ref } from 'vue'
-
-    const status = ref('')
+    import { status } from '../main'
 </script>
 
 <template>

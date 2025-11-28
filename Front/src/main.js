@@ -1,9 +1,11 @@
-import { createApp } from 'vue'
+import { createApp, ref } from 'vue'
 import './style.css'
 import App from './App.vue'
 import Header from './pages/header_app.vue'
 import Footer from './pages/footer_app.vue'
 import router from './router'
+
+export const status = ref("")
 
 const app = createApp(App)
 
