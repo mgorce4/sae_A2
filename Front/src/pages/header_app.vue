@@ -12,14 +12,14 @@
                 <div id="dividing-line"></div>
                 <h1 id="app-name">Syncadia</h1>
             </div>
-            <div id="user-name-and-pp" class="container-fluid">
-                <h2 id="user-name">LESCHAEVE--LEMAIRE Nathaniel</h2>
+            <div v-show="status" id="user-name-and-pp" class="container-fluid">
+                <h2 id="user-name">user-name</h2>
                 <img id="profile-picture" src="./../../media/no_profile_picture.webp" alt="profile_picture">
             </div>
         </div>
         <div id="red-rect" class="container-fluid spb">
-            <h2 id="user-status">Statut : {{ status }}</h2>
-            <a id="btn-disconnect" href="#/">
+            <h2 v-show="status" id="user-status">Statut : {{ status }}</h2>
+            <a v-show="status" id="btn-disconnect" href="#/">
                 Déconnexion
             </a>
         </div>
@@ -37,7 +37,9 @@
 }
 
 #header-top {
+    width: 94%;
     height: 70%;
+    padding: 0 3%;
 }
 
 #app-name-and-logo {
@@ -48,7 +50,7 @@
     cursor: pointer;
     height: 80%;
     width: calc(height);
-    margin: 0 5% 0 6%;
+    margin: 0 2.5vw 0 0;
 }
 
 #dividing-line {
@@ -60,7 +62,7 @@
 #app-name {
     font-size: 3vw;
     height: fit-content;
-    margin: 0 0 0 5%;
+    margin: 0 0 0 2.5vw;
 }
 
 #user-name-and-pp {
@@ -70,6 +72,7 @@
 
 #user-name {
     font-size: 1.2vw;
+    margin: 0 0.5vw;
 }
 
 #profile-picture {
@@ -77,7 +80,7 @@
     border-radius: 3vw;
     height: 60%;
     width: calc(height);
-    margin: 0 6% 0 1%;
+    margin: 0;
 }
 
 #red-rect {

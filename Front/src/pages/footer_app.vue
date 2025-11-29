@@ -12,7 +12,7 @@
     bottom: 0;
     left: 0;
     width: 94%;
-    height: 3vw;
+    height: 2.4vw;
     padding: 0 3%;
     background-color: #B51621;
 }
