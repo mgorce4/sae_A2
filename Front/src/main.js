@@ -6,6 +6,7 @@ import Footer from './pages/footer_app.vue'
 import router from './router'
 
 export const status = ref("")
+export const rx = ref("")
 
 const app = createApp(App)
 
