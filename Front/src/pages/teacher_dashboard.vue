@@ -7,7 +7,7 @@
 
 </script>
 
-<template> 
+<template>
     <div id="ressources" >
         <h1 id="titre">Vos ressources : </h1>
         <div id="divFiches">
@@ -66,7 +66,7 @@
     align-items: center;
 }
 
-p{
+#fiches > p{
     font-size: 5vw;
     color: white;
     text-align: center;
@@ -80,12 +80,12 @@ p{
 #ressources::-webkit-scrollbar-track {
     margin: 1em;
     background: rgb(42,45,86);
-    box-shadow: inset 0 0 5px rgb(24, 26, 50); 
+    box-shadow: inset 0 0 5px rgb(24, 26, 50);
     border-radius: 10px;
 }
- 
+
 #ressources::-webkit-scrollbar-thumb {
-    background: rgb(254,254,254); 
+    background: rgb(254,254,254);
     border-radius: 10px;
 }
 

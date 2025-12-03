@@ -1,7 +1,12 @@
 <script setup>
-    import { status } from '../main'
+import { ref } from 'vue';
+import { status } from '../main'
+import { DatePicker as DatePicker } from 'v-calendar'
 
-    status.value = "Administration"
+status.value = 'Administration'
+
+const date = new Date();
+
 </script>
 
 <template>
@@ -27,15 +32,14 @@
 
         <!-- for the calender -->
 
-        <div id="calender"></div>
-
+        <DatePicker id="calendar" v-model="date"></DatePicker>
       </div>
     </div>
 
     <div id="return-sheets-div">
       <div id="return-sheets-div-header">
         <p>Rendu des fiches</p>
-        <img id="download" src="../../media/download.png" width="35" height="35" alt="download">
+        <img id="download" src="../../media/download.png" width="35" height="35" alt="download" />
       </div>
 
       <div id="semesters-div">
@@ -53,25 +57,22 @@
         <!-- exemple of ressources -->
         <div class="ressource">
           <p>R1.01</p>
-          <input type="checkbox">
+          <input type="checkbox" />
         </div>
         <div class="ressource">
           <p>R1.02</p>
-          <input type="checkbox">
+          <input type="checkbox" />
         </div>
         <div class="ressource">
           <p>R1.03</p>
-          <input type="checkbox">
+          <input type="checkbox" />
         </div>
       </div>
     </div>
-
   </div>
-
 </template>
 
 <style>
-
 /* -- main --*/
 
 #main-div {
@@ -101,37 +102,37 @@
 /* -- MCCC -- */
 
 #MCCC-div {
-  background-color: #2C2C3B;
-  color: #FFFFFF;
+  background-color: #2c2c3b;
+  color: #ffffff;
   text-align: center;
   height: 100px;
   width: 70%;
-  margin-bottom: 100px;
+  margin-bottom: 50px;
   margin-left: 15%;
   align-content: center;
 }
 
 #MCCC-div > a {
   text-decoration: none;
-  color: #FFFFFF;
+  color: #ffffff;
   font-size: 50px;
 }
 
 /* -- calender -- */
 
 #calender-div {
-  background-color: #3D4375;
-  color: #FFFFFF;
-  height: 250px;
+  background-color: #3d4375;
+  color: #ffffff;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
 }
 
-#calender {
-  background-color: #FFFFFF;
-  height: 85%;
-  width: 50%;
-  margin: auto;
-  border: black 2px solid;
+#calendar {
+  display: flex;
+  justify-content: center;
 }
 
 /* -- return sheets div -- */
@@ -146,15 +147,21 @@
 }
 
 #return-sheets-div {
-  background-color: #3D4375;
-  color: #FFFFFF;
+  background-color: #3d4375;
+  color: #ffffff;
   height: 100%;
   width: 25%;
   padding: 5px;
+  overflow-y: scroll;
+}
+
+#list-of-ressources {
+
+
 }
 
 #list-of-ressources > div {
-  display: flex;
+  display: flex
 }
 
 #list-of-ressources > div > input {
@@ -163,7 +170,7 @@
 }
 
 .ressource {
-  background-color: #8B8EA7;
+  background-color: #8b8ea7;
   margin: 15px;
   padding: 5px;
   font-size: 20px;
@@ -171,13 +178,12 @@
 }
 
 .semesters {
-  background-color: #8B8EA7;
+  background-color: #8b8ea7;
   width: 100%;
   height: 30px;
   text-align: center;
-  color: #FFFFFF;
+  color: #ffffff;
   border-radius: 10px;
   font-size: 15px;
 }
-
 </style>
