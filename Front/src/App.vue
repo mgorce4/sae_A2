@@ -1,11 +1,36 @@
-<script setup></script>
+<script setup>
+  import { ref, computed } from 'vue'
+  import Login from './pages/login_page.vue'
+  import DsbrdAdmst from './pages/dashboard_administration.vue'
+  import MCCCSelectForm from './pages/mccc_select_form.vue'
+  import NotFound from './pages/not_found.vue'
+  import DsbrProf from './pages/teacher_dashboard.vue'
+
+
+  const routes = {
+    '/': Login,
+    '/dashboard-administration': DsbrdAdmst,
+    '/dashboard-professeur': DsbrProf,
+    '/mccc-select-form': MCCCSelectForm,
+  }
+
+  const currentPath = ref(window.location.hash)
+
+  window.addEventListener('hashchange', () => {
+    currentPath.value = window.location.hash
+  })
+
+  const currentView = computed(() => {
+    return routes[currentPath.value.slice(1) || '/'] || NotFound
+  })
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <header-application/>
+  <a href="#/">- Login -</a>
+  <a href="#/dashboard-administration">- dashboard administration -</a>
+  <a href="#/dashboard-professeur">- dashboard professeur -</a>
+  <a href="#/mccc-select-form">- Sélection formulaires MCCC -</a>
+  <component :is="currentView" />
+  <footer-application/>
 </template>
-
-<style scoped></style>
