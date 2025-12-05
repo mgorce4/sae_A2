@@ -10,3 +10,4 @@ public class Description {
     private List<String> skillsList;
 
 }
+
