@@ -1,0 +1,36 @@
+package iut.unilim.fr.back.service;
+
+import iut.unilim.fr.back.entity.RessourceTracking;
+import iut.unilim.fr.back.repository.RessourceTrackingRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class RessourceTrackingService {
+    @Autowired
+    private RessourceTrackingRepository ressourceTrackingRepository;
+
+    public List<RessourceTracking> getAllRessourceTrackings() {
+        return ressourceTrackingRepository.findAll();
+    }
+
+    public Optional<RessourceTracking> getRessourceTrackingById(Long id) {
+        return ressourceTrackingRepository.findById(id);
+    }
+
+    public RessourceTracking createRessourceTracking(RessourceTracking ressourceTracking) {
+        return ressourceTrackingRepository.save(ressourceTracking);
+    }
+
+    public RessourceTracking updateRessourceTracking(Long id, RessourceTracking ressourceTracking) {
+        ressourceTracking.setIdRessourceTracking(id);
+        return ressourceTrackingRepository.save(ressourceTracking);
+    }
+
+    public void deleteRessourceTracking(Long id) {
+        ressourceTrackingRepository.deleteById(id);
+    }
+}
+
