@@ -1,10 +1,12 @@
 package iut.unilim.fr.back.entity;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "INSTITUTION")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Institution {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

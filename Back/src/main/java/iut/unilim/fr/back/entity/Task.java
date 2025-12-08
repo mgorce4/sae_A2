@@ -2,6 +2,7 @@ package iut.unilim.fr.back.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "TASK")
@@ -25,6 +26,7 @@ public class Task {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_User")
+    @JsonIgnore // éviter les problèmes de chargement paresseux / sérialisation
     private UserSyncadia user;
 
     public Task() {
