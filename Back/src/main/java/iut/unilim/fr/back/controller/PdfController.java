@@ -1,78 +1,169 @@
 package iut.unilim.fr.back.controller;
 
 import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 
 public class PdfController {
+    private static final BaseColor COL_BLEU_FOND = new BaseColor(59, 66, 117);
+    private static final BaseColor COL_NOIR_HEADER = new BaseColor(34, 34, 34);
+    private static final BaseColor COL_GRIS_CORPS = new BaseColor(128, 128, 128);
+    private static final BaseColor COL_TEXTE = BaseColor.WHITE;
+    private static final String baseFont = "src/main/resources/font/trade-gothic-lt-std-58a78e64434a9.otf";
+
     public static void generatePdf() {
         try {
-            Document document = new Document();
+            Document document = new Document(PageSize.A4);
             PdfWriter.getInstance(document, new FileOutputStream("iTextHelloWorld.pdf"));
             Path imagePath = Paths.get("src/main/resources/img/unilim.jpg");
-            BaseFont baseFont = BaseFont.createFont("src/main/resources/font/trade-gothic-lt-std-58a78e64434a9.otf",  BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
 
             document.open();
 
 
-            Font font = FontFactory.getFont(String.valueOf(baseFont), 11, BaseColor.BLACK);
-            Font whiteFont = FontFactory.getFont(String.valueOf(baseFont), 11, new BaseColor(255, 255, 255));
+            Font font = FontFactory.getFont(baseFont, 11, BaseColor.BLACK);
+            Font contentFont = FontFactory.getFont(baseFont, 11, new BaseColor(255, 255, 255));
+            Font fontTitle = FontFactory.getFont(baseFont, 16, BaseColor.BLACK);
 
+            PdfPTable table = new PdfPTable(3);
+            table.setWidthPercentage(100);
+
+            // Header, doit etre supprimer a terme
             Image unilimImage = Image.getInstance(imagePath.toAbsolutePath().toString());
             Chunk fileName = new Chunk("Fiche Ressource", font);
-            Chunk department = new Chunk("Departement Info", whiteFont);
+            Chunk department = new Chunk("Departement Info", contentFont);
 
-            Chunk reference = new Chunk("Reference", whiteFont);
-            Chunk date = new Chunk("Date", whiteFont);
+            // Titre Ressource
+            PdfPCell cellLeft = new PdfPCell();
+            cellLeft.setBorder(Rectangle.NO_BORDER);
+            cellLeft.setVerticalAlignment(Element.ALIGN_MIDDLE);
 
-            Chunk refUE = new Chunk("RefUE", font);
-            Chunk refRessource = new Chunk("RefRessource", font);
+            Chunk reference = new Chunk("Reference", contentFont);
+            Chunk date = new Chunk("Date", contentFont);
 
-            Chunk titreRessource = new Chunk("Titre Ressource", font);
-            Chunk profReferent =  new Chunk("ProfReferent Info", font);
+            Paragraph refUE = new Paragraph("RefUE", font);
+            Paragraph refRessource = new Paragraph("RefRessource", font);
 
-            Chunk descriptif = new Chunk("Descriptif", whiteFont);
-            Chunk objectif = new Chunk("Objectif", whiteFont);
-            Chunk objectifContent =  new Chunk("blablablablablablablablablablablablablablablablablablablablablabablablablablablablabalblablablablablablablablablabalblablablablablablabnlablablablablablablablablablabalblablablablablablablablablablababablabla", whiteFont);
+            Paragraph titreRessource = new Paragraph("Titre Ressource", fontTitle);
+            Paragraph profReferent =  new Paragraph("ProfReferent Info", font);
 
-            Chunk competance = new Chunk("Competance", whiteFont);
+            refUE.setLeading(0,2);
+            refRessource.setLeading(10f,0);
+
+            cellLeft.addElement(refUE);
+            cellLeft.addElement(refRessource);
+            table.addCell(cellLeft);
+
+            PdfPCell cellCenter = new PdfPCell(titreRessource);
+            cellCenter.setBorder(Rectangle.NO_BORDER);
+            cellCenter.setHorizontalAlignment(Element.ALIGN_CENTER);
+            cellCenter.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            table.addCell(cellCenter);
+
+            PdfPCell cellRight = new PdfPCell(profReferent);
+            cellRight.setBorder(Rectangle.NO_BORDER);
+            cellRight.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            cellRight.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            table.addCell(cellRight);
+
+            // Premiere div
+            Chunk descriptif = new Chunk("Descriptif", contentFont);
+            Chunk objectif = new Chunk("Objectif", contentFont);
+            Chunk objectifContent =  new Chunk("blablablablablablablablablablablablablablablablablablablablablabablablablablablablabalblablablablablablablablablabalblablablablablablabnlablablablablablablablablablabalblablablablablablablablablablababablabla", contentFont);
+            PdfPTable content = createContentDiv(objectif, objectifContent);
+
+            ArrayList<Element> contents = new ArrayList<>();
+            contents.add(content);
+
+            // Div competence
+            Chunk competence = new Chunk("Competence", contentFont);
+
+            PdfPTable competenceTable = new PdfPTable(2);
+            competenceTable.setWidthPercentage(100);
+            competenceTable.setWidths(new float[]{1, 3});
+            Integer nbLigne = 3;
+
+            for (int i = 0; i < nbLigne; i++) {
+                Chunk chunkTitre = new Chunk("Truc " + (i + 1), contentFont);
+                PdfPCell competenceCellLeft = new PdfPCell(new Phrase(chunkTitre));
+
+                styleCelluleGrise(competenceCellLeft);
+                competenceCellLeft.setHorizontalAlignment(Element.ALIGN_CENTER);
+                competenceCellLeft.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+                competenceTable.addCell(competenceCellLeft);
+
+                PdfPCell competenceCellRight = new PdfPCell();
+                styleCelluleGrise(competenceCellRight);
+
+                com.itextpdf.text.List listePuces = new com.itextpdf.text.List(com.itextpdf.text.List.UNORDERED);
+                listePuces.setListSymbol("•");
+                listePuces.setSymbolIndent(12);
+
+                listePuces.add(new ListItem(new Chunk("Competence " + (i + 1) + ".1", contentFont)));
+                listePuces.add(new ListItem(new Chunk("Competence " + (i + 1) + ".2", contentFont)));
+
+                competenceCellRight.addElement(listePuces);
+                competenceTable.addCell(competenceCellRight);
+            }
+
+            PdfPTable contentCompetence = createContentDiv(competence,competenceTable);
+            contents.add(contentCompetence);
+
+            // Div SAE
+            Chunk saeConcerne = new Chunk("SaeConcerne", contentFont);
+            ArrayList<String> saes = new ArrayList<>();
+            saes.add("truc1");
+            saes.add("truc2");
+
+            com.itextpdf.text.List saeList = new com.itextpdf.text.List(com.itextpdf.text.List.UNORDERED);
+            saeList.setListSymbol("•");
+            saeList.setSymbolIndent(12);
+            for (String sae : saes) {
+                saeList.add(new ListItem(new Chunk(sae, contentFont)));
+            }
+
+            PdfPTable contentSae = createContentDiv(saeConcerne, saeList);
+            contents.add(contentSae);
+
+            // Div mot cles
+            Chunk motsCleTitre =  new Chunk("Mots Cle", contentFont);
+            Chunk motsCle = new Chunk("SQL, Management...", contentFont);
+
+            PdfPTable motCleContent = createContentDiv(motsCleTitre, motsCle);
+            contents.add(motCleContent);
 
 
-            Chunk saeConcerne = new Chunk("SaeConcerne", whiteFont);
+            Chunk modalite = new Chunk("Modalite", contentFont);
+            ArrayList<String> modalites = new ArrayList<>();
+            modalites.add("UML jsp j'en ai mare un peu");
+            modalites.add("UML");
 
-            Chunk motsCle =  new Chunk("MotsCle", whiteFont);
+            com.itextpdf.text.List modaliteList = new com.itextpdf.text.List(com.itextpdf.text.List.UNORDERED);
+            modaliteList.setListSymbol("•");
+            modaliteList.setSymbolIndent(12);
+            for (String u_modalite : modalites) {
+                modaliteList.add(new ListItem(new Chunk(u_modalite, contentFont)));
+            }
 
-            Chunk modalite = new Chunk("Modalite", whiteFont);
-
-
-            BaseColor couleurSurlignage = new BaseColor(181, 22, 33);
-            reference.setBackground(couleurSurlignage);
-
-
+            PdfPTable contentModalite = createContentDiv(modalite, modaliteList);
+            contents.add(contentModalite);
 
             document.add(unilimImage);
             document.add(fileName);
             document.add(reference);
             document.add(department);
             document.add(date);
-            document.add(refUE);
-            document.add(refRessource);
-            document.add(titreRessource);
-            document.add(profReferent);
-            document.add(descriptif);
-            document.add(objectif);
-            document.add(objectifContent);
-            document.add(competance);
-            document.add(saeConcerne);
-            document.add(motsCle);
-            document.add(modalite);
+            document.add(table);
 
-            document.newPage();
-            
+            PdfPTable contentDiv = createContent(descriptif, contents);
+            document.add(contentDiv);
 
             document.close();
 
@@ -80,5 +171,60 @@ public class PdfController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static PdfPTable createContentDiv(Chunk titreHeader, Element elementBody) throws DocumentException, IOException {
+        Font FONT_HEADER_BLOCK = FontFactory.getFont(baseFont, 12, Font.BOLD, COL_TEXTE);
+
+        PdfPTable table = new PdfPTable(1);
+        table.setWidthPercentage(100);
+
+        PdfPCell cellHeader = new PdfPCell(new Phrase(String.valueOf(titreHeader), FONT_HEADER_BLOCK));
+        cellHeader.setBorder(Rectangle.NO_BORDER);
+        cellHeader.setBackgroundColor(COL_NOIR_HEADER);
+        cellHeader.setPadding(8);
+        cellHeader.setPaddingLeft(15);
+        table.addCell(cellHeader);
+
+        PdfPCell cellBody = new PdfPCell();
+        cellBody.setBorder(Rectangle.NO_BORDER);
+        cellBody.setBackgroundColor(COL_GRIS_CORPS);
+        cellBody.setPadding(15);
+
+        cellBody.addElement(elementBody);
+
+        table.addCell(cellBody);
+        table.setSpacingAfter(10f);
+
+        return table;
+    }
+
+    private static PdfPTable createContent(Chunk ContainerTitle, ArrayList<Element> contents) throws DocumentException, IOException {
+        Font FONT_TITRE_CONTAINER = FontFactory.getFont(baseFont, 14, Font.NORMAL, COL_TEXTE);
+
+        PdfPTable mainTable = new PdfPTable(1);
+        mainTable.setWidthPercentage(100);
+
+        PdfPCell cellContainer = new PdfPCell();
+        cellContainer.setBorder(Rectangle.NO_BORDER);
+        cellContainer.setBackgroundColor(COL_BLEU_FOND);
+        cellContainer.setPadding(10);
+
+        Paragraph pTitre = new Paragraph(String.valueOf(ContainerTitle), FONT_TITRE_CONTAINER);
+        pTitre.setSpacingAfter(5);
+        cellContainer.addElement(pTitre);
+
+        for (Element content : contents) {
+            cellContainer.addElement(content);
+        }
+        mainTable.addCell(cellContainer);
+        return mainTable;
+    }
+
+    private static void styleCelluleGrise(PdfPCell cell) {
+        cell.setBackgroundColor(COL_GRIS_CORPS);
+        cell.setBorderColor(BaseColor.WHITE);
+        cell.setBorderWidth(1f);
+        cell.setPadding(10);
     }
 }
