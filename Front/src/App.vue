@@ -1,7 +1,7 @@
 <script setup>
   import { ref, computed } from 'vue'
   import Login from './pages/login_page.vue'
-  import DsbrdAdmst from './pages/dashboard_administration.vue'
+  import AdministrationDashboard from './pages/administration_dashboard.vue'
   import MCCCSelectForm from './pages/mccc_select_form.vue'
   import NotFound from './pages/not_found.vue'
   import DsbrProf from './pages/teacher_dashboard.vue'
@@ -9,7 +9,7 @@
 
   const routes = {
     '/': Login,
-    '/dashboard-administration': DsbrdAdmst,
+    '/dashboard-administration': AdministrationDashboard,
     '/dashboard-professeur': DsbrProf,
     '/mccc-select-form': MCCCSelectForm,
   }
