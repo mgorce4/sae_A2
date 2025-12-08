@@ -1,15 +1,17 @@
 package iut.unilim.fr.back.entity;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
 @Table(name = "ACCESSRIGHT")
 @IdClass(AccessRight.AccessRightId.class)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class AccessRight {
     @Id
-    @Column(name = "accessRight", nullable = false)
+    @Column(name = "accessright", nullable = false)
     private Integer accessRight;
 
     @Id

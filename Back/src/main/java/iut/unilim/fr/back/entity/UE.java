@@ -1,22 +1,24 @@
 package iut.unilim.fr.back.entity;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "UE")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class UE {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "UE_Number")
     private Long ueNumber;
 
-    @Column(name = "EuApogeeCode", nullable = false)
+    @Column(name = "euapogeecode", nullable = false)
     private String euApogeeCode;
 
     @Column(nullable = false)
     private String label;
 
-    @Column(name = "competenceLevel", nullable = false)
+    @Column(name = "competencelevel", nullable = false)
     private Integer competenceLevel;
 
     @ManyToOne(fetch = FetchType.LAZY)
