@@ -5,7 +5,15 @@ import { DatePicker as DatePicker } from 'v-calendar'
 
 status.value = 'Administration'
 
+/* get the date of the day*/
 const date = new Date();
+
+const semesters = [1, 2, 3, 4, 5, 6];
+
+/* we can use selected_semester to get the semester*/
+const selected_semester_sheets = ref('S1');
+
+const selected_semester_calendar = ref('S1');
 
 </script>
 
@@ -16,18 +24,13 @@ const date = new Date();
     <div id="sub-div-for-MCCC-and-calender">
       <div id="MCCC-div">
         <!-- link into MCCC page -->
-        <a href="#">MCCC</a>
+        <a id="MCCC_button" href="#/mccc-select-form">MCCC</a>
       </div>
 
       <div id="calender-div">
         <!-- add a calender and the semester -->
-        <select name="semesters" class="semesters">
-          <option value="S1">S1</option>
-          <option value="S2">S2</option>
-          <option value="S3">S3</option>
-          <option value="S4">S4</option>
-          <option value="S5">S5</option>
-          <option value="S6">S6</option>
+        <select name="semesters" class="semesters" v-model="selected_semester_calendar">
+          <option v-for="index in semesters" :key="index" :value="'S' + index">S{{ index }}</option>
         </select>
 
         <!-- for the calender -->
@@ -38,19 +41,16 @@ const date = new Date();
 
     <div id="return-sheets-div">
       <div id="return-sheets-div-header">
-        <p>Rendu des fiches</p>
-        <img id="download" src="../../media/download.png" width="35" height="35" alt="download" />
-      </div>
+        <div id="top">
+          <p>Rendu des fiches</p>
+          <img id="download" src="../../media/download.png" width="35" height="35" alt="download" />
+        </div>
 
-      <div id="semesters-div">
-        <select name="semesters" class="semesters">
-          <option value="S1">S1</option>
-          <option value="S2">S2</option>
-          <option value="S3">S3</option>
-          <option value="S4">S4</option>
-          <option value="S5">S5</option>
-          <option value="S6">S6</option>
-        </select>
+        <div id="semesters-div">
+          <select name="semesters" class="semesters" v-model="selected_semester_sheets">
+            <option v-for="index in semesters" :key="index" :value="'S' + index">S{{ index }}</option>
+          </select>
+        </div>
       </div>
 
       <div id="list-of-ressources">
@@ -61,6 +61,22 @@ const date = new Date();
         </div>
         <div class="ressource">
           <p>R1.02</p>
+          <input type="checkbox" />
+        </div>
+        <div class="ressource">
+          <p>R1.03</p>
+          <input type="checkbox" />
+        </div>
+        <div class="ressource">
+          <p>R1.03</p>
+          <input type="checkbox" />
+        </div>
+        <div class="ressource">
+          <p>R1.03</p>
+          <input type="checkbox" />
+        </div>
+        <div class="ressource">
+          <p>R1.03</p>
           <input type="checkbox" />
         </div>
         <div class="ressource">
@@ -96,26 +112,25 @@ const date = new Date();
 /* -- sub dic for MCCC and calender --*/
 
 #sub-div-for-MCCC-and-calender {
-  width: 25%;
+  width: 30%;
 }
 
 /* -- MCCC -- */
 
 #MCCC-div {
-  background-color: #2c2c3b;
-  color: #ffffff;
   text-align: center;
   height: 100px;
-  width: 70%;
   margin-bottom: 50px;
-  margin-left: 15%;
   align-content: center;
 }
 
-#MCCC-div > a {
+#MCCC_button {
   text-decoration: none;
   color: #ffffff;
   font-size: 50px;
+  background-color: #2c2c3b;
+  border-radius: 10px;
+  padding: 20px 50px 20px 50px;
 }
 
 /* -- calender -- */
@@ -127,46 +142,53 @@ const date = new Date();
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  padding-bottom: 5px;
 }
 
 #calendar {
+  margin-top: 5px;
   display: flex;
   justify-content: center;
 }
 
 /* -- return sheets div -- */
 
-#return-sheets-div-header {
-  display: flex;
-}
-
-#download {
-  position: relative;
-  left: 55%;
-}
-
 #return-sheets-div {
   background-color: #3d4375;
   color: #ffffff;
   height: 100%;
-  width: 25%;
-  padding: 5px;
+  width: 35%;
+  padding: 0 5px 5px 5px;
   overflow-y: scroll;
+  font-size: 20px;
 }
 
-#list-of-ressources {
-
-
+#return-sheets-div-header {
+  position: sticky;
+  top: 0;
+  background-color: #3d4375;
 }
 
-#list-of-ressources > div {
-  display: flex
+#top {
+  display: flex;
+  justify-content: space-between;
 }
 
-#list-of-ressources > div > input {
-  position: relative;
-  left: 75%;
+#return-sheets-div::-webkit-scrollbar {
+  width: 12px;
+}
+
+#return-sheets-div::-webkit-scrollbar-track {
+  margin: 1em;
+  background: rgb(42,45,86);
+  box-shadow: inset 0 0 5px rgb(24, 26, 50);
+  border-radius: 10px;
+}
+
+#return-sheets-div::-webkit-scrollbar-thumb {
+  background: rgb(254,254,254);
+  border-radius: 10px;
+  border: 3px black solid;
 }
 
 .ressource {
@@ -175,6 +197,8 @@ const date = new Date();
   padding: 5px;
   font-size: 20px;
   border-radius: 10px;
+  justify-content: space-between;
+  display: flex;
 }
 
 .semesters {
@@ -183,7 +207,8 @@ const date = new Date();
   height: 30px;
   text-align: center;
   color: #ffffff;
-  border-radius: 10px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
   font-size: 15px;
 }
 </style>
