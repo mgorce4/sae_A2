@@ -15,9 +15,20 @@ const selected_semester_sheets = ref('S1');
 
 const selected_semester_calendar = ref('S1');
 
+import { onMounted } from 'vue'
+import axios from 'axios'
+
+const ressource_sheets = ref([])
+
+onMounted(async () => {
+  const res = await axios.get('http://localhost:8080/api/ressource-sheets')
+  ressource_sheets.value = res.data
+})
+
 </script>
 
 <template>
+
   <p>dashboard administration</p>
 
   <div id="main-div">
@@ -54,35 +65,11 @@ const selected_semester_calendar = ref('S1');
       </div>
 
       <div id="list-of-ressources">
-        <!-- exemple of ressources -->
-        <div class="ressource">
-          <p>R1.01</p>
-          <input type="checkbox" />
+        <div class="ressource" v-for="r in ressource_sheets" :key="r.idRessourceSheet">
+          <p>{{r.name}}</p>
+          <input type="checkbox">
         </div>
-        <div class="ressource">
-          <p>R1.02</p>
-          <input type="checkbox" />
-        </div>
-        <div class="ressource">
-          <p>R1.03</p>
-          <input type="checkbox" />
-        </div>
-        <div class="ressource">
-          <p>R1.03</p>
-          <input type="checkbox" />
-        </div>
-        <div class="ressource">
-          <p>R1.03</p>
-          <input type="checkbox" />
-        </div>
-        <div class="ressource">
-          <p>R1.03</p>
-          <input type="checkbox" />
-        </div>
-        <div class="ressource">
-          <p>R1.03</p>
-          <input type="checkbox" />
-        </div>
+
       </div>
     </div>
   </div>
@@ -130,7 +117,7 @@ const selected_semester_calendar = ref('S1');
   font-size: 50px;
   background-color: #2c2c3b;
   border-radius: 10px;
-  padding: 20px 50px 20px 50px;
+  padding: 35px 65px 35px 65px;
 }
 
 /* -- calender -- */
@@ -195,10 +182,12 @@ const selected_semester_calendar = ref('S1');
   background-color: #8b8ea7;
   margin: 15px;
   padding: 5px;
-  font-size: 20px;
+  font-size: 25px;
   border-radius: 10px;
   justify-content: space-between;
   display: flex;
+  height: 60px;
+  align-items: center;
 }
 
 .semesters {
