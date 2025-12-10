@@ -1,9 +1,8 @@
 package iut.unilim.fr.back.controller;
 
 import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.*;
+import iut.unilim.fr.back.Ressource.HeaderAndFooter;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -20,9 +19,11 @@ public class PdfController {
 
     public static void generatePdf() {
         try {
-            Document document = new Document(PageSize.A4);
-            PdfWriter.getInstance(document, new FileOutputStream("iTextHelloWorld.pdf"));
-            Path imagePath = Paths.get("src/main/resources/img/unilim.jpg");
+            Document document = new Document(PageSize.A4, 36, 36, 59, 40);
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream("iTextHelloWorld.pdf"));
+
+            HeaderAndFooter event = new HeaderAndFooter();
+            writer.setPageEvent(event);
 
             document.open();
 
@@ -35,7 +36,6 @@ public class PdfController {
             table.setWidthPercentage(100);
 
             // Header, doit etre supprimer a terme
-            Image unilimImage = Image.getInstance(imagePath.toAbsolutePath().toString());
             Chunk fileName = new Chunk("Fiche Ressource", font);
             Chunk department = new Chunk("Departement Info", contentFont);
 
@@ -44,8 +44,6 @@ public class PdfController {
             cellLeft.setBorder(Rectangle.NO_BORDER);
             cellLeft.setVerticalAlignment(Element.ALIGN_MIDDLE);
 
-            Chunk reference = new Chunk("Reference", contentFont);
-            Chunk date = new Chunk("Date", contentFont);
 
             Paragraph refUE = new Paragraph("RefUE", font);
             Paragraph refRessource = new Paragraph("RefRessource", font);
@@ -58,6 +56,8 @@ public class PdfController {
 
             cellLeft.addElement(refUE);
             cellLeft.addElement(refRessource);
+            cellLeft.setPaddingTop(15);
+            cellLeft.setPaddingBottom(15);
             table.addCell(cellLeft);
 
             PdfPCell cellCenter = new PdfPCell(titreRessource);
@@ -78,7 +78,7 @@ public class PdfController {
             Chunk objectifContent =  new Chunk("blablablablablablablablablablablablablablablablablablablablablabablablablablablablabalblablablablablablablablablabalblablablablablablabnlablablablablablablablablablabalblablablablablablablablablablababablabla", contentFont);
             PdfPTable content = createContentDiv(objectif, objectifContent);
 
-            ArrayList<Element> contents = new ArrayList<>();
+            ArrayList<PdfPTable> contents = new ArrayList<>();
             contents.add(content);
 
             // Div competence
@@ -87,7 +87,7 @@ public class PdfController {
             PdfPTable competenceTable = new PdfPTable(2);
             competenceTable.setWidthPercentage(100);
             competenceTable.setWidths(new float[]{1, 3});
-            Integer nbLigne = 3;
+            Integer nbLigne = 2;
 
             for (int i = 0; i < nbLigne; i++) {
                 Chunk chunkTitre = new Chunk("Truc " + (i + 1), contentFont);
@@ -143,7 +143,6 @@ public class PdfController {
             Chunk modalite = new Chunk("Modalite", contentFont);
             ArrayList<String> modalites = new ArrayList<>();
             modalites.add("UML jsp j'en ai mare un peu");
-            modalites.add("UML");
 
             com.itextpdf.text.List modaliteList = new com.itextpdf.text.List(com.itextpdf.text.List.UNORDERED);
             modaliteList.setListSymbol("•");
@@ -155,11 +154,8 @@ public class PdfController {
             PdfPTable contentModalite = createContentDiv(modalite, modaliteList);
             contents.add(contentModalite);
 
-            document.add(unilimImage);
             document.add(fileName);
-            document.add(reference);
             document.add(department);
-            document.add(date);
             document.add(table);
 
             PdfPTable contentDiv = createContent(descriptif, contents);
@@ -173,7 +169,7 @@ public class PdfController {
         }
     }
 
-    public static PdfPTable createContentDiv(Chunk titreHeader, Element elementBody) throws DocumentException, IOException {
+    public static PdfPTable createContentDiv(Chunk titreHeader, Element elementBody) {
         Font FONT_HEADER_BLOCK = FontFactory.getFont(baseFont, 12, Font.BOLD, COL_TEXTE);
 
         PdfPTable table = new PdfPTable(1);
@@ -199,26 +195,59 @@ public class PdfController {
         return table;
     }
 
-    private static PdfPTable createContent(Chunk ContainerTitle, ArrayList<Element> contents) throws DocumentException, IOException {
+    private static PdfPTable createContent(Chunk containerTitle, ArrayList<PdfPTable> contents)  {
         Font FONT_TITRE_CONTAINER = FontFactory.getFont(baseFont, 14, Font.NORMAL, COL_TEXTE);
 
-        PdfPTable mainTable = new PdfPTable(1);
-        mainTable.setWidthPercentage(100);
+        PdfPTable masterTable = new PdfPTable(1);
+        masterTable.setPaddingTop(15);
+        masterTable.setWidthPercentage(100);
+        masterTable.setSplitLate(false);
+        masterTable.setSplitRows(true);
 
-        PdfPCell cellContainer = new PdfPCell();
-        cellContainer.setBorder(Rectangle.NO_BORDER);
-        cellContainer.setBackgroundColor(COL_BLEU_FOND);
-        cellContainer.setPadding(10);
+        PdfPTable headerTable = new PdfPTable(1);
+        headerTable.setWidthPercentage(100);
+        headerTable.setTableEvent(new BlueBackgroundEvent(COL_BLEU_FOND));
 
-        Paragraph pTitre = new Paragraph(String.valueOf(ContainerTitle), FONT_TITRE_CONTAINER);
-        pTitre.setSpacingAfter(5);
-        cellContainer.addElement(pTitre);
+        PdfPCell cellTitre = new PdfPCell(new Paragraph(new Phrase(containerTitle).getContent(), FONT_TITRE_CONTAINER));
+        cellTitre.setBorder(Rectangle.NO_BORDER);
+        cellTitre.setBackgroundColor(null);
+        cellTitre.setPadding(15);
+        cellTitre.setPaddingBottom(15);
 
-        for (Element content : contents) {
-            cellContainer.addElement(content);
+        headerTable.addCell(cellTitre);
+
+        PdfPCell cellWrapperHeader = new PdfPCell(headerTable);
+        cellWrapperHeader.setBorder(Rectangle.NO_BORDER);
+        masterTable.addCell(cellWrapperHeader);
+
+        PdfPTable bodyTable = new PdfPTable(1);
+        bodyTable.setWidthPercentage(100);
+        bodyTable.setSplitLate(false);
+        bodyTable.setSplitRows(true);
+        bodyTable.setPaddingTop(15);
+
+        for (PdfPTable content : contents) {
+            content.setWidthPercentage(100);
+
+            PdfPCell wrapperCell = new PdfPCell();
+            wrapperCell.setBorder(Rectangle.NO_BORDER);
+            wrapperCell.setBackgroundColor(null);
+
+            wrapperCell.setPaddingLeft(15);
+            wrapperCell.setPaddingRight(15);
+            wrapperCell.setPaddingTop(10);
+
+            wrapperCell.addElement(content);
+
+            bodyTable.addCell(wrapperCell);
         }
-        mainTable.addCell(cellContainer);
-        return mainTable;
+
+        PdfPCell cellWrapperBody = new PdfPCell(bodyTable);
+        cellWrapperBody.setBorder(Rectangle.NO_BORDER);
+        cellWrapperBody.setPadding(0);
+        masterTable.addCell(cellWrapperBody);
+
+        return masterTable;
     }
 
     private static void styleCelluleGrise(PdfPCell cell) {
@@ -226,5 +255,29 @@ public class PdfController {
         cell.setBorderColor(BaseColor.WHITE);
         cell.setBorderWidth(1f);
         cell.setPadding(10);
+    }
+
+    static class BlueBackgroundEvent implements PdfPTableEvent {
+        private BaseColor color;
+
+        public BlueBackgroundEvent(BaseColor color) {
+            this.color = color;
+        }
+
+        @Override
+        public void tableLayout(PdfPTable table, float[][] widths, float[] heights, int headerRows, int rowStart, PdfContentByte[] canvases) {
+            float[] width = widths[0];
+            float x1 = width[0];
+            float x2 = width[width.length - 1];
+            float y1 = heights[0];
+            float y2 = heights[heights.length - 1];
+
+            PdfContentByte cb = canvases[PdfPTable.BACKGROUNDCANVAS];
+            cb.saveState();
+            cb.setColorFill(color);
+            cb.roundRectangle(x1, y2, x2 - x1, y1 - y2, 10);
+            cb.fill();
+            cb.restoreState();
+        }
     }
 }
