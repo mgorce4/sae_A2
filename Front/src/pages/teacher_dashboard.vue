@@ -1,31 +1,31 @@
 <script setup>
-    import { status } from '../main'
+    import { ref, onMounted } from 'vue'
+    import axios from 'axios'
+
+    import { status } from '../main' /*add , userName next to status to import it*/
     status.value = "Professeur"
 
-    import { rx } from '../main' //pour le nom des ressources
-    rx.value = 'R1.01' //exemple
+    const users = ref([]) //get the data from database ressources-sheets
+    onMounted(async () => {
+    axios.get('http://localhost:8080/api/ressource-sheets').then(response => (users.value = response.data))})
+
+    /*
+    const name = ref([]) //to get the username from who's connected
+    onMounted(async () => {
+        axios.get('http://localhost:8080/api/users').then(response => (name.value = response.data))
+    })
+    userName.value = name.value.username
+    */
 
 </script>
 
 <template>
     <div id="ressources" >
         <h1 id="titre">Vos ressources : </h1>
-        <div id="divFiches">
-            <div id="fiches">
-                <p>{{ rx }}</p>
-            </div>
-            <div id="fiches">
-                <p>{{ rx }}</p>
-            </div>
-            <div id="fiches">
-                <p>{{ rx }}</p>
-            </div>
-            <div id="fiches">
-                <p>{{ rx }}</p>
-            </div>
-            <div id="fiches">
-                <p>{{ rx }}</p>
-            </div>
+        <div id="divFiches" >
+            <a id="fiches" v-for="u in users" :key="u.idUser">
+                <p>{{ u.name}}</p>
+            </a>
         </div>
     </div>
 </template>
@@ -33,7 +33,7 @@
 <style>
 
 #ressources{
-    max-height: 18.5vw;
+    min-height: 30vw;
     margin: 1em;
     padding-left: 0.5vw;
     padding-right: 2vw;
@@ -52,7 +52,6 @@
 #divFiches{
     display: flex;
     flex-wrap: wrap;
-    width: 80%;
     padding: 0;
 }
 

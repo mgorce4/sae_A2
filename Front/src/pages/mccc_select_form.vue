@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+
 const afficherBoutons = ref([
     [{ show: false, status: 'Remplit' }, { show: false, status: 'Vierge' }],
     [{ show: false, status: 'Vierge' }, { show: false, status: 'Brouillon' }],
@@ -10,8 +11,8 @@ const afficherBoutons = ref([
 <template>
     <div id="form-select-page">
         <div style="display: flex; align-items: center;">
-            <a href="/" id="back" class="btn1">←</a>
-            <p class="back">Retour à l'accueil</p>
+            <a  id="back" class="btn1" onclick="document.location.href='#/dashboard-administration'">←</a>
+            <p class="back" >Retour à l'accueil</p>
         </div>
 
         <div v-for="(year, index) in afficherBoutons" v-bind:key="index" class="blue-rect">
@@ -22,9 +23,9 @@ const afficherBoutons = ref([
                     <p class="semester-display">Semestre {{ 2 * index + index2 + 1 }}</p>
                     <p class="status-display" v-show="!btn.show">{{ btn.status }}</p>
                     <div v-show="btn.show" class="container-fluid spe">
-                        <a class="btn-form-acces" href="/">UE</a>
-                        <a class="btn-form-acces" href="/">Ressource</a>
-                        <a class="btn-form-acces" href="/">SAÉ</a>
+                        <button class="btn-form-acces" onclick="document.location.href='#/form-mccc-UE'">UE</button>
+                        <button class="btn-form-acces">Ressource</button>
+                        <button class="btn-form-acces">SAÉ</button>
                     </div>
                 </div>
             </div>
