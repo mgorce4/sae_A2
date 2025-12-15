@@ -23,17 +23,15 @@ const selected_semester_calendar = ref('S1')
 /* link with the API */
 
 const ressource_sheets = ref([])
-/* get of the value for the ressource sheets from the DB */
-onMounted(async () => {
-  const res = await axios.get('http://localhost:8080/api/ressource-sheets')
-  ressource_sheets.value = res.data
-})
-
 const ressources = ref([])
-/* get of the value for the ressources from the DB */
+
 onMounted(async () => {
-  const res = await axios.get('http://localhost:8080/api/ressources')
-  ressources.value = res.data
+
+  /* get of the value for the ressource sheets from the DB */
+  axios.get('http://localhost:8080/api/ressource-sheets').then(reponse => (ressource_sheets.value = reponse.data))
+
+  /* get of the value for the ressources from the DB */
+  axios.get('http://localhost:8080/api/ressources').then(reponse => (ressources.value = reponse.data))
 })
 
 /*
@@ -147,6 +145,10 @@ const filtered_ressource_sheets = computed(() => {
   border-radius: 10px;
   width: 100%;
   height: 120%;
+}
+
+#MCCC_button:hover {
+  cursor : pointer;
 }
 
 /* -- calender -- */
