@@ -95,6 +95,11 @@ CREATE TABLE RESSOURCE_SHEET(
     id_User INT REFERENCES USERSYNCADIA(id_User)
 );
 
+CREATE TABLE NATIONAL_PROGRAM_OBJECTIVE(
+    content TEXT NOT NULL,
+    id_RessourceSheet INT REFERENCES RESSOURCE_SHEET(id_RessourceSheet)
+);
+
 INSERT INTO INSTITUTION (name, location) VALUES
 ('IUT du Limousin', 'Limoges'),
 ('IUT de Guéret', 'Guéret'),
@@ -160,3 +165,8 @@ INSERT INTO RESSOURCE_SHEET(name, competence, SAE, year, id_Ressource, id_Pedago
 ('R1.01', 'Développement de base', 'SAE1', '2025-09-01', 1, 1, 1, 1),
 ('R1.02', 'Développement web', 'SAE2', '2025-09-01', 2, 2, 2, 3),
 ('R1.03', 'Architecture des ordinateurs', 'SAE3', '2025-09-01', 3, 3, 3, 3);
+
+INSERT INTO NATIONAL_PROGRAM_OBJECTIVE(content, id_RessourceSheet) VALUES
+('Comprendre les bases du développement', 5),
+('Maîtriser les concepts du développement web', 6),
+('Appréhender l''architecture des ordinateurs', 7);
