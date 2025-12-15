@@ -5,6 +5,8 @@ import com.itextpdf.text.pdf.*;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class HeaderAndFooter extends PdfPageEventHelper {
     private static final BaseColor COL_ROUGE_BARRE = new BaseColor(176, 32, 40);
@@ -124,7 +126,7 @@ public class HeaderAndFooter extends PdfPageEventHelper {
 
         float pageTop = document.getPageSize().getHeight();
 
-        headerTable.writeSelectedRows(0, -1, document.left(), pageTop -20 , writer.getDirectContent());
+        headerTable.writeSelectedRows(0, -1, document.left(), pageTop - 15 , writer.getDirectContent());
 
 
         PdfPTable redHeaderTable = new PdfPTable(2);
@@ -136,12 +138,17 @@ public class HeaderAndFooter extends PdfPageEventHelper {
         cellRef.setHorizontalAlignment(Element.ALIGN_LEFT);
         redHeaderTable.addCell(cellRef);
 
-        PdfPCell cellDate = new PdfPCell(new Phrase("Date de création:", whiteFont));
+
+        String format = "dd-MM-yyyy";
+        SimpleDateFormat sdf = new SimpleDateFormat(format);
+
+        String date = sdf.format(new Date());
+        PdfPCell cellDate = new PdfPCell(new Phrase("Date de création: " + date, whiteFont));
         styleCelluleRouge(cellDate);
         cellDate.setHorizontalAlignment(Element.ALIGN_RIGHT);
         redHeaderTable.addCell(cellDate);
 
-        redHeaderTable.writeSelectedRows(0, -1, 0, pageTop - 75, writer.getDirectContent());
+        redHeaderTable.writeSelectedRows(0, -1, 0, pageTop - 70, writer.getDirectContent());
     }
 
     private void styleCelluleRouge(PdfPCell cell) {
