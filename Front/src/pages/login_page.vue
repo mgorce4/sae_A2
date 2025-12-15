@@ -1,11 +1,42 @@
 <script setup>
     import { status } from '../main.js'
+    import { ref, onMounted } from 'vue'
+    import axios from 'axios'
 
     status.value = ''
+
+    const users = ref([])
+    const acces_rights = ref([])
+
+    onMounted(async () => {
+        axios.get('http://localhost:8080/api/users').then(response => (users.value = response.data))
+        axios.get('http://localhost:8080/api/access-rights').then(response => (acces_rights.value = response.data))
+    })
+
+    let username = null
+    let password = null
+    function addItem() {
+        localStorage.username = username
+        localStorage.password = password
+        username = null
+        password = null
+    }
+
+    function verifyUser() {
+        users.value.forEach((user) => {
+            if (localStorage.username == user.username && localStorage.password == user.password) {
+                console.log(user.username)
+            } else {
+                console.log("Utilisateur non trouvé")
+            }
+        });
+    }
 </script>
 
 <template>
-    <form id="blue-rect" v-on:submit.prevent="">
+    <div>{{ users }}</div>
+    <div>{{ acces_rights }}</div>
+    <form id="blue-rect" method="post" v-on:submit.prevent="addItem">
         <div id="login-top" class="container-fluid spe">
             <img id="profile-picture" src="./../../media/no_profile_picture.webp" alt="profile-picture">
             <div id="login-fill-infos">
@@ -20,6 +51,7 @@
             <input id="btn-connect-login" class="btn1" type="submit" value="Se connecter">
         </div>
     </form>
+    <button @click="verifyUser">verifier users dans console</button>
 </template>
 
 <style>
