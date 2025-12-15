@@ -36,7 +36,7 @@ public class PdfController {
             PdfPTable table = new PdfPTable(3);
             table.setWidthPercentage(100);
 
-                // Titre Ressource
+            // Titre Ressource
             PdfPCell cellLeft = new PdfPCell();
             cellLeft.setBorder(Rectangle.NO_BORDER);
             cellLeft.setVerticalAlignment(Element.ALIGN_MIDDLE);
