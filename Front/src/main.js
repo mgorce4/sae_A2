@@ -6,11 +6,10 @@ import Footer from './pages/footer_app.vue'
 import router from './router'
 
 export const status = ref("")
-export const rx = ref("")
+export const userName = ref("")
 
 import { Calendar, DatePicker } from 'v-calendar'
 import 'v-calendar/style.css'
-
 
 const app = createApp(App)
 

@@ -21,6 +21,9 @@ public class Ressource {
     @Column(name = "diffmulticompetences", nullable = false)
     private Boolean diffMultiCompetences;
 
+    @Column(nullable = false)
+    private Short semester;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_Terms")
     private Terms terms;
@@ -36,11 +39,12 @@ public class Ressource {
     public Ressource() {
     }
 
-    public Ressource(Long idRessource, String apogeeCode, String label, Boolean diffMultiCompetences, Terms terms, HoursPerStudent hoursPerStudent, UeCoefficient ueCoefficient) {
+    public Ressource(Long idRessource, String apogeeCode, String label, Boolean diffMultiCompetences, Short semester, Terms terms, HoursPerStudent hoursPerStudent, UeCoefficient ueCoefficient) {
         this.idRessource = idRessource;
         this.apogeeCode = apogeeCode;
         this.label = label;
         this.diffMultiCompetences = diffMultiCompetences;
+        this.semester = semester;
         this.terms = terms;
         this.hoursPerStudent = hoursPerStudent;
         this.ueCoefficient = ueCoefficient;
@@ -76,6 +80,14 @@ public class Ressource {
 
     public void setDiffMultiCompetences(Boolean diffMultiCompetences) {
         this.diffMultiCompetences = diffMultiCompetences;
+    }
+
+    public Short getSemester() {
+        return semester;
+    }
+
+    public void setSemester(Short semester) {
+        this.semester = semester;
     }
 
     public Terms getTerms() {

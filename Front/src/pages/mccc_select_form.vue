@@ -1,7 +1,8 @@
 <script setup>
 import { ref } from 'vue'
+
 const afficherBoutons = ref([
-    [{ show: false, status: 'Remplit' }, { show: false, status: 'Vierge' }],
+    [{ show: false, status: 'Rempli' }, { show: false, status: 'Vierge' }],
     [{ show: false, status: 'Vierge' }, { show: false, status: 'Brouillon' }],
     [{ show: false, status: 'Brouillon' }, { show: false, status: 'Vierge' }]
 ])
@@ -9,9 +10,9 @@ const afficherBoutons = ref([
 
 <template>
     <div id="form-select-page">
-        <div style="display: flex; align-items: center;">
-            <a href="/" id="back" class="btn1">←</a>
-            <p class="back">Retour à l'accueil</p>
+        <div style="display: flex; align-items: center; height: 1vw;">
+            <button id="backArrow" onclick="document.location.href='#/dashboard-administration'">←</button>
+            <p class="back" >Retour à l'accueil</p>
         </div>
 
         <div v-for="(year, index) in afficherBoutons" v-bind:key="index" class="blue-rect">
@@ -22,9 +23,9 @@ const afficherBoutons = ref([
                     <p class="semester-display">Semestre {{ 2 * index + index2 + 1 }}</p>
                     <p class="status-display" v-show="!btn.show">{{ btn.status }}</p>
                     <div v-show="btn.show" class="container-fluid spe">
-                        <a class="btn-form-acces" href="/">UE</a>
-                        <a class="btn-form-acces" href="/">Ressource</a>
-                        <a class="btn-form-acces" href="/">SAÉ</a>
+                        <button class="btn-form-acces" onclick="document.location.href='#/form-mccc-UE'">UE</button>
+                        <button class="btn-form-acces">Ressource</button>
+                        <button class="btn-form-acces">SAÉ</button>
                     </div>
                 </div>
             </div>
@@ -35,25 +36,30 @@ const afficherBoutons = ref([
 
 <style>
 #form-select-page {
-    width: 60vw;
-    height: 100%;
-    margin: 5vw 20vw;
-    padding: 0;
+    margin: 3vw 14vw;
+    justify-content: center;
     color: #000000;
 }
 
 .back {
-    margin: 0 1vw;
-    padding: 0;
-    font-size: 2vw;
+    font-size: 1.5vw;
     font-weight: bold;
     color: #000000;
+    margin-left: 1.5vw;
+}
+
+#backArrow{
+    font-size: 2vw;
+    border: none;
+    background-color: white;
+    color: black;
+    font-weight: bold;
 }
 
 .blue-rect {
     width: 90%;
     height: fit-content;
-    margin: 2vw 0;
+    margin: 2vw;
     padding: 1vw 2vw 2vw 2vw;
     border-radius: 1vw;
     background-color: #3D4375;
@@ -78,14 +84,14 @@ const afficherBoutons = ref([
     margin: 0.5vw 0;
     padding: 0;
     text-align: left;
-    font-size: 2vw;
+    font-size: 1.5vw;
     font-weight: bold;
 }
 
 .status-display {
     text-align: right;
     margin: 0 5% 0 0;
-    font-size: 1.5vw;
+    font-size: 1.3vw;
 }
 
 .btn-form-acces {

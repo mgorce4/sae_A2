@@ -1,19 +1,56 @@
 <script setup>
-import { ref } from 'vue';
+/* import */
+import { computed, ref } from 'vue'
 import { status } from '../main'
-import { DatePicker as DatePicker } from 'v-calendar'
+import { DatePicker } from 'v-calendar'
+import { onMounted } from 'vue'
+import axios from 'axios'
+
+/* constantes */
 
 status.value = 'Administration'
 
 /* get the date of the day*/
-const date = new Date();
+const date = new Date()
 
-const semesters = [1, 2, 3, 4, 5, 6];
+const list_semesters = [1, 2, 3, 4, 5, 6]
 
 /* we can use selected_semester to get the semester*/
-const selected_semester_sheets = ref('S1');
+const selected_semester_sheets = ref('S1')
 
-const selected_semester_calendar = ref('S1');
+const selected_semester_calendar = ref('S1')
+
+/* link with the API */
+
+const ressource_sheets = ref([])
+/* get of the value for the ressource sheets from the DB */
+onMounted(async () => {
+  const res = await axios.get('http://localhost:8080/api/ressource-sheets')
+  ressource_sheets.value = res.data
+})
+
+const ressources = ref([])
+/* get of the value for the ressources from the DB */
+onMounted(async () => {
+  const res = await axios.get('http://localhost:8080/api/ressources')
+  ressources.value = res.data
+})
+
+/*
+* filter of the ressources depending of their semester
+*
+*  ex : display the ressources that are on the 1 st semester when
+*       the 1 st is selected in the select component
+*/
+const filtered_ressource_sheets = computed(() => {
+  /* delete the 'S' from the selected semester */
+  const semester_number = parseInt(selected_semester_sheets.value.replace('S', ''))
+
+  return ressource_sheets.value.filter((sheet) => {
+    const ressource = ressources.value.find((r) => r.idRessource === sheet.ressource.idRessource)
+    return ressource && ressource.semester === semester_number
+  })
+})
 
 </script>
 
@@ -24,13 +61,15 @@ const selected_semester_calendar = ref('S1');
     <div id="sub-div-for-MCCC-and-calender">
       <div id="MCCC-div">
         <!-- link into MCCC page -->
-        <a id="MCCC_button" href="#/mccc-select-form">MCCC</a>
+        <button type="button" id="MCCC_button" onclick="document.location.href='#/mccc-select-form'">MCCC</button>
       </div>
 
       <div id="calender-div">
         <!-- add a calender and the semester -->
         <select name="semesters" class="semesters" v-model="selected_semester_calendar">
-          <option v-for="index in semesters" :key="index" :value="'S' + index">S{{ index }}</option>
+          <option v-for="index in list_semesters" :key="index" :value="'S' + index">
+            S{{ index }}
+          </option>
         </select>
 
         <!-- for the calender -->
@@ -48,39 +87,16 @@ const selected_semester_calendar = ref('S1');
 
         <div id="semesters-div">
           <select name="semesters" class="semesters" v-model="selected_semester_sheets">
-            <option v-for="index in semesters" :key="index" :value="'S' + index">S{{ index }}</option>
+            <option v-for="index in list_semesters" :key="index" :value="'S' + index">
+              S{{ index }}
+            </option>
           </select>
         </div>
       </div>
 
       <div id="list-of-ressources">
-        <!-- exemple of ressources -->
-        <div class="ressource">
-          <p>R1.01</p>
-          <input type="checkbox" />
-        </div>
-        <div class="ressource">
-          <p>R1.02</p>
-          <input type="checkbox" />
-        </div>
-        <div class="ressource">
-          <p>R1.03</p>
-          <input type="checkbox" />
-        </div>
-        <div class="ressource">
-          <p>R1.03</p>
-          <input type="checkbox" />
-        </div>
-        <div class="ressource">
-          <p>R1.03</p>
-          <input type="checkbox" />
-        </div>
-        <div class="ressource">
-          <p>R1.03</p>
-          <input type="checkbox" />
-        </div>
-        <div class="ressource">
-          <p>R1.03</p>
+        <div class="ressource" v-for="r in filtered_ressource_sheets" :key="r.idRessourceSheet">
+          <p>{{ r.name }}</p>
           <input type="checkbox" />
         </div>
       </div>
@@ -120,17 +136,17 @@ const selected_semester_calendar = ref('S1');
 #MCCC-div {
   text-align: center;
   height: 100px;
-  margin-bottom: 50px;
+  margin-bottom: 10%;
   align-content: center;
 }
 
 #MCCC_button {
-  text-decoration: none;
   color: #ffffff;
   font-size: 50px;
   background-color: #2c2c3b;
   border-radius: 10px;
-  padding: 20px 50px 20px 50px;
+  width: 100%;
+  height: 120%;
 }
 
 /* -- calender -- */
@@ -180,13 +196,13 @@ const selected_semester_calendar = ref('S1');
 
 #return-sheets-div::-webkit-scrollbar-track {
   margin: 1em;
-  background: rgb(42,45,86);
+  background: rgb(42, 45, 86);
   box-shadow: inset 0 0 5px rgb(24, 26, 50);
   border-radius: 10px;
 }
 
 #return-sheets-div::-webkit-scrollbar-thumb {
-  background: rgb(254,254,254);
+  background: rgb(254, 254, 254);
   border-radius: 10px;
   border: 3px black solid;
 }
@@ -195,10 +211,12 @@ const selected_semester_calendar = ref('S1');
   background-color: #8b8ea7;
   margin: 15px;
   padding: 5px;
-  font-size: 20px;
+  font-size: 25px;
   border-radius: 10px;
   justify-content: space-between;
   display: flex;
+  height: 60px;
+  align-items: center;
 }
 
 .semesters {

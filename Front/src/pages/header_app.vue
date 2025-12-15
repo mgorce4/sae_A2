@@ -1,5 +1,8 @@
 <script setup>
     import { status } from '../main'
+
+    import { userName} from '../main'
+    userName.value =""
 </script>
 
 <template>
@@ -13,7 +16,7 @@
                 <h1 id="app-name">Syncadia</h1>
             </div>
             <div v-show="status" id="user-name-and-pp" class="container-fluid">
-                <h2 id="user-name">user-name</h2>
+                <h2 id="user-name">{{userName}}</h2>
                 <img id="profile-picture" src="./../../media/no_profile_picture.webp" alt="profile_picture">
             </div>
         </div>
