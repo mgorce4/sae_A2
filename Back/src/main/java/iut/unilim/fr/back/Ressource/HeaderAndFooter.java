@@ -45,6 +45,7 @@ public class HeaderAndFooter extends PdfPageEventHelper {
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
+
     }
 
     private void createFooter(PdfWriter writer, Document document) throws DocumentException {
@@ -121,7 +122,9 @@ public class HeaderAndFooter extends PdfPageEventHelper {
         department.setPaddingTop(10);
         headerTable.addCell(department);
 
-        headerTable.writeSelectedRows(0, -1, document.left(), document.top() + 60, writer.getDirectContent());
+        float pageTop = document.getPageSize().getHeight();
+
+        headerTable.writeSelectedRows(0, -1, document.left(), pageTop -20 , writer.getDirectContent());
 
 
         PdfPTable redHeaderTable = new PdfPTable(2);
@@ -138,7 +141,7 @@ public class HeaderAndFooter extends PdfPageEventHelper {
         cellDate.setHorizontalAlignment(Element.ALIGN_RIGHT);
         redHeaderTable.addCell(cellDate);
 
-        redHeaderTable.writeSelectedRows(0, -1, 0, document.top() + 10, writer.getDirectContent());
+        redHeaderTable.writeSelectedRows(0, -1, 0, pageTop - 75, writer.getDirectContent());
     }
 
     private void styleCelluleRouge(PdfPCell cell) {
