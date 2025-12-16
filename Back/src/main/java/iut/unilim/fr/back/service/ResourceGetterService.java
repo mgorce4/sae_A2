@@ -6,6 +6,7 @@ import iut.unilim.fr.back.entity.UeCoefficient;
 import iut.unilim.fr.back.repository.RessourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,6 +84,7 @@ public class ResourceGetterService {
         improvements = PLACEHOLDER;
     }
 
+    @Transactional
     public void setValuesFromRessource(String ressourceName) {
         Long id;
         String label;
