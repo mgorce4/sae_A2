@@ -12,7 +12,7 @@
   const routes = {
     '/': Login,
     '/dashboard-administration': AdministrationDashboard,
-    '/dashboard-professeur': DsbrProf,
+    '/teacher_dashboard': DsbrProf,
     '/mccc-select-form': MCCCSelectForm,
     '/form-mccc-UE': FormUE,
     '/form-ressource-sheet': FormRessourceSheet
@@ -33,7 +33,7 @@
   <header-application/>
   <a href="#/">- Login -</a>
   <a href="#/dashboard-administration">- dashboard administration -</a>
-  <a href="#/dashboard-professeur">- dashboard professeur -</a>
+  <a href="#/teacher_dashboard">- dashboard professeur -</a>
   <a href="#/mccc-select-form">- Sélection formulaires MCCC -</a>
   <a href="#/form-ressource-sheet">- Formulaire ressource sheet -</a>
   <component :is="currentView" />

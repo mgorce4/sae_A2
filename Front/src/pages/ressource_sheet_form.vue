@@ -37,27 +37,27 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div id="RessourceSheet">
-    <div id="returnArrow">
+  <div id="Ressource_Sheet">
+    <div id="return_Arrow">
       <button  id="backArrow" onclick="document.location.href='#/teacher_dashboard'">←</button>
       <p>Retour</p>
     </div>
-    <div id="backgroundForm">
-      <div class="headerForm">
+    <div id="background_Form">
+      <div class="header_Form">
         <p>Réf. UE : </p>
         <p>###</p>
         <h2>nom de la ressource</h2>
         <p>Dep : </p>
         <p>###</p>
       </div>
-      <div class="refSection">
+      <div class="ref_Section">
         <p>Réf. ressource : </p>
         <p>###</p>
       </div>
       <div id="form">
-        <a class="accordion" id="darkBar" style="display: flex;">Compétences *<button id="buttonMore">+</button></a>
+        <a class="accordion" id="dark_Bar" style="display: flex;">Compétences *</a>
         <div class="panel">
-          <p>Lorem ipsum blablablablabalbalbalabalbalbalbalbalablabalbalbalablablablabalbalbalbalbalablablabalb</p>
+
         </div>
       </div>
     </div>
@@ -65,12 +65,30 @@ onMounted(async () => {
 </template>
 
 <style>
-#RessourceSheet{
+
+.accordion {
+  cursor: pointer;
+  position: relative;
+  padding-right: 2.5vw;
+}
+
+.accordion::after {
+  content: '^';
+  position: absolute;
+  right: 1vw;
+  transition: transform 0.3s ease;
+  font-size: 0.9vw;
+}
+
+.accordion.active::after {
+  transform: rotate(180deg);
+}
+#Ressource_Sheet{
   margin: 3vw 14vw;
   justify-content: center;
 }
 
-#returnArrow{
+#return_Arrow{
   display: flex;
   align-items: center;
 }
@@ -94,14 +112,14 @@ onMounted(async () => {
   padding-top: 1vw;
 }
 
-#returnArrow > p{
+#return_Arrow > p{
   font-size: 1.5vw;
   font-weight: bold;
   color: black;
   margin-left: 1.5vw;
 }
 
-#backgroundForm{
+#background_Form{
   height: auto;
   background-color: rgb(61, 67, 117);
   border-radius: 15px;
@@ -124,7 +142,7 @@ h2{
   overflow: hidden;
 }
 
-#darkBar{
+#dark_Bar{
   color: white;
   height: auto;
   border-radius: 10px;
@@ -136,29 +154,7 @@ h2{
   align-items: center;
 }
 
-#buttonMore{
-  border: 2px solid white;
-  background-color: rgb(32,32,32);
-  height: 2vw;
-  width: 2vw;
-  border-radius: 50%;
-  font-size: 1.2vw;
-  font-weight: bold;
-  color: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.3s ease;
-}
-
-#buttonMore:hover {
-  background-color: rgb(50,50,50);
-  transform: scale(1.1);
-}
-
-.headerForm{
+.header_Form{
   display: flex;
   gap: 1vw;
   padding: 1vw;
@@ -166,7 +162,7 @@ h2{
   justify-content: space-evenly;
 }
 
-.refSection {
+.ref_Section {
   display: flex;
   gap: 0.5vw;
   color: white;
@@ -174,7 +170,7 @@ h2{
   margin-bottom: 1vw;
 }
 
-.refSection p {
+.ref_Section p {
   margin: 0;
 }
 

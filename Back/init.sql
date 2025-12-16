@@ -110,7 +110,7 @@ INSERT INTO TASK (name, description, firstDelivery, secondDelivery, id_User) VAL
 ('remplir fiche ressource', 'vous devez remplir la fiche ressource pour chaque ressource pédagogique que vous créez', '2026-01-30', '2026-07-15', 1),
 ('mettre à jour fiche ressource', 'vous devez mettre à jour la fiche ressource pour chaque ressource pédagogique que vous modifiez', '2026-01-30', '2026-08-15', 3);
 
-INSERT INTO ACCESSRIGHT (accessRight, id_User) VALUES
+INSERT INTO ACCESSRIGHT ( id_User,accessRight) VALUES
 (1, 1),
 (1, 2),
 (1, 3),
