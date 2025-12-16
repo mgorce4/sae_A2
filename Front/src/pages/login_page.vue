@@ -92,17 +92,17 @@
         switch (access_right) {
             case 1:
                 status.value = "Professeur"
-                document.location.href='#/dashboard-professeur'
+                document.location.href='/teacher_dashboard'
                 console.log("Toi, tu vas dans Professeur")
                 break;
             case 2:
                 status.value = "Administration"
-                document.location.href='#/dashboard-administration'
+                document.location.href='/dashboard-administration'
                 console.log("Toi, tu vas dans Administration")
                 break;
             case 3:
                 status.value = "Admin"
-                document.location.href='#/'
+                document.location.href='/'
                 console.log("Toi, tu vas dans Admin")
                 break;
         }
