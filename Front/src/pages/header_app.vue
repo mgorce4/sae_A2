@@ -2,7 +2,7 @@
     import { status } from '../main'
 
     import { userName} from '../main'
-    userName.value ="patate"
+    userName.value =""
 </script>
 
 <template>
