@@ -8,9 +8,19 @@
     const users = ref([])
     const access_rights = ref([])
 
+    const user_access_rights = ref([])
+
     onMounted(async () => {
         axios.get('http://localhost:8080/api/users').then(response => (users.value = response.data))
         axios.get('http://localhost:8080/api/access-rights').then(response => (access_rights.value = response.data))
+
+        if (localStorage.getItem('access_rights')) {
+            try {
+                user_access_rights.value = JSON.parse(localStorage.getItem('access_rights'));
+            } catch(e) {
+                localStorage.removeItem('access_rights')
+            }
+        }
     })
     
     const users_access_right = computed(() => {
@@ -27,20 +37,21 @@
     let username = null
     let password = null
     function addItem() {
-        localStorage.username = username
-        localStorage.password = password
+        localStorage.access_rights = null
 
-        verifyUser()
+        verifyUser(username, password)
 
         // set variables back to null
         username = null
         password = null
     }
 
-    function verifyUser() {
+    function verifyUser(username, password) {
         users.value.forEach((user) => {
-            if (localStorage.username == user.username && localStorage.password == user.password) {
-                console.log(user.username)
+            if (username == user.username && password == user.password) {
+                localStorage.username = username
+                localStorage.password = password
+                console.log("Utilisateur : ", user.username)
                 verifyAccessRight()
             } else {
                 console.log("Utilisateur non trouvé")
@@ -49,17 +60,19 @@
     }
 
     function verifyAccessRight() {
+        user_access_rights.value = []
         console.log(users_access_right.value)
         users_access_right.value.forEach((access_right) => {
             if (localStorage.username == access_right.username) {
                 console.log("nombre d'élements : ", access_right.accessRights.length)
                 access_right.accessRights.forEach(access_right => {
                     console.log(access_right)
+                    user_access_rights.value.push(access_right.accessRight)
                 });
-                
-                localStorage.access_right = access_right.accessRights.accessRight
             }
         });
+        const parsed = JSON.stringify(user_access_rights.value)
+        localStorage.setItem('access_rights', parsed)
     }
 </script>
 
