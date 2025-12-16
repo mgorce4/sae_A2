@@ -129,9 +129,14 @@ public class ResourceGetterService {
             labelResource = resource.getLabel();
 
             String[] ressourceSheetSaes = resourceSheet.getSae().split(",");
+            saes.clear();
             saes.addAll(Arrays.asList(ressourceSheetSaes));
             // TODO: PN -> keyWord
-            // TODO: modalites -> Terms dans la BDD
+
+            Terms terms = resource.getTerms();
+            modalities.clear();
+            modalities.add(terms.getCode());
+
             Integer hoursCM = hoursPerStudent.getCm();
             Integer hoursTd  = hoursPerStudent.getTd();
             Integer hoursTp  = hoursPerStudent.getTp();
