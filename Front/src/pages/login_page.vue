@@ -22,7 +22,7 @@
             }
         }
     })
-    
+
     const users_access_right = computed(() => {
         // Join between users and access_rights where users.idUser = access_rights.idUser
         return users.value.map((user) => {
@@ -46,9 +46,13 @@
         password = null
     }
 
+    function is_username_and_password_ok(username, user, password) {
+      return username == user.username && password == user.password
+    }
+
     function verifyUser(username, password) {
         users.value.forEach((user) => {
-            if (username == user.username && password == user.password) {
+            if (is_username_and_password_ok(username, user, password)) {
                 localStorage.username = username
                 localStorage.password = password
                 console.log("Utilisateur : ", user.username)
@@ -59,12 +63,16 @@
         });
     }
 
+    function number_of_access_right(access_right) {
+      return access_right.accessRights.length
+    }
+
     function verifyAccessRight() {
         user_access_rights.value = []
         console.log(users_access_right.value)
         users_access_right.value.forEach((access_right) => {
             if (localStorage.username == access_right.username) {
-                console.log("nombre d'élements : ", access_right.accessRights.length)
+                console.log("nombre d'élements : ", number_of_access_right(access_right))
                 access_right.accessRights.forEach(access_right => {
                     console.log(access_right)
                     user_access_rights.value.push(access_right.accessRight)
