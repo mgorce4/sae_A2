@@ -17,7 +17,7 @@
         if (localStorage.getItem('access_rights')) {
             try {
                 user_access_rights.value = JSON.parse(localStorage.getItem('access_rights'));
-            } catch(e) {
+            } catch {
                 localStorage.removeItem('access_rights')
             }
         }
@@ -34,37 +34,45 @@
         }).filter(user => user.accessRights.length > 0)
     })
 
-    let username = null
-    let password = null
+    const username = ref('')
+    const password = ref('')
+    const loginError = ref(false)
+
     function addItem() {
-        verifyUser(username, password)
+        loginError.value = false
+        verifyUser(username.value, password.value)
 
         const accessRights = JSON.parse(localStorage.getItem('access_rights'))
         console.log(accessRights)
         if (accessRights && accessRights.length === 1) {
             redirect(accessRights[0])
+        } else if (accessRights && accessRights.length > 1) {
+            // Multiple access rights - could show a selection menu
+            console.log("User has multiple access rights:", accessRights)
+            // For now, redirect to the first one
+            redirect(accessRights[0])
         }
-
-        // set variables back to null
-        username = null
-        password = null
     }
 
     function is_username_and_password_ok(username, user, password) {
-      return username == user.username && password == user.password
+      return username === user.username && password === user.password
     }
 
     function verifyUser(username, password) {
-        users.value.forEach((user) => {
-            if (is_username_and_password_ok(username, user, password)) {
-                localStorage.username = username
-                localStorage.password = password
-                console.log("Utilisateur : ", user.username)
-                verifyAccessRight()
-            } else {
-                console.log("Utilisateur non trouvé")
-            }
-        });
+        const user = users.value.find((user) => is_username_and_password_ok(username, user, password))
+
+        if (user) {
+            localStorage.username = username
+            localStorage.password = password
+            console.log("Utilisateur : ", user.username)
+            verifyAccessRight()
+        } else {
+            console.log("Utilisateur non trouvé")
+            loginError.value = true
+            localStorage.removeItem('username')
+            localStorage.removeItem('password')
+            localStorage.removeItem('access_rights')
+        }
     }
 
     function number_of_access_right(access_right) {
@@ -75,7 +83,7 @@
         user_access_rights.value = []
         console.log(users_access_right.value)
         users_access_right.value.forEach((access_right) => {
-            if (localStorage.username == access_right.username) {
+            if (localStorage.username === access_right.username) {
                 console.log("nombre d'élements : ", number_of_access_right(access_right))
                 access_right.accessRights.forEach(access_right => {
                     console.log(access_right)
@@ -92,17 +100,17 @@
         switch (access_right) {
             case 1:
                 status.value = "Professeur"
-                document.location.href='/teacher_dashboard'
+                window.location.hash = '#/teacher_dashboard'
                 console.log("Toi, tu vas dans Professeur")
                 break;
             case 2:
                 status.value = "Administration"
-                document.location.href='/dashboard-administration'
+                window.location.hash = '#/dashboard-administration'
                 console.log("Toi, tu vas dans Administration")
                 break;
             case 3:
                 status.value = "Admin"
-                document.location.href='/'
+                window.location.hash = '#/'
                 console.log("Toi, tu vas dans Admin")
                 break;
         }
@@ -115,9 +123,10 @@
             <img id="profile-picture" src="./../../media/no_profile_picture.webp" alt="profile-picture">
             <div id="login-fill-infos">
                 <label class="label-login">Identifiant</label>
-                <input class="input-login" for="username" type="text" required v-model="username">
+                <input class="input-login" type="text" required v-model="username">
                 <label class="label-login">Mot de passe </label>
-                <input class="input-login" for="password" type="password" required v-model="password">
+                <input class="input-login" type="password" required v-model="password">
+                <p v-if="loginError" class="login-error">Identifiant ou mot de passe incorrect</p>
             </div>
         </div>
         <div id="btn-login" class="container-fluid spe">
@@ -166,5 +175,12 @@
     width: 100%;
     height: 25%;
     align-items: start;
+}
+
+.login-error {
+    color: #ff6b6b;
+    font-size: 1vw;
+    margin-top: 0.5vw;
+    font-weight: bold;
 }
 </style>
