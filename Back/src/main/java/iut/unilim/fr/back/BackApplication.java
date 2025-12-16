@@ -1,5 +1,6 @@
 package iut.unilim.fr.back;
 
+import iut.unilim.fr.back.controllerBack.PdfController;
 import iut.unilim.fr.back.service.ResourceGetterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -18,6 +19,9 @@ public class BackApplication implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         resourceGetterService.setValuesFromRessource("R1.01");
+        PdfController pdfController = new PdfController();
+
+        pdfController.generatePdf(resourceGetterService);
     }
 
 }

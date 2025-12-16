@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 
 import static com.itextpdf.text.List.UNORDERED;
+import static iut.unilim.fr.back.controllerBack.LogController.writeInLog;
 
 public class PdfController {
     private final BaseColor COL_BLEU_FOND = new BaseColor(59, 66, 117);
@@ -250,9 +251,9 @@ public class PdfController {
             document.add(suiviRessourcesTable);
             document.close();
 
-            System.out.println("PDF généré !");
+            writeInLog("{User} Create a pdf for Ressource Sheet");
         } catch (Exception e) {
-            e.printStackTrace();
+            writeInLog(e.getMessage());
         }
     }
 

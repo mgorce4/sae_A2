@@ -59,21 +59,22 @@ public class ResourceGetterService {
     }
 
     private void initializePlaceHolderValues() {
-        String PLACEHOLDER = "placeholder";
+        String PLACEHOLDER = "No resource for that category";
+        String PLACEHOLDER_TITLE = "None";
         competences.add(PLACEHOLDER);
         saes.add(PLACEHOLDER);
         modalities.add(PLACEHOLDER);
 
         for (int i=0; i<4; i++) {
-            hoursPN.add(i);
-            hoursStudent.add(i);
+            hoursPN.add(-1);
+            hoursStudent.add(-1);
         }
 
-        ref = PLACEHOLDER;
-        nResource = PLACEHOLDER;
-        refUE = PLACEHOLDER;
-        profRef = PLACEHOLDER;
-        labelResource = PLACEHOLDER;
+        ref = PLACEHOLDER_TITLE;
+        nResource = PLACEHOLDER_TITLE;
+        refUE = PLACEHOLDER_TITLE;
+        profRef = PLACEHOLDER_TITLE;
+        labelResource = PLACEHOLDER_TITLE;
         objectiveContent = PLACEHOLDER;
         keyWords = PLACEHOLDER;
         pedagoContentCm = PLACEHOLDER;
@@ -110,7 +111,8 @@ public class ResourceGetterService {
                     + "label : " + label + "\n");
 
             ref = ressourceName;
-            nResource = resource.getLabel(); // TODO : Changer pour la reference de la ressource ( 1.10... )
+            String resC = resource.getLabel().split(" ")[0];
+            nResource = resC.split("R")[1];// TODO : Changer pour la reference de la ressource ( 1.10... ) -> Should work
             Boolean isMultiCompetences = resource.getDiffMultiCompetences();
             if (!isMultiCompetences) {
                 UeCoefficient ueCoefficient = resource.getUeCoefficient();
@@ -118,12 +120,10 @@ public class ResourceGetterService {
                 String labelUe = ue.getLabel().split(" ")[0];
                 refUE = labelUe;
 
-                System.out.println(labelUe);
                 // TODO: PN -> competences.add();
             } else {
                 //todo : multi comp
             }
-            // TODO: Prof referent
             UserSyncadia userReferent = resourceSheet.getUser();
             profRef = userReferent.getFirstname() + " " + userReferent.getLastname();
             labelResource = resource.getLabel();
@@ -145,6 +145,19 @@ public class ResourceGetterService {
             hoursStudent.add(hoursTd);
             hoursStudent.add(hoursTp);
             hoursStudent.add(hoursTp + hoursTd +  hoursCM);
+
+            PedagogicalContent pedagoContent = resourceSheet.getPedagogicalContent();
+            pedagoContentCm = pedagoContent.getCm();
+            pedagoContentTd = pedagoContent.getTd();
+            pedagoContentTp = pedagoContent.getTp();
+
+            RessourceTracking ressourceTracking = resourceSheet.getRessourceTracking();
+            studentFeedback = ressourceTracking.getStudentFeedback();
+            pedagoTeamFeedback = ressourceTracking.getPedagogicalFeedback();
+            improvements = ressourceTracking.getImprovementSuggestions();
+
+            writeInLog("Get from database :\n"
+                + "Ressource [" + labelResource + "; " + nResource + "; " + refUE + "; " + profRef + "; " + "], saes[ " + Arrays.toString(ressourceSheetSaes) + "], terms[ " + modalities.toString() + "] hoursStudent[ " + hoursStudent.toString() +"], pedagoContent[" + pedagoContentCm + "; " + pedagoContentTd + "; " + pedagoContentTp + "], feedBack[" + studentFeedback + "; " +pedagoTeamFeedback + "; " + improvements+ "]\n");
         } else {
             writeInLog("Rien");
         }
