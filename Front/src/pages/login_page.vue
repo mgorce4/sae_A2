@@ -37,9 +37,13 @@
     let username = null
     let password = null
     function addItem() {
-        localStorage.access_rights = null
-
         verifyUser(username, password)
+
+        const accessRights = JSON.parse(localStorage.getItem('access_rights'))
+        console.log(accessRights)
+        if (accessRights && accessRights.length === 1) {
+            redirect(accessRights[0])
+        }
 
         // set variables back to null
         username = null
@@ -81,6 +85,27 @@
         });
         const parsed = JSON.stringify(user_access_rights.value)
         localStorage.setItem('access_rights', parsed)
+    }
+
+    function redirect(access_right) {
+        console.log(access_right)
+        switch (access_right) {
+            case 1:
+                status.value = "Professeur"
+                document.location.href='#/dashboard-professeur'
+                console.log("Toi, tu vas dans Professeur")
+                break;
+            case 2:
+                status.value = "Administration"
+                document.location.href='#/dashboard-administration'
+                console.log("Toi, tu vas dans Administration")
+                break;
+            case 3:
+                status.value = "Admin"
+                document.location.href='#/'
+                console.log("Toi, tu vas dans Admin")
+                break;
+        }
     }
 </script>
 
