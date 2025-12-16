@@ -1,14 +1,16 @@
 package iut.unilim.fr.back.service;
 
-import iut.unilim.fr.back.entity.Ressource;
-import iut.unilim.fr.back.entity.UE;
-import iut.unilim.fr.back.entity.UeCoefficient;
+import iut.unilim.fr.back.entity.*;
+import iut.unilim.fr.back.repository.HoursPerStudentRepository;
 import iut.unilim.fr.back.repository.RessourceRepository;
+import iut.unilim.fr.back.repository.RessourceSheetRepository;
+import iut.unilim.fr.back.users.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +20,8 @@ import static iut.unilim.fr.back.controllerBack.LogController.writeInLog;
 public class ResourceGetterService {
     @Autowired
     private RessourceRepository ressourceRepository;
+    @Autowired
+    private RessourceSheetRepository  ressourceSheetRepository;
 
     private String ref;
     private String nResource;
@@ -27,7 +31,6 @@ public class ResourceGetterService {
 
     private String objectiveContent;
     private List<String> competences;
-    private List<String> criticalLearning;
 
     private List<String> saes;
     private String keyWords;
@@ -46,7 +49,6 @@ public class ResourceGetterService {
 
     public ResourceGetterService() {
         competences = new ArrayList<>();
-        criticalLearning = new ArrayList<>();
         saes = new ArrayList<>();
         modalities = new ArrayList<>();
 
@@ -59,7 +61,6 @@ public class ResourceGetterService {
     private void initializePlaceHolderValues() {
         String PLACEHOLDER = "placeholder";
         competences.add(PLACEHOLDER);
-        criticalLearning.add(PLACEHOLDER);
         saes.add(PLACEHOLDER);
         modalities.add(PLACEHOLDER);
 
@@ -86,13 +87,20 @@ public class ResourceGetterService {
 
     @Transactional
     public void setValuesFromRessource(String ressourceName) {
+        Optional<RessourceSheet> resultResourceSheet = null;
         Long id;
         String label;
 
-        Optional<Ressource> resultat = ressourceRepository.findFirstByLabelStartingWith(ressourceName + " ");
+        Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(ressourceName + " ");
 
-        if (resultat.isPresent()) {
-            Ressource resource = resultat.get();
+        if (resultResource.isPresent()) {
+            resultResourceSheet = ressourceSheetRepository.findFirstByRessource_IdRessource(resultResource.get().getIdRessource());
+        }
+
+        if (resultResource.isPresent() && resultResourceSheet.isPresent()) {
+            Ressource resource = resultResource.get();
+            RessourceSheet resourceSheet = resultResourceSheet.get();
+            HoursPerStudent hoursPerStudent = resource.getHoursPerStudent();
 
             id = resource.getIdRessource();
             label = resource.getLabel();
@@ -107,16 +115,34 @@ public class ResourceGetterService {
             if (!isMultiCompetences) {
                 UeCoefficient ueCoefficient = resource.getUeCoefficient();
                 UE ue = ueCoefficient.getUe();
-                String labelUe =  ue.getLabel().split(" ")[1];
+                String labelUe = ue.getLabel().split(" ")[0];
                 refUE = labelUe;
 
                 System.out.println(labelUe);
-            }else {
-                //todo
+                // TODO: PN -> competences.add();
+            } else {
+                //todo : multi comp
             }
+            // TODO: Prof referent
+            UserSyncadia userReferent = resourceSheet.getUser();
+            profRef = userReferent.getFirstname() + " " + userReferent.getLastname();
+            labelResource = resource.getLabel();
 
+            String[] ressourceSheetSaes = resourceSheet.getSae().split(",");
+            saes.addAll(Arrays.asList(ressourceSheetSaes));
+            // TODO: PN -> keyWord
+            // TODO: modalites -> Terms dans la BDD
+            Integer hoursCM = hoursPerStudent.getCm();
+            Integer hoursTd  = hoursPerStudent.getTd();
+            Integer hoursTp  = hoursPerStudent.getTp();
+            hoursStudent.clear();
+            hoursStudent.add(hoursCM);
+            hoursStudent.add(hoursTd);
+            hoursStudent.add(hoursTp);
+            hoursStudent.add(hoursTp + hoursTd +  hoursCM);
+        } else {
+            writeInLog("Rien");
         }
-        else {writeInLog("Rien");}
     }
 
     public String getRef() {
@@ -139,9 +165,6 @@ public class ResourceGetterService {
     }
     public List<String> getCompetences() {
         return competences;
-    }
-    public List<String> getCriticalLearning() {
-        return criticalLearning;
     }
     public List<String> getSaes() {
         return saes;
