@@ -6,6 +6,7 @@
   import NotFound from './pages/not_found.vue'
   import DsbrProf from './pages/teacher_dashboard.vue'
   import FormUE from './pages/form_mccc_UE.vue'
+  import FormRessourceSheet from './pages/ressource_sheet_form.vue'
 
 
   const routes = {
@@ -13,7 +14,8 @@
     '/dashboard-administration': AdministrationDashboard,
     '/dashboard-professeur': DsbrProf,
     '/mccc-select-form': MCCCSelectForm,
-    '/form-mccc-UE': FormUE
+    '/form-mccc-UE': FormUE,
+    '/form-ressource-sheet': FormRessourceSheet
   }
 
   const currentPath = ref(window.location.hash)
@@ -33,6 +35,7 @@
   <a href="#/dashboard-administration">- dashboard administration -</a>
   <a href="#/dashboard-professeur">- dashboard professeur -</a>
   <a href="#/mccc-select-form">- Sélection formulaires MCCC -</a>
+  <a href="#/form-ressource-sheet">- Formulaire ressource sheet -</a>
   <component :is="currentView" />
   <footer-application/>
 </template>
