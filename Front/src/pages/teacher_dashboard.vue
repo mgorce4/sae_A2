@@ -23,7 +23,7 @@
         <div id="forScrollBar" style="overflow-y: scroll; margin: 1vw; height: 24vw;">
             <h1 id="title">Vos ressources : </h1>
             <div id="divSheets" >
-                <button id="sheets" onclick="" v-for="u in users" :key="u.idUser">
+                <button id="sheets" onclick="document.location.href='#/form-ressource-sheet'" v-for="u in users" :key="u.idUser">
                     <p>{{ u.name}}</p>
                 </button>
             </div>
