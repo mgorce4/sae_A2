@@ -27,7 +27,7 @@
 <template>
     <div id="ressources" >
         <div id="forScrollBar" style="overflow-y: scroll; margin: 1vw; height: 24vw;">
-            <h1 id="title">Vos ressources : </h1>
+            <p id="title">Vos ressources : </p>
             <div id="divSheets" >
                 <button id="sheets" @click="goToRessourceSheet(u.idRessourceSheet)" v-for="u in users" :key="u.idRessourceSheet">
                     <p>{{ u.name}}</p>

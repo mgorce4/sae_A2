@@ -8,7 +8,6 @@
   import FormUE from './pages/form_mccc_UE.vue'
   import FormRessourceSheet from './pages/ressource_sheet_form.vue'
 
-
   const routes = {
     '/': Login,
     '/dashboard-administration': AdministrationDashboard,
@@ -34,11 +33,8 @@
 
 <template>
   <header-application/>
-  <a href="#/">- Login -</a>
-  <a href="#/dashboard-administration">- dashboard administration -</a>
-  <a href="#/teacher_dashboard">- dashboard professeur -</a>
-  <a href="#/mccc-select-form">- Sélection formulaires MCCC -</a>
-  <a href="#/form-ressource-sheet">- Formulaire ressource sheet -</a>
   <component :is="currentView" />
   <footer-application/>
 </template>
+
+

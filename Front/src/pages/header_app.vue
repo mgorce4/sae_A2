@@ -2,7 +2,7 @@
     import { status } from '../main'
 
     import { userName} from '../main'
-    userName.value =""
+    userName.value ="patate"
 </script>
 
 <template>
@@ -13,15 +13,15 @@
                     <img src="./../../media/unilim_logo.webp" style="margin: 0; padding: 0; width: 100%; height: 100%;" alt="logo">
                 </a>
                 <div id="dividing-line"></div>
-                <h1 id="app-name">Syncadia</h1>
+                <p id="app-name">Syncadia</p>
             </div>
             <div v-show="status" id="user-name-and-pp" class="container-fluid">
-                <h2 id="user-name">{{userName}}</h2>
+                <p id="user-name">{{userName}}</p>
                 <img id="profile-picture" src="./../../media/no_profile_picture.webp" alt="profile_picture">
             </div>
         </div>
         <div id="red-rect" class="container-fluid spb">
-            <h2 v-show="status" id="user-status">Statut : {{ status }}</h2>
+            <p v-show="status" id="user-status">Statut : {{ status }}</p>
             <a v-show="status" id="btn-disconnect" href="#/">
                 Déconnexion
             </a>
@@ -64,9 +64,11 @@
 }
 
 #app-name {
-    font-size: 3vw;
+    font-size: 2.8vw;
     height: fit-content;
     margin: 0 0 0 2.5vw;
+    color: rgb(75, 87, 95);
+    font-weight: bold;
 }
 
 #user-name-and-pp {
@@ -90,7 +92,7 @@
 #red-rect {
     background-color: #B51621;
     width: 94%;
-    height: 30%;
+    height: 3vw;
     padding: 0 3%;
 }
 
@@ -98,15 +100,19 @@
     font-size: 1.5vw;
     color: #FFFFFF;
     text-shadow: 0 0 5px black;
+    padding-top: 0;
+    justify-content: center;
 }
 
 #btn-disconnect {
-    height: fit-content;
+    height: 1.5vw;
+    width: 7vw;
     padding: 0.2vw;
     border-width: 0.15vw;
     border-radius: 0.5vw;
     font-size: 1vw;
     text-decoration: none;
+    align-content: center; /*center the text in the button */
     text-align: center;
     background-color: #4B575F;
     color: #FFFFFF;
