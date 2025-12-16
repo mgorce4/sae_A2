@@ -1,6 +1,8 @@
 package iut.unilim.fr.back.service;
 
 import iut.unilim.fr.back.entity.Ressource;
+import iut.unilim.fr.back.entity.UE;
+import iut.unilim.fr.back.entity.UeCoefficient;
 import iut.unilim.fr.back.repository.RessourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,16 +11,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static iut.unilim.fr.back.controllerBack.LogController.writeInLog;
+
 @Service
 public class ResourceGetterService {
     @Autowired
     private RessourceRepository ressourceRepository;
 
     private String ref;
-    private String nRessource;
+    private String nResource;
     private String refUE;
     private String profRef;
-    private String labelRessource;
+    private String labelResource;
 
     private String objectiveContent;
     private List<String> competences;
@@ -64,10 +68,10 @@ public class ResourceGetterService {
         }
 
         ref = PLACEHOLDER;
-        nRessource = PLACEHOLDER;
+        nResource = PLACEHOLDER;
         refUE = PLACEHOLDER;
         profRef = PLACEHOLDER;
-        labelRessource = PLACEHOLDER;
+        labelResource = PLACEHOLDER;
         objectiveContent = PLACEHOLDER;
         keyWords = PLACEHOLDER;
         pedagoContentCm = PLACEHOLDER;
@@ -86,29 +90,38 @@ public class ResourceGetterService {
         Optional<Ressource> resultat = ressourceRepository.findFirstByLabelStartingWith(ressourceName + " ");
 
         if (resultat.isPresent()) {
-            Ressource ressource = resultat.get();
+            Ressource resource = resultat.get();
 
-            id = ressource.getIdRessource();
-            label = ressource.getLabel();
+            id = resource.getIdRessource();
+            label = resource.getLabel();
 
             writeInLog("Get ressource \n"
                     + "id : " + id + "\n"
                     + "label : " + label + "\n");
 
+            ref = ressourceName;
+            nResource = resource.getLabel(); // TODO : Changer pour la reference de la ressource ( 1.10... )
+            Boolean isMultiCompetences = resource.getDiffMultiCompetences();
+            if (!isMultiCompetences) {
+                UeCoefficient ueCoefficient = resource.getUeCoefficient();
+                UE ue = ueCoefficient.getUe();
+                String labelUe =  ue.getLabel().split(" ")[1];
+                refUE = labelUe;
+
+                System.out.println(labelUe);
+            }else {
+                //todo
+            }
+
         }
         else {writeInLog("Rien");}
-    }
-
-    public void writeInLog(String text) {
-        // TODO Fichier de log
-        System.out.println(text);
     }
 
     public String getRef() {
         return ref;
     }
     public String getNbRessource() {
-        return nRessource;
+        return nResource;
     }
     public String getRefUE() {
         return refUE;
@@ -116,8 +129,8 @@ public class ResourceGetterService {
     public String getProfRef() {
         return profRef;
     }
-    public String getLabelRessource() {
-        return labelRessource;
+    public String getLabelResource() {
+        return labelResource;
     }
     public String getObjectiveContent() {
         return objectiveContent;

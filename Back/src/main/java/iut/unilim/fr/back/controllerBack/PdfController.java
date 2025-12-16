@@ -45,7 +45,7 @@ public class PdfController {
             Paragraph refUE = new Paragraph(res.getRefUE(), font);
             Paragraph refRessource = new Paragraph(res.getRef(), font);
 
-            Paragraph titreRessource = new Paragraph(res.getLabelRessource(), fontTitle);
+            Paragraph titreRessource = new Paragraph(res.getLabelResource(), fontTitle);
             Paragraph profReferent =  new Paragraph(res.getProfRef(), font);
 
             refUE.setLeading(0,2);
