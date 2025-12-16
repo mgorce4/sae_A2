@@ -1,16 +1,27 @@
 <script setup>
     import { status } from '../main.js'
-    import { ref, onMounted } from 'vue'
+    import { computed, ref, onMounted } from 'vue'
     import axios from 'axios'
 
     status.value = ''
 
     const users = ref([])
-    const acces_rights = ref([])
+    const access_rights = ref([])
 
     onMounted(async () => {
         axios.get('http://localhost:8080/api/users').then(response => (users.value = response.data))
-        axios.get('http://localhost:8080/api/access-rights').then(response => (acces_rights.value = response.data))
+        axios.get('http://localhost:8080/api/access-rights').then(response => (access_rights.value = response.data))
+    })
+    
+    const users_access_right = computed(() => {
+        // Join between users and access_rights where users.idUser = access_rights.idUser
+        return users.value.map((user) => {
+            const userRights = access_rights.value.filter((ar) => ar.idUser === user.idUser)
+            return {
+                ...user,
+                accessRights: userRights
+            }
+        }).filter(user => user.accessRights.length > 0)
     })
 
     let username = null
@@ -18,6 +29,10 @@
     function addItem() {
         localStorage.username = username
         localStorage.password = password
+
+        verifyUser()
+
+        // set variables back to null
         username = null
         password = null
     }
@@ -26,16 +41,29 @@
         users.value.forEach((user) => {
             if (localStorage.username == user.username && localStorage.password == user.password) {
                 console.log(user.username)
+                verifyAccessRight()
             } else {
                 console.log("Utilisateur non trouvé")
+            }
+        });
+    }
+
+    function verifyAccessRight() {
+        console.log(users_access_right.value)
+        users_access_right.value.forEach((access_right) => {
+            if (localStorage.username == access_right.username) {
+                console.log("nombre d'élements : ", access_right.accessRights.length)
+                access_right.accessRights.forEach(access_right => {
+                    console.log(access_right)
+                });
+                
+                localStorage.access_right = access_right.accessRights.accessRight
             }
         });
     }
 </script>
 
 <template>
-    <div>{{ users }}</div>
-    <div>{{ acces_rights }}</div>
     <form id="blue-rect" method="post" v-on:submit.prevent="addItem">
         <div id="login-top" class="container-fluid spe">
             <img id="profile-picture" src="./../../media/no_profile_picture.webp" alt="profile-picture">
@@ -51,7 +79,6 @@
             <input id="btn-connect-login" class="btn1" type="submit" value="Se connecter">
         </div>
     </form>
-    <button @click="verifyUser">verifier users dans console</button>
 </template>
 
 <style>
