@@ -19,14 +19,16 @@ public class HeaderAndFooter extends PdfPageEventHelper {
     private PdfTemplate totalPagesTemplate;
     Path imagePath = Paths.get("src/main/resources/img/unilim.jpg");
     private Image image;
+    private String reference;
 
-    public HeaderAndFooter() {
+    public HeaderAndFooter(String reference) {
         try {
             blackFont = FontFactory.getFont(baseFont, 11, BaseColor.BLACK);
             whiteFont = FontFactory.getFont(baseFont, 11, BaseColor.WHITE);
 
             this.image = Image.getInstance(imagePath.toAbsolutePath().toString());
             this.image.scaleToFit(100, 50);
+            this.reference = reference;
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -133,7 +135,7 @@ public class HeaderAndFooter extends PdfPageEventHelper {
         redHeaderTable.setTotalWidth(document.getPageSize().getWidth());
         redHeaderTable.setLockedWidth(true);
 
-        PdfPCell cellRef = new PdfPCell(new Phrase("Référence : ##-##-##", whiteFont));
+        PdfPCell cellRef = new PdfPCell(new Phrase("Référence : " + reference, whiteFont));
         styleCelluleRouge(cellRef);
         cellRef.setHorizontalAlignment(Element.ALIGN_LEFT);
         redHeaderTable.addCell(cellRef);
