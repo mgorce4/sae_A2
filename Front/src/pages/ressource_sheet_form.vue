@@ -4,16 +4,44 @@ import { status } from '../main'
 import { onMounted, ref, nextTick } from 'vue'
 
 status.value = "Professeur"
+
+/* Extract ID from hash URL parameters */
+const getQueryParam = (param) => {
+  const hash = window.location.hash
+  const queryString = hash.split('?')[1]
+  if (!queryString) return null
+  const params = new URLSearchParams(queryString)
+  return params.get(param)
+}
+
+const ressourceSheetId = ref(getQueryParam('id'))
+
 /* link with the API */
-const ressource_sheets = ref([])
+const ressourceSheet = ref(null)
+const ressource = ref(null)
+const ue = ref(null)
 
 onMounted(async () => {
-  /* get of the value for the ressource sheets from the DB */
-  try {
-    const response = await axios.get('http://localhost:8080/api/ressource-sheets')
-    ressource_sheets.value = response.data
-  } catch (error) {
-    console.error('Error fetching ressource sheets:', error)
+  /* get the specific ressource sheet from the DB using the ID */
+  if (ressourceSheetId.value) {
+    try {
+      const response = await axios.get(`http://localhost:8080/api/ressource-sheets/${ressourceSheetId.value}`)
+      ressourceSheet.value = response.data
+
+      // If the ressource sheet has a linked ressource, fetch its details
+      if (ressourceSheet.value.ressource) {
+        const ressourceResponse = await axios.get(`http://localhost:8080/api/ressources/${ressourceSheet.value.ressource.idRessource}`)
+        ressource.value = ressourceResponse.data
+
+        // If the ressource has a UE coefficient, fetch the UE details
+        if (ressource.value.ueCoefficient && ressource.value.ueCoefficient.ue) {
+          const ueResponse = await axios.get(`http://localhost:8080/api/eu/${ressource.value.ueCoefficient.ue.ueNumber}`)
+          ue.value = ueResponse.data
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching ressource sheet:', error)
+    }
   }
 
   // Wait for DOM to be fully rendered
@@ -45,19 +73,19 @@ onMounted(async () => {
     <div id="background_Form">
       <div class="header_Form">
         <p>Réf. UE : </p>
-        <p>###</p>
-        <h2>nom de la ressource</h2>
+        <p>{{ ue?.label || '###' }}</p>
+        <p class="title" >{{ ressourceSheet?.name || 'Nom de la ressource sheet' }}</p>
         <p>Dep : </p>
-        <p>###</p>
+        <p>{{ ressource?.apogeeCode || '###' }}</p>
       </div>
       <div class="ref_Section">
         <p>Réf. ressource : </p>
-        <p>###</p>
+        <p>{{ ressource?.label || '###' }}</p>
       </div>
       <div id="form">
-        <a class="accordion" id="dark_Bar" style="display: flex;">Compétences *</a>
+        <button class="accordion" id="dark_Bar">Compétences *</button>
         <div class="panel">
-
+          <p>{{ ressourceSheet?.competence || 'Aucune compétence renseignée' }}</p>
         </div>
       </div>
     </div>
@@ -70,6 +98,12 @@ onMounted(async () => {
   cursor: pointer;
   position: relative;
   padding-right: 2.5vw;
+  border: none;
+  outline: none;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  font-size: inherit;
 }
 
 .accordion::after {
@@ -126,9 +160,10 @@ onMounted(async () => {
   overflow-x: hidden;
   overflow-y: hidden;
   box-sizing: border-box;
+  padding-bottom: 1vw;
 }
 
-h2{
+.title{
   color: white;
   text-align: center;
   padding-top: 1vw;

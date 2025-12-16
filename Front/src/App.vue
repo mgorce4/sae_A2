@@ -25,7 +25,10 @@
   })
 
   const currentView = computed(() => {
-    return routes[currentPath.value.slice(1) || '/'] || NotFound
+    // Extract only the path part, ignoring query parameters
+    const pathWithoutHash = currentPath.value.slice(1) || '/'
+    const pathWithoutQuery = pathWithoutHash.split('?')[0]
+    return routes[pathWithoutQuery] || NotFound
   })
 </script>
 

@@ -6,8 +6,14 @@
     status.value = "Professeur"
 
     const users = ref([]) //get the data from database ressources-sheets
+
     onMounted(async () => {
-    axios.get('http://localhost:8080/api/ressource-sheets').then(response => (users.value = response.data))})
+        axios.get('http://localhost:8080/api/ressource-sheets').then(response => (users.value = response.data))
+    })
+
+    const goToRessourceSheet = (id) => {
+        window.location.hash = `/form-ressource-sheet?id=${id}`
+    }
 
     /*
     const name = ref([]) //to get the username from who's connected
@@ -23,7 +29,7 @@
         <div id="forScrollBar" style="overflow-y: scroll; margin: 1vw; height: 24vw;">
             <h1 id="title">Vos ressources : </h1>
             <div id="divSheets" >
-                <button id="sheets" onclick="document.location.href='#/form-ressource-sheet'" v-for="u in users" :key="u.idUser">
+                <button id="sheets" @click="goToRessourceSheet(u.idRessourceSheet)" v-for="u in users" :key="u.idRessourceSheet">
                     <p>{{ u.name}}</p>
                 </button>
             </div>
