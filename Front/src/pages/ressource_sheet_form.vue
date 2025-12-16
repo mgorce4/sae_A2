@@ -34,10 +34,8 @@ onMounted(async () => {
     });
   }
 })
-
-
-
 </script>
+
 <template>
   <div id="RessourceSheet">
     <div id="returnArrow">
