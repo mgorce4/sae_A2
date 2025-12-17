@@ -19,6 +19,9 @@
         }
     })
 
+    const numUE=ref('');
+
+
 </script>
 
 <template>
@@ -46,12 +49,12 @@
                         <label>Code apogee :</label>
                         <input type="text" id="fname" placeholder="...">
                     </div>
-                    <div>
+                    <div id="div_field_button">
                         <label>Intitulé de la compétence :</label>
                         <input type="text" id="fname" placeholder="...">
                         <input id="btn_cancel_UE" class="btn1" type="reset" value="Annuler">
                     </div>
-                    <div>
+                    <div id="div_field_button">
                         <label>Niveau de la compétence :</label>
                         <input type="text" id="fname" placeholder="...">
                         <input id="btn_save_UE" class="btn1" type="submit" value="Sauvegarder">
