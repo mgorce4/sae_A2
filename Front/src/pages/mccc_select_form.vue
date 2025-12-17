@@ -24,7 +24,7 @@ const afficherBoutons = ref([
                     <p class="status_display" v-show="!btn.show">{{ btn.status }}</p>
                     <div v-show="btn.show" class="container-fluid spe">
                         <button class="btn_form_acces" onclick="document.location.href='#/form-mccc-UE'">UE</button>
-                        <button class="btn_form_acces">Ressource</button>
+                        <button class="btn_form_acces" onclick="document.location.href='#/form-mccc-ressources'">Ressource</button>
                         <button class="btn_form_acces">SAÉ</button>
                     </div>
                 </div>
