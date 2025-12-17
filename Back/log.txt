@@ -7,3 +7,23 @@
 [17:12:2025 15:40:37:828] Attempt to get from database with resource name: R1.01
 -> R1.01 not found in resources tables
 [17:12:2025 15:40:37:835] {user} attempt to generate a resource sheet pdf, but no matches found for the resource name
+[17:12:2025 15:43:03:333] Could not get the resource sheet from the database because there is no resource with id = R1.01
+[17:12:2025 15:43:03:336] Attempt to get from database with resource name: R1.01
+-> R1.01 not found in resources tables
+[17:12:2025 15:43:03:347] {user} attempt to generate a resource sheet pdf, but no matches found for the resource name
+[17:12:2025 15:49:13:479] Could not get the resource sheet from the database because there is no resource with id = R1.01
+[17:12:2025 15:49:13:479] Attempt to get from database with resource name: R1.01
+-> R1.01 not found in resources tables
+[17:12:2025 15:49:13:493] {user} attempt to generate a resource sheet pdf, but no matches found for the resource name
+[17:12:2025 16:05:15:396] Could not get the resource sheet from the database because there is no resource with id = R1.01
+[17:12:2025 16:05:15:396] Attempt to get from database with resource name: R1.01
+-> R1.01 not found in resources tables
+[17:12:2025 16:05:15:409] {user} attempt to generate a resource sheet pdf, but no matches found for the resource name
+[17:12:2025 16:05:20:508] Could not get the resource sheet from the database because there is no resource with id = R1.01
+[17:12:2025 16:05:20:508] Attempt to get from database with resource name: R1.01
+-> R1.01 not found in resources tables
+[17:12:2025 16:05:20:508] {user} attempt to generate a resource sheet pdf, but no matches found for the resource name
+[17:12:2025 16:05:39:102] Could not get the resource sheet from the database because there is no resource with id = R1.01
+[17:12:2025 16:05:39:102] Attempt to get from database with resource name: R1.01
+-> R1.01 not found in resources tables
+[17:12:2025 16:05:39:118] {user} attempt to generate a resource sheet pdf, but no matches found for the resource name
