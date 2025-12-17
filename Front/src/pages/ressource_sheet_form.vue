@@ -115,6 +115,31 @@ onMounted(async () => {
           <p>SAE x</p>
         </label>
       </div>
+      <div>
+        <p>Mots clés</p>
+
+      </div>
+      <div>
+        <p>Modalités de mise en oeuvre : </p>
+      </div>
+      <div>
+        <p>Répartition de heures ( volume étudiant ) : </p>
+      </div>
+      <div>
+        <p>Contenu pédagogique : </p>
+      </div>
+      <div>
+        <p>Suivi de la ressource / module</p>
+        <div>
+          <p>Retour de l’équipe pédagogique et des acteurs impactés</p>
+          <p>Retour des étudiants</p>
+          <p>Amélioration(s) à mettre en oeuvre</p>
+        </div>
+      </div>
+      <div>
+        <button>Modifier</button>
+        <button>Sauvegarder</button>
+      </div>
     </div>
   </div>
 </template>
@@ -282,5 +307,4 @@ input:checked + .slider {
 input:checked + .slider::before {
   transform: translateX(24px);
 }
-
 </style>
