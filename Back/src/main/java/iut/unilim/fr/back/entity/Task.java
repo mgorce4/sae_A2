@@ -18,26 +18,22 @@ public class Task {
     @Column(nullable = false)
     private String description;
 
-    @Column(name = "firstDelivery")
-    private LocalDate firstDelivery;
-
-    @Column(name = "secondDelivery")
-    private LocalDate secondDelivery;
+    @Column
+    private LocalDate delivery;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_User")
-    @JsonIgnore // éviter les problèmes de chargement paresseux / sérialisation
+    @JsonIgnore
     private UserSyncadia user;
 
     public Task() {
     }
 
-    public Task(Long idTask, String name, String description, LocalDate firstDelivery, LocalDate secondDelivery, UserSyncadia user) {
+    public Task(Long idTask, String name, String description, LocalDate delivery, UserSyncadia user) {
         this.idTask = idTask;
         this.name = name;
         this.description = description;
-        this.firstDelivery = firstDelivery;
-        this.secondDelivery = secondDelivery;
+        this.delivery = delivery;
         this.user = user;
     }
 
@@ -65,20 +61,12 @@ public class Task {
         this.description = description;
     }
 
-    public LocalDate getFirstDelivery() {
-        return firstDelivery;
+    public LocalDate getDelivery() {
+        return delivery;
     }
 
-    public void setFirstDelivery(LocalDate firstDelivery) {
-        this.firstDelivery = firstDelivery;
-    }
-
-    public LocalDate getSecondDelivery() {
-        return secondDelivery;
-    }
-
-    public void setSecondDelivery(LocalDate secondDelivery) {
-        this.secondDelivery = secondDelivery;
+    public void setDelivery(LocalDate delivery) {
+        this.delivery = delivery;
     }
 
     public UserSyncadia getUser() {

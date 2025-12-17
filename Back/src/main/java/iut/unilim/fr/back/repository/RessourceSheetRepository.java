@@ -7,7 +7,6 @@ import java.util.List;
 
 @Repository
 public interface RessourceSheetRepository extends JpaRepository<RessourceSheet, Long> {
-    List<RessourceSheet> findByUser_IdUser(Long userId);
-    List<RessourceSheet> findByRessource_IdRessource(Long ressourceId);
+    List<RessourceSheet> findByResource_IdResource(Long resourceId);
 }
 

@@ -8,37 +8,37 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/ressource-trackings")
+@RequestMapping("/api/resource-trackings")
 @CrossOrigin(origins = "*")
-public class RessourceTrackingController {
+public class ResourceTrackingController {
     @Autowired
-    private RessourceTrackingService ressourceTrackingService;
+    private RessourceTrackingService resourceTrackingService;
 
     @GetMapping
-    public List<RessourceTracking> getAllRessourceTrackings() {
-        return ressourceTrackingService.getAllRessourceTrackings();
+    public List<RessourceTracking> getAllResourceTrackings() {
+        return resourceTrackingService.getAllRessourceTrackings();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<RessourceTracking> getRessourceTrackingById(@PathVariable Long id) {
-        return ressourceTrackingService.getRessourceTrackingById(id)
+    public ResponseEntity<RessourceTracking> getResourceTrackingById(@PathVariable Long id) {
+        return resourceTrackingService.getRessourceTrackingById(id)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public RessourceTracking createRessourceTracking(@RequestBody RessourceTracking ressourceTracking) {
-        return ressourceTrackingService.createRessourceTracking(ressourceTracking);
+    public RessourceTracking createResourceTracking(@RequestBody RessourceTracking resourceTracking) {
+        return resourceTrackingService.createRessourceTracking(resourceTracking);
     }
 
     @PutMapping("/{id}")
-    public RessourceTracking updateRessourceTracking(@PathVariable Long id, @RequestBody RessourceTracking ressourceTracking) {
-        return ressourceTrackingService.updateRessourceTracking(id, ressourceTracking);
+    public RessourceTracking updateResourceTracking(@PathVariable Long id, @RequestBody RessourceTracking resourceTracking) {
+        return resourceTrackingService.updateRessourceTracking(id, resourceTracking);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRessourceTracking(@PathVariable Long id) {
-        ressourceTrackingService.deleteRessourceTracking(id);
+    public ResponseEntity<Void> deleteResourceTracking(@PathVariable Long id) {
+        resourceTrackingService.deleteRessourceTracking(id);
         return ResponseEntity.noContent().build();
     }
 }

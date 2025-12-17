@@ -3,12 +3,12 @@ package iut.unilim.fr.back.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "RESSOURCE_TRACKING")
+@Table(name = "RESOURCE_TRACKING")
 public class RessourceTracking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_RessourceTracking")
-    private Long idRessourceTracking;
+    @Column(name = "id_ResourceTracking")
+    private Long idResourceTracking;
 
     @Column(name = "pedagogicalFeedback", columnDefinition = "TEXT")
     private String pedagogicalFeedback;
@@ -19,22 +19,27 @@ public class RessourceTracking {
     @Column(name = "improvementSuggestions", columnDefinition = "TEXT")
     private String improvementSuggestions;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_ResourceSheet")
+    private RessourceSheet resourceSheet;
+
     public RessourceTracking() {
     }
 
-    public RessourceTracking(Long idRessourceTracking, String pedagogicalFeedback, String studentFeedback, String improvementSuggestions) {
-        this.idRessourceTracking = idRessourceTracking;
+    public RessourceTracking(Long idResourceTracking, String pedagogicalFeedback, String studentFeedback, String improvementSuggestions, RessourceSheet resourceSheet) {
+        this.idResourceTracking = idResourceTracking;
         this.pedagogicalFeedback = pedagogicalFeedback;
         this.studentFeedback = studentFeedback;
         this.improvementSuggestions = improvementSuggestions;
+        this.resourceSheet = resourceSheet;
     }
 
-    public Long getIdRessourceTracking() {
-        return idRessourceTracking;
+    public Long getIdResourceTracking() {
+        return idResourceTracking;
     }
 
-    public void setIdRessourceTracking(Long idRessourceTracking) {
-        this.idRessourceTracking = idRessourceTracking;
+    public void setIdResourceTracking(Long idResourceTracking) {
+        this.idResourceTracking = idResourceTracking;
     }
 
     public String getPedagogicalFeedback() {
@@ -59,5 +64,13 @@ public class RessourceTracking {
 
     public void setImprovementSuggestions(String improvementSuggestions) {
         this.improvementSuggestions = improvementSuggestions;
+    }
+
+    public RessourceSheet getResourceSheet() {
+        return resourceSheet;
+    }
+
+    public void setResourceSheet(RessourceSheet resourceSheet) {
+        this.resourceSheet = resourceSheet;
     }
 }
