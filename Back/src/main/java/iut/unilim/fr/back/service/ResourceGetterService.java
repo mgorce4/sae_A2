@@ -1,10 +1,7 @@
 package iut.unilim.fr.back.service;
 
 import iut.unilim.fr.back.entity.*;
-import iut.unilim.fr.back.repository.HoursPerStudentRepository;
-import iut.unilim.fr.back.repository.RessourceRepository;
-import iut.unilim.fr.back.repository.RessourceSheetRepository;
-import iut.unilim.fr.back.repository.SAELinkResourceRepository;
+import iut.unilim.fr.back.repository.*;
 import iut.unilim.fr.back.users.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +22,8 @@ public class ResourceGetterService {
     private RessourceSheetRepository  ressourceSheetRepository;
     @Autowired
     private SAELinkResourceRepository saeLinkResourceRepository;
+    @Autowired
+    private MainTeacherForResourceRepository mainTeacherForResourceRepository;
 
     private String fileName = "";
 
@@ -111,6 +110,7 @@ public class ResourceGetterService {
             id = resource.getIdResource();
             label = resource.getLabel();
 
+            List<MainTeacherForResource> mainTeacherForResource = mainTeacherForResourceRepository.findByIdResource(id);
             List<SAELinkResource> SAELinkResources = saeLinkResourceRepository.findByIdResource(id);
 
             writeInLog("Get ressource \n"
@@ -130,8 +130,8 @@ public class ResourceGetterService {
             }
             
             // User and SAE info removed as they're not in the new schema
-
-            profRef = ""; // TODO: Get from MAIN_TEACHER_FOR_RESOURCE or TEACHERS_FOR_RESOURCE
+            UserSyncadia referent = mainTeacherForResource.getFirst().getUser();
+            profRef = referent.getFirstname() + " " + referent.getLastname();
             labelResource = resource.getLabel();
 
             saes.clear();
@@ -163,7 +163,7 @@ public class ResourceGetterService {
             pedagoTeamFeedback = "";
             improvements = "";
 
-            writeInLog("Get from database :\n"
+            writeInLog("Get from database :\n" //TODO : Back log sur toutes les infos
                 + "- Ressource (" + labelResource + "; " + nResource + "; " + refUE + "; " + profRef + ";" + ")\n" +
                     "- saes(TBD)\n" +
                     "- terms(" + modalities.toString() + ")\n" +
