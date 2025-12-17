@@ -5,7 +5,7 @@
     status.value = "Administration"
     
     onMounted(() => {
-        const acc = document.getElementsByClassName("accordion");
+        const acc = document.getElementsByClassName("accordionUE");
         for (let i = 0; i < acc.length; i++) {
             acc[i].addEventListener("click", function() {
                 this.classList.toggle("active");
@@ -18,28 +18,53 @@
             });
         }
     })
+
+    /*const CM = ref('')
+    const TD = ref('')
+    const TP = ref('')
+    const Projet = ref('')
+
+    const list_of_lesson = ["CM", "TD", "TP", "Projet"]*/
+
 </script>
 
 <template>
     <div id="UE"> 
-        <div id="returnArrow">
-            <button  id="backArrow" onclick="document.location.href='#/mccc-select-form'">←</button>
+        <div id="return_arrow">
+            <button id="back_arrow" onclick="document.location.href='#/mccc-select-form'">←</button>
             <p>Retour</p>
         </div>
-        <div id="backgroundForm">
+        <div id="background_form_UE">
             <div id="form">
-                <div id="headerUE">
+                <div id="header_UE">
                     <p id="title">Unités d’enseignement</p>
                 </div>
-                <div id="darkBar">
-                    <h2>Ajouter une UE</h2>
-                    <button id="buttonMore">+</button>
+                <div id="dark_bar">
+                    <p>Ajouter une UE</p>
+                    <button id="button_more">+</button>
                 </div>
-                <a class="accordion" id="darkBar">Ajout d'une UE :</a>
-                <div class="panel">
+                <a class="accordion_UE" id="dark_bar">Ajout d'une UE :</a>
+                <div class="panel_UE">
                     <div>
-                        <p>Numéro de l'UE</p>
-                        <v-text-field></v-text-field>
+                        <label>Numéro de l'UE :</label>
+                        <input type="text" id="fname" placeholder="...">
+                    </div>
+                    <div>
+                        <label>Code apogee :</label>
+                        <input type="text" id="fname" placeholder="...">
+                    </div>
+                    <div>
+                        <label>Intitulé de la compétence :</label>
+                        <input type="text" id="fname" placeholder="...">
+                        <input id="btn_cancel_UE" class="btn1" type="reset" value="Annuler">
+                    </div>
+                    <div>
+                        <label>Niveau de la compétence :</label>
+                        <input type="text" id="fname" placeholder="...">
+                        <input id="btn_save_UE" class="btn1" type="submit" value="Sauvegarder">
+                    </div>
+
+                    <div id="btn_UE" class="container-fluid spe">
                     </div>
                 </div>
             </div>
@@ -53,32 +78,36 @@
   justify-content: center;
 }
 
-#returnArrow{
+#return_arrow{
     display: flex;
     align-items: center;
 }
 
-#returnArrow > p{
+#return_arrow > p{
     font-size: 1.5vw;
     font-weight: bold;
     color: black;
     margin-left: 1.5vw;
 }
 
-#backgroundForm{
-  height: auto;
-  background-color: rgb(61, 67, 117);
-  border-radius: 15px;
-  overflow-x: hidden;
-  overflow-y: hidden;
-  box-sizing: border-box;
+#background_form_UE{
+    height: auto;
+    background-color: rgb(61, 67, 117);
+    border-radius: 15px;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    box-sizing: border-box;
+    padding-bottom: 1vw;
 }
 
-#headerUE{
+#header_UE{
     background-color: rgb(44,49,88); 
     height: auto;
     border-radius: 10px;
     margin: 1vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #title{
@@ -87,22 +116,22 @@
     padding-top: 0.5vw;
     padding-bottom: 0.5vw;
     font-weight: lighter;
-    font-size: 2.3vw;
+    font-size: 2.1vw;
+    margin: 0;
 }
 
-.accordion, h2{
+.accordionUE, #dark_bar >p{
     margin: 0vw;
     font-weight: lighter;
     font-size: 1.05vw;
 }
 
-.accordion {
+.accordion_UE {
     cursor: pointer;
     position: relative;
-    padding-right: 2.5vw;
 }
 
-.accordion::after {
+.accordion_UE::after {
     content: '^';
     position: absolute;
     right: 1vw;
@@ -110,7 +139,7 @@
     font-size: 0.9vw;
 }
 
-.accordion.active::after {
+.accordion_UE.active::after {
     transform: rotate(180deg);
 }
 
@@ -135,7 +164,7 @@
     border-radius: 10px;
 }
 
-#darkBar{
+#dark_bar{
     color: white;
     height: auto;
     border-radius: 10px;
@@ -147,7 +176,7 @@
     align-items: center;
 }
 
-#buttonMore{
+#button_more{
     border: 2px solid white;
     background-color: rgb(32,32,32);
     height: 2vw;
@@ -164,12 +193,12 @@
     transition: all 0.3s ease;
 }
 
-#buttonMore:hover {
+#button_more:hover {
   background-color: rgb(50,50,50);
   transform: scale(1.1);
 }
 
-.panel {
+.panel_UE {
   width: 90%;
   justify-self: center;
   padding: 0 18px;
@@ -181,11 +210,11 @@
   border-bottom-right-radius: 15px;
   color: white;
   margin-top: 0;
+  padding-top: 0.1vw;
 }
 
-.panel p {
+.panel_UE > p {
   margin-top: 0;
   padding-top: 1vw;
 }
-
 </style>

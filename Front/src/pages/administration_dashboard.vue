@@ -53,8 +53,6 @@ const filtered_ressource_sheets = computed(() => {
 </script>
 
 <template>
-  <p>dashboard administration</p>
-
   <div id="main-div">
     <div id="sub-div-for-MCCC-and-calender">
       <div id="MCCC-div">
@@ -112,6 +110,7 @@ const filtered_ressource_sheets = computed(() => {
   width: 100%;
   justify-content: center;
   gap: 100px;
+  margin-top: 3.2vw;
 }
 
 #main-div > div {
