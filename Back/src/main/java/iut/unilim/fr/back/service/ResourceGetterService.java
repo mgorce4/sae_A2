@@ -24,6 +24,8 @@ public class ResourceGetterService {
     private SAELinkResourceRepository saeLinkResourceRepository;
     @Autowired
     private MainTeacherForResourceRepository mainTeacherForResourceRepository;
+    @Autowired
+    private UeCoefficientRepository ueCoefficientRepository;
 
     private String fileName = "";
 
@@ -122,8 +124,9 @@ public class ResourceGetterService {
             nResource = resC.split("R")[1];// TODO : Changer pour la reference de la ressource ( 1.10... ) -> Should work
             Boolean isMultiCompetences = resource.getDiffMultiCompetences();
             if (!isMultiCompetences) {
-                // TODO: Handle UE coefficients
-                refUE = ""; // Temporarily empty
+                List<UeCoefficient> ueCoefficient = ueCoefficientRepository.findByResource_IdResource(id);
+                UE ue = ueCoefficient.getFirst().getUe();
+                refUE = ue.getLabel();
                 // TODO: PN -> competences.add();
             } else {
                 //todo : multi comp
@@ -165,7 +168,7 @@ public class ResourceGetterService {
 
             writeInLog("Get from database :\n" //TODO : Back log sur toutes les infos
                 + "- Ressource (" + labelResource + "; " + nResource + "; " + refUE + "; " + profRef + ";" + ")\n" +
-                    "- saes(TBD)\n" +
+                    "- saes(" + saes + ")\n" +
                     "- terms(" + modalities.toString() + ")\n" +
                     "-  hoursStudent(" + hoursStudent.toString() +")\n" +
                     "- pedagoContent(TBD)\n" +
