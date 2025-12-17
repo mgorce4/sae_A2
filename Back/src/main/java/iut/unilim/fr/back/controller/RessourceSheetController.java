@@ -26,6 +26,13 @@ public class RessourceSheetController {
             .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/{id}/details")
+    public ResponseEntity<RessourceSheet> getRessourceSheetByIdWithDetails(@PathVariable Long id) {
+        return ressourceSheetService.getRessourceSheetByIdWithDetails(id)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/user/{userId}")
     public List<RessourceSheet> getRessourceSheetsByUserId(@PathVariable Long userId) {
         return ressourceSheetService.getRessourceSheetsByUserId(userId);

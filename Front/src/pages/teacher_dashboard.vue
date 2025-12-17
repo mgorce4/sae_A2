@@ -12,7 +12,7 @@
     })
 
     const goToRessourceSheet = (id) => {
-        window.location.hash = `/form-ressource-sheet?id=${id}`
+        window.location.hash = `#/form-ressource-sheet?id=${id}`
     }
 
     /*
