@@ -23,6 +23,8 @@ public class ResourceGetterService {
     @Autowired
     private RessourceSheetRepository  ressourceSheetRepository;
 
+    private String fileName = "";
+
     private String ref;
     private String nResource;
     private String refUE;
@@ -96,9 +98,10 @@ public class ResourceGetterService {
 
         if (resultResource.isPresent()) {
             resultResourceSheet = ressourceSheetRepository.findFirstByRessource_IdRessource(resultResource.get().getIdRessource());
-        }
+        } else {writeInLog("Could not get the resource sheet from the database because there is no resource with id = " + ressourceName);}
 
         if (resultResource.isPresent() && resultResourceSheet.isPresent()) {
+            fileName = ressourceName;
             Ressource resource = resultResource.get();
             RessourceSheet resourceSheet = resultResourceSheet.get();
             HoursPerStudent hoursPerStudent = resource.getHoursPerStudent();
@@ -159,7 +162,8 @@ public class ResourceGetterService {
             writeInLog("Get from database :\n"
                 + "- Ressource (" + labelResource + "; " + nResource + "; " + refUE + "; " + profRef + ";" + ")\n- saes(" + Arrays.toString(ressourceSheetSaes) + ")\n- terms(" + modalities.toString() + ")\n-  hoursStudent(" + hoursStudent.toString() +")\n- pedagoContent(" + pedagoContentCm + "; " + pedagoContentTd + "; " + pedagoContentTp + ")\n- feedBack(" + studentFeedback + "; " +pedagoTeamFeedback + "; " + improvements+ ")\n");
         } else {
-            writeInLog("Rien");
+            writeInLog("Attempt to get from database with resource name: " + ressourceName +
+                    "\n-> " + ressourceName + " not found in resources tables");
         }
     }
 
@@ -216,6 +220,10 @@ public class ResourceGetterService {
     }
     public String getImprovements() {
         return improvements;
+    }
+
+    public String getFileName() {
+        return fileName;
     }
 
 }
