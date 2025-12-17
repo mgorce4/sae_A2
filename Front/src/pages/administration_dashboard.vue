@@ -31,7 +31,7 @@ onMounted(async () => {
   axios.get('http://localhost:8080/api/ressource-sheets').then(reponse => (ressource_sheets.value = reponse.data))
 
   /* get of the value for the ressources from the DB */
-  axios.get('http://localhost:8080/api/ressources').then(reponse => (ressources.value = reponse.data))
+  axios.get('http://localhost:8080/api/resources').then(reponse => (ressources.value = reponse.data))
 })
 
 /*

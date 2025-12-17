@@ -20,13 +20,13 @@ public class RessourceTrackingService {
         return ressourceTrackingRepository.findById(id);
     }
 
-    public RessourceTracking createRessourceTracking(RessourceTracking ressourceTracking) {
-        return ressourceTrackingRepository.save(ressourceTracking);
+    public RessourceTracking createRessourceTracking(RessourceTracking resourceTracking) {
+        return ressourceTrackingRepository.save(resourceTracking);
     }
 
-    public RessourceTracking updateRessourceTracking(Long id, RessourceTracking ressourceTracking) {
-        ressourceTracking.setIdRessourceTracking(id);
-        return ressourceTrackingRepository.save(ressourceTracking);
+    public RessourceTracking updateRessourceTracking(Long id, RessourceTracking resourceTracking) {
+        resourceTracking.setIdResourceTracking(id);
+        return ressourceTrackingRepository.save(resourceTracking);
     }
 
     public void deleteRessourceTracking(Long id) {

@@ -4,58 +4,52 @@ import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
-@Table(name = "RESSOURCE")
+@Table(name = "RESOURCE")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Ressource {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_Ressource")
-    private Long idRessource;
+    @Column(name = "id_Resource")
+    private Long idResource;
 
-    @Column(name = "apogeecode", nullable = false)
+    @Column(name = "apogeeCode", nullable = false)
     private String apogeeCode;
 
     @Column(nullable = false)
     private String label;
 
-    @Column(name = "diffmulticompetences", nullable = false)
+    @Column(nullable = false)
+    private String name;
+
+    @Column(name = "diffMultiCompetences", nullable = false)
     private Boolean diffMultiCompetences;
 
     @Column(nullable = false)
-    private Short semester;
+    private Integer semester;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_Terms")
+    @JoinColumn(name = "id_terms")
     private Terms terms;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_HoursPerStudent")
-    private HoursPerStudent hoursPerStudent;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_Coefficient")
-    private UeCoefficient ueCoefficient;
 
     public Ressource() {
     }
 
-    public Ressource(Long idRessource, String apogeeCode, String label, Boolean diffMultiCompetences, Short semester, Terms terms, HoursPerStudent hoursPerStudent, UeCoefficient ueCoefficient) {
-        this.idRessource = idRessource;
+    public Ressource(Long idResource, String apogeeCode, String label, String name, Boolean diffMultiCompetences, Integer semester, Terms terms) {
+        this.idResource = idResource;
         this.apogeeCode = apogeeCode;
         this.label = label;
+        this.name = name;
         this.diffMultiCompetences = diffMultiCompetences;
         this.semester = semester;
         this.terms = terms;
-        this.hoursPerStudent = hoursPerStudent;
-        this.ueCoefficient = ueCoefficient;
     }
 
-    public Long getIdRessource() {
-        return idRessource;
+    public Long getIdResource() {
+        return idResource;
     }
 
-    public void setIdRessource(Long idRessource) {
-        this.idRessource = idRessource;
+    public void setIdResource(Long idResource) {
+        this.idResource = idResource;
     }
 
     public String getApogeeCode() {
@@ -74,6 +68,14 @@ public class Ressource {
         this.label = label;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public Boolean getDiffMultiCompetences() {
         return diffMultiCompetences;
     }
@@ -82,11 +84,11 @@ public class Ressource {
         this.diffMultiCompetences = diffMultiCompetences;
     }
 
-    public Short getSemester() {
+    public Integer getSemester() {
         return semester;
     }
 
-    public void setSemester(Short semester) {
+    public void setSemester(Integer semester) {
         this.semester = semester;
     }
 
@@ -96,21 +98,5 @@ public class Ressource {
 
     public void setTerms(Terms terms) {
         this.terms = terms;
-    }
-
-    public HoursPerStudent getHoursPerStudent() {
-        return hoursPerStudent;
-    }
-
-    public void setHoursPerStudent(HoursPerStudent hoursPerStudent) {
-        this.hoursPerStudent = hoursPerStudent;
-    }
-
-    public UeCoefficient getUeCoefficient() {
-        return ueCoefficient;
-    }
-
-    public void setUeCoefficient(UeCoefficient ueCoefficient) {
-        this.ueCoefficient = ueCoefficient;
     }
 }

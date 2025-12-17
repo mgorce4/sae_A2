@@ -32,49 +32,14 @@ public class RessourceSheetService {
 
         if (ressourceSheetOpt.isPresent()) {
             RessourceSheet rs = ressourceSheetOpt.get();
-            logger.info("RessourceSheet found: {}", rs.getName());
+            logger.info("RessourceSheet found for year: {}", rs.getYear());
 
             // Force loading of lazy relationships
-            if (rs.getUser() != null) {
-                String username = rs.getUser().getUsername();
-                logger.info("User loaded: {}", username);
-                if (rs.getUser().getInstitution() != null) {
-                    String institutionName = rs.getUser().getInstitution().getName();
-                    logger.info("Institution loaded: {}", institutionName);
-                } else {
-                    logger.warn("No institution found for user");
-                }
+            if (rs.getResource() != null) {
+                String ressourceLabel = rs.getResource().getLabel();
+                logger.info("Resource loaded: {}", ressourceLabel);
             } else {
-                logger.warn("No user found for ressource sheet");
-            }
-
-            if (rs.getRessource() != null) {
-                String ressourceLabel = rs.getRessource().getLabel();
-                logger.info("Ressource loaded: {}", ressourceLabel);
-                if (rs.getRessource().getUeCoefficient() != null) {
-                    Integer coef = rs.getRessource().getUeCoefficient().getCoefficient();
-                    logger.info("UeCoefficient loaded with coefficient: {}", coef);
-                    if (rs.getRessource().getUeCoefficient().getUe() != null) {
-                        String ueLabel = rs.getRessource().getUeCoefficient().getUe().getLabel();
-                        logger.info("UE loaded: {}", ueLabel);
-                    } else {
-                        logger.warn("No UE found for ueCoefficient");
-                    }
-                } else {
-                    logger.warn("No ueCoefficient found for ressource");
-                }
-            } else {
-                logger.warn("No ressource found for ressource sheet");
-            }
-
-            if (rs.getPedagogicalContent() != null) {
-                rs.getPedagogicalContent().getCm();
-                logger.info("PedagogicalContent loaded");
-            }
-
-            if (rs.getRessourceTracking() != null) {
-                rs.getRessourceTracking().getPedagogicalFeedback();
-                logger.info("RessourceTracking loaded");
+                logger.warn("No resource found for resource sheet");
             }
 
             logger.info("All relationships loaded successfully");
@@ -85,21 +50,17 @@ public class RessourceSheetService {
         return ressourceSheetOpt;
     }
 
-    public List<RessourceSheet> getRessourceSheetsByUserId(Long userId) {
-        return ressourceSheetRepository.findByUser_IdUser(userId);
+    public List<RessourceSheet> getRessourceSheetsByResourceId(Long resourceId) {
+        return ressourceSheetRepository.findByResource_IdResource(resourceId);
     }
 
-    public List<RessourceSheet> getRessourceSheetsByRessourceId(Long ressourceId) {
-        return ressourceSheetRepository.findByRessource_IdRessource(ressourceId);
+    public RessourceSheet createRessourceSheet(RessourceSheet resourceSheet) {
+        return ressourceSheetRepository.save(resourceSheet);
     }
 
-    public RessourceSheet createRessourceSheet(RessourceSheet ressourceSheet) {
-        return ressourceSheetRepository.save(ressourceSheet);
-    }
-
-    public RessourceSheet updateRessourceSheet(Long id, RessourceSheet ressourceSheet) {
-        ressourceSheet.setIdRessourceSheet(id);
-        return ressourceSheetRepository.save(ressourceSheet);
+    public RessourceSheet updateRessourceSheet(Long id, RessourceSheet resourceSheet) {
+        resourceSheet.setIdResourceSheet(id);
+        return ressourceSheetRepository.save(resourceSheet);
     }
 
     public void deleteRessourceSheet(Long id) {

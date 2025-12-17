@@ -20,13 +20,13 @@ public class RessourceService {
         return ressourceRepository.findById(id);
     }
 
-    public Ressource createRessource(Ressource ressource) {
-        return ressourceRepository.save(ressource);
+    public Ressource createRessource(Ressource resource) {
+        return ressourceRepository.save(resource);
     }
 
-    public Ressource updateRessource(Long id, Ressource ressource) {
-        ressource.setIdRessource(id);
-        return ressourceRepository.save(ressource);
+    public Ressource updateRessource(Long id, Ressource resource) {
+        resource.setIdResource(id);
+        return ressourceRepository.save(resource);
     }
 
     public void deleteRessource(Long id) {
