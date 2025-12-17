@@ -252,7 +252,7 @@ public class PdfController {
                 document.add(suiviRessourcesTable);
                 document.close();
 
-                writeInLog("{user} Create a pdf for resource Sheet");
+                writeInLog("{user} Create a pdf for resource sheet: " + fileName + "_resource_sheet.pdf");
             } catch (Exception e) {
                 writeInLog(e.getMessage());
             }

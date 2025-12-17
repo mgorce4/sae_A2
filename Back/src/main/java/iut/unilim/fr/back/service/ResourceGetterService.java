@@ -4,6 +4,7 @@ import iut.unilim.fr.back.entity.*;
 import iut.unilim.fr.back.repository.HoursPerStudentRepository;
 import iut.unilim.fr.back.repository.RessourceRepository;
 import iut.unilim.fr.back.repository.RessourceSheetRepository;
+import iut.unilim.fr.back.repository.SAELinkResourceRepository;
 import iut.unilim.fr.back.users.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,8 @@ public class ResourceGetterService {
     private RessourceRepository ressourceRepository;
     @Autowired
     private RessourceSheetRepository  ressourceSheetRepository;
+    @Autowired
+    private SAELinkResourceRepository saeLinkResourceRepository;
 
     private String fileName = "";
 
@@ -61,7 +64,7 @@ public class ResourceGetterService {
     }
 
     private void initializePlaceHolderValues() {
-        String PLACEHOLDER = "No resource for that category";
+        String PLACEHOLDER = "No content for that category";
         String PLACEHOLDER_TITLE = "None";
         competences.add(PLACEHOLDER);
         saes.add(PLACEHOLDER);
@@ -94,7 +97,7 @@ public class ResourceGetterService {
         Long id;
         String label;
 
-        Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(ressourceName + " ");
+        Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(ressourceName);
 
         if (resultResource.isPresent()) {
             resultResourceSheet = ressourceSheetRepository.findFirstByResource_IdResource(resultResource.get().getIdResource());
@@ -107,6 +110,8 @@ public class ResourceGetterService {
 
             id = resource.getIdResource();
             label = resource.getLabel();
+
+            List<SAELinkResource> SAELinkResources = saeLinkResourceRepository.findByIdResource(id);
 
             writeInLog("Get ressource \n"
                     + "id : " + id + "\n"
@@ -125,11 +130,16 @@ public class ResourceGetterService {
             }
             
             // User and SAE info removed as they're not in the new schema
+
             profRef = ""; // TODO: Get from MAIN_TEACHER_FOR_RESOURCE or TEACHERS_FOR_RESOURCE
             labelResource = resource.getLabel();
 
             saes.clear();
-            // TODO: Get SAEs from SAE_LINK_RESOURCE table
+            for (SAELinkResource saeLinkResource : SAELinkResources) {
+                SAE sae = saeLinkResource.getSae();
+                saes.add(sae.getLabel());
+            }
+
             
             // TODO: PN -> keyWord
 
@@ -154,7 +164,12 @@ public class ResourceGetterService {
             improvements = "";
 
             writeInLog("Get from database :\n"
-                + "- Ressource (" + labelResource + "; " + nResource + "; " + refUE + "; " + profRef + ";" + ")\n- saes(TBD)\n- terms(" + modalities.toString() + ")\n-  hoursStudent(" + hoursStudent.toString() +")\n- pedagoContent(TBD)\n- feedBack(TBD)\n");
+                + "- Ressource (" + labelResource + "; " + nResource + "; " + refUE + "; " + profRef + ";" + ")\n" +
+                    "- saes(TBD)\n" +
+                    "- terms(" + modalities.toString() + ")\n" +
+                    "-  hoursStudent(" + hoursStudent.toString() +")\n" +
+                    "- pedagoContent(TBD)\n" +
+                    "- feedBack(TBD)\n");
         } else {
             writeInLog("Attempt to get from database with resource name: " + ressourceName +
                     "\n-> " + ressourceName + " not found in resources tables");
