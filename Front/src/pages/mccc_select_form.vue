@@ -9,23 +9,23 @@ const afficherBoutons = ref([
 </script>
 
 <template>
-    <div id="form-select-page">
+    <div id="form_select_page">
         <div style="display: flex; align-items: center; height: 1vw;">
-            <button id="backArrow" onclick="document.location.href='#/dashboard-administration'">←</button>
+            <button id="back_arrow" onclick="document.location.href='#/dashboard-administration'">←</button>
             <p class="back" >Retour à l'accueil</p>
         </div>
 
-        <div v-for="(year, index) in afficherBoutons" v-bind:key="index" class="blue-rect">
-            <p class="semester-display">Année {{ index + 1 }} :</p>
+        <div v-for="(year, index) in afficherBoutons" v-bind:key="index" class="blue_rect">
+            <p class="semester_display">Année {{ index + 1 }} :</p>
 
             <div class="container-fluid spe" style="align-items: normal;">
-                <div class="semester-rect" v-for="(btn, index2) in year" v-bind:key="index2" v-on:mouseover="btn.show = true" v-on:mouseout="btn.show = false">
-                    <p class="semester-display">Semestre {{ 2 * index + index2 + 1 }}</p>
-                    <p class="status-display" v-show="!btn.show">{{ btn.status }}</p>
+                <div class="semester_rect" v-for="(btn, index2) in year" v-bind:key="index2" v-on:mouseover="btn.show = true" v-on:mouseout="btn.show = false">
+                    <p class="semester_display">Semestre {{ 2 * index + index2 + 1 }}</p>
+                    <p class="status_display" v-show="!btn.show">{{ btn.status }}</p>
                     <div v-show="btn.show" class="container-fluid spe">
-                        <button class="btn-form-acces" onclick="document.location.href='#/form-mccc-UE'">UE</button>
-                        <button class="btn-form-acces">Ressource</button>
-                        <button class="btn-form-acces">SAÉ</button>
+                        <button class="btn_form_acces" onclick="document.location.href='#/form-mccc-UE'">UE</button>
+                        <button class="btn_form_acces" onclick="document.location.href='#/form-mccc-ressources'">Ressource</button>
+                        <button class="btn_form_acces">SAÉ</button>
                     </div>
                 </div>
             </div>
@@ -35,7 +35,7 @@ const afficherBoutons = ref([
 </template>
 
 <style>
-#form-select-page {
+#form_select_page {
     margin: 3vw 14vw;
     justify-content: center;
     color: #000000;
@@ -48,7 +48,7 @@ const afficherBoutons = ref([
     margin-left: 1.5vw;
 }
 
-#backArrow{
+#back_arrow{
     font-size: 2vw;
     border: none;
     background-color: white;
@@ -56,7 +56,7 @@ const afficherBoutons = ref([
     font-weight: bold;
 }
 
-.blue-rect {
+.blue_rect {
     width: 90%;
     height: fit-content;
     margin: 2vw;
@@ -66,7 +66,7 @@ const afficherBoutons = ref([
     color: #FFFFFF;
 }
 
-.semester-rect {
+.semester_rect {
     width: 40%;
     height: fit-content;
     margin: 0 5% 6% 5%;
@@ -76,11 +76,11 @@ const afficherBoutons = ref([
     color: #FFFFFF;
 }
 
-.semester-rect:hover {
+.semester_rect:hover {
     margin-bottom: 0;
 }
 
-.semester-display {
+.semester_display {
     margin: 0.5vw 0;
     padding: 0;
     text-align: left;
@@ -88,13 +88,13 @@ const afficherBoutons = ref([
     font-weight: bold;
 }
 
-.status-display {
+.status_display {
     text-align: right;
     margin: 0 5% 0 0;
     font-size: 1.3vw;
 }
 
-.btn-form-acces {
+.btn_form_acces {
     width: 25%;
     height: fit-content;
     margin: 10% 0 0 0;

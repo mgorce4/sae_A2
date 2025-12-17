@@ -6,23 +6,23 @@
 </script>
 
 <template>
-    <header id="header-div">
-        <div id="header-top" class="container-fluid spb">
-            <div id="app-name-and-logo" class="container-fluid">
-                <a id="unilim-logo">
+    <header id="header_div">
+        <div id="header_top" class="container-fluid spb">
+            <div id="app_name_and_logo" class="container-fluid">
+                <a id="unilim_logo">
                     <img src="./../../media/unilim_logo.webp" style="margin: 0; padding: 0; width: 100%; height: 100%;" alt="logo">
                 </a>
-                <div id="dividing-line"></div>
-                <h1 id="app-name">Syncadia</h1>
+                <div id="dividing_line"></div>
+                <p id="app_name">Syncadia</p>
             </div>
-            <div v-show="status" id="user-name-and-pp" class="container-fluid">
-                <h2 id="user-name">{{userName}}</h2>
-                <img id="profile-picture" src="./../../media/no_profile_picture.webp" alt="profile_picture">
+            <div v-show="status" id="user_name_and_pp" class="container-fluid">
+                <p id="user_name">{{userName}}</p>
+                <img id="profile_picture" src="./../../media/no_profile_picture.webp" alt="profile_picture">
             </div>
         </div>
-        <div id="red-rect" class="container-fluid spb">
-            <h2 v-show="status" id="user-status">Statut : {{ status }}</h2>
-            <a v-show="status" id="btn-disconnect" href="#/">
+        <div id="red_rect" class="container-fluid spb">
+            <p v-show="status" id="user_status">Statut : {{ status }}</p>
+            <a v-show="status" id="btn_disconnect" href="#/">
                 Déconnexion
             </a>
         </div>
@@ -31,7 +31,7 @@
 
 <style>
 /* -- Header -- */
-#header-div {
+#header_div {
     position: fixed;
     top: 0;
     left: 0;
@@ -40,46 +40,48 @@
     background-color: #FFFFFF;
 }
 
-#header-top {
+#header_top {
     width: 94%;
     height: 70%;
     padding: 0 3%;
 }
 
-#app-name-and-logo {
+#app_name_and_logo {
     width: 50%;
 }
 
-#unilim-logo {
+#unilim_logo {
     cursor: pointer;
     height: 80%;
     width: calc(height);
     margin: 0 2.5vw 0 0;
 }
 
-#dividing-line {
+#dividing_line {
     background-color: #4B575F;
     width: 0.2vw;
     height: 70%;
 }
 
-#app-name {
-    font-size: 3vw;
+#app_name {
+    font-size: 2.8vw;
     height: fit-content;
     margin: 0 0 0 2.5vw;
+    color: rgb(75, 87, 95);
+    font-weight: bold;
 }
 
-#user-name-and-pp {
+#user_name_and_pp {
     justify-content: flex-end;
     width: 50%;
 }
 
-#user-name {
+#user_name {
     font-size: 1.2vw;
     margin: 0 0.5vw;
 }
 
-#profile-picture {
+#profile_picture {
     cursor: pointer;
     border-radius: 3vw;
     height: 60%;
@@ -87,32 +89,36 @@
     margin: 0;
 }
 
-#red-rect {
+#red_rect {
     background-color: #B51621;
     width: 94%;
-    height: 30%;
+    height: 3vw;
     padding: 0 3%;
 }
 
-#user-status {
+#user_status {
     font-size: 1.5vw;
     color: #FFFFFF;
     text-shadow: 0 0 5px black;
+    padding-top: 0;
+    justify-content: center;
 }
 
-#btn-disconnect {
-    height: fit-content;
+#btn_disconnect {
+    height: 1.5vw;
+    width: 7vw;
     padding: 0.2vw;
     border-width: 0.15vw;
     border-radius: 0.5vw;
     font-size: 1vw;
     text-decoration: none;
+    align-content: center; /*center the text in the button */
     text-align: center;
     background-color: #4B575F;
     color: #FFFFFF;
 }
 
-#btn-disconnect:hover {
+#btn_disconnect:hover {
     cursor: pointer;
 }
 </style>

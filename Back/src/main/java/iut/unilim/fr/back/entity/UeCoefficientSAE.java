@@ -3,12 +3,12 @@ package iut.unilim.fr.back.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "UE_COEFFICIENT_RESOURCE")
-public class UeCoefficient {
+@Table(name = "UE_COEFFICIENT_SAE")
+public class UeCoefficientSAE {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_Coefficient")
-    private Long idCoefficient;
+    @Column(name = "id_Coefficient_SAE")
+    private Long idCoefficientSAE;
 
     @Column(nullable = false)
     private Integer coefficient;
@@ -18,25 +18,25 @@ public class UeCoefficient {
     private UE ue;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_resource")
-    private Ressource resource;
+    @JoinColumn(name = "id_SAE")
+    private SAE sae;
 
-    public UeCoefficient() {
+    public UeCoefficientSAE() {
     }
 
-    public UeCoefficient(Long idCoefficient, Integer coefficient, UE ue, Ressource resource) {
-        this.idCoefficient = idCoefficient;
+    public UeCoefficientSAE(Long idCoefficientSAE, Integer coefficient, UE ue, SAE sae) {
+        this.idCoefficientSAE = idCoefficientSAE;
         this.coefficient = coefficient;
         this.ue = ue;
-        this.resource = resource;
+        this.sae = sae;
     }
 
-    public Long getIdCoefficient() {
-        return idCoefficient;
+    public Long getIdCoefficientSAE() {
+        return idCoefficientSAE;
     }
 
-    public void setIdCoefficient(Long idCoefficient) {
-        this.idCoefficient = idCoefficient;
+    public void setIdCoefficientSAE(Long idCoefficientSAE) {
+        this.idCoefficientSAE = idCoefficientSAE;
     }
 
     public Integer getCoefficient() {
@@ -55,11 +55,12 @@ public class UeCoefficient {
         this.ue = ue;
     }
 
-    public Ressource getResource() {
-        return resource;
+    public SAE getSae() {
+        return sae;
     }
 
-    public void setResource(Ressource resource) {
-        this.resource = resource;
+    public void setSae(SAE sae) {
+        this.sae = sae;
     }
 }
+

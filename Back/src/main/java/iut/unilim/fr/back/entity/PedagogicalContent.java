@@ -19,14 +19,19 @@ public class PedagogicalContent {
     @Column(columnDefinition = "TEXT")
     private String tp;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_ResourceSheet")
+    private RessourceSheet resourceSheet;
+
     public PedagogicalContent() {
     }
 
-    public PedagogicalContent(Long idPedagogicalContent, String cm, String td, String tp) {
+    public PedagogicalContent(Long idPedagogicalContent, String cm, String td, String tp, RessourceSheet resourceSheet) {
         this.idPedagogicalContent = idPedagogicalContent;
         this.cm = cm;
         this.td = td;
         this.tp = tp;
+        this.resourceSheet = resourceSheet;
     }
 
     public Long getIdPedagogicalContent() {
@@ -59,5 +64,13 @@ public class PedagogicalContent {
 
     public void setTp(String tp) {
         this.tp = tp;
+    }
+
+    public RessourceSheet getResourceSheet() {
+        return resourceSheet;
+    }
+
+    public void setResourceSheet(RessourceSheet resourceSheet) {
+        this.resourceSheet = resourceSheet;
     }
 }

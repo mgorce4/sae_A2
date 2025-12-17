@@ -6,14 +6,17 @@
   import NotFound from './pages/not_found.vue'
   import DsbrProf from './pages/teacher_dashboard.vue'
   import FormUE from './pages/form_mccc_UE.vue'
-
+  import FormRessources from './pages/form_mccc_ressources.vue'
+  import FormRessourceSheet from './pages/ressource_sheet_form.vue'
 
   const routes = {
     '/': Login,
     '/dashboard-administration': AdministrationDashboard,
-    '/dashboard-professeur': DsbrProf,
+    '/teacher_dashboard': DsbrProf,
     '/mccc-select-form': MCCCSelectForm,
-    '/form-mccc-UE': FormUE
+    '/form-mccc-UE': FormUE,
+    '/form-mccc-ressources' : FormRessources,
+    '/form-ressource-sheet': FormRessourceSheet
   }
 
   const currentPath = ref(window.location.hash)
@@ -23,16 +26,17 @@
   })
 
   const currentView = computed(() => {
-    return routes[currentPath.value.slice(1) || '/'] || NotFound
+    // Extract only the path part, ignoring query parameters
+    const pathWithoutHash = currentPath.value.slice(1) || '/'
+    const pathWithoutQuery = pathWithoutHash.split('?')[0]
+    return routes[pathWithoutQuery] || NotFound
   })
 </script>
 
 <template>
   <header-application/>
-  <a href="#/">- Login -</a>
-  <a href="#/dashboard-administration">- dashboard administration -</a>
-  <a href="#/dashboard-professeur">- dashboard professeur -</a>
-  <a href="#/mccc-select-form">- Sélection formulaires MCCC -</a>
   <component :is="currentView" />
   <footer-application/>
 </template>
+
+

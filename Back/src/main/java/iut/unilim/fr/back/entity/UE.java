@@ -12,13 +12,16 @@ public class UE {
     @Column(name = "UE_Number")
     private Long ueNumber;
 
-    @Column(name = "euapogeecode", nullable = false)
+    @Column(name = "EuApogeeCode", nullable = false)
     private String euApogeeCode;
 
     @Column(nullable = false)
     private String label;
 
-    @Column(name = "competencelevel", nullable = false)
+    @Column(nullable = false)
+    private String name;
+
+    @Column(name = "competenceLevel", nullable = false)
     private Integer competenceLevel;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -28,10 +31,11 @@ public class UE {
     public UE() {
     }
 
-    public UE(Long ueNumber, String euApogeeCode, String label, Integer competenceLevel, Path path) {
+    public UE(Long ueNumber, String euApogeeCode, String label, String name, Integer competenceLevel, Path path) {
         this.ueNumber = ueNumber;
         this.euApogeeCode = euApogeeCode;
         this.label = label;
+        this.name = name;
         this.competenceLevel = competenceLevel;
         this.path = path;
     }
@@ -58,6 +62,14 @@ public class UE {
 
     public void setLabel(String label) {
         this.label = label;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Integer getCompetenceLevel() {

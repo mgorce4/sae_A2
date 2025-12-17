@@ -14,15 +14,15 @@ public class Path {
     private Integer number;
 
     @Column(nullable = false)
-    private String label;
+    private String name;
 
     public Path() {
     }
 
-    public Path(Long idPath, Integer number, String label) {
+    public Path(Long idPath, Integer number, String name) {
         this.idPath = idPath;
         this.number = number;
-        this.label = label;
+        this.name = name;
     }
 
     public Long getIdPath() {
@@ -41,11 +41,11 @@ public class Path {
         this.number = number;
     }
 
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 }

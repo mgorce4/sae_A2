@@ -23,17 +23,15 @@ const selected_semester_calendar = ref('S1')
 /* link with the API */
 
 const ressource_sheets = ref([])
-/* get of the value for the ressource sheets from the DB */
-onMounted(async () => {
-  const res = await axios.get('http://localhost:8080/api/ressource-sheets')
-  ressource_sheets.value = res.data
-})
-
 const ressources = ref([])
-/* get of the value for the ressources from the DB */
+
 onMounted(async () => {
-  const res = await axios.get('http://localhost:8080/api/ressources')
-  ressources.value = res.data
+
+  /* get of the value for the ressource sheets from the DB */
+  axios.get('http://localhost:8080/api/ressource-sheets').then(reponse => (ressource_sheets.value = reponse.data))
+
+  /* get of the value for the ressources from the DB */
+  axios.get('http://localhost:8080/api/resources').then(reponse => (ressources.value = reponse.data))
 })
 
 /*
@@ -55,16 +53,14 @@ const filtered_ressource_sheets = computed(() => {
 </script>
 
 <template>
-  <p>dashboard administration</p>
-
-  <div id="main-div">
-    <div id="sub-div-for-MCCC-and-calender">
-      <div id="MCCC-div">
+  <div id="main_div">
+    <div id="sub_div_for_MCCC_and_calender">
+      <div id="MCCC_div">
         <!-- link into MCCC page -->
         <button type="button" id="MCCC_button" onclick="document.location.href='#/mccc-select-form'">MCCC</button>
       </div>
 
-      <div id="calender-div">
+      <div id="calender_div">
         <!-- add a calender and the semester -->
         <select name="semesters" class="semesters" v-model="selected_semester_calendar">
           <option v-for="index in list_semesters" :key="index" :value="'S' + index">
@@ -78,14 +74,14 @@ const filtered_ressource_sheets = computed(() => {
       </div>
     </div>
 
-    <div id="return-sheets-div">
-      <div id="return-sheets-div-header">
+    <div id="return_sheets_div">
+      <div id="return_sheets_div_header">
         <div id="top">
           <p>Rendu des fiches</p>
           <img id="download" src="../../media/download.png" width="35" height="35" alt="download" />
         </div>
 
-        <div id="semesters-div">
+        <div id="semesters_div">
           <select name="semesters" class="semesters" v-model="selected_semester_sheets">
             <option v-for="index in list_semesters" :key="index" :value="'S' + index">
               S{{ index }}
@@ -107,33 +103,34 @@ const filtered_ressource_sheets = computed(() => {
 <style>
 /* -- main --*/
 
-#main-div {
+#main_div {
   display: flex;
   align-items: center;
   height: 450px;
   width: 100%;
   justify-content: center;
   gap: 100px;
+  margin-top: 3.2vw;
 }
 
-#main-div > div {
+#main_div > div {
   border-radius: 10px;
 }
 
-#main-div > div > div {
+#main_div > div > div {
   /* -- for MCCC-div and calender-div -- */
   border-radius: 10px;
 }
 
 /* -- sub dic for MCCC and calender --*/
 
-#sub-div-for-MCCC-and-calender {
+#sub_div_for_MCCC_and_calender {
   width: 30%;
 }
 
 /* -- MCCC -- */
 
-#MCCC-div {
+#MCCC_div {
   text-align: center;
   height: 100px;
   margin-bottom: 10%;
@@ -149,9 +146,13 @@ const filtered_ressource_sheets = computed(() => {
   height: 120%;
 }
 
+#MCCC_button:hover {
+  cursor : pointer;
+}
+
 /* -- calender -- */
 
-#calender-div {
+#calender_div {
   background-color: #3d4375;
   color: #ffffff;
   width: 100%;
@@ -169,7 +170,7 @@ const filtered_ressource_sheets = computed(() => {
 
 /* -- return sheets div -- */
 
-#return-sheets-div {
+#return_sheets_div {
   background-color: #3d4375;
   color: #ffffff;
   height: 100%;
@@ -179,7 +180,7 @@ const filtered_ressource_sheets = computed(() => {
   font-size: 20px;
 }
 
-#return-sheets-div-header {
+#return_sheets_div_header {
   position: sticky;
   top: 0;
   background-color: #3d4375;
@@ -190,18 +191,18 @@ const filtered_ressource_sheets = computed(() => {
   justify-content: space-between;
 }
 
-#return-sheets-div::-webkit-scrollbar {
+#return_sheets_div::-webkit-scrollbar {
   width: 12px;
 }
 
-#return-sheets-div::-webkit-scrollbar-track {
+#return_sheets_div::-webkit-scrollbar-track {
   margin: 1em;
   background: rgb(42, 45, 86);
   box-shadow: inset 0 0 5px rgb(24, 26, 50);
   border-radius: 10px;
 }
 
-#return-sheets-div::-webkit-scrollbar-thumb {
+#return_sheets_div::-webkit-scrollbar-thumb {
   background: rgb(254, 254, 254);
   border-radius: 10px;
   border: 3px black solid;

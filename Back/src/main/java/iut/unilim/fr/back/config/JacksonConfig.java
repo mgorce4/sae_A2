@@ -11,8 +11,8 @@ public class JacksonConfig {
     @Bean
     public Module hibernate6Module() {
         Hibernate6Module module = new Hibernate6Module();
-        // Don't force lazy loading, just serialize what's already loaded
-        module.configure(Hibernate6Module.Feature.FORCE_LAZY_LOADING, false);
+        // Force lazy loading to ensure all relationships are serialized
+        module.configure(Hibernate6Module.Feature.FORCE_LAZY_LOADING, true);
         // Serialize identifier for lazy not loaded objects
         module.configure(Hibernate6Module.Feature.SERIALIZE_IDENTIFIER_FOR_LAZY_NOT_LOADED_OBJECTS, true);
         return module;
