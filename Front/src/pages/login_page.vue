@@ -118,26 +118,26 @@
 </script>
 
 <template>
-    <form id="blue-rect" method="post" v-on:submit.prevent="addItem">
-        <div id="login-top" class="container-fluid spe">
-            <img id="profile-picture" src="./../../media/no_profile_picture.webp" alt="profile-picture">
-            <div id="login-fill-infos">
-                <label class="label-login">Identifiant</label>
-                <input class="input-login" type="text" required v-model="username">
-                <label class="label-login">Mot de passe </label>
-                <input class="input-login" type="password" required v-model="password">
-                <p v-if="loginError" class="login-error">Identifiant ou mot de passe incorrect</p>
+    <form id="blue_rect" method="post" v-on:submit.prevent="addItem">
+        <div id="login_top" class="container-fluid spe">
+            <img id="profile_picture" src="./../../media/no_profile_picture.webp" alt="profile_picture">
+            <div id="login_fill_infos">
+                <label class="label_login">Identifiant</label>
+                <input class="input_login" type="text" required v-model="username">
+                <label class="label_login">Mot de passe </label>
+                <input class="input_login" type="password" required v-model="password">
+                <p v-if="loginError" class="login_error">Identifiant ou mot de passe incorrect</p>
             </div>
         </div>
-        <div id="btn-login" class="container-fluid spe">
-            <input id="btn-cancel-login" class="btn1" type="reset" value="Annuler">
-            <input id="btn-connect-login" class="btn1" type="submit" value="Se connecter">
+        <div id="btn_login" class="container-fluid spe">
+            <input class="btn1" type="reset" value="Annuler">
+            <input class="btn1" type="submit" value="Se connecter">
         </div>
     </form>
 </template>
 
 <style>
-#blue-rect {
+#blue_rect {
     width: 40vw;
     height: 25vw;
     background-color: #3D4375;
@@ -145,25 +145,25 @@
     margin: 5vw 30vw;
 }
 
-#login-top {
+#login_top {
     height: 75%;
 }
 
-#login-fill-infos {
+#login_fill_infos {
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
     width: 50%;
 }
 
-.label-login {
+.label_login {
     padding: 10% 0 5% 0;
     margin: 0;
     font-size: 1.5vw;
     color: #FFFFFF;
 }
 
-.input-login {
+.input_login {
     width: 80%;
     font-size: 1vw;
     padding: 1%;
@@ -171,13 +171,13 @@
     border-width: 0.2vw;
 }
 
-#btn-login {
+#btn_login {
     width: 100%;
     height: 25%;
     align-items: start;
 }
 
-.login-error {
+.login_error {
     color: #ff6b6b;
     font-size: 1vw;
     margin-top: 0.5vw;
