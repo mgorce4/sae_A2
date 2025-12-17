@@ -157,7 +157,7 @@ public class ResourceGetterService {
             improvements = ressourceTracking.getImprovementSuggestions();
 
             writeInLog("Get from database :\n"
-                + "Ressource [" + labelResource + "; " + nResource + "; " + refUE + "; " + profRef + "; " + "], saes[ " + Arrays.toString(ressourceSheetSaes) + "], terms[ " + modalities.toString() + "] hoursStudent[ " + hoursStudent.toString() +"], pedagoContent[" + pedagoContentCm + "; " + pedagoContentTd + "; " + pedagoContentTp + "], feedBack[" + studentFeedback + "; " +pedagoTeamFeedback + "; " + improvements+ "]\n");
+                + "- Ressource (" + labelResource + "; " + nResource + "; " + refUE + "; " + profRef + ";" + ")\n- saes(" + Arrays.toString(ressourceSheetSaes) + ")\n- terms(" + modalities.toString() + ")\n-  hoursStudent(" + hoursStudent.toString() +")\n- pedagoContent(" + pedagoContentCm + "; " + pedagoContentTd + "; " + pedagoContentTp + ")\n- feedBack(" + studentFeedback + "; " +pedagoTeamFeedback + "; " + improvements+ ")\n");
         } else {
             writeInLog("Rien");
         }
