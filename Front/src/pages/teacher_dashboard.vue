@@ -26,11 +26,11 @@
 
 <template>
     <div id="ressources" >
-        <div id="forScrollBar" style="overflow-y: scroll; margin: 1vw; height: 24vw;">
+        <div id="for_scroll_bar" style="overflow-y: scroll; margin: 1vw; height: 24vw;">
             <p id="title">Vos ressources : </p>
-            <div id="divSheets" >
+            <div id="div_sheets" >
                 <button id="sheets" @click="goToRessourceSheet(u.idRessourceSheet)" v-for="u in users" :key="u.idRessourceSheet">
-                    <p>{{ u.name}}</p>
+                    <p>{{ u.label}}</p>
                 </button>
             </div>
         </div>
@@ -55,7 +55,7 @@
     width: fit-content;
 }
 
-#divSheets{
+#div_sheets{
     display: flex;
     flex-wrap: wrap;
     padding: 0;
@@ -78,18 +78,18 @@
     margin: 2vw;
 }
 
-#forScrollBar::-webkit-scrollbar {
+#for_scroll_bar::-webkit-scrollbar {
     width: 12px;
 }
 
-#forScrollBar::-webkit-scrollbar-track {
+#for_scroll_bar::-webkit-scrollbar-track {
     margin: 1em;
     background: rgb(42,45,86);
     box-shadow: inset 0 0 5px rgb(24, 26, 50);
     border-radius: 10px;
 }
 
-#forScrollBar::-webkit-scrollbar-thumb {
+#for_scroll_bar::-webkit-scrollbar-thumb {
     background: rgb(254,254,254);
     border-radius: 10px;
 }

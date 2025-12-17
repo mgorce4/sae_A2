@@ -5,7 +5,7 @@
     status.value = "Administration"
     
     onMounted(() => {
-        const acc = document.getElementsByClassName("accordionUE");
+        const acc = document.getElementsByClassName("accordion_UE");
         for (let i = 0; i < acc.length; i++) {
             acc[i].addEventListener("click", function() {
                 this.classList.toggle("active");
@@ -18,13 +18,6 @@
             });
         }
     })
-
-    /*const CM = ref('')
-    const TD = ref('')
-    const TP = ref('')
-    const Projet = ref('')
-
-    const list_of_lesson = ["CM", "TD", "TP", "Projet"]*/
 
 </script>
 
@@ -62,9 +55,6 @@
                         <label>Niveau de la compétence :</label>
                         <input type="text" id="fname" placeholder="...">
                         <input id="btn_save_UE" class="btn1" type="submit" value="Sauvegarder">
-                    </div>
-
-                    <div id="btn_UE" class="container-fluid spe">
                     </div>
                 </div>
             </div>
@@ -120,7 +110,7 @@
     margin: 0;
 }
 
-.accordionUE, #dark_bar >p{
+.accordion_UE, #dark_bar >p{
     margin: 0vw;
     font-weight: lighter;
     font-size: 1.05vw;
@@ -217,4 +207,5 @@
   margin-top: 0;
   padding-top: 1vw;
 }
+
 </style>
