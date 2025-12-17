@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface NationalProgramObjectiveRepository extends JpaRepository<NationalProgramObjective, Long> {
-    List<NationalProgramObjective> findByRessourceSheetIdRessourceSheet(Long idRessourceSheet);
+    List<NationalProgramObjective> findByResourceSheet_IdResourceSheet(Long idResourceSheet);
 }
 

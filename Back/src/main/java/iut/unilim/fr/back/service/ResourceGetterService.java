@@ -97,16 +97,15 @@ public class ResourceGetterService {
         Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(ressourceName + " ");
 
         if (resultResource.isPresent()) {
-            resultResourceSheet = ressourceSheetRepository.findFirstByRessource_IdRessource(resultResource.get().getIdRessource());
+            resultResourceSheet = ressourceSheetRepository.findFirstByResource_IdResource(resultResource.get().getIdResource());
         } else {writeInLog("Could not get the resource sheet from the database because there is no resource with id = " + ressourceName);}
 
         if (resultResource.isPresent() && resultResourceSheet.isPresent()) {
             fileName = ressourceName;
             Ressource resource = resultResource.get();
             RessourceSheet resourceSheet = resultResourceSheet.get();
-            HoursPerStudent hoursPerStudent = resource.getHoursPerStudent();
 
-            id = resource.getIdRessource();
+            id = resource.getIdResource();
             label = resource.getLabel();
 
             writeInLog("Get ressource \n"
@@ -118,49 +117,44 @@ public class ResourceGetterService {
             nResource = resC.split("R")[1];// TODO : Changer pour la reference de la ressource ( 1.10... ) -> Should work
             Boolean isMultiCompetences = resource.getDiffMultiCompetences();
             if (!isMultiCompetences) {
-                UeCoefficient ueCoefficient = resource.getUeCoefficient();
-                UE ue = ueCoefficient.getUe();
-                String labelUe = ue.getLabel().split(" ")[0];
-                refUE = labelUe;
-
+                // TODO: Handle UE coefficients
+                refUE = ""; // Temporarily empty
                 // TODO: PN -> competences.add();
             } else {
                 //todo : multi comp
             }
-            UserSyncadia userReferent = resourceSheet.getUser();
-            profRef = userReferent.getFirstname() + " " + userReferent.getLastname();
+            
+            // User and SAE info removed as they're not in the new schema
+            profRef = ""; // TODO: Get from MAIN_TEACHER_FOR_RESOURCE or TEACHERS_FOR_RESOURCE
             labelResource = resource.getLabel();
 
-            String[] ressourceSheetSaes = resourceSheet.getSae().split(",");
             saes.clear();
-            saes.addAll(Arrays.asList(ressourceSheetSaes));
+            // TODO: Get SAEs from SAE_LINK_RESOURCE table
+            
             // TODO: PN -> keyWord
 
             Terms terms = resource.getTerms();
             modalities.clear();
             modalities.add(terms.getCode());
 
-            Integer hoursCM = hoursPerStudent.getCm();
-            Integer hoursTd  = hoursPerStudent.getTd();
-            Integer hoursTp  = hoursPerStudent.getTp();
+            // Hours info removed as it's not directly in Ressource anymore
             hoursStudent.clear();
-            hoursStudent.add(hoursCM);
-            hoursStudent.add(hoursTd);
-            hoursStudent.add(hoursTp);
-            hoursStudent.add(hoursTp + hoursTd +  hoursCM);
+            hoursStudent.add(0); // TODO: Get from HOURS_PER_STUDENT
+            hoursStudent.add(0);
+            hoursStudent.add(0);
+            hoursStudent.add(0);
 
-            PedagogicalContent pedagoContent = resourceSheet.getPedagogicalContent();
-            pedagoContentCm = pedagoContent.getCm();
-            pedagoContentTd = pedagoContent.getTd();
-            pedagoContentTp = pedagoContent.getTp();
+            // PedagogicalContent and RessourceTracking removed as they're not directly linked
+            pedagoContentCm = ""; // TODO: Get from PEDAGOGICAL_CONTENT
+            pedagoContentTd = "";
+            pedagoContentTp = "";
 
-            RessourceTracking ressourceTracking = resourceSheet.getRessourceTracking();
-            studentFeedback = ressourceTracking.getStudentFeedback();
-            pedagoTeamFeedback = ressourceTracking.getPedagogicalFeedback();
-            improvements = ressourceTracking.getImprovementSuggestions();
+            studentFeedback = ""; // TODO: Get from RESOURCE_TRACKING
+            pedagoTeamFeedback = "";
+            improvements = "";
 
             writeInLog("Get from database :\n"
-                + "- Ressource (" + labelResource + "; " + nResource + "; " + refUE + "; " + profRef + ";" + ")\n- saes(" + Arrays.toString(ressourceSheetSaes) + ")\n- terms(" + modalities.toString() + ")\n-  hoursStudent(" + hoursStudent.toString() +")\n- pedagoContent(" + pedagoContentCm + "; " + pedagoContentTd + "; " + pedagoContentTp + ")\n- feedBack(" + studentFeedback + "; " +pedagoTeamFeedback + "; " + improvements+ ")\n");
+                + "- Ressource (" + labelResource + "; " + nResource + "; " + refUE + "; " + profRef + ";" + ")\n- saes(TBD)\n- terms(" + modalities.toString() + ")\n-  hoursStudent(" + hoursStudent.toString() +")\n- pedagoContent(TBD)\n- feedBack(TBD)\n");
         } else {
             writeInLog("Attempt to get from database with resource name: " + ressourceName +
                     "\n-> " + ressourceName + " not found in resources tables");

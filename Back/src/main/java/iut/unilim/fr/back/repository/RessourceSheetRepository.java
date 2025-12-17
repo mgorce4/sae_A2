@@ -8,8 +8,7 @@ import java.util.Optional;
 
 @Repository
 public interface RessourceSheetRepository extends JpaRepository<RessourceSheet, Long> {
-    List<RessourceSheet> findByUser_IdUser(Long userId);
-    List<RessourceSheet> findByRessource_IdRessource(Long ressourceId);
-    Optional<RessourceSheet> findFirstByRessource_IdRessource(Long ressourceId);
+    List<RessourceSheet> findByResource_IdResource(Long resourceId);
+    Optional<RessourceSheet> findFirstByResource_IdResource(Long resourceId);
 }
 

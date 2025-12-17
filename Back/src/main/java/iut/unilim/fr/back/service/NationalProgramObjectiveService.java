@@ -22,7 +22,7 @@ public class NationalProgramObjectiveService {
     }
 
     public List<NationalProgramObjective> getNationalProgramObjectivesByRessourceSheetId(Long idRessourceSheet) {
-        return nationalProgramObjectiveRepository.findByRessourceSheetIdRessourceSheet(idRessourceSheet);
+        return nationalProgramObjectiveRepository.findByResourceSheet_IdResourceSheet(idRessourceSheet);
     }
 
     public NationalProgramObjective createNationalProgramObjective(NationalProgramObjective nationalProgramObjective) {
@@ -34,7 +34,7 @@ public class NationalProgramObjectiveService {
                 .orElseThrow(() -> new RuntimeException("NationalProgramObjective not found"));
 
         nationalProgramObjective.setContent(nationalProgramObjectiveDetails.getContent());
-        nationalProgramObjective.setRessourceSheet(nationalProgramObjectiveDetails.getRessourceSheet());
+        nationalProgramObjective.setResourceSheet(nationalProgramObjectiveDetails.getResourceSheet());
 
         return nationalProgramObjectiveRepository.save(nationalProgramObjective);
     }

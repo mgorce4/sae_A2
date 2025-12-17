@@ -1,0 +1,9 @@
+[17:12:2025 15:40:10:313] Create log file
+[17:12:2025 15:40:10:313] Could not get the resource sheet from the database because there is no resource with id = R1.01
+[17:12:2025 15:40:10:313] Attempt to get from database with resource name: R1.01
+-> R1.01 not found in resources tables
+[17:12:2025 15:40:10:313] {user} attempt to generate a resource sheet pdf, but no matches found for the resource name
+[17:12:2025 15:40:37:826] Could not get the resource sheet from the database because there is no resource with id = R1.01
+[17:12:2025 15:40:37:828] Attempt to get from database with resource name: R1.01
+-> R1.01 not found in resources tables
+[17:12:2025 15:40:37:835] {user} attempt to generate a resource sheet pdf, but no matches found for the resource name
