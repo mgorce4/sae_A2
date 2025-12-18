@@ -130,9 +130,16 @@ public class PdfController {
 
                 // Div mot cles
                 Chunk motsCleTitre = new Chunk("Mots Cle", contentFont);
-                Chunk motsCle = new Chunk(res.getKeyWords(), contentFont);
+                ArrayList<String> motsCles = (ArrayList<String>) res.getKeyWords();
+                StringBuilder motCle = new StringBuilder(motsCles.getFirst());
+                for  (int index=1; index<motsCles.size(); index++) {
+                    motCle.append(", ").append(motsCles.get(index));
+                }
 
-                PdfPTable motCleContent = createContentDiv(motsCleTitre, motsCle);
+
+                Chunk motsCleChunk = new Chunk(motCle.toString(), contentFont);
+
+                PdfPTable motCleContent = createContentDiv(motsCleTitre, motsCleChunk);
                 contents.add(motCleContent);
 
 

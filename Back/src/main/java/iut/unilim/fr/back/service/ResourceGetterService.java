@@ -30,6 +30,8 @@ public class ResourceGetterService {
     private PedagogicalContentRepository pedagogicalContentRepository;
     @Autowired
     private RessourceTrackingRepository resourceTrackingRepository;
+    @Autowired
+    private KeywordRepository keywordRepository;
 
     private String fileName = "";
 
@@ -43,8 +45,8 @@ public class ResourceGetterService {
     private List<String> competences;
 
     private List<String> saes;
-    private String keyWords;
     private List<String> modalities;
+    private List<String> keywords;
 
     private List<Integer> hoursPN;
     private List<Integer> hoursStudent;
@@ -61,6 +63,7 @@ public class ResourceGetterService {
         competences = new ArrayList<>();
         saes = new ArrayList<>();
         modalities = new ArrayList<>();
+        keywords = new ArrayList<>();
 
         hoursPN = new ArrayList<>();
         hoursStudent = new ArrayList<>();
@@ -86,7 +89,7 @@ public class ResourceGetterService {
         profRef = PLACEHOLDER_TITLE;
         labelResource = PLACEHOLDER_TITLE;
         objectiveContent = PLACEHOLDER;
-        keyWords = PLACEHOLDER;
+        keywords.add(PLACEHOLDER);
         pedagoContentCm = PLACEHOLDER;
         pedagoContentTd = PLACEHOLDER;
         pedagoContentTp = PLACEHOLDER;
@@ -147,8 +150,12 @@ public class ResourceGetterService {
                 saes.add(sae.getLabel());
             }
 
-            
-            // TODO: PN -> keyWord
+            List<Keyword> keyWordsList = keywordRepository.findByIdResourceSheet(resourceSheet.getIdResourceSheet());
+            keywords.clear();
+            for (Keyword keyword : keyWordsList) {
+                keywords.add(keyword.getKeyword());
+            }
+
 
             Terms terms = resource.getTerms();
             modalities.clear();
@@ -176,7 +183,8 @@ public class ResourceGetterService {
                 + "- Ressource (" + labelResource + "; " + nResource + "; " + refUE + "; " + profRef + ";" + ")\n" +
                     "- saes(" + saes + ")\n" +
                     "- terms(" + modalities.toString() + ")\n" +
-                    "-  hoursStudent(" + hoursStudent.toString() +")\n" +
+                    "- keywords(" + keywords.toString() + ")\n" +
+                    "- hoursStudent(" + hoursStudent.toString() +")\n" +
                     "- pedagoContent( CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
                     "- feedBack(Student: " + studentFeedback + "; Pedagogical team: " + pedagoTeamFeedback + "; Improvements: " + improvements + ")\n");
         } else {
@@ -209,8 +217,8 @@ public class ResourceGetterService {
     public List<String> getSaes() {
         return saes;
     }
-    public String getKeyWords() {
-        return keyWords;
+    public List<String> getKeyWords() {
+        return keywords;
     }
     public List<String> getModalities() {
         return modalities;
