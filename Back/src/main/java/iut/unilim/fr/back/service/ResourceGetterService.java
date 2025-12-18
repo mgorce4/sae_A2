@@ -2,13 +2,11 @@ package iut.unilim.fr.back.service;
 
 import iut.unilim.fr.back.entity.*;
 import iut.unilim.fr.back.repository.*;
-import iut.unilim.fr.back.users.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +24,12 @@ public class ResourceGetterService {
     private MainTeacherForResourceRepository mainTeacherForResourceRepository;
     @Autowired
     private UeCoefficientRepository ueCoefficientRepository;
+    @Autowired
+    private HoursPerStudentRepository hoursPerStudentRepository;
+    @Autowired
+    private PedagogicalContentRepository pedagogicalContentRepository;
+    @Autowired
+    private RessourceTrackingRepository resourceTrackingRepository;
 
     private String fileName = "";
 
@@ -135,7 +139,7 @@ public class ResourceGetterService {
             // User and SAE info removed as they're not in the new schema
             UserSyncadia referent = mainTeacherForResource.getFirst().getUser();
             profRef = referent.getFirstname() + " " + referent.getLastname();
-            labelResource = resource.getLabel();
+            labelResource = resource.getLabel() + ": " + resource.getName();
 
             saes.clear();
             for (SAELinkResource saeLinkResource : SAELinkResources) {
@@ -150,29 +154,31 @@ public class ResourceGetterService {
             modalities.clear();
             modalities.add(terms.getCode());
 
-            // Hours info removed as it's not directly in Ressource anymore
+            HoursPerStudent hoursPerStudent = hoursPerStudentRepository.findByResource_IdResource(id).getFirst();
             hoursStudent.clear();
-            hoursStudent.add(0); // TODO: Get from HOURS_PER_STUDENT
-            hoursStudent.add(0);
-            hoursStudent.add(0);
-            hoursStudent.add(0);
+            hoursStudent.add(hoursPerStudent.getCm());
+            hoursStudent.add(hoursPerStudent.getTd());
+            hoursStudent.add(hoursPerStudent.getTp());
+            hoursStudent.add(hoursPerStudent.getCm() + hoursPerStudent.getTd() + hoursPerStudent.getTp());
 
-            // PedagogicalContent and RessourceTracking removed as they're not directly linked
-            pedagoContentCm = ""; // TODO: Get from PEDAGOGICAL_CONTENT
-            pedagoContentTd = "";
-            pedagoContentTp = "";
+            PedagogicalContent pedagogicalContent = pedagogicalContentRepository.findByResourceSheet_IdResourceSheet(resourceSheet.getIdResourceSheet()).getFirst();
+            pedagoContentCm = pedagogicalContent.getCm();
+            pedagoContentTd = pedagogicalContent.getTd();
+            pedagoContentTp = pedagogicalContent.getTp();
 
-            studentFeedback = ""; // TODO: Get from RESOURCE_TRACKING
-            pedagoTeamFeedback = "";
-            improvements = "";
 
-            writeInLog("Get from database :\n" //TODO : Back log sur toutes les infos
+            RessourceTracking ressourceTracking = resourceTrackingRepository.findByResourceSheet_IdResourceSheet(resourceSheet.getIdResourceSheet()).getFirst();
+            studentFeedback = ressourceTracking.getStudentFeedback();
+            pedagoTeamFeedback = ressourceTracking.getPedagogicalFeedback();
+            improvements = ressourceTracking.getImprovementSuggestions();
+
+            writeInLog("Get from database :\n"
                 + "- Ressource (" + labelResource + "; " + nResource + "; " + refUE + "; " + profRef + ";" + ")\n" +
                     "- saes(" + saes + ")\n" +
                     "- terms(" + modalities.toString() + ")\n" +
                     "-  hoursStudent(" + hoursStudent.toString() +")\n" +
-                    "- pedagoContent(TBD)\n" +
-                    "- feedBack(TBD)\n");
+                    "- pedagoContent( CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
+                    "- feedBack(Student: " + studentFeedback + "; Pedagogical team: " + pedagoTeamFeedback + "; Improvements: " + improvements + ")\n");
         } else {
             writeInLog("Attempt to get from database with resource name: " + ressourceName +
                     "\n-> " + ressourceName + " not found in resources tables");
