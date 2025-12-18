@@ -83,35 +83,20 @@ public class PdfController {
                 // Div competence
                 Chunk competenceTitle = new Chunk("Competence", contentFont);
 
-                PdfPTable competenceTable = new PdfPTable(2);
-                competenceTable.setWidthPercentage(100);
-                competenceTable.setWidths(new float[]{1, 3});
                 ArrayList<String> competences = (ArrayList<String>) res.getCompetences();
                 //TODO: Implementer le drawing des competences, flemme ce soir
+                com.itextpdf.text.List listePuces = new com.itextpdf.text.List(UNORDERED);
+
 
                 for (String competence : competences) {
-                    Chunk chunkTitre = new Chunk(competence, contentFont);
-                    PdfPCell competenceCellLeft = new PdfPCell(new Phrase(chunkTitre));
-
-                    styleCelluleGrise(competenceCellLeft);
-                    competenceCellLeft.setHorizontalAlignment(Element.ALIGN_CENTER);
-                    competenceCellLeft.setVerticalAlignment(Element.ALIGN_MIDDLE);
-
-                    competenceTable.addCell(competenceCellLeft);
-                    PdfPCell competenceCellRight = new PdfPCell();
-                    styleCelluleGrise(competenceCellRight);
-
-                    com.itextpdf.text.List listePuces = new com.itextpdf.text.List(UNORDERED);
                     listePuces.setListSymbol("•");
                     listePuces.setSymbolIndent(12);
 
-                    listePuces.add(new ListItem(new Chunk("Lorem Ispum", contentFont)));
-
-                    competenceCellRight.addElement(listePuces);
-                    competenceTable.addCell(competenceCellRight);
+                    listePuces.add(new ListItem(new Chunk(competence, contentFont)));
                 }
 
-                PdfPTable contentCompetence = createContentDiv(competenceTitle, competenceTable);
+
+                PdfPTable contentCompetence = createContentDiv(competenceTitle, listePuces);
                 contents.add(contentCompetence);
 
                 // Div SAE
@@ -323,8 +308,7 @@ public class PdfController {
 
         PdfPTable bodyTable = new PdfPTable(1);
         bodyTable.setWidthPercentage(100);
-        bodyTable.setSplitLate(false);
-        bodyTable.setSplitRows(true);
+        bodyTable.setKeepTogether(true);
         bodyTable.setPaddingTop(15);
 
         for (PdfPTable content : contents) {
