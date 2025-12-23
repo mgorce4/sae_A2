@@ -8,7 +8,7 @@
     const users = ref([]) //get the data from database ressources-sheets
 
     onMounted(async () => {
-        axios.get('http://localhost:8080/api/ressource-sheets').then(response => (users.value = response.data))
+        axios.get('http://localhost:8080/api/resource-sheets').then(response => (users.value = response.data))
     })
 
     const goToRessourceSheet = (id) => {
@@ -29,8 +29,8 @@
         <div id="for_scroll_bar" style="overflow-y: scroll; margin: 1vw; height: 24vw;">
             <p id="title">Vos ressources : </p>
             <div id="div_sheets" >
-                <button id="sheets" @click="goToRessourceSheet(u.idRessourceSheet)" v-for="u in users" :key="u.idRessourceSheet">
-                    <p>{{ u.label}}</p>
+                <button id="sheets" @click="goToRessourceSheet(u.idResourceSheet)" v-for="u in users" :key="u.idResourceSheet">
+                    <p>{{ u.resource.label}}</p>
                 </button>
             </div>
         </div>
