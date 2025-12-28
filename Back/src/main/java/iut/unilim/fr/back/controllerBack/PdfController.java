@@ -81,7 +81,7 @@ public class PdfController {
                 contents.add(content);
 
                 // Div competence
-                Chunk competenceTitle = new Chunk("Competence", contentFont);
+                Chunk competenceTitle = new Chunk("Compétence", contentFont);
 
                 ArrayList<String> competences = (ArrayList<String>) res.getCompetences();
                 //TODO: Implementer le drawing des competences, flemme ce soir
@@ -100,7 +100,7 @@ public class PdfController {
                 contents.add(contentCompetence);
 
                 // Div SAE
-                Chunk saeConcerne = new Chunk("SaeConcerne", contentFont);
+                Chunk saeConcerne = new Chunk("SAÉ Concernée", contentFont);
                 ArrayList<String> saes = (ArrayList<String>) res.getSaes();
 
                 com.itextpdf.text.List saeList = new com.itextpdf.text.List(UNORDERED);
@@ -114,7 +114,7 @@ public class PdfController {
                 contents.add(contentSae);
 
                 // Div mot cles
-                Chunk motsCleTitre = new Chunk("Mots Cle", contentFont);
+                Chunk motsCleTitre = new Chunk("Mots Clé", contentFont);
                 ArrayList<String> motsCles = (ArrayList<String>) res.getKeyWords();
                 StringBuilder motCle = new StringBuilder(motsCles.getFirst());
                 for  (int index=1; index<motsCles.size(); index++) {
@@ -128,7 +128,7 @@ public class PdfController {
                 contents.add(motCleContent);
 
 
-                Chunk modalite = new Chunk("Modalite", contentFont);
+                Chunk modalite = new Chunk("Modalité", contentFont);
                 ArrayList<String> modalites = (ArrayList<String>) res.getModalities();
 
                 com.itextpdf.text.List modaliteList = new com.itextpdf.text.List(UNORDERED);
@@ -194,9 +194,7 @@ public class PdfController {
                 repartitionContent.setPaddingTop(15);
                 contents.add(repartitionContent);
 
-                // Contenue pedago
-                // TODO (fait, je crois) : Faire en sorte que l'on parcours la chaine de caractere jusqu'a chaque virgule qui sera une nouvelle entree de la liste a puce
-                Chunk contenuePedago = new Chunk("Contenue pedagogique", contentFont);
+                Chunk contenuePedago = new Chunk("Contenue pédagogique", contentFont);
                 PdfPTable pedagoTable = new PdfPTable(2);
                 pedagoTable.setWidthPercentage(100);
                 pedagoTable.setWidths(new float[]{1f, 6f});
@@ -223,17 +221,17 @@ public class PdfController {
                 ArrayList<PdfPTable> suiviRessourceContents = new ArrayList<>();
 
                 Chunk suiviRessource = new Chunk("Suivi de la Ressource/Module", contentFont);
-                Chunk retourEquipePedago = new Chunk("Retour de l'equipe pedagogique", contentFont);
+                Chunk retourEquipePedago = new Chunk("Retour de l'équipe pédagogique", contentFont);
                 Chunk retourEquipePedagoContent = new Chunk(res.getPedagoTeamFeedback(), contentFont);
 
                 suiviRessourceContents.add(createContentDiv(retourEquipePedago, retourEquipePedagoContent));
 
-                Chunk retourEtu = new Chunk("Retour Etudiant", contentFont);
+                Chunk retourEtu = new Chunk("Retour étudiant", contentFont);
                 Chunk retourEtuContent = new Chunk(res.getStudentFeedback(), contentFont);
 
                 suiviRessourceContents.add(createContentDiv(retourEtu, retourEtuContent));
 
-                Chunk amelioration = new Chunk("Ameliorations a mettre en oeuvre", contentFont);
+                Chunk amelioration = new Chunk("Améliorations à mettre en oeuvre", contentFont);
                 Chunk ameliorationContent = new Chunk(res.getImprovements(), contentFont);
 
                 suiviRessourceContents.add(createContentDiv(amelioration, ameliorationContent));
