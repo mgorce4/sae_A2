@@ -35,7 +35,9 @@
 
 <template>
   <header-application/>
-  <component :is="currentView" />
+  <main>
+    <component :is="currentView" />
+  </main>
   <footer-application/>
 </template>
 

@@ -32,12 +32,11 @@
 <style>
 /* -- Header -- */
 #header_div {
-    position: fixed;
-    top: 0;
-    left: 0;
     width: 100%;
     height: 8vw;
     background-color: #FFFFFF;
+    margin: 0;
+    padding: 0;
 }
 
 #header_top {

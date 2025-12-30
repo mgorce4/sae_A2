@@ -8,13 +8,11 @@
 <style>
 /* -- Footer -- */
 #footer_red_rect {
-    position: fixed;
-    bottom: 0;
-    left: 0;
     width: 94%;
     height: 3.5vw;
     padding: 0 3%;
     background-color: #B51621;
+    margin: 0;
 }
 
 #establishment_name {
