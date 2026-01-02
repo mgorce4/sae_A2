@@ -1,6 +1,6 @@
 <script setup>
 import { status } from '../main'
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, nextTick } from 'vue'
 import axios from 'axios'
 
 status.value = 'Administration'
@@ -35,27 +35,37 @@ const list_of_lesson = ['CM', 'TD', 'TP', 'Projet']
 
 const UEs = ref([])
 
+const resources = ref([])
+
 function areTotalNaN() {
   return isNaN(total_initial_formation.value) && isNaN(total_work_study.value)
 }
 
-onMounted(() => {
+onMounted(async() => {
 
-  axios.get('http://localhost:8080/api/ues').then(response => (UEs.value = response.data))
+  /* usage of await to wait for the data to be fetched before adding event listeners */
 
-  const acc = document.getElementsByClassName('accordion')
+  await Promise.all([
+    axios.get('http://localhost:8080/api/ues').then(response => (UEs.value = response.data)),
+    axios.get('http://localhost:8080/api/resources').then(response => (resources.value = response.data))
+  ])
 
-  for (let i = 0; i < acc.length; i++) {
-    acc[i].addEventListener('click', function () {
-      this.classList.toggle('active')
+  await nextTick()
+
+  console.log(document.querySelectorAll(".accordion"))
+
+  document.querySelectorAll(".accordion").forEach(acc => {
+    console.log(acc)
+    acc.addEventListener("click", function() {
+      this.classList.toggle("active")
       const panel = this.nextElementSibling
       if (panel.style.maxHeight) {
         panel.style.maxHeight = null
       } else {
-        panel.style.maxHeight = panel.scrollHeight + 'px'
+        panel.style.maxHeight = panel.scrollHeight + "px"
       }
     })
-  }
+  })
 
   document.getElementById('save').addEventListener('click', () => {
     total_initial_formation.value = parseInt(CM_initial_formation.value) + parseInt(TD_initial_formation.value) + parseInt(TP_initial_formation.value) + parseInt(Project_initial_formation.value)
@@ -92,7 +102,7 @@ onMounted(() => {
 
         <a class="accordion" id="dark_bar">Ajout d'une ressource :</a>
 
-        <form class="panel_ressources">
+        <form class="panel">
           <div id="left">
             <div>
               <label>Intitule de la ressource : </label>
@@ -213,6 +223,38 @@ onMounted(() => {
         </form>
       </div>
     </div>
+
+    <div id="resources_list">
+      <p v-if="resources.length > 0" >Ressources créées :</p>
+      <p v-else>Aucune ressource n'a été crée</p>
+
+      <div v-for="resource in resources" :key="resource.idResource">
+        <a class="accordion" id="dark_bar">{{ resource.label }} {{resource.name}}</a>
+
+        <div class="panel">
+          <div id="left">
+            <p>Code Apogee : </p>
+            <p>{{ resource.apogeeCode }}</p>
+
+            <p>Nombre d'heure (formation initial) : </p>
+            <p>CM : </p>
+            <p>TD : </p>
+            <p>TP : </p>
+            <p>Projet : </p>
+            <p>Total : </p>
+            <input class="btn1" value="Supprimer"/>
+            <input class="btn1" value="Modifier"/>
+          </div>
+
+          <div id="right">
+            <p>UE(s) affectée(s) :</p>
+            <p>coefficient : </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 </template>
 
@@ -260,8 +302,11 @@ onMounted(() => {
   font-size: 2.3vw;
 }
 
-.accordion,
-#dark_bar > p {
+#dark_bar {
+  max-width: 97%;
+}
+
+.accordion, #dark_bar >p{
   margin: 0vw;
   font-weight: lighter;
   font-size: 1.05vw;
@@ -270,10 +315,6 @@ onMounted(() => {
 .accordion {
   cursor: pointer;
   position: relative;
-}
-
-#dark_bar {
-  width: 97%;
 }
 
 .accordion::after {
@@ -309,7 +350,7 @@ onMounted(() => {
   border-radius: 10px;
 }
 
-.panel_ressources {
+.panel {
   width: 90%;
   max-height: 0;
   justify-self: center;
@@ -324,7 +365,7 @@ onMounted(() => {
   display: flex;
 }
 
-.panel_ressources p {
+.panel p {
   margin-top: 0;
   padding-top: 1vw;
 }
@@ -387,5 +428,24 @@ onMounted(() => {
 
 #btn > input {
   margin: 0px 35px 0px 35px;
+}
+
+#resources_list {
+  background-color: rgb(61, 67, 117);
+  border-radius: 15px;
+  padding: 10px;
+  margin-top: 3%;
+}
+
+#resources_list > a {
+  display: block;
+  padding: 10px;
+  margin-bottom: 10px;
+  font-size: 20px;
+}
+
+#resources_list > p {
+  color: white;
+  font-size: 1.5vw;
 }
 </style>
