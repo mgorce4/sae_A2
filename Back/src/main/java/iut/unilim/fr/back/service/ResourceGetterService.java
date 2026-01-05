@@ -134,10 +134,24 @@ public class ResourceGetterService {
 
             ref = ressourceName;
             nResource = "IU EN FOR 001";
-            
+
             List<UeCoefficient> ueCoefficient = ueCoefficientRepository.findByResource_IdResource(id);
             UE ue = ueCoefficient.getFirst().getUe();
             refUE = ue.getLabel();
+
+            List<NationalProgramObjective> npObjectives = nationalProgramObjectiveRepository.findByResourceSheet_IdResourceSheet(id);
+
+            if (!npObjectives.isEmpty()) {
+                if (npObjectives.size() > 1) {
+                    objectiveContent = "";
+                    for (NationalProgramObjective npObjective : npObjectives) {
+                        objectiveContent += npObjective.getContent() + ", ";
+                    }
+                } else {
+                    objectiveContent = npObjectives.getFirst().getContent();
+                }
+            }
+
             List<NationalProgramSkill> npSkill = nationalProgramSkillRepository.findByResourceSheet_IdResourceSheet(id);
 
             skills.clear();
@@ -198,6 +212,7 @@ public class ResourceGetterService {
 
             writeInLog("Get from database :\n"
                 + "- Ressource (" + labelResource + "; " + nResource + "; " + refUE + "; " + profRef + ";" + ")\n" +
+                    "- objectives(" + objectiveContent + ")\n" +
                     "- skills(" + skills.toString() + ")\n" +
                     "- saes(" + saes + ")\n" +
                     "- terms(" + modalities.toString() + ")\n" +
