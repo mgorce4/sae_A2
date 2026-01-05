@@ -158,6 +158,15 @@ CREATE TABLE NATIONAL_PROGRAM_OBJECTIVE(
     id_RessourceSheet INT REFERENCES RESSOURCE_SHEET(id_RessourceSheet)
 );
 
+CREATE TABLE TEACHER_HOURS(
+    id_TeacherHours SERIAL PRIMARY KEY,
+    cm TEXT,
+    td TEXT,
+    tp TEXT,
+    isalternance BOOLEAN,
+    id_RessourceSheet INT REFERENCES RESSOURCE_SHEET(id_RessourceSheet)
+);
+
 INSERT INTO INSTITUTION (name, location) VALUES
 ('INFORMATIQUE', 'IUT du Limousin'),
 ('GEA', 'IUT de Guéret'),

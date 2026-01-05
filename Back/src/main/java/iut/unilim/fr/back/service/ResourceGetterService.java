@@ -32,6 +32,12 @@ public class ResourceGetterService {
     private RessourceTrackingRepository resourceTrackingRepository;
     @Autowired
     private KeywordRepository keywordRepository;
+    @Autowired
+    private TeacherHoursRepository teacherHoursRepository;
+    @Autowired
+    private NationalProgramObjectiveRepository nationalProgramObjectiveRepository;
+    @Autowired
+    private NationalProgramSkillRepository nationalProgramSkillRepository;
 
     private String fileName = "";
 
@@ -127,8 +133,7 @@ public class ResourceGetterService {
                     + "label : " + label + "\n");
 
             ref = ressourceName;
-            String resC = resource.getLabel().split(" ")[0];
-            nResource = resC.split("R")[1];// TODO : Changer pour la reference de la ressource ( 1.10... ) -> Should work
+            nResource = "IU EN FOR 001";// TODO : Changer pour la reference de la ressource ( 1.10... ) pour les references de Mme Sarlot
             Boolean isMultiCompetences = resource.getDiffMultiCompetences();
             if (!isMultiCompetences) {
                 List<UeCoefficient> ueCoefficient = ueCoefficientRepository.findByResource_IdResource(id);
@@ -162,11 +167,18 @@ public class ResourceGetterService {
             modalities.add(terms.getCode());
 
             HoursPerStudent hoursPerStudent = hoursPerStudentRepository.findByResource_IdResource(id).getFirst();
+            hoursPN.clear();
+            hoursPN.add(hoursPerStudent.getCm());
+            hoursPN.add(hoursPerStudent.getTd());
+            hoursPN.add(hoursPerStudent.getTp());
+            hoursPN.add(hoursPerStudent.getCm() + hoursPerStudent.getTd() + hoursPerStudent.getTp());
+
+            TeacherHours teacherHours = teacherHoursRepository.findByResourceSheet_IdResourceSheet(id).getFirst();
             hoursStudent.clear();
-            hoursStudent.add(hoursPerStudent.getCm());
-            hoursStudent.add(hoursPerStudent.getTd());
-            hoursStudent.add(hoursPerStudent.getTp());
-            hoursStudent.add(hoursPerStudent.getCm() + hoursPerStudent.getTd() + hoursPerStudent.getTp());
+            hoursStudent.add(teacherHours.getCm());
+            hoursStudent.add(teacherHours.getTd());
+            hoursStudent.add(teacherHours.getTp());
+            hoursStudent.add(teacherHours.getCm() + hoursPerStudent.getTd() + hoursPerStudent.getTp());
 
             PedagogicalContent pedagogicalContent = pedagogicalContentRepository.findByResourceSheet_IdResourceSheet(resourceSheet.getIdResourceSheet()).getFirst();
             pedagoContentCm = pedagogicalContent.getCm();
@@ -185,6 +197,7 @@ public class ResourceGetterService {
                     "- terms(" + modalities.toString() + ")\n" +
                     "- keywords(" + keywords.toString() + ")\n" +
                     "- hoursStudent(" + hoursStudent.toString() +")\n" +
+                    "- hoursPN(" + hoursPN.toString() + ")\n" +
                     "- pedagoContent( CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
                     "- feedBack(Student: " + studentFeedback + "; Pedagogical team: " + pedagoTeamFeedback + "; Improvements: " + improvements + ")\n");
         } else {
