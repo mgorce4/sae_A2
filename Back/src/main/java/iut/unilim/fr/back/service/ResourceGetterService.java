@@ -129,8 +129,8 @@ public class ResourceGetterService {
             List<SAELinkResource> SAELinkResources = saeLinkResourceRepository.findByIdResource(id);
 
             writeInLog("Get ressource \n"
-                    + "id : " + id + "\n"
-                    + "label : " + label + "\n");
+                    + "     - id : " + id + "\n"
+                    + "     - label : " + label + "\n");
 
             ref = ressourceName;
             nResource = "IU EN FOR 001";
@@ -213,15 +213,15 @@ public class ResourceGetterService {
 
             writeInLog("Get from database :\n"
                 + "- Ressource (" + labelResource + "; " + nResource + "; " + refUE + "; " + profRef + ";" + ")\n" +
-                    "- objectives(" + objectiveContent + ")\n" +
-                    "- skills(" + skills.toString() + ")\n" +
-                    "- saes(" + saes + ")\n" +
-                    "- terms(" + modalities.toString() + ")\n" +
-                    "- keywords(" + keywords.toString() + ")\n" +
-                    "- hoursStudent(" + hoursStudent.toString() +")\n" +
-                    "- hoursPN(" + hoursPN.toString() + ")\n" +
-                    "- pedagoContent( CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
-                    "- feedBack(Student: " + studentFeedback + "; Pedagogical team: " + pedagoTeamFeedback + "; Improvements: " + improvements + ")\n");
+                    "   - objectives(" + objectiveContent + ")\n" +
+                    "   - skills(" + skills.toString() + ")\n" +
+                    "   - saes(" + saes + ")\n" +
+                    "   - terms(" + modalities.toString() + ")\n" +
+                    "   - keywords(" + keywords.toString() + ")\n" +
+                    "   - hoursStudent(" + hoursStudent.toString() +")\n" +
+                    "   - hoursPN(" + hoursPN.toString() + ")\n" +
+                    "   - pedagoContent( CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
+                    "   - feedBack(Student: " + studentFeedback + "; Pedagogical team: " + pedagoTeamFeedback + "; Improvements: " + improvements + ")\n");
         } else {
             writeInLog("Attempt to get from database with resource name: " + ressourceName +
                     "\n-> " + ressourceName + " not found in resources tables");
