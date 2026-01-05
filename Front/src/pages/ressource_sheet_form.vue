@@ -75,11 +75,42 @@ onMounted(async () => {
       const panel = this.nextElementSibling;
       if (panel.style.maxHeight) {
         panel.style.maxHeight = null;
+        panel.style.padding = "0 18px";
       } else {
+        panel.style.padding = "2vw 18px";
         panel.style.maxHeight = panel.scrollHeight + "px";
       }
     });
   }
+
+  // Auto-resize textareas (only those with specific classes)
+  const textareas = document.querySelectorAll('#text_area_styled, .auto-resize-textarea');
+  textareas.forEach(textarea => {
+    const autoResize = () => {
+      textarea.style.height = 'auto';
+      textarea.style.height = (textarea.scrollHeight) + 'px';
+
+      // Update parent panel height if inside an accordion
+      const panel = textarea.closest('.panel');
+      if (panel && panel.style.maxHeight) {
+        panel.style.maxHeight = panel.scrollHeight + 'px';
+      }
+    };
+
+    // Set initial height
+    setTimeout(() => autoResize(), 0);
+
+    // Add event listener for input
+    textarea.addEventListener('input', autoResize);
+
+    // Add event listener for when accordion opens
+    const accordion = textarea.closest('#form')?.querySelector('.accordion');
+    if (accordion) {
+      accordion.addEventListener('click', () => {
+        setTimeout(() => autoResize(), 250);
+      });
+    }
+  });
 })
 </script>
 
@@ -104,13 +135,13 @@ onMounted(async () => {
       <div id="form">
         <button class="accordion" id="dark_Bar">Objectif de la ressource</button>
         <div class="panel">
-          <p>awa</p>
+          <textarea id="text_area_styled">Il faut manger beaucoup de pâtes pour être heureux</textarea>
         </div>
       </div>
       <div id="form">
         <button class="accordion" id="dark_Bar">Compétences *</button>
         <div class="panel">
-          <p>{{ resourceSheet?.competence || 'Aucune compétence renseignée' }}</p>
+          <textarea id="text_area_styled">zlkdjlzkez</textarea>
         </div>
       </div>
       <div>
@@ -123,18 +154,20 @@ onMounted(async () => {
       </div>
       <div>
         <p class="subsection_title">Mots clés</p>
+        <textarea class="auto-resize-textarea">mots clés...</textarea>
       </div>
       <div>
         <p class="subsection_title">Modalités de mise en oeuvre : </p>
+        <textarea class="auto-resize-textarea">modalités...</textarea>
       </div>
       <div>
         <p class="section_title">Répartition de heures ( volume étudiant ) : </p>
         <p>CM</p>
-        <textarea>1</textarea>
+        <textarea id="text_area_styled">1</textarea>
         <p>TD</p>
-        <textarea>1</textarea>
+        <textarea id="text_area_styled">1</textarea>
         <p>TP</p>
-        <textarea>1</textarea>
+        <textarea id="text_area_styled">1</textarea>
         <span>Le nombre total d'heure est .../...</span>
       </div>
       <div>
@@ -143,12 +176,12 @@ onMounted(async () => {
       <div>
         <p class="section_title">Suivi de la ressource / module</p>
         <div>
-          <p>Retour de l’équipe pédagogique et des acteurs impactés</p>
-          <textarea></textarea>
+          <p>Retour de l'équipe pédagogique et des acteurs impactés</p>
+          <textarea class="auto-resize-textarea"></textarea>
           <p>Retour des étudiants</p>
-          <textarea></textarea>
+          <textarea class="auto-resize-textarea"></textarea>
           <p>Amélioration(s) à mettre en oeuvre</p>
-          <textarea></textarea>
+          <textarea class="auto-resize-textarea"></textarea>
         </div>
       </div>
       <div>
@@ -197,11 +230,12 @@ onMounted(async () => {
   background-color: rgba(0,0,0,0.35);
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.2s ease-out;
+  transition: max-height 0.2s ease-out, padding 0.2s ease-out;
   border-bottom-left-radius: 15px;
   border-bottom-right-radius: 15px;
   color: white;
-  margin-top: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .panel p {
@@ -230,6 +264,30 @@ onMounted(async () => {
   font-weight: bold;
 }
 
+#text_area_styled{
+  width: 100%;
+  min-height: 3em;
+  border-radius: 15px;
+  background-color: rgb(117, 117, 117);
+  color: white;
+  border: none;
+  box-sizing: border-box;
+  resize: none;
+  padding: 1vw;
+  overflow: hidden;
+  overflow-wrap: break-word;
+}
+
+.auto-resize-textarea {
+  overflow: hidden;
+  resize: none;
+  box-sizing: border-box;
+  padding: 1vw;
+  min-height: 3em;
+  overflow-wrap: break-word;
+}
+
+
 #background_Form{
   height: auto;
   background-color: rgb(61, 67, 117);
@@ -238,10 +296,10 @@ onMounted(async () => {
   overflow-y: auto;
   box-sizing: border-box;
   padding-bottom: 1vw;
+  color: white;
 }
 
 .title{
-  color: white;
   text-align: center;
   padding-top: 1vw;
   margin: 0;
@@ -271,14 +329,12 @@ onMounted(async () => {
   display: flex;
   gap: 1vw;
   padding: 1vw;
-  color: white;
   justify-content: space-evenly;
 }
 
 .ref_Section {
   display: flex;
   gap: 0.5vw;
-  color: white;
   padding: 0 2vw;
   margin-bottom: 1vw;
 }
@@ -290,14 +346,12 @@ onMounted(async () => {
 /*main form styles*/
 .section_title {
   font-size: 1.5vw;
-  color: white;
   font-weight: bold;
   padding : 1vw 0 0.5vw 2vw;
 }
 
 .subsection_title {
   font-size: 1.2vw;
-  color: white;
   font-weight: bold;
   padding : 0.5vw 0 0.5vw 2vw;
 }
