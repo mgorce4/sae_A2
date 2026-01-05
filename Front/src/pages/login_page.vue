@@ -68,6 +68,7 @@
             localStorage.firstname = user.firstname
             localStorage.lastname = user.lastname
             localStorage.idUser = user.idUser
+            localStorage.idInstitution = user.institution.idInstitution
             localStorage.institutionName = user.institution.name
             localStorage.institutionLocation = user.institution.location
             console.log("Utilisateur : ", user.username)

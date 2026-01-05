@@ -1,28 +1,33 @@
 <script setup>
-    import { ref, onMounted } from 'vue'
+    import { ref, onMounted, computed } from 'vue'
     import axios from 'axios'
 
     import { status, institutionLocation } from '../main' /*add , userName next to status to import it*/
     status.value = "Professeur"
     institutionLocation.value = localStorage.institutionLocation
 
-    const users = ref([]) //get the data from database ressources-sheets
+    const resourceSheets = ref([]) //get the data from database ressources-sheets
+    const mainTeacherForRessource = ref([])
 
     onMounted(async () => {
-        axios.get('http://localhost:8080/api/resource-sheets').then(response => (users.value = response.data))
+        axios.get('http://localhost:8080/api/resource-sheets').then(response => (resourceSheets.value = response.data))
+        axios.get('http://localhost:8080/api/main-teachers-for-resource').then(response => (mainTeacherForRessource.value = response.data))
+    })
+
+    const joinTables = computed(() => {
+        // Join between users and access_rights where users.idUser = access_rights.idUser
+        return mainTeacherForRessource.value.map((teacher) => {
+            const resourceSheet = resourceSheets.value.filter((ar) => ar.resource.idResource === teacher.resource.idResource)
+            return {
+                ...teacher,
+                resourceSheet: resourceSheet
+            }
+        }).filter(teacher => teacher.user.institution.idInstitution == localStorage.idInstitution)
     })
 
     const goToRessourceSheet = (id) => {
         window.location.hash = `#/form-ressource-sheet?id=${id}`
     }
-
-    /*
-    const name = ref([]) //to get the username from who's connected
-    onMounted(async () => {
-        axios.get('http://localhost:8080/api/users').then(response => (name.value = response.data))
-    })
-    userName.value = name.value.username
-    */
 </script>
 
 <template>
@@ -30,7 +35,7 @@
         <div id="for_scroll_bar" style="overflow-y: scroll; margin: 1vw; height: 24vw;">
             <p id="title">Vos ressources : </p>
             <div id="div_sheets" >
-                <button id="sheets" @click="goToRessourceSheet(u.idResourceSheet)" v-for="u in users" :key="u.idResourceSheet">
+                <button id="sheets" @click="goToRessourceSheet(u.idResourceSheet)" v-for="u in joinTables" :key="u.idResourceSheet">
                     <p>{{ u.resource.label}}</p>
                 </button>
             </div>

@@ -24,7 +24,7 @@ const institutions = ref(null)
 
 // Function for return button
 const goBack = () => {
-  window.location.hash = '#/teacher_dashboard'
+  window.location.hash = '#/teacher-dashboard'
 }
 
 onMounted(async () => {
