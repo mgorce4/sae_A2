@@ -5,6 +5,7 @@
   import MCCCSelectForm from './pages/mccc_select_form.vue'
   import NotFound from './pages/not_found.vue'
   import DsbrProf from './pages/teacher_dashboard.vue'
+  import FormSae from './pages/form_mccc_sae.vue'
   import FormUE from './pages/form_mccc_UE.vue'
   import FormRessources from './pages/form_mccc_ressources.vue'
   import FormRessourceSheet from './pages/ressource_sheet_form.vue'
@@ -12,8 +13,9 @@
   const routes = {
     '/': Login,
     '/dashboard-administration': AdministrationDashboard,
-    '/teacher_dashboard': DsbrProf,
+    '/teacher-dashboard': DsbrProf,
     '/mccc-select-form': MCCCSelectForm,
+    '/form-mccc-sae': FormSae,
     '/form-mccc-UE': FormUE,
     '/form-mccc-ressources' : FormRessources,
     '/form-ressource-sheet': FormRessourceSheet
