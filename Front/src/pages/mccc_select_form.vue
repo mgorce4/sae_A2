@@ -11,7 +11,7 @@ const afficherBoutons = ref([
 <template>
     <div id="form_select_page">
         <div style="display: flex; align-items: center; height: 1vw;">
-            <button id="back_arrow" onclick="document.location.href='#/dashboard-administration'">←</button>
+            <button class="back_arrow" onclick="document.location.href='#/dashboard-administration'">←</button>
             <p class="back" >Retour à l'accueil</p>
         </div>
 
@@ -25,7 +25,7 @@ const afficherBoutons = ref([
                     <div v-show="btn.show" class="container-fluid spe">
                         <button class="btn_form_acces" onclick="document.location.href='#/form-mccc-UE'">UE</button>
                         <button class="btn_form_acces" onclick="document.location.href='#/form-mccc-ressources'">Ressource</button>
-                        <button class="btn_form_acces">SAÉ</button>
+                        <button class="btn_form_acces" onclick="document.location.href='#/form-mccc-sae'">SAÉ</button>
                     </div>
                 </div>
             </div>
@@ -46,14 +46,6 @@ const afficherBoutons = ref([
     font-weight: bold;
     color: #000000;
     margin-left: 1.5vw;
-}
-
-#back_arrow{
-    font-size: 2vw;
-    border: none;
-    background-color: white;
-    color: black;
-    font-weight: bold;
 }
 
 .blue_rect {
