@@ -19,8 +19,8 @@ const resourceSheetId = ref(getQueryParam('id'))
 /* link with the API */
 const resourceSheet = ref(null)
 const resource = ref(null)
-const ue = ref(null)
-const institutions = ref(null)
+const ueLabels = ref([])
+const institutionName = ref(null)
 
 // Function for return button
 const goBack = () => {
@@ -28,39 +28,86 @@ const goBack = () => {
 }
 
 onMounted(async () => {
+  console.log('Component mounted, resourceSheetId:', resourceSheetId.value)
+
+  // Get institution name from localStorage
+  const storedInstitution = localStorage.getItem('institutionName')
+  console.log('Stored institution in localStorage:', storedInstitution)
+  if (storedInstitution) {
+    institutionName.value = storedInstitution
+    console.log('Institution from localStorage:', institutionName.value)
+  } else {
+    console.warn('No institution found in localStorage')
+  }
+
   /* get the specific resource sheet from the DB using the ID */
   if (resourceSheetId.value) {
     try {
+      console.log('Fetching resource sheet with ID:', resourceSheetId.value)
       const response = await axios.get(`http://localhost:8080/api/resource-sheets/${resourceSheetId.value}/details`)
       resourceSheet.value = response.data
       console.log('ResourceSheet data with details:', resourceSheet.value)
 
-      // Extract nested data directly from the resource sheet response
+      // Extract resource data
       if (resourceSheet.value.resource) {
         resource.value = resourceSheet.value.resource
         console.log('Resource data:', resource.value)
+        console.log('Resource ID:', resource.value.idResource)
 
-        // Extract UE from resource
-        if (resource.value.ueCoefficient && resource.value.ueCoefficient.ue) {
-          ue.value = resource.value.ueCoefficient.ue
-          console.log('UE data:', ue.value)
+        // Get UE labels from all UE coefficients linked to this resource
+        if (resource.value.idResource) {
+          try {
+            console.log('Fetching UE coefficients for resource ID:', resource.value.idResource)
+
+            // Try the specific endpoint first
+            try {
+              const ueCoeffResponse = await axios.get(`http://localhost:8080/api/ue-coefficients/resource/${resource.value.idResource}`)
+              const ueCoefficients = ueCoeffResponse.data
+              console.log('UE Coefficients from specific endpoint:', ueCoefficients)
+
+              // Extract UE labels from coefficients
+              ueLabels.value = ueCoefficients
+                .filter(coeff => coeff.ue && coeff.ue.label)
+                .map(coeff => coeff.ue.label)
+
+              console.log('UE Labels extracted:', ueLabels.value)
+            } catch (endpointError) {
+              console.warn('Specific endpoint failed, trying fallback method:', endpointError.message)
+
+              // Fallback: Get all UE coefficients and filter by resource ID
+              const allUeCoeffsResponse = await axios.get('http://localhost:8080/api/ue-coefficients')
+              const allUeCoefficients = allUeCoeffsResponse.data
+              console.log('All UE Coefficients fetched:', allUeCoefficients)
+
+              // Filter by resource ID
+              const filteredCoeffs = allUeCoefficients.filter(coeff =>
+                coeff.resource && coeff.resource.idResource === resource.value.idResource
+              )
+              console.log('Filtered UE Coefficients:', filteredCoeffs)
+
+              // Extract UE labels
+              ueLabels.value = filteredCoeffs
+                .filter(coeff => coeff.ue && coeff.ue.label)
+                .map(coeff => coeff.ue.label)
+
+              console.log('UE Labels extracted from fallback:', ueLabels.value)
+            }
+          } catch (error) {
+            console.error('Error fetching UE coefficients:', error)
+            console.error('Error details:', error.response?.data || error.message)
+          }
         } else {
-          console.log('No UE coefficient or UE found in resource')
+          console.warn('No idResource found in resource object')
         }
       } else {
         console.log('No resource found in resourceSheet')
       }
-
-      // Extract institution from user
-      if (resourceSheet.value.user && resourceSheet.value.user.institution) {
-        institutions.value = resourceSheet.value.user.institution
-        console.log('Institution data:', institutions.value)
-      } else {
-        console.log('No user or institution found in resourceSheet')
-      }
     } catch (error) {
       console.error('Error fetching resource sheet:', error)
+      console.error('Error details:', error.response?.data || error.message)
     }
+  } else {
+    console.warn('No resourceSheetId found in URL')
   }
 
   // Wait for DOM to be fully rendered
@@ -123,10 +170,10 @@ onMounted(async () => {
     <div id="background_Form">
       <div class="header_Form">
         <p>Réf. UE : </p>
-        <p>{{ ue?.label || '###' }}</p>
+        <p>{{ ueLabels.length > 0 ? ueLabels.join(', ') : '###' }}</p>
         <h2 class="title">{{ resource?.label || resourceSheet?.name || 'Nom de la ressource' }}</h2>
         <p>Dep : </p>
-        <p>{{ institutions?.value || '###' }}</p>
+        <p>{{ institutionName || '###' }}</p>
       </div>
       <div class="ref_Section">
         <p>Réf. ressource : </p>
@@ -163,11 +210,11 @@ onMounted(async () => {
       <div>
         <p class="section_title">Répartition de heures ( volume étudiant ) : </p>
         <p>CM</p>
-        <textarea id="text_area_styled">1</textarea>
+        <textarea class="auto-resize-textarea">1</textarea>
         <p>TD</p>
-        <textarea id="text_area_styled">1</textarea>
+        <textarea class="auto-resize-textarea">1</textarea>
         <p>TP</p>
-        <textarea id="text_area_styled">1</textarea>
+        <textarea class="auto-resize-textarea">1</textarea>
         <span>Le nombre total d'heure est .../...</span>
       </div>
       <div>
@@ -177,11 +224,11 @@ onMounted(async () => {
         <p class="section_title">Suivi de la ressource / module</p>
         <div>
           <p>Retour de l'équipe pédagogique et des acteurs impactés</p>
-          <textarea class="auto-resize-textarea"></textarea>
+          <textarea id="text_area_styled"></textarea>
           <p>Retour des étudiants</p>
-          <textarea class="auto-resize-textarea"></textarea>
+          <textarea id="text_area_styled"></textarea>
           <p>Amélioration(s) à mettre en oeuvre</p>
-          <textarea class="auto-resize-textarea"></textarea>
+          <textarea id="text_area_styled"></textarea>
         </div>
       </div>
       <div>
