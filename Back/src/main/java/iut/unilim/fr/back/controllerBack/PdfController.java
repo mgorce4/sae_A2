@@ -83,7 +83,7 @@ public class PdfController {
                 // Div competence
                 Chunk competenceTitle = new Chunk("Compétence", contentFont);
 
-                ArrayList<String> competences = (ArrayList<String>) res.getCompetences();
+                ArrayList<String> competences = (ArrayList<String>) res.getSkills();
                 //TODO: Implementer le drawing des competences, flemme ce soir
                 com.itextpdf.text.List listePuces = new com.itextpdf.text.List(UNORDERED);
 
