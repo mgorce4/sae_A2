@@ -371,7 +371,6 @@ onMounted(async() => {
 }
 
 .input {
-  border: black 1px solid;
   border-radius: 5px;
   background-color: rgb(117, 117, 117, 100);
   color: #ffffff;

@@ -1,10 +1,20 @@
 <script setup>
     import { status } from '../main'
-    import { onMounted } from 'vue'
+    import { onMounted, ref} from 'vue'
+    import axios from 'axios'
     
     status.value = "Administration"
+
+    let display_more_area = ref(false)
     
-    onMounted(() => {
+    //the input fields for the function
+    const nb_UE = ref('')
+    const apogee_code = ref('')
+    const name_comp = ref('')
+    const comp_level = ref('')
+    
+    //accordion
+    onMounted(async () => {
         const acc = document.getElementsByClassName("accordion_UE");
         for (let i = 0; i < acc.length; i++) {
             acc[i].addEventListener("click", function() {
@@ -12,16 +22,35 @@
                 const panel = this.nextElementSibling;
                 if (panel.style.maxHeight) {
                     panel.style.maxHeight = null;
+                    panel.style.padding = "0 18px";
                 } else {
                     panel.style.maxHeight = panel.scrollHeight + "px";
+                    panel.style.padding = "3px 18px 15px";
                 }
             });
         }
     })
 
-    const numUE=ref('');
-
-
+    //function link to save
+    const save = async () => {
+        try{
+            await axios.post('http://localhost:8080/api/ues', {
+                euApogeeCode: apogee_code.value,
+                label: nb_UE.value,
+                name: name_comp.value,
+                competenceLevel: parseInt(comp_level.value)
+            });
+            
+            nb_UE.value = ''
+            apogee_code.value = ''
+            name_comp.value = ''
+            comp_level.value = ''
+            display_more_area.value = false
+        }
+        catch (error){
+            console.error('Erreur lors de la sauvegarde', error);
+        }
+    }
 </script>
 
 <template>
@@ -37,28 +66,39 @@
                 </div>
                 <div id="dark_bar">
                     <p>Ajouter une UE</p>
-                    <button id="button_more">+</button>
+                    <button id="button_more" v-on:click="display_more_area = true">+</button>
                 </div>
-                <a class="accordion_UE" id="dark_bar">Ajout d'une UE :</a>
-                <div class="panel_UE">
-                    <div>
-                        <label>Numéro de l'UE :</label>
-                        <input type="text" id="fname" placeholder="...">
+                <form v-show="display_more_area" method="post" v-on:submit.prevent="">
+                    <a class="accordion_UE" id="dark_bar">Ajout d'une UE :</a>
+                    <div class="panel_UE">
+                        <div id="left">
+                            <div>
+                                <label>Numéro de l'UE :</label>
+                                <input type="text" class="input" v-model="nb_UE" required/>
+                            </div>
+                            <div>
+                                <label>Code apogee :</label>
+                                <input type="text" class="input" v-model="apogee_code" required/>
+                            </div>
+                            <div>
+                                <label>Intitulé de la compétence :</label>
+                                <input type="text" class="input" v-model="name_comp" required/>
+                            </div>
+                            <div>
+                                <label>Niveau de la compétence :</label>
+                                <input type="text" class="input" v-model="comp_level" required/>
+                            </div>
+                        </div>
+                        
+                        <div id="right">
+                            <input id="btn_cancel_UE" class="btn1" type="reset" value="Annuler">
+                            <input id="btn_save_UE" class="btn1" type="submit" value="Sauvegarder" @click="save">
+                        </div>
                     </div>
-                    <div>
-                        <label>Code apogee :</label>
-                        <input type="text" id="fname" placeholder="...">
-                    </div>
-                    <div id="div_field_button">
-                        <label>Intitulé de la compétence :</label>
-                        <input type="text" id="fname" placeholder="...">
-                        <input id="btn_cancel_UE" class="btn1" type="reset" value="Annuler">
-                    </div>
-                    <div id="div_field_button">
-                        <label>Niveau de la compétence :</label>
-                        <input type="text" id="fname" placeholder="...">
-                        <input id="btn_save_UE" class="btn1" type="submit" value="Sauvegarder">
-                    </div>
+                </form>
+
+                <div>
+
                 </div>
             </div>
         </div>
@@ -136,27 +176,6 @@
     transform: rotate(180deg);
 }
 
-#form{
-  padding: 0 1vw;
-  overflow: hidden;
-}
-
-#form::-webkit-scrollbar {
-    width: 12px;
-}
-
-#form::-webkit-scrollbar-track {
-    margin: 1em;
-    background: rgb(42,45,86);
-    box-shadow: inset 0 0 5px rgb(24, 26, 50);
-    border-radius: 10px;
-}
-
-#form::-webkit-scrollbar-thumb {
-    background: rgb(254,254,254);
-    border-radius: 10px;
-}
-
 #dark_bar{
     color: white;
     height: auto;
@@ -194,7 +213,6 @@
 .panel_UE {
   width: 90%;
   justify-self: center;
-  padding: 0 18px;
   background-color: rgba(0,0,0,0.35);
   max-height: 0;
   overflow: hidden;
@@ -203,7 +221,7 @@
   border-bottom-right-radius: 15px;
   color: white;
   margin-top: 0;
-  padding-top: 0.1vw;
+  display: flex;
 }
 
 .panel_UE > p {
