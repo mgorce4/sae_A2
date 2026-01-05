@@ -48,7 +48,7 @@ public class ResourceGetterService {
     private String labelResource;
 
     private String objectiveContent;
-    private List<String> competences;
+    private List<String> skills;
 
     private List<String> saes;
     private List<String> modalities;
@@ -66,7 +66,7 @@ public class ResourceGetterService {
     private String improvements;
 
     public ResourceGetterService() {
-        competences = new ArrayList<>();
+        skills = new ArrayList<>();
         saes = new ArrayList<>();
         modalities = new ArrayList<>();
         keywords = new ArrayList<>();
@@ -80,7 +80,7 @@ public class ResourceGetterService {
     private void initializePlaceHolderValues() {
         String PLACEHOLDER = "No content for that category";
         String PLACEHOLDER_TITLE = "None";
-        competences.add(PLACEHOLDER);
+        skills.add(PLACEHOLDER);
         saes.add(PLACEHOLDER);
         modalities.add(PLACEHOLDER);
 
@@ -133,17 +133,22 @@ public class ResourceGetterService {
                     + "label : " + label + "\n");
 
             ref = ressourceName;
-            nResource = "IU EN FOR 001";// TODO : Changer pour la reference de la ressource ( 1.10... ) pour les references de Mme Sarlot
-            Boolean isMultiCompetences = resource.getDiffMultiCompetences();
-            if (!isMultiCompetences) {
-                List<UeCoefficient> ueCoefficient = ueCoefficientRepository.findByResource_IdResource(id);
-                UE ue = ueCoefficient.getFirst().getUe();
-                refUE = ue.getLabel();
-                // TODO: PN -> competences.add();
-            } else {
-                //todo : multi comp
-            }
+            nResource = "IU EN FOR 001";
             
+            List<UeCoefficient> ueCoefficient = ueCoefficientRepository.findByResource_IdResource(id);
+            UE ue = ueCoefficient.getFirst().getUe();
+            refUE = ue.getLabel();
+            List<NationalProgramSkill> npSkill = nationalProgramSkillRepository.findByResourceSheet_IdResourceSheet(id);
+
+            skills.clear();
+            if (npSkill.size() > 1) {
+                for (NationalProgramSkill programSkill : npSkill) {
+                    skills.add(programSkill.getDescription());
+                }
+            }else {
+                skills.add(npSkill.getFirst().getDescription());
+            }
+
             // User and SAE info removed as they're not in the new schema
             UserSyncadia referent = mainTeacherForResource.getFirst().getUser();
             profRef = referent.getFirstname() + " " + referent.getLastname();
@@ -180,7 +185,7 @@ public class ResourceGetterService {
             hoursStudent.add(teacherHours.getTp());
             hoursStudent.add(teacherHours.getCm() + hoursPerStudent.getTd() + hoursPerStudent.getTp());
 
-            PedagogicalContent pedagogicalContent = pedagogicalContentRepository.findByResourceSheet_IdResourceSheet(resourceSheet.getIdResourceSheet()).getFirst();
+            PedagogicalContent pedagogicalContent = pedagogicalContentRepository.findByResourceSheet_IdResourceSheet(id).getFirst();
             pedagoContentCm = pedagogicalContent.getCm();
             pedagoContentTd = pedagogicalContent.getTd();
             pedagoContentTp = pedagogicalContent.getTp();
@@ -193,6 +198,7 @@ public class ResourceGetterService {
 
             writeInLog("Get from database :\n"
                 + "- Ressource (" + labelResource + "; " + nResource + "; " + refUE + "; " + profRef + ";" + ")\n" +
+                    "- skills(" + skills.toString() + ")\n" +
                     "- saes(" + saes + ")\n" +
                     "- terms(" + modalities.toString() + ")\n" +
                     "- keywords(" + keywords.toString() + ")\n" +
@@ -224,8 +230,8 @@ public class ResourceGetterService {
     public String getObjectiveContent() {
         return objectiveContent;
     }
-    public List<String> getCompetences() {
-        return competences;
+    public List<String> getSkills() {
+        return skills;
     }
     public List<String> getSaes() {
         return saes;
