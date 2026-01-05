@@ -1,9 +1,10 @@
 <script setup>
-    import { status } from '../main.js'
+    import { status, userName, institutionLocation } from '../main.js'
     import { computed, ref, onMounted } from 'vue'
     import axios from 'axios'
 
     status.value = ''
+    institutionLocation.value = ''
 
     const users = ref([])
     const access_rights = ref([])
@@ -64,6 +65,11 @@
         if (user) {
             localStorage.username = username
             localStorage.password = password
+            localStorage.firstname = user.firstname
+            localStorage.lastname = user.lastname
+            localStorage.idUser = user.idUser
+            localStorage.institutionName = user.institution.name
+            localStorage.institutionLocation = user.institution.location
             console.log("Utilisateur : ", user.username)
             verifyAccessRight()
         } else {
@@ -97,19 +103,20 @@
 
     function redirect(access_right) {
         console.log(access_right)
+        userName.value = localStorage.lastname + " " + localStorage.firstname
         switch (access_right) {
             case 1:
-                status.value = "Professeur"
-                window.location.hash = '#/teacher_dashboard'
+                localStorage.status = "Professeur"
+                window.location.hash = '#/teacher-dashboard'
                 console.log("Toi, tu vas dans Professeur")
                 break;
             case 2:
-                status.value = "Administration"
+                localStorage.status = "Administration"
                 window.location.hash = '#/dashboard-administration'
                 console.log("Toi, tu vas dans Administration")
                 break;
             case 3:
-                status.value = "Admin"
+                localStorage.status = "Admin"
                 window.location.hash = '#/'
                 console.log("Toi, tu vas dans Admin")
                 break;

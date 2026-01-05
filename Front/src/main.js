@@ -7,6 +7,7 @@ import router from './router'
 
 export const status = ref("")
 export const userName = ref("")
+export const institutionLocation = ref("")
 
 import { Calendar, DatePicker } from 'v-calendar'
 import 'v-calendar/style.css'

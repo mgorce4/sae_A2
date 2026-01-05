@@ -2,8 +2,9 @@
     import { ref, onMounted } from 'vue'
     import axios from 'axios'
 
-    import { status } from '../main' /*add , userName next to status to import it*/
+    import { status, institutionLocation } from '../main' /*add , userName next to status to import it*/
     status.value = "Professeur"
+    institutionLocation.value = localStorage.institutionLocation
 
     const users = ref([]) //get the data from database ressources-sheets
 

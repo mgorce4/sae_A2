@@ -1,6 +1,12 @@
+<script setup>
+    import { institutionLocation } from '../main';
+
+    institutionLocation.value = localStorage.institutionLocation
+</script>
+
 <template>
     <footer id="footer_red_rect" class="container-fluid spb">
-        <p id="establishment_name">Université de Limoges</p>
+        <p v-if="institutionLocation" id="establishment_name">{{ institutionLocation }}</p>
         <p id="edit_year">{{new Date().getFullYear()}}</p>
     </footer>
 </template>

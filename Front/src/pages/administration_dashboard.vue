@@ -1,7 +1,7 @@
 <script setup>
 /* import */
 import { ref } from 'vue'
-import { status } from '../main'
+import { status, institutionLocation } from '../main'
 import { DatePicker } from 'v-calendar'
 import { onMounted } from 'vue'
 import axios from 'axios'
@@ -9,6 +9,7 @@ import axios from 'axios'
 /* constantes */
 
 status.value = 'Administration'
+institutionLocation.value = localStorage.institutionLocation
 
 /* get the date of the day*/
 const date = new Date()

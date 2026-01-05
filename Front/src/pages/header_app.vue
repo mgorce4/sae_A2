@@ -1,8 +1,20 @@
 <script setup>
-    import { status } from '../main'
+    import { status, userName } from '../main'
 
-    import { userName} from '../main'
-    userName.value =""
+    function removeUser() {
+        localStorage.removeItem('access_rights')
+        localStorage.removeItem('firstname')
+        localStorage.removeItem('idUser')
+        localStorage.removeItem('institutionLocation')
+        localStorage.removeItem('institutionName')
+        localStorage.removeItem('lastname')
+        localStorage.removeItem('password')
+        localStorage.removeItem('username')
+        localStorage.removeItem('status')
+    }
+
+    status.value = localStorage.status
+    userName.value = localStorage.lastname + " " + localStorage.firstname
 </script>
 
 <template>
@@ -16,13 +28,13 @@
                 <p id="app_name">Syncadia</p>
             </div>
             <div v-show="status" id="user_name_and_pp" class="container-fluid">
-                <p id="user_name">{{userName}}</p>
+                <p v-if="userName" id="user_name">{{ userName }}</p>
                 <img id="profile_picture" src="./../../media/no_profile_picture.webp" alt="profile_picture">
             </div>
         </div>
         <div id="red_rect" class="container-fluid spb">
-            <p v-show="status" id="user_status">Statut : {{ status }}</p>
-            <a v-show="status" id="btn_disconnect" href="#/">
+            <p v-if="status" id="user_status">Statut : {{ status }}</p>
+            <a v-if="status" id="btn_disconnect" v-on:click="removeUser()" href="#/">
                 Déconnexion
             </a>
         </div>
