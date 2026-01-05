@@ -140,9 +140,10 @@ public class ResourceGetterService {
             refUE = ue.getLabel();
 
             List<NationalProgramObjective> npObjectives = nationalProgramObjectiveRepository.findByResourceSheet_IdResourceSheet(id);
+            Boolean isMultiCompetences = resource.getDiffMultiCompetences();
 
             if (!npObjectives.isEmpty()) {
-                if (npObjectives.size() > 1) {
+                if (isMultiCompetences) {
                     objectiveContent = "";
                     for (NationalProgramObjective npObjective : npObjectives) {
                         objectiveContent += npObjective.getContent() + ", ";
