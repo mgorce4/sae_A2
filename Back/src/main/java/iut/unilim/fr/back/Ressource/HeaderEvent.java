@@ -3,16 +3,9 @@ package iut.unilim.fr.back.Ressource;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 
-public class HeaderEvent implements PdfPCellEvent {
-    private String titre;
-    private Font font;
-    private BaseColor fondHeader;
+import static iut.unilim.fr.back.controllerBack.LogController.writeInLog;
 
-    public HeaderEvent(String titre, Font font, BaseColor fondHeader) {
-        this.titre = titre;
-        this.font = font;
-        this.fondHeader = fondHeader;
-    }
+public record HeaderEvent(String titre, Font font, BaseColor fondHeader) implements PdfPCellEvent {
 
     @Override
     public void cellLayout(PdfPCell cell, Rectangle position, PdfContentByte[] canvases) {
@@ -40,7 +33,7 @@ public class HeaderEvent implements PdfPCellEvent {
         try {
             ct.go();
         } catch (DocumentException e) {
-            e.printStackTrace();
+            writeInLog(e.getMessage());
         }
 
         cb.restoreState();

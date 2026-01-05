@@ -36,40 +36,7 @@ public class PdfController {
                 Font contentFont = FontFactory.getFont(baseFont, 11, new BaseColor(255, 255, 255));
                 Font fontTitle = FontFactory.getFont(baseFont, 15, BaseColor.BLACK);
 
-                PdfPTable table = new PdfPTable(3);
-                table.setWidthPercentage(100);
-
-                // Titre Ressource
-                PdfPCell cellLeft = new PdfPCell();
-                cellLeft.setBorder(Rectangle.NO_BORDER);
-
-
-                Paragraph refUE = new Paragraph(res.getRefUE(), font);
-                Paragraph refRessource = new Paragraph(res.getRef(), font);
-
-                Paragraph titreRessource = new Paragraph(res.getLabelResource(), fontTitle);
-                Paragraph profReferent = new Paragraph(res.getProfRef(), font);
-
-                refUE.setLeading(0, 2);
-                refRessource.setLeading(10f, 0);
-
-                cellLeft.addElement(refUE);
-                cellLeft.addElement(refRessource);
-                cellLeft.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                cellLeft.setPaddingBottom(15);
-                table.addCell(cellLeft);
-
-                PdfPCell cellCenter = new PdfPCell(titreRessource);
-                cellCenter.setBorder(Rectangle.NO_BORDER);
-                cellCenter.setHorizontalAlignment(Element.ALIGN_CENTER);
-                cellCenter.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                table.addCell(cellCenter);
-
-                PdfPCell cellRight = new PdfPCell(profReferent);
-                cellRight.setBorder(Rectangle.NO_BORDER);
-                cellRight.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                cellRight.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                table.addCell(cellRight);
+                PdfPTable table = createPdfPTable(res, font, fontTitle);
 
                 // Premiere div
                 Chunk descriptif = new Chunk("Descriptif", contentFont);
@@ -84,7 +51,6 @@ public class PdfController {
                 Chunk competenceTitle = new Chunk("Compétence", contentFont);
 
                 ArrayList<String> competences = (ArrayList<String>) res.getSkills();
-                //TODO: Implementer le drawing des competences, flemme ce soir
                 com.itextpdf.text.List listePuces = new com.itextpdf.text.List(UNORDERED);
 
 
@@ -103,15 +69,7 @@ public class PdfController {
                 Chunk saeConcerne = new Chunk("SAÉ Concernée", contentFont);
                 ArrayList<String> saes = (ArrayList<String>) res.getSaes();
 
-                com.itextpdf.text.List saeList = new com.itextpdf.text.List(UNORDERED);
-                saeList.setListSymbol("•");
-                saeList.setSymbolIndent(12);
-                for (String sae : saes) {
-                    saeList.add(new ListItem(new Chunk(sae, contentFont)));
-                }
-
-                PdfPTable contentSae = createContentDiv(saeConcerne, saeList);
-                contents.add(contentSae);
+                createITextList(contentFont, contents, saeConcerne, saes);
 
                 // Div mot cles
                 Chunk motsCleTitre = new Chunk("Mots Clé", contentFont);
@@ -131,15 +89,7 @@ public class PdfController {
                 Chunk modalite = new Chunk("Modalité", contentFont);
                 ArrayList<String> modalites = (ArrayList<String>) res.getModalities();
 
-                com.itextpdf.text.List modaliteList = new com.itextpdf.text.List(UNORDERED);
-                modaliteList.setListSymbol("•");
-                modaliteList.setSymbolIndent(12);
-                for (String u_modalite : modalites) {
-                    modaliteList.add(new ListItem(new Chunk(u_modalite, contentFont)));
-                }
-
-                PdfPTable contentModalite = createContentDiv(modalite, modaliteList);
-                contents.add(contentModalite);
+                createITextList(contentFont, contents, modalite, modalites);
 
                 document.add(table);
 
@@ -148,37 +98,7 @@ public class PdfController {
                 PdfPTable repartitionProgrammeTable = new PdfPTable(5);
                 repartitionProgrammeTable.setWidthPercentage(100);
 
-                Chunk ressource = new Chunk("Ressource", contentFont);
-                Chunk cm = new Chunk("CM", contentFont);
-                Chunk td = new Chunk("TD", contentFont);
-                Chunk tp = new Chunk("TP", contentFont);
-                Chunk total = new Chunk("Total", contentFont);
-
-                ArrayList<Chunk> programmeContent = new ArrayList<>();
-                programmeContent.add(ressource);
-                programmeContent.add(cm);
-                programmeContent.add(td);
-                programmeContent.add(tp);
-                programmeContent.add(total);
-
-                // PN :
-                Chunk pn = new Chunk("Programme Nationnal", contentFont);
-                programmeContent.add(pn);
-
-                ArrayList<Integer> pnContent = (ArrayList<Integer>) res.getHoursPN();
-                for (Integer h : pnContent) {
-                    Chunk chunk = new Chunk(h.toString(), contentFont);
-                    programmeContent.add(chunk);
-                }
-
-                // Actuel :
-                Chunk programme = new Chunk("Votre programme", contentFont);
-                programmeContent.add(programme);
-                ArrayList<Integer> hours = (ArrayList<Integer>) res.getHoursStudent();
-                for (Integer h : hours) {
-                    Chunk chunk = new Chunk(h.toString(), contentFont);
-                    programmeContent.add(chunk);
-                }
+                ArrayList<Chunk> programmeContent = completeProgrammContent(res, contentFont);
 
                 for (Chunk chunk : programmeContent) {
                     PdfPCell cell = new PdfPCell(new Phrase(chunk.getContent(), contentFont));
@@ -249,6 +169,91 @@ public class PdfController {
         } else {
             writeInLog("{user} attempt to generate a resource sheet pdf, but no matches found for the resource name");
         }
+    }
+
+    private static ArrayList<Chunk> completeProgrammContent(ResourceGetterService res, Font contentFont) {
+        Chunk ressource = new Chunk("Ressource", contentFont);
+        Chunk cm = new Chunk("CM", contentFont);
+        Chunk td = new Chunk("TD", contentFont);
+        Chunk tp = new Chunk("TP", contentFont);
+        Chunk total = new Chunk("Total", contentFont);
+
+        ArrayList<Chunk> programmeContent = new ArrayList<>();
+        programmeContent.add(ressource);
+        programmeContent.add(cm);
+        programmeContent.add(td);
+        programmeContent.add(tp);
+        programmeContent.add(total);
+
+        // PN :
+        Chunk pn = new Chunk("Programme Nationnal", contentFont);
+        programmeContent.add(pn);
+
+        ArrayList<Integer> pnContent = (ArrayList<Integer>) res.getHoursPN();
+        for (Integer h : pnContent) {
+            Chunk chunk = new Chunk(h.toString(), contentFont);
+            programmeContent.add(chunk);
+        }
+
+        // Actuel :
+        Chunk programme = new Chunk("Votre programme", contentFont);
+        programmeContent.add(programme);
+        ArrayList<Integer> hours = (ArrayList<Integer>) res.getHoursStudent();
+        for (Integer h : hours) {
+            Chunk chunk = new Chunk(h.toString(), contentFont);
+            programmeContent.add(chunk);
+        }
+        return programmeContent;
+    }
+
+    private static PdfPTable createPdfPTable(ResourceGetterService res, Font font, Font fontTitle) {
+        PdfPTable table = new PdfPTable(3);
+        table.setWidthPercentage(100);
+
+        // Titre Ressource
+        PdfPCell cellLeft = new PdfPCell();
+        cellLeft.setBorder(Rectangle.NO_BORDER);
+
+
+        Paragraph refUE = new Paragraph(res.getRefUE(), font);
+        Paragraph refRessource = new Paragraph(res.getRef(), font);
+
+        Paragraph titreRessource = new Paragraph(res.getLabelResource(), fontTitle);
+        Paragraph profReferent = new Paragraph(res.getProfRef(), font);
+
+        refUE.setLeading(0, 2);
+        refRessource.setLeading(10f, 0);
+
+        cellLeft.addElement(refUE);
+        cellLeft.addElement(refRessource);
+        cellLeft.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cellLeft.setPaddingBottom(15);
+        table.addCell(cellLeft);
+
+        PdfPCell cellCenter = new PdfPCell(titreRessource);
+        cellCenter.setBorder(Rectangle.NO_BORDER);
+        cellCenter.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cellCenter.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        table.addCell(cellCenter);
+
+        PdfPCell cellRight = new PdfPCell(profReferent);
+        cellRight.setBorder(Rectangle.NO_BORDER);
+        cellRight.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        cellRight.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        table.addCell(cellRight);
+        return table;
+    }
+
+    private void createITextList(Font contentFont, ArrayList<PdfPTable> contents, Chunk title, ArrayList<String> items) {
+        List modaliteList = new List(UNORDERED);
+        modaliteList.setListSymbol("•");
+        modaliteList.setSymbolIndent(12);
+        for (String u_modalite : items) {
+            modaliteList.add(new ListItem(new Chunk(u_modalite, contentFont)));
+        }
+
+        PdfPTable contentModalite = createContentDiv(title, modaliteList);
+        contents.add(contentModalite);
     }
 
     public PdfPTable createContentDiv(Chunk titreHeader, Element elementBody) {
@@ -344,12 +349,23 @@ public class PdfController {
         cellLabel.setPaddingTop(0);
         table.addCell(cellLabel);
 
+        PdfPCell cellListe = generatePdfPCell(items, font);
+        table.addCell(cellListe);
+
+        PdfPCell cellSpace = new PdfPCell();
+        cellSpace.setColspan(2);
+        cellSpace.setBorder(Rectangle.NO_BORDER);
+        cellSpace.setFixedHeight(15f);
+        table.addCell(cellSpace);
+    }
+
+    private static PdfPCell generatePdfPCell(String[] items, Font font) {
         PdfPCell cellListe = new PdfPCell();
         cellListe.setBorder(Rectangle.NO_BORDER);
         cellListe.setBackgroundColor(null);
         cellListe.setPadding(0);
 
-        com.itextpdf.text.List list = new com.itextpdf.text.List(com.itextpdf.text.List.UNORDERED);
+        List list = new List(List.UNORDERED);
         list.setListSymbol("•");
         list.setSymbolIndent(10);
         Chunk bulletSymbol = new Chunk("•", font);
@@ -363,13 +379,7 @@ public class PdfController {
         }
 
         cellListe.addElement(list);
-        table.addCell(cellListe);
-
-        PdfPCell cellSpace = new PdfPCell();
-        cellSpace.setColspan(2);
-        cellSpace.setBorder(Rectangle.NO_BORDER);
-        cellSpace.setFixedHeight(15f);
-        table.addCell(cellSpace);
+        return cellListe;
     }
 
     private void styleCelluleGrise(PdfPCell cell) {

@@ -42,20 +42,20 @@ public class ResourceGetterService {
     private String fileName = "";
 
     private String ref;
-    private String nResource;
+    private String qualityReference;
     private String refUE;
     private String profRef;
     private String labelResource;
 
     private String objectiveContent;
-    private List<String> skills;
+    private final List<String> skills;
 
-    private List<String> saes;
-    private List<String> modalities;
-    private List<String> keywords;
+    private final List<String> saes;
+    private final List<String> modalities;
+    private final List<String> keywords;
 
-    private List<Integer> hoursPN;
-    private List<Integer> hoursStudent;
+    private final List<Integer> hoursPN;
+    private final List<Integer> hoursStudent;
 
     private String pedagoContentCm;
     private String pedagoContentTd;
@@ -90,7 +90,7 @@ public class ResourceGetterService {
         }
 
         ref = PLACEHOLDER_TITLE;
-        nResource = PLACEHOLDER_TITLE;
+        qualityReference = PLACEHOLDER_TITLE;
         refUE = PLACEHOLDER_TITLE;
         profRef = PLACEHOLDER_TITLE;
         labelResource = PLACEHOLDER_TITLE;
@@ -107,7 +107,7 @@ public class ResourceGetterService {
 
     @Transactional
     public void setValuesFromRessource(String ressourceName) {
-        Optional<RessourceSheet> resultResourceSheet = null;
+        Optional<RessourceSheet> resultResourceSheet = Optional.empty();
         Long id;
         String label;
 
@@ -133,7 +133,7 @@ public class ResourceGetterService {
                     + "     - label : " + label + "\n");
 
             ref = ressourceName;
-            nResource = "IU EN FOR 001";
+            qualityReference = "IU EN FOR 001";
 
             List<UeCoefficient> ueCoefficient = ueCoefficientRepository.findByResource_IdResource(id);
             UE ue = ueCoefficient.getFirst().getUe();
@@ -212,7 +212,7 @@ public class ResourceGetterService {
             improvements = ressourceTracking.getImprovementSuggestions();
 
             writeInLog("Get from database :\n"
-                + "- Ressource (" + labelResource + "; " + nResource + "; " + refUE + "; " + profRef + ";" + ")\n" +
+                + "- Ressource (" + labelResource + "; " + qualityReference + "; " + refUE + "; " + profRef + ";" + ")\n" +
                     "   - objectives(" + objectiveContent + ")\n" +
                     "   - skills(" + skills.toString() + ")\n" +
                     "   - saes(" + saes + ")\n" +
@@ -232,7 +232,7 @@ public class ResourceGetterService {
         return ref;
     }
     public String getNbRessource() {
-        return nResource;
+        return qualityReference;
     }
     public String getRefUE() {
         return refUE;
