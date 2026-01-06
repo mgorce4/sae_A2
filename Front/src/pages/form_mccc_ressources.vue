@@ -41,6 +41,18 @@ const hours_per_student = ref([])
 
 const resources = ref([])
 
+const main_teachers_for_resource = ref([])
+
+const resources_filterd = computed(() => {
+  return main_teachers_for_resource.value.map((user) => {
+    const resource = resources.value.filter((sh) => sh.idResource === user.resource.idResource)
+    return {
+      ...user,
+      resource: resource,
+    }
+  }).filter((user) => String(user.user.institution.idInstitution) === localStorage.idInstitution)
+})
+
 function areTotalNaN() {
   return isNaN(total_initial_formation.value) && isNaN(total_work_study.value)
 }
@@ -57,18 +69,11 @@ onMounted(async () => {
       .then((response) => (hours_per_student.value = response.data)),
     axios
       .get('http://localhost:8080/api/resources')
-      .then((response) => (resources.value = response.data))
+      .then((response) => (resources.value = response.data)),
+    axios
+      .get('http://localhost:8080/api/main-teachers-for-resource')
+      .then((response) => (main_teachers_for_resource.value = response.data)),
   ])
-
-  /* get the resources from hours_per_student to have the resources with their hours */
-  for (let i = 0; i < hours_per_student.value.length; i++) {
-    resources.value.push(hours_per_student.value[i].resource)
-    resources.value[i].cm = hours_per_student.value[i].cm
-    resources.value[i].td = hours_per_student.value[i].td
-    resources.value[i].tp = hours_per_student.value[i].tp
-    resources.value[i].total =
-      hours_per_student.value[i].cm + hours_per_student.value[i].td + hours_per_student.value[i].tp
-  }
 
   await nextTick()
 
@@ -85,16 +90,8 @@ onMounted(async () => {
   })
 
   document.getElementById('save').addEventListener('click', () => {
-    total_initial_formation.value =
-      parseInt(CM_initial_formation.value) +
-      parseInt(TD_initial_formation.value) +
-      parseInt(TP_initial_formation.value) +
-      parseInt(Project_initial_formation.value)
-    total_work_study.value =
-      parseInt(CM_work_study.value) +
-      parseInt(TD_work_study.value) +
-      parseInt(TP_work_study.value) +
-      parseInt(Project_work_study.value)
+    total_initial_formation.value = parseInt(CM_initial_formation.value) + parseInt(TD_initial_formation.value) + parseInt(TP_initial_formation.value) + parseInt(Project_initial_formation.value)
+    total_work_study.value = parseInt(CM_work_study.value) + parseInt(TD_work_study.value) + parseInt(TP_work_study.value) + parseInt(Project_work_study.value)
 
     /* if the forms are empty or filled with non-numeric values set totals to 0 */
 
@@ -105,11 +102,24 @@ onMounted(async () => {
 
     display_more_area.value = false
   })
+
+  /* add cm, td, tp and total to each resource in resources_filterd */
+  for (let i = 0; i < resources_filterd.value.length ; i++) {
+    console.log(resources_filterd.value[i].resource[0])
+    console.log(i)
+    console.log(hours_per_student.value.find((hour) => hour.resource.idResource === resources_filterd.value[i].resource[0].idResource).cm)
+    resources_filterd.value[i].resource[i].cm = hours_per_student.value.find((hour) => hour.resource.idResource === resources_filterd.value[i].resource[0].idResource).cm
+    resources_filterd.value[i].resource[i].td = hours_per_student.value.find((hour) => hour.resource.idResource === resources_filterd.value[i].resource[0].idResource).td
+    resources_filterd.value[i].resource[i].tp = hours_per_student.value.find((hour) => hour.resource.idResource === resources_filterd.value[i].resource[0].idResource).tp
+    resources_filterd.value[i].resource[i].total = resources_filterd.value[i].resource[0].cm + resources_filterd.value[i].resource[0].td + resources_filterd.value[i].resource[0].tp
+  }
+
 })
 </script>
 
 <template>
   <div id="ressource">
+    <div>{{ resources_filterd }}</div>
     <div id="return_arrow">
       <button id="back_arrow" onclick="document.location.href='#/mccc-select-form'">←</button>
       <p>Retour</p>
@@ -126,7 +136,14 @@ onMounted(async () => {
           <button id="button_more" v-on:click="display_more_area = true">+</button>
         </div>
 
-        <a class="accordion" id="dark_bar" v-show="display_more_area" method="post" v-on:submit.prevent="">Ajout d'une ressource :</a>
+        <a
+          class="accordion"
+          id="dark_bar"
+          v-show="display_more_area"
+          method="post"
+          v-on:submit.prevent=""
+          >Ajout d'une ressource :</a
+        >
 
         <form class="panel_resource">
           <div id="left">
@@ -256,8 +273,8 @@ onMounted(async () => {
         <p v-if="resources.length > 0">Ressources créées :</p>
         <p v-else>Aucune ressource n'a été crée</p>
 
-        <div v-for="resource in resources" :key="resource.idResource">
-          <a class="accordion" id="dark_bar">{{ resource.label }} {{ resource.name }}</a>
+        <div v-for="(resource, index) in resources_filterd" :key="resource.idResource">
+          <a class="accordion" id="dark_bar">{{ resource.resource[index].label }} {{ resource.resource[index].name}}</a>
 
           <div class="panel_resource">
             <div id="left_resource">
