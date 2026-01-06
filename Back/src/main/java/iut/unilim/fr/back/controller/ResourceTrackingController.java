@@ -26,7 +26,12 @@ public class ResourceTrackingController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
+    @GetMapping("/resource-sheet/{resourceSheetId}")
+    public List<RessourceTracking> getResourceTrackingsByResourceSheetId(@PathVariable Long resourceSheetId) {
+        return resourceTrackingService.getRessourceTrackingsByResourceSheetId(resourceSheetId);
+    }
+
+        @PostMapping
     public RessourceTracking createResourceTracking(@RequestBody RessourceTracking resourceTracking) {
         return resourceTrackingService.createRessourceTracking(resourceTracking);
     }
