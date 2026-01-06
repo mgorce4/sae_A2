@@ -890,7 +890,7 @@ onMounted(async () => {
   transition: max-height 0.2s ease-out, padding 0.2s ease-out;
   border-bottom-left-radius: 15px;
   border-bottom-right-radius: 15px;
-  color: white;
+  color: var(--main-theme-secondary-color);
   display: flex;
   flex-direction: column;
 }
@@ -909,15 +909,15 @@ onMounted(async () => {
 #return_Arrow > p{
   font-size: 1.5vw;
   font-weight: bold;
-  color: black;
+  color: var(--main-theme-terciary-color);
   margin-left: 1.5vw;
 }
 
 #back_arrow{
   font-size: 2vw;
   border: none;
-  background-color: white;
-  color: black;
+  background-color: var(--main-theme-secondary-color);
+  color: var(--main-theme-terciary-color);
   font-weight: bold;
 }
 
@@ -926,7 +926,7 @@ onMounted(async () => {
   min-height: 3em;
   border-radius: 15px;
   background-color: rgb(117, 117, 117);
-  color: white;
+  color: var(--main-theme-secondary-color);
   border: none;
   box-sizing: border-box;
   resize: none;
@@ -947,13 +947,13 @@ onMounted(async () => {
 
 #background_Form{
   height: auto;
-  background-color: rgb(61, 67, 117);
+  background-color: var(--main-theme-background-color);
   border-radius: 15px;
   overflow-x: hidden;
   overflow-y: auto;
   box-sizing: border-box;
   padding-bottom: 1vw;
-  color: white;
+  color: var(--main-theme-secondary-color);
 }
 
 .title{
@@ -970,12 +970,12 @@ onMounted(async () => {
 }
 
 #dark_Bar{
-  color: white;
+  color: var(--main-theme-secondary-color);
   height: auto;
   border-radius: 10px;
   margin: 1vw 0 0 0;
   padding: 1vw;
-  background-color: rgb(32,32,32);
+  background-color: var(--clickable-background-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1046,14 +1046,14 @@ onMounted(async () => {
   width: 20px;
   left: 3px;
   bottom: 3px;
-  background-color: white;
+  background-color: var(--main-theme-secondary-color);
   transition: 0.4s;
   border-radius: 50%;
 }
 
 /* ON state */
 input:checked + .slider {
-  background-color: #2C2C3B;
+  background-color: var(--sub-section-background-color);
 }
 
 input:checked + .slider::before {

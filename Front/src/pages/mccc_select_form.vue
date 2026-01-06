@@ -42,13 +42,13 @@ const goToRessourceSheet = (url, semester) => {
 #form_select_page {
     margin: 3vw 14vw;
     justify-content: center;
-    color: #000000;
+    color: var(--main-theme-terciary-color);
 }
 
 .back {
     font-size: 1.5vw;
     font-weight: bold;
-    color: #000000;
+    color: var(--main-theme-terciary-color);
     margin-left: 1.5vw;
 }
 
@@ -58,8 +58,8 @@ const goToRessourceSheet = (url, semester) => {
     margin: 2vw;
     padding: 1vw 2vw 2vw 2vw;
     border-radius: 1vw;
-    background-color: #3D4375;
-    color: #FFFFFF;
+    background-color: var(--main-theme-background-color);
+    color: var(--main-theme-secondary-color);
 }
 
 .semester_rect {
@@ -68,8 +68,8 @@ const goToRessourceSheet = (url, semester) => {
     margin: 0 5% 6% 5%;
     padding: 1% 2% 3% 2%;
     border-radius: 1.5vw;
-    background-color: #2C2C3B;
-    color: #FFFFFF;
+    background-color: var(--sub-section-background-color);
+    color: var(--main-theme-secondary-color);
 }
 
 .semester_rect:hover {
@@ -98,7 +98,7 @@ const goToRessourceSheet = (url, semester) => {
     border-radius: 0.5vw;
     border-width: 0;
     background-color: #242222;
-    color: #FFFFFF;
+    color: var(--main-theme-secondary-color);
     text-decoration: none;
     text-align: center;
     font-size: 0.75vw;

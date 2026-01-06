@@ -46,7 +46,6 @@
 #header_div {
     width: 100%;
     height: 8vw;
-    background-color: #FFFFFF;
     margin: 0;
     padding: 0;
 }
@@ -69,7 +68,7 @@
 }
 
 #dividing_line {
-    background-color: #4B575F;
+    background-color: var(--header-color);
     width: 0.2vw;
     height: 70%;
 }
@@ -78,7 +77,7 @@
     font-size: 2.8vw;
     height: fit-content;
     margin: 0 0 0 2.5vw;
-    color: rgb(75, 87, 95);
+    color: var(--header-color);
     font-weight: bold;
 }
 
@@ -101,7 +100,7 @@
 }
 
 #red_rect {
-    background-color: #B51621;
+    background-color: var(--header-footer-color);
     width: 94%;
     height: 3vw;
     padding: 0 3%;
@@ -109,7 +108,7 @@
 
 #user_status {
     font-size: 1.5vw;
-    color: #FFFFFF;
+    color: var(--main-theme-secondary-color);
     text-shadow: 0 0 5px black;
     padding-top: 0;
     justify-content: center;
@@ -125,8 +124,8 @@
     text-decoration: none;
     align-content: center; /*center the text in the button */
     text-align: center;
-    background-color: #4B575F;
-    color: #FFFFFF;
+    background-color: var(--header-color);
+    color: var(--main-theme-secondary-color);
 }
 
 #btn_disconnect:hover {

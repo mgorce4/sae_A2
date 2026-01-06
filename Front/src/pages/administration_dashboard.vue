@@ -155,9 +155,9 @@ function isNoSheetsForSemester(semester) {
 }
 
 #MCCC_button {
-  color: #ffffff;
+  color: var(--main-theme-secondary-color);
   font-size: 50px;
-  background-color: #2c2c3b;
+  background-color: var(--sub-section-background-color);
   border-radius: 10px;
   width: 100%;
   height: 120%;
@@ -170,8 +170,8 @@ function isNoSheetsForSemester(semester) {
 /* -- calender -- */
 
 #calender_div {
-  background-color: #3d4375;
-  color: #ffffff;
+  background-color: var(--main-theme-background-color);
+  color: var(--main-theme-secondary-color);
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -188,8 +188,8 @@ function isNoSheetsForSemester(semester) {
 /* -- return sheets div -- */
 
 #return_sheets_div {
-  background-color: #3d4375;
-  color: #ffffff;
+  background-color: var(--main-theme-background-color);
+  color: var(--main-theme-secondary-color);
   height: 100%;
   width: 35%;
   padding: 0 5px 5px 5px;
@@ -200,7 +200,7 @@ function isNoSheetsForSemester(semester) {
 #return_sheets_div_header {
   position: sticky;
   top: 0;
-  background-color: #3d4375;
+  background-color: var(--main-theme-background-color);
 }
 
 #top {
@@ -214,19 +214,19 @@ function isNoSheetsForSemester(semester) {
 
 #return_sheets_div::-webkit-scrollbar-track {
   margin: 1em;
-  background: rgb(42, 45, 86);
+  background: var(--main-theme-secondary-background-color);
   box-shadow: inset 0 0 5px rgb(24, 26, 50);
   border-radius: 10px;
 }
 
 #return_sheets_div::-webkit-scrollbar-thumb {
-  background: rgb(254, 254, 254);
+  background: var(--main-theme-secondary-color);
   border-radius: 10px;
   border: 3px black solid;
 }
 
 .ressource {
-  background-color: #8b8ea7;
+  background-color: var(--sub-div-background-color);
   margin: 15px;
   padding: 5px;
   font-size: 25px;
@@ -238,11 +238,11 @@ function isNoSheetsForSemester(semester) {
 }
 
 .semesters {
-  background-color: #8b8ea7;
+  background-color: var(--sub-div-background-color);
   width: 100%;
   height: 30px;
   text-align: center;
-  color: #ffffff;
+  color: var(--main-theme-secondary-color);
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
   font-size: 15px;
