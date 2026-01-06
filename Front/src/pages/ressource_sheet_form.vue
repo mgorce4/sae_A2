@@ -52,6 +52,14 @@ const localPedagogicalContent = ref({
   ds: []
 })
 
+// Resource Tracking variables
+const resourceTracking = ref(null) // Resource tracking from the database
+const localResourceTracking = ref({
+  pedagogicalFeedback: '',
+  studentFeedback: '',
+  improvementSuggestions: ''
+})
+
 // Function to parse CSV string into array of items
 const parseCSVContent = (csvString) => {
   if (!csvString || csvString.trim() === '') {
@@ -419,6 +427,42 @@ onMounted(async () => {
             ds: []
           }
         }
+
+        // Get resource tracking for this resource sheet
+        try {
+          console.log('🔍 Fetching resource tracking for resource sheet ID:', resourceSheetId.value)
+          const trackingResponse = await axios.get(`http://localhost:8080/api/resource-trackings/resource-sheet/${resourceSheetId.value}`)
+          console.log('📦 Resource tracking API response:', trackingResponse.data)
+
+          if (trackingResponse.data && trackingResponse.data.length > 0) {
+            resourceTracking.value = trackingResponse.data[0] // Take the first only
+            console.log('✅ Resource tracking loaded:', resourceTracking.value)
+            // Initialize local tracking data from database
+            localResourceTracking.value = {
+              pedagogicalFeedback: resourceTracking.value.pedagogicalFeedback || '',
+              studentFeedback: resourceTracking.value.studentFeedback || '',
+              improvementSuggestions: resourceTracking.value.improvementSuggestions || ''
+            }
+            console.log('✅ Local resource tracking initialized:', localResourceTracking.value)
+          } else {
+            console.log('⚠️ No resource tracking found in API response')
+            // Initialize with empty strings
+            localResourceTracking.value = {
+              pedagogicalFeedback: '',
+              studentFeedback: '',
+              improvementSuggestions: ''
+            }
+          }
+        } catch (error) {
+          console.error('❌ Error fetching resource tracking:', error)
+          console.error('Error details:', error.response?.data || error.message)
+          // Initialize with empty strings on error
+          localResourceTracking.value = {
+            pedagogicalFeedback: '',
+            studentFeedback: '',
+            improvementSuggestions: ''
+          }
+        }
       }
 
       // Extract resource data
@@ -692,29 +736,13 @@ onMounted(async () => {
                 <p class="pedagogical-title">CM</p>
               </div>
               <p class="pedagogical-subtitle">Détailler ici le contenu pédagogique des CM</p>
-
               <div class="pedagogical-items-container">
                 <div v-if="localPedagogicalContent.cm.length === 0" class="no-content-message">
                   Aucun contenu CM
                 </div>
-                <div
-                  v-for="(item, index) in localPedagogicalContent.cm"
-                  :key="index"
-                  class="pedagogical-item"
-                  draggable="true"
-                  @dragstart="onDragStart('cm', index)"
-                  @dragover="onDragOver"
-                  @drop="onDrop('cm', index)"
-                  @dragend="onDragEnd"
-                >
+                <div v-for="(item, index) in localPedagogicalContent.cm" :key="index" class="pedagogical-item" draggable="true" @dragstart="onDragStart('cm', index)" @dragover="onDragOver" @drop="onDrop('cm', index)" @dragend="onDragEnd">
                   <span class="pedagogical-number">{{ item.number }}</span>
-                  <textarea
-                    v-model="item.content"
-                    placeholder="List item"
-                    class="pedagogical-input"
-                    rows="1"
-                    @input="autoResizeTextarea"
-                  ></textarea>
+                  <textarea v-model="item.content" placeholder="Contenu..." class="pedagogical-input" rows="1" @input="autoResizeTextarea"></textarea>
                   <button @click="removePedagogicalItem('cm', index)" class="btn-remove-pedagogical" title="Supprimer">✕</button>
                 </div>
               </div>
@@ -735,28 +763,12 @@ onMounted(async () => {
                 <div v-if="localPedagogicalContent.td.length === 0" class="no-content-message">
                   Aucun contenu TD
                 </div>
-                <div
-                  v-for="(item, index) in localPedagogicalContent.td"
-                  :key="index"
-                  class="pedagogical-item"
-                  draggable="true"
-                  @dragstart="onDragStart('td', index)"
-                  @dragover="onDragOver"
-                  @drop="onDrop('td', index)"
-                  @dragend="onDragEnd"
-                >
+                <div v-for="(item, index) in localPedagogicalContent.td" :key="index" class="pedagogical-item" draggable="true" @dragstart="onDragStart('td', index)" @dragover="onDragOver" @drop="onDrop('td', index)" @dragend="onDragEnd">
                   <span class="pedagogical-number">{{ item.number }}</span>
-                  <textarea
-                    v-model="item.content"
-                    placeholder="List item"
-                    class="pedagogical-input"
-                    rows="1"
-                    @input="autoResizeTextarea"
-                  ></textarea>
+                  <textarea v-model="item.content" placeholder="Contenu..." class="pedagogical-input" rows="1" @input="autoResizeTextarea"></textarea>
                   <button @click="removePedagogicalItem('td', index)" class="btn-remove-pedagogical" title="Supprimer">✕</button>
                 </div>
               </div>
-
               <div class="pedagogical-footer">
                 <button @click="addPedagogicalItem('td')" class="btn-add-pedagogical">+ Ajouter</button>
               </div>
@@ -768,33 +780,16 @@ onMounted(async () => {
                 <p class="pedagogical-title">TP</p>
               </div>
               <p class="pedagogical-subtitle">Détailler ici le contenu pédagogique des TP</p>
-
               <div class="pedagogical-items-container">
                 <div v-if="localPedagogicalContent.tp.length === 0" class="no-content-message">
                   Aucun contenu TP
                 </div>
-                <div
-                  v-for="(item, index) in localPedagogicalContent.tp"
-                  :key="index"
-                  class="pedagogical-item"
-                  draggable="true"
-                  @dragstart="onDragStart('tp', index)"
-                  @dragover="onDragOver"
-                  @drop="onDrop('tp', index)"
-                  @dragend="onDragEnd"
-                >
+                <div v-for="(item, index) in localPedagogicalContent.tp" :key="index" class="pedagogical-item" draggable="true" @dragstart="onDragStart('tp', index)" @dragover="onDragOver" @drop="onDrop('tp', index)" @dragend="onDragEnd">
                   <span class="pedagogical-number">{{ item.number }}</span>
-                  <textarea
-                    v-model="item.content"
-                    placeholder="List item"
-                    class="pedagogical-input"
-                    rows="1"
-                    @input="autoResizeTextarea"
-                  ></textarea>
+                  <textarea v-model="item.content" placeholder="Contenu..." class="pedagogical-input" rows="1" @input="autoResizeTextarea"></textarea>
                   <button @click="removePedagogicalItem('tp', index)" class="btn-remove-pedagogical" title="Supprimer">✕</button>
                 </div>
               </div>
-
               <div class="pedagogical-footer">
                 <button @click="addPedagogicalItem('tp')" class="btn-add-pedagogical">+ Ajouter</button>
               </div>
@@ -806,29 +801,13 @@ onMounted(async () => {
                 <p class="pedagogical-title">DS</p>
               </div>
               <p class="pedagogical-subtitle">Détailler ici le contenu pédagogique des DS</p>
-
               <div class="pedagogical-items-container">
                 <div v-if="localPedagogicalContent.ds.length === 0" class="no-content-message">
                   Aucun contenu DS
                 </div>
-                <div
-                  v-for="(item, index) in localPedagogicalContent.ds"
-                  :key="index"
-                  class="pedagogical-item"
-                  draggable="true"
-                  @dragstart="onDragStart('ds', index)"
-                  @dragover="onDragOver"
-                  @drop="onDrop('ds', index)"
-                  @dragend="onDragEnd"
-                >
+                <div v-for="(item, index) in localPedagogicalContent.ds" :key="index" class="pedagogical-item" draggable="true" @dragstart="onDragStart('ds', index)" @dragover="onDragOver" @drop="onDrop('ds', index)" @dragend="onDragEnd">
                   <span class="pedagogical-number">{{ item.number }}</span>
-                  <textarea
-                    v-model="item.content"
-                    placeholder="List item"
-                    class="pedagogical-input"
-                    rows="1"
-                    @input="autoResizeTextarea"
-                  ></textarea>
+                  <textarea v-model="item.content" placeholder="Contenu..." class="pedagogical-input" rows="1" @input="autoResizeTextarea"></textarea>
                   <button @click="removePedagogicalItem('ds', index)" class="btn-remove-pedagogical" title="Supprimer">✕</button>
                 </div>
               </div>
@@ -843,17 +822,29 @@ onMounted(async () => {
         <p class="section_title">Suivi de la ressource / module</p>
         <div>
           <p>Retour de l'équipe pédagogique et des acteurs impactés</p>
-          <textarea id="text_area_styled"></textarea>
+          <textarea
+            v-model="localResourceTracking.pedagogicalFeedback"
+            id="text_area_styled"
+            class="tracking-textarea"
+            placeholder="Saisir le retour de l'équipe pédagogique..."
+          ></textarea>
           <p>Retour des étudiants</p>
-          <textarea id="text_area_styled"></textarea>
+          <textarea
+            v-model="localResourceTracking.studentFeedback"
+            id="text_area_styled"
+            class="tracking-textarea"
+            placeholder="Saisir le retour des étudiants..."
+          ></textarea>
           <p>Amélioration(s) à mettre en oeuvre</p>
-          <textarea id="text_area_styled"></textarea>
+          <textarea
+            v-model="localResourceTracking.improvementSuggestions"
+            id="text_area_styled"
+            class="tracking-textarea"
+            placeholder="Saisir les améliorations à mettre en œuvre..."
+          ></textarea>
         </div>
       </div>
-      <div>
-        <button>Modifier</button>
         <button>Sauvegarder</button>
-      </div>
     </div>
   </div>
 </template>
@@ -1491,6 +1482,10 @@ input:checked + .slider::before {
   min-height: 1.5vw;
   line-height: 1.4;
   width: 100%;
+  word-wrap: break-word; /* Retour à la ligne pour les mots longs */
+  word-break: break-word; /* Force le retour à la ligne même pour les mots très longs */
+  overflow-wrap: break-word; /* Compatibilité moderne */
+  white-space: pre-wrap; /* Préserve les espaces et permet le retour à la ligne */
 }
 
 .pedagogical-input::placeholder {

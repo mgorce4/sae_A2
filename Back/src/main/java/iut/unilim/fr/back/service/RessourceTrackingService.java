@@ -20,6 +20,10 @@ public class RessourceTrackingService {
         return ressourceTrackingRepository.findById(id);
     }
 
+    public List<RessourceTracking> getRessourceTrackingsByResourceSheetId(Long idResourceSheet) {
+        return ressourceTrackingRepository.findByResourceSheet_IdResourceSheet(idResourceSheet);
+    }
+
     public RessourceTracking createRessourceTracking(RessourceTracking resourceTracking) {
         return ressourceTrackingRepository.save(resourceTracking);
     }
