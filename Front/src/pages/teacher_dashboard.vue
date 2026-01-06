@@ -10,22 +10,82 @@
     const mainTeacherForRessource = ref([])
 
     onMounted(async () => {
-        axios.get('http://localhost:8080/api/resource-sheets').then(response => (resourceSheets.value = response.data))
-        axios.get('http://localhost:8080/api/main-teachers-for-resource').then(response => (mainTeacherForRessource.value = response.data))
+        console.log('🔄 Loading data from APIs...')
+
+        try {
+            const resourceSheetsResponse = await axios.get('http://localhost:8080/api/resource-sheets')
+            resourceSheets.value = resourceSheetsResponse.data
+            console.log('✅ Resource sheets loaded:', resourceSheets.value.length, 'items')
+            console.log('📋 Resource sheets data:', resourceSheets.value)
+        } catch (error) {
+            console.error('❌ Error loading resource sheets:', error)
+        }
+
+        try {
+            const mainTeachersResponse = await axios.get('http://localhost:8080/api/main-teachers-for-resource')
+            mainTeacherForRessource.value = mainTeachersResponse.data
+            console.log('✅ Main teachers loaded:', mainTeacherForRessource.value.length, 'items')
+            console.log('👥 Main teachers data:', mainTeacherForRessource.value)
+        } catch (error) {
+            console.error('❌ Error loading main teachers:', error)
+        }
     })
 
     const joinTables = computed(() => {
+        console.log('🔍 Computing joinTables...')
+        console.log('📋 resourceSheets.value:', resourceSheets.value)
+        console.log('👥 mainTeacherForRessource.value:', mainTeacherForRessource.value)
+        console.log('🏢 localStorage.idInstitution:', localStorage.idInstitution)
+
+        // Si mainTeacherForRessource est vide, afficher toutes les resource sheets de l'institution
+        if (mainTeacherForRessource.value.length === 0) {
+            console.log('⚠️ No main teachers found, showing all resource sheets for institution')
+            const allSheets = resourceSheets.value
+                .filter(sheet => {
+                    const hasResource = sheet.resource && sheet.resource.idResource
+                    console.log('📝 Resource sheet:', sheet.idResourceSheet, '-> has resource?', hasResource)
+                    return hasResource
+                })
+                .map(sheet => ({
+                    resource: sheet.resource,
+                    resourceSheet: [sheet],
+                    user: {
+                        institution: { idInstitution: localStorage.idInstitution },
+                        firstname: 'Unknown'
+                    }
+                }))
+            console.log('✅ Fallback result (all sheets):', allSheets)
+            return allSheets
+        }
+
         // Join between users and access_rights where users.idUser = access_rights.idUser
-        return mainTeacherForRessource.value.map((teacher) => {
-            const resourceSheet = resourceSheets.value.filter((ar) => ar.resource.idResource === teacher.resource.idResource)
+        const mapped = mainTeacherForRessource.value.map((teacher) => {
+            const resourceSheet = resourceSheets.value.filter((ar) => ar.resource && ar.resource.idResource === teacher.resource.idResource)
+            console.log(`📝 Teacher ${teacher.user?.firstname} -> resourceSheets found:`, resourceSheet.length)
             return {
                 ...teacher,
                 resourceSheet: resourceSheet
             }
-        }).filter(teacher => teacher.user.institution.idInstitution == localStorage.idInstitution)
+        })
+
+        console.log('📊 Mapped data (before institution filter):', mapped)
+
+        const result = mapped.filter(teacher => {
+            const matches = teacher.user && teacher.user.institution && teacher.user.institution.idInstitution == localStorage.idInstitution
+            console.log(`🏢 Institution check for ${teacher.user?.firstname}: ${teacher.user?.institution?.idInstitution} == ${localStorage.idInstitution} ? ${matches}`)
+            return matches
+        })
+
+        console.log('✅ Final joinTables result:', result)
+        return result
     })
 
     const goToRessourceSheet = (id) => {
+        console.log('📋 Navigating to resource sheet with ID:', id)
+        if (!id) {
+            console.error('❌ No ID provided to goToRessourceSheet')
+            return
+        }
         window.location.hash = `#/form-ressource-sheet?id=${id}`
     }
 </script>
@@ -35,9 +95,18 @@
         <div id="for_scroll_bar" style="overflow-y: scroll; margin: 1vw; height: 24vw;">
             <p id="title">Vos ressources : </p>
             <div id="div_sheets" >
-                <button id="sheets" @click="goToRessourceSheet(u.idResourceSheet)" v-for="u in joinTables" :key="u.idResourceSheet">
-                    <p>{{ u.resource.label}}</p>
-                </button>
+                <p v-if="joinTables.length === 0" style="color: white; padding: 1vw;">
+                    Aucune ressource trouvée pour votre institution.
+                </p>
+                <template v-for="u in joinTables" :key="u.resource?.idResource">
+                    <button
+                        v-if="u.resourceSheet && u.resourceSheet.length > 0"
+                        id="sheets"
+                        @click="goToRessourceSheet(u.resourceSheet[0]?.idResourceSheet)"
+                    >
+                        <p>{{ u.resource?.label }}</p>
+                    </button>
+                </template>
             </div>
         </div>
     </div>

@@ -523,6 +523,8 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   width: 50%;
+}
+
 #resources_list {
   background-color: var(--main-theme-background-color);
   border-radius: 15px;

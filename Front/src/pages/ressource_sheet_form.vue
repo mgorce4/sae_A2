@@ -334,9 +334,15 @@ onMounted(async () => {
 
   /* get the specific resource sheet from the DB using the ID */
   if (resourceSheetId.value) {
+    console.log('🔍 Fetching resource sheet with ID:', resourceSheetId.value)
     try {
       const response = await axios.get(`http://localhost:8080/api/resource-sheets/${resourceSheetId.value}/details`)
       resourceSheet.value = response.data
+      console.log('✅ Resource sheet loaded:', resourceSheet.value)
+      console.log('🔍 resourceSheet.value.resource:', resourceSheet.value.resource)
+      console.log('🔍 Type of resourceSheet.value:', typeof resourceSheet.value)
+      console.log('🔍 Keys in resourceSheet.value:', Object.keys(resourceSheet.value))
+
       // Get national program objectives for this resource sheet
       if (resourceSheetId.value) {
         try {
@@ -466,8 +472,12 @@ onMounted(async () => {
       }
 
       // Extract resource data
-      if (resourceSheet.value.resource) {
+      console.log('🔍 Checking if resourceSheet.value.resource exists...')
+      if (resourceSheet.value && resourceSheet.value.resource) {
         resource.value = resourceSheet.value.resource
+        console.log('✅ Resource extracted:', resource.value)
+        console.log('✅ Resource name:', resource.value.name)
+        console.log('✅ Resource label:', resource.value.label)
 
         // Get UE labels from all UE coefficients linked to this resource
         if (resource.value.idResource) {
@@ -476,10 +486,12 @@ onMounted(async () => {
             try {
               const ueCoeffResponse = await axios.get(`http://localhost:8080/api/ue-coefficients/resource/${resource.value.idResource}`)
               const ueCoefficients = ueCoeffResponse.data
+              console.log('📋 UE Coefficients loaded:', ueCoefficients)
               // Extract UE labels from coefficients
               ueLabels.value = ueCoefficients
                 .filter(coeff => coeff.ue && coeff.ue.label)
                 .map(coeff => coeff.ue.label)
+              console.log('🏷️ UE Labels:', ueLabels.value)
 
             } catch (endpointError) {
               // Fallback: Get all UE coefficients and filter by resource ID
@@ -500,7 +512,6 @@ onMounted(async () => {
             console.error('Error fetching UE coefficients:', error)
             console.error('Error details:', error.response?.data || error.message)
           }
-        } else {
         }
 
         // Get SAEs from the same semester and institution

@@ -44,7 +44,6 @@ public class ResourceGetterService {
     private String ref;
     private String qualityReference;
     private String refUE;
-    private String pedagoContentDs;
     private String profRef;
     private String labelResource;
 
@@ -279,9 +278,6 @@ public class ResourceGetterService {
     }
     public String getPedagoContentTp(){
         return pedagoContentTp;
-    }
-    public String getPedagoContentDs(){
-        return pedagoContentDs;
     }
     public String getPedagoTeamFeedback() {
         return pedagoTeamFeedback;
