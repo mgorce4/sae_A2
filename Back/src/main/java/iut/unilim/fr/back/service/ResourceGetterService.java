@@ -44,6 +44,7 @@ public class ResourceGetterService {
     private String ref;
     private String qualityReference;
     private String refUE;
+    private String pedagoContentDs;
     private String profRef;
     private String labelResource;
 
@@ -96,6 +97,7 @@ public class ResourceGetterService {
         labelResource = PLACEHOLDER_TITLE;
         objectiveContent = PLACEHOLDER;
         keywords.add(PLACEHOLDER);
+        pedagoContentDs = PLACEHOLDER;
         pedagoContentCm = PLACEHOLDER;
         pedagoContentTd = PLACEHOLDER;
         pedagoContentTp = PLACEHOLDER;
@@ -263,6 +265,9 @@ public class ResourceGetterService {
     }
     public List<Integer> getHoursStudent() {
         return hoursStudent;
+    }
+    public String getPedagoContentDs(){
+        return pedagoContentDs;
     }
     public String getPedagoContentCm() {
         return pedagoContentCm;
