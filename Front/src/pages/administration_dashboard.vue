@@ -1,6 +1,6 @@
 <script setup>
 /* import */
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { status, institutionLocation } from '../main'
 import { DatePicker } from 'v-calendar'
 import { onMounted } from 'vue'
@@ -22,19 +22,39 @@ let selected_semester_sheets = ref(list_semesters[0])
 /* link with the API */
 
 const sheets = ref([])
+const main_teachers_for_resource = ref([])
+
+/* filtered the sheets depending on the institution of the user */
+
+const sheets_filterd = computed(() => {
+  return main_teachers_for_resource.value.map((user) => {
+    const sheet = sheets.value.filter(
+      (sh) => sh.resource.idResource === user.resource.idResource
+    )
+    return {
+      ...user,
+      sheet: sheet
+    }
+  }).filter((user) => String(user.user.institution.idInstitution) === localStorage.idInstitution)
+})
 
 onMounted(async () => {
-  /* get of the value for the resource sheets from the DB */
-  axios.get('http://localhost:8080/api/resource-sheets').then(reponse => (sheets.value = reponse.data))
+  await Promise.all([
+    axios
+      .get('http://localhost:8080/api/resource-sheets')
+      .then((reponse) => (sheets.value = reponse.data)),
+    axios
+      .get('http://localhost:8080/api/main-teachers-for-resource')
+      .then((reponse) => (main_teachers_for_resource.value = reponse.data))
+  ])
+
 })
 
 /* return a filterd array of resources depending on the semester in argument */
 function filterSheetsBySemester(semester) {
   /* the filter function anebal to filter the array sheets depending on the semester with "sheet.ressource.semester === semester */
-  return sheets.value.filter(sheet => sheet.resource.semester === semester)
+  return sheets_filterd.value.filter((sheet) => sheet.resource.semester === semester)
 }
-
-console.log(sheets)
 
 function getSheetLabel(sheet) {
   return sheet.resource.label
@@ -43,20 +63,23 @@ function getSheetLabel(sheet) {
 function isNoSheetsForSemester(semester) {
   return filterSheetsBySemester(semester).length === 0
 }
-
 </script>
 
 <template>
   <div id="main_div">
     <div id="sub_div_for_MCCC_and_calender">
-
       <div id="MCCC_div">
         <!-- link into MCCC page -->
-        <button type="button" id="MCCC_button" onclick="document.location.href='#/mccc-select-form'">MCCC</button>
+        <button
+          type="button"
+          id="MCCC_button"
+          onclick="document.location.href='#/mccc-select-form'"
+        >
+          MCCC
+        </button>
       </div>
 
       <div id="calender_div">
-
         <!-- for the calender -->
 
         <DatePicker id="calendar" v-model="date"></DatePicker>
@@ -65,7 +88,6 @@ function isNoSheetsForSemester(semester) {
 
     <div id="return_sheets_div">
       <div id="return_sheets_div_header">
-
         <div id="top">
           <p>Rendu des fiches</p>
           <img id="download" src="../../media/download.png" width="35" height="35" alt="download" />
@@ -81,15 +103,15 @@ function isNoSheetsForSemester(semester) {
       </div>
 
       <div id="list-of-ressources">
-
         <!-- usage of v-if and v-else to display a message if there is no sheet for the selected semester -->
-        <p v-if="isNoSheetsForSemester(selected_semester_sheets)">Aucune fiche rendue pour ce semestre.</p>
+        <p v-if="isNoSheetsForSemester(selected_semester_sheets)">
+          Aucune fiche rendue pour ce semestre.
+        </p>
 
         <div v-else class="ressource" v-for="sheet in filterSheetsBySemester(selected_semester_sheets)" :key="sheet.idRessourceSheet">
           <p>{{ getSheetLabel(sheet) }}</p>
           <input type="checkbox" />
         </div>
-
       </div>
     </div>
   </div>
@@ -142,7 +164,7 @@ function isNoSheetsForSemester(semester) {
 }
 
 #MCCC_button:hover {
-  cursor : pointer;
+  cursor: pointer;
 }
 
 /* -- calender -- */
