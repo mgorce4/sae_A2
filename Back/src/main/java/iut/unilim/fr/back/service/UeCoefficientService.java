@@ -24,8 +24,8 @@ public class UeCoefficientService {
         return ueCoefficientRepository.findByUe_UeNumber(ueNumber);
     }
 
-    public UeCoefficient createUeCoefficient(UeCoefficient ueCoefficient) {
-        return ueCoefficientRepository.save(ueCoefficient);
+    public List<UeCoefficient> getUeCoefficientsByResourceId(Long idResource) {
+        return ueCoefficientRepository.findByResource_IdResource(idResource);
     }
 
     public UeCoefficient updateUeCoefficient(Long id, UeCoefficient ueCoefficient) {

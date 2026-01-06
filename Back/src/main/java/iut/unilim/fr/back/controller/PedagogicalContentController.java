@@ -26,6 +26,11 @@ public class PedagogicalContentController {
             .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/resource-sheet/{idResourceSheet}")
+    public List<PedagogicalContent> getPedagogicalContentsByResourceSheetId(@PathVariable Long idResourceSheet) {
+        return pedagogicalContentService.getPedagogicalContentsByResourceSheetId(idResourceSheet);
+    }
+
     @PostMapping
     public PedagogicalContent createPedagogicalContent(@RequestBody PedagogicalContent pedagogicalContent) {
         return pedagogicalContentService.createPedagogicalContent(pedagogicalContent);

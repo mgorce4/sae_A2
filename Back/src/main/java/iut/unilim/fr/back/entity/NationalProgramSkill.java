@@ -10,6 +10,9 @@ public class NationalProgramSkill {
     @Column(name = "id_Skill")
     private Long idSkill;
 
+    @Column(columnDefinition = "TEXT")
+    private String label;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
@@ -20,8 +23,9 @@ public class NationalProgramSkill {
     public NationalProgramSkill() {
     }
 
-    public NationalProgramSkill(Long idSkill, String description, RessourceSheet resourceSheet) {
+    public NationalProgramSkill(Long idSkill, String label, String description, RessourceSheet resourceSheet) {
         this.idSkill = idSkill;
+        this.label = label;
         this.description = description;
         this.resourceSheet = resourceSheet;
     }
@@ -32,6 +36,14 @@ public class NationalProgramSkill {
 
     public void setIdSkill(Long idSkill) {
         this.idSkill = idSkill;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public String getDescription() {

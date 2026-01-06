@@ -1,185 +1,339 @@
 <script setup>
 import { status } from '../main'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, nextTick, computed } from 'vue'
+import axios from 'axios'
 
-status.value = "Administration"
+status.value = 'Administration'
 
-onMounted(() => {
-  const acc = document.getElementsByClassName("accordion");
-  for (let i = 0; i < acc.length; i++) {
-    acc[i].addEventListener("click", function() {
-      this.classList.toggle("active");
-      const panel = this.nextElementSibling;
-      if (panel.style.maxHeight) {
-        panel.style.maxHeight = null;
-      } else {
-        panel.style.maxHeight = panel.scrollHeight + "px";
-      }
-    });
-  }
-})
+let display_more_area = ref(false)
 
-/* hours */
+/* constant for the form */
 
-const CM = ref('')
-const TD = ref('')
-const TP = ref('')
-const Projet = ref('')
+const resource_label = ref('')
+const apogee_code = ref('')
+
+const CM_initial_formation = ref()
+const TD_initial_formation = ref()
+const TP_initial_formation = ref()
+const Project_initial_formation = ref()
+const total_initial_formation = ref(0)
+
+const CM_work_study = ref()
+const TD_work_study = ref()
+const TP_work_study = ref()
+const Project_work_study = ref()
+const total_work_study = ref(0)
+
+const teacher = ref('')
+const coefficient = ref()
+
+/* get from the pn*/
+const total_pn_initial_formation = ref(0)
+const total_pn_work_study = ref(0)
 
 /* list of lesson to use for the v-for */
 
-const list_of_lesson = ["CM", "TD", "TP", "Projet"]
+const list_of_lesson = ['CM', 'TD', 'TP', 'Projet']
 
+const UEs = ref([])
+
+const hours_per_student = ref([])
+
+const resources = ref([])
+
+const main_teachers_for_resource = ref([])
+
+const resources_filterd = computed(() => {
+  return main_teachers_for_resource.value.map((user) => {
+    const resource = resources.value.filter((sh) => sh.idResource === user.resource.idResource)
+    return {
+      ...user,
+      resource: resource,
+    }
+  }).filter((user) => String(user.user.institution.idInstitution) === localStorage.idInstitution)
+})
+
+function areTotalNaN() {
+  return isNaN(total_initial_formation.value) && isNaN(total_work_study.value)
+}
+
+onMounted(async () => {
+  /* usage of await to wait for the data to be fetched before adding event listeners */
+
+  await Promise.all([
+    axios
+      .get('http://localhost:8080/api/ue-coefficients')
+      .then((response) => (UEs.value = response.data)),
+    axios
+      .get('http://localhost:8080/api/hours-per-student')
+      .then((response) => (hours_per_student.value = response.data)),
+    axios
+      .get('http://localhost:8080/api/resources')
+      .then((response) => (resources.value = response.data)),
+    axios
+      .get('http://localhost:8080/api/main-teachers-for-resource')
+      .then((response) => (main_teachers_for_resource.value = response.data)),
+  ])
+
+  await nextTick()
+
+  document.querySelectorAll('.accordion').forEach((acc) => {
+    acc.addEventListener('click', function () {
+      this.classList.toggle('active')
+      const panel = this.nextElementSibling
+      if (panel.style.maxHeight) {
+        panel.style.maxHeight = null
+      } else {
+        panel.style.maxHeight = '100%'
+      }
+    })
+  })
+
+  document.getElementById('save').addEventListener('click', () => {
+    total_initial_formation.value = parseInt(CM_initial_formation.value) + parseInt(TD_initial_formation.value) + parseInt(TP_initial_formation.value) + parseInt(Project_initial_formation.value)
+    total_work_study.value = parseInt(CM_work_study.value) + parseInt(TD_work_study.value) + parseInt(TP_work_study.value) + parseInt(Project_work_study.value)
+
+    /* if the forms are empty or filled with non-numeric values set totals to 0 */
+
+    if (areTotalNaN()) {
+      total_initial_formation.value = 0
+      total_work_study.value = 0
+    }
+
+    display_more_area.value = false
+  })
+
+  /* add cm, td, tp and total to each resource in resources_filterd */
+  for (let i = 0; i < resources_filterd.value.length ; i++) {
+    console.log(resources_filterd.value[i].resource[0])
+    console.log(i)
+    console.log(hours_per_student.value.find((hour) => hour.resource.idResource === resources_filterd.value[i].resource[0].idResource).cm)
+    resources_filterd.value[i].resource[i].cm = hours_per_student.value.find((hour) => hour.resource.idResource === resources_filterd.value[i].resource[0].idResource).cm
+    resources_filterd.value[i].resource[i].td = hours_per_student.value.find((hour) => hour.resource.idResource === resources_filterd.value[i].resource[0].idResource).td
+    resources_filterd.value[i].resource[i].tp = hours_per_student.value.find((hour) => hour.resource.idResource === resources_filterd.value[i].resource[0].idResource).tp
+    resources_filterd.value[i].resource[i].total = resources_filterd.value[i].resource[0].cm + resources_filterd.value[i].resource[0].td + resources_filterd.value[i].resource[0].tp
+  }
+
+})
 </script>
 
 <template>
   <div id="ressource">
-
+    <div>{{ resources_filterd }}</div>
     <div id="return_arrow">
-      <button  id="back_arrow" onclick="document.location.href='#/mccc-select-form'">←</button>
+      <button id="back_arrow" onclick="document.location.href='#/mccc-select-form'">←</button>
       <p>Retour</p>
     </div>
 
     <div id="background_form">
       <div id="form">
-
         <div id="header_ressource">
           <p id="title">Ressources</p>
         </div>
 
         <div id="dark_bar">
           <h2>Ajouter une ressource</h2>
-          <button id="button_more">+</button>
+          <button id="button_more" v-on:click="display_more_area = true">+</button>
         </div>
 
-        <a class="accordion" id="dark_bar">Ajout d'une ressource :</a>
+        <a
+          class="accordion"
+          id="dark_bar"
+          v-show="display_more_area"
+          method="post"
+          v-on:submit.prevent=""
+          >Ajout d'une ressource :</a
+        >
 
-        <div class="panel_ressources">
+        <form class="panel_resource">
           <div id="left">
-
             <div>
               <label>Intitule de la ressource : </label>
-              <input type="text" class="input">
+              <input type="text" class="input" v-model="resource_label" required />
             </div>
 
             <div>
               <label>Code apogée : </label>
-              <input type="text" class="input">
+              <input type="text" class="input" v-model="apogee_code" required />
             </div>
 
             <div>
-              <p>Nombres d'heures (formation initial) : </p>
+              <p>Nombres d'heures (formation initial) :</p>
               <tr>
                 <th v-for="lesson in list_of_lesson" :key="lesson">
-                  {{lesson}}
+                  {{ lesson }}
                 </th>
               </tr>
 
               <tr>
                 <th>
-                  <input type="text" class="input" v-model="CM" required>
+                  <input type="text" class="input" v-model="CM_initial_formation" required />
                 </th>
                 <th>
-                  <input type="text" class="input" v-model="TD" required>
+                  <input type="text" class="input" v-model="TD_initial_formation" required />
                 </th>
                 <th>
-                  <input type="text" class="input" v-model="TP" required>
+                  <input type="text" class="input" v-model="TP_initial_formation" required />
                 </th>
                 <th>
-                  <input type="text" class="input" v-model="Projet" required>
+                  <input type="text" class="input" v-model="Project_initial_formation" required />
                 </th>
               </tr>
 
-              <p>Nombre d'heures total : .../...</p>
+              <p>
+                Nombre d'heures total : {{ total_initial_formation }} /
+                {{ total_pn_initial_formation }}
+              </p>
             </div>
 
             <div id="btn">
-              <input class="btn1" type="reset" value="Annuler">
-              <input class="btn1" type="submit" value="Sauvegarder">
+              <input class="btn1" type="reset" value="Annuler" />
+              <input class="btn1" type="submit" value="Sauvegarder" id="save" />
             </div>
           </div>
 
           <div id="right">
-            <div id="alternace">
-              <div class="bottom_component">
+            <div id="work_study">
+              <div class="component">
                 <label class="switch">
-                  <input type="checkbox">
+                  <input type="checkbox" />
                   <span class="slider"></span>
                 </label>
 
-                <p>Nombres d'heures (formation initial) : </p>
+                <p>Nombres d'heures (alternance) :</p>
               </div>
 
-              <tr>
-                <th v-for="lesson in list_of_lesson" :key="lesson">
-                  {{lesson}}
-                </th>
-              </tr>
+              <div id="work_study_hours">
+                <tr>
+                  <th v-for="lesson in list_of_lesson" :key="lesson">
+                    {{ lesson }}
+                  </th>
+                </tr>
 
-              <tr>
-                <th>
-                  <input type="text" class="input" v-model="CM" required>
-                </th>
-                <th>
-                  <input type="text" class="input" v-model="TD" required>
-                </th>
-                <th>
-                  <input type="text" class="input" v-model="TP" required>
-                </th>
-                <th>
-                  <input type="text" class="input" v-model="Projet" required>
-                </th>
-              </tr>
+                <tr>
+                  <th>
+                    <input type="text" class="input" v-model="CM_work_study" required />
+                  </th>
+                  <th>
+                    <input type="text" class="input" v-model="TD_work_study" required />
+                  </th>
+                  <th>
+                    <input type="text" class="input" v-model="TP_work_study" required />
+                  </th>
+                  <th>
+                    <input type="text" class="input" v-model="Project_work_study" required />
+                  </th>
+                </tr>
 
-              <p>Nombre d'heures total : .../...</p>
+                <p>Nombre d'heures total : {{ total_work_study }} / {{ total_pn_work_study }}</p>
+              </div>
             </div>
 
             <div>
-
-
               <div id="right_bottom">
-
-                <div class="bottom_component">
+                <div class="component">
                   <label class="switch">
-                    <input type="checkbox">
+                    <input type="checkbox" />
                     <span class="slider"></span>
                   </label>
 
                   <p>Epeurve différente si multi-compétences</p>
                 </div>
 
-                <div class="bottom_component">
-                  <label for="UEs">UE affectées : </label>
+                <div class="component">
+                  <label>UE affectées : </label>
 
-                  <!-- exemple of UE -->
-
-                  <select name="UEs" class="input">
-                    <option value="UE1">UE1</option>
-                    <option value="UE2">UE2</option>
-                    <option value="UE3">UE3</option>
+                  <select class="input">
+                    <option v-for="UE in UEs" :key="UE.ueNumber" :value="UE.ue.label">
+                      {{ UE.ue.label }}
+                    </option>
                   </select>
 
                   <!-- button to add UE -->
                   <button id="button_more">+</button>
                 </div>
 
-                <div class="bottom_component">
-                  <label for="coefficient">Coefficient : </label>
-
-                  <!-- exemple of coefficient -->
-
-                  <input type="text" class="input">
+                <div class="component">
+                  <label>Coefficient : </label>
+                  <input type="text" class="input" v-model="coefficient" required />
                 </div>
 
-                <div class="bottom_component">
-                  <label for="prof">Professeur(s) associé(s) : </label>
-                  <input type="text" class="input" placeholder="Nom du professeur">
-                  <input type="search" class="input">
+                <div class="component">
+                  <label>Professeur(s) associé(s) : </label>
+                  <input type="text" class="input" v-model="teacher" required />
 
                   <button id="button_more">+</button>
                 </div>
-
               </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div id="form_resources">
+        <p v-if="resources.length > 0">Ressources créées :</p>
+        <p v-else>Aucune ressource n'a été crée</p>
+
+        <div v-for="(resource, index) in resources_filterd" :key="resource.idResource">
+          <a class="accordion" id="dark_bar">{{ resource.resource[index].label }} {{ resource.resource[index].name}}</a>
+
+          <div class="panel_resource">
+            <div id="left_resource">
+              <div class="container-fluid">
+                <p>Code Apogee :</p>
+                <input type="text" class="input" :value="resource.apogeeCode" />
+              </div>
+
+              <p>Nombre d'heure (formation initial) :</p>
+
+              <div class="container-fluid">
+                <p>CM :</p>
+                <input type="text" class="input" :value="resource.cm" />
+              </div>
+
+              <div class="container-fluid">
+                <p>TD :</p>
+                <input type="text" class="input" :value="resource.td" />
+              </div>
+
+              <div class="container-fluid">
+                <p>TP :</p>
+                <input type="text" class="input" :value="resource.tp" />
+              </div>
+
+              <div class="container-fluid">
+                <p>SAE :</p>
+                <input type="text" class="input" />
+              </div>
+
+              <div class="container-fluid">
+                <p>Total :</p>
+                <input type="text" class="input" :value="resource.total" />
+              </div>
+            </div>
+
+            <div class="vertical-line"></div>
+
+            <div id="right_resource">
+              <div class="container-fluid">
+                <p>UE(s) affectée(s) :</p>
+                <input type="text" class="input" :value="resource.label" />
+              </div>
+
+              <div class="container-fluid">
+                <p>Coefficient(s) :</p>
+                <input type="text" class="input" :value="resource.coefficient" />
+              </div>
+
+              <div class="container-fluid">
+                <p>Professeur(s) associé(s) :</p>
+              </div>
+
+              <br />
+              <br />
+
+              <input class="btn1" value="Supprimer" />
+              <br />
+              <input class="btn1" value="Modifier" />
             </div>
           </div>
         </div>
@@ -189,27 +343,26 @@ const list_of_lesson = ["CM", "TD", "TP", "Projet"]
 </template>
 
 <style>
-
-#ressource{
+#ressource {
   margin: 3vw 14vw;
   justify-content: center;
 }
 
-#return_arrow{
+#return_arrow {
   display: flex;
   align-items: center;
 }
 
-#return_arrow > p{
+#return_arrow > p {
   font-size: 1.5vw;
   font-weight: bold;
-  color: black;
+  color: var(--main-theme-terciary-color);
   margin-left: 1.5vw;
 }
 
-#background_form{
+#background_form {
   height: auto;
-  background-color: rgb(61, 67, 117);
+  background-color: var(--main-theme-background-color);
   border-radius: 15px;
   overflow-x: hidden;
   overflow-y: hidden;
@@ -217,15 +370,15 @@ const list_of_lesson = ["CM", "TD", "TP", "Projet"]
   padding-bottom: 17px;
 }
 
-#header_ressource{
-  background-color: rgb(44,49,88);
+#header_ressource {
+  background-color: var(--main-theme-secondary-background-color);
   height: auto;
   border-radius: 10px;
   margin: 1vw;
 }
 
-#title{
-  color: white;
+#title {
+  color: var(--main-theme-secondary-color);
   text-align: center;
   padding-top: 0.5vw;
   padding-bottom: 0.5vw;
@@ -233,7 +386,8 @@ const list_of_lesson = ["CM", "TD", "TP", "Projet"]
   font-size: 2.3vw;
 }
 
-.accordion, #dark_bar >p{
+.accordion,
+#dark_bar > p {
   margin: 0vw;
   font-weight: lighter;
   font-size: 1.05vw;
@@ -242,10 +396,6 @@ const list_of_lesson = ["CM", "TD", "TP", "Projet"]
 .accordion {
   cursor: pointer;
   position: relative;
-}
-
-#dark_bar {
-  width: 97%;
 }
 
 .accordion::after {
@@ -260,7 +410,11 @@ const list_of_lesson = ["CM", "TD", "TP", "Projet"]
   transform: rotate(180deg);
 }
 
-#form{
+#dark_bar {
+  width: 95%;
+}
+
+#form {
   padding: 0 1vw;
   overflow: hidden;
 }
@@ -271,45 +425,45 @@ const list_of_lesson = ["CM", "TD", "TP", "Projet"]
 
 #form::-webkit-scrollbar-track {
   margin: 1em;
-  background: rgb(42,45,86);
+  background: var(--main-theme-secondary-background-color);
   box-shadow: inset 0 0 5px rgb(24, 26, 50);
   border-radius: 10px;
 }
 
 #form::-webkit-scrollbar-thumb {
-  background: rgb(254,254,254);
+  background: var(--main-theme-secondary-color);
   border-radius: 10px;
 }
 
-.panel_ressources {
+.panel_resource {
   width: 90%;
+  max-height: 0;
   justify-self: center;
   padding: 0 18px;
-  background-color: rgba(0,0,0,0.35);
-  max-height: 0;
+  background-color: rgba(0, 0, 0, 0.35);
   overflow: hidden;
   transition: max-height 0.2s ease-out;
   border-bottom-left-radius: 15px;
   border-bottom-right-radius: 15px;
-  color: white;
+  color: var(--main-theme-secondary-color);
   margin-top: 0;
   display: flex;
 }
 
-.panel_ressources p {
+.panel_resource > p {
   margin-top: 0;
   padding-top: 1vw;
 }
 
 .input {
-  border: black 1px solid;
   border-radius: 5px;
-  background-color: rgb(117,117,117,100);
-  color: #FFFFFF;
+  background-color: rgba(117, 117, 117, 100);
+  color: var(--main-theme-secondary-color);
   width: 100px;
+  text-align: center;
 }
 
-#alternace {
+#work_study {
   background-color: rgb(82, 92, 167);
   border-radius: 10px;
   padding: 5px;
@@ -338,12 +492,7 @@ const list_of_lesson = ["CM", "TD", "TP", "Projet"]
   gap: 5px;
 }
 
-#right_bottom {
-  display: flex;
-  padding-top: 10px;
-}
-
-.bottom_component {
+.component {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -361,4 +510,53 @@ const list_of_lesson = ["CM", "TD", "TP", "Projet"]
   margin: 0px 35px 0px 35px;
 }
 
+#form_resources {
+  padding: 0 1vw;
+}
+
+#form_resources > p {
+  color: var(--main-theme-secondary-color);
+  font-size: 1.5vw;
+}
+
+#left_resource {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+#resources_list {
+  background-color: var(--main-theme-background-color);
+  border-radius: 15px;
+  padding: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+#left_resource > div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.vertical-line {
+  border-left: 3px solid #242222;
+  display: inline-block;
+  height: 330px;
+  margin-top: 20px;
+}
+
+#right_resource {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  padding: 10px;
+  margin-bottom: 10px;
+  font-size: 20px;
+}
+
+#resources_list > p {
+  color: var(--main-theme-secondary-color);
+  font-size: 1.5vw;
+  align-items: center;
+  justify-content: center;
+}
 </style>

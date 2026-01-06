@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface PedagogicalContentRepository extends JpaRepository<PedagogicalContent, Long> {
-    List<PedagogicalContent> findByResourceSheet_IdResourceSheet(Long id);
+    List<PedagogicalContent> findByResourceSheet_IdResourceSheet(Long idResourceSheet);
 }
 

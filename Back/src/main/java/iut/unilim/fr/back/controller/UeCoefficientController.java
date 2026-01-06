@@ -31,9 +31,9 @@ public class UeCoefficientController {
         return ueCoefficientService.getUeCoefficientsByUeNumber(ueNumber);
     }
 
-    @PostMapping
-    public UeCoefficient createUeCoefficient(@RequestBody UeCoefficient ueCoefficient) {
-        return ueCoefficientService.createUeCoefficient(ueCoefficient);
+    @GetMapping("/resource/{idResource}")
+    public List<UeCoefficient> getUeCoefficientsByResourceId(@PathVariable Long idResource) {
+        return ueCoefficientService.getUeCoefficientsByResourceId(idResource);
     }
 
     @PutMapping("/{id}")

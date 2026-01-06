@@ -1,0 +1,122 @@
+<script setup>
+    import { onMounted, ref, computed } from 'vue'
+    import axios from 'axios'
+    import { status } from '../main'
+    
+    status.value = "Administration"
+
+    let display_more_area = ref(false)
+
+    const saeLinkResources = ref([])
+    const teachers = ref([])
+    const saeHours = ref([])
+    const ueCoef = ref([])
+
+    /* Extract ID from hash URL parameters */
+    const getQueryParam = (param) => {
+    const hash = window.location.hash
+    const queryString = hash.split('?')[1]
+    if (!queryString) return null
+    const params = new URLSearchParams(queryString)
+    return params.get(param)
+    }
+
+    const semesterNumber = ref(getQueryParam('id'))
+    console.log("semestre saé : ", semesterNumber.value)
+    
+    onMounted(async () => {
+        axios.get('http://localhost:8080/api/sae-link-resources').then(response => (saeLinkResources.value = response.data))
+        axios.get('http://localhost:8080/api/main-teachers-for-resource').then(response => (teachers.value = response.data))
+        axios.get('http://localhost:8080/api/sae-hours').then(response => (saeHours.value = response.data))
+        axios.get('http://localhost:8080/api/ue-coefficient-saes').then(response => (ueCoef.value = response.data))
+    })
+
+    const saesH = computed(() => {
+        // Join between users and access_rights where users.idUser = access_rights.idUser
+        return saeLinkResources.value.map((saeLinkResources) => {
+            const hours = saeHours.value.find((sh) => sh.idSAEHours === saeLinkResources.idSAE)
+            return {
+                ...saeLinkResources,
+                saeHours: hours
+            }
+        }).filter(saeLinkResources => saeLinkResources.resource.semester == semesterNumber.value)
+    })
+
+    const saesCH = computed(() => {
+        // Join between users and access_rights where users.idUser = access_rights.idUser
+        return saesH.value.map((saesH) => {
+            const coef = ueCoef.value.filter((uec) => uec.sae.idSAE === saesH.idSAE)
+            return {
+                ...saesH,
+                ueCoefSae: coef
+            }
+        })
+    })
+
+    const saesCHI = computed(() => {
+        // Join between users and access_rights where users.idUser = access_rights.idUser
+        return teachers.value.map((teachers) => {
+            const saes = saesCH.value.filter((sch) => sch.idResource === teachers.idResource)
+            return {
+                ...teachers,
+                saeCoefHours: saes
+            }
+        }).filter(teachers => teachers.user.institution.idInstitution == localStorage.idInstitution)
+    })
+    console.log(saesCH)
+</script>
+
+<template>
+    <p>{{ teachers }}</p>
+    <p>{{ saesCH }}</p>
+    <p>{{ saesCHI }}</p>
+    <div id="form_mccc_sae"> 
+        <div class="return_arrow">
+            <button class="back_arrow" onclick="document.location.href='#/mccc-select-form'">←</button>
+            <p>Retour</p>
+        </div>
+        <div class="background_form_mccc">
+            <div class="form">
+                <div class="header_form_mccc">
+                    <p class="title">Situation d'Apprentissage Évaluée</p>
+                </div>
+                <div class="dark_bar">
+                    <p>Ajouter une SAÉ</p>
+                    <button class="button_more" v-on:click="display_more_area = true">+</button>
+                </div>
+                <form v-show="display_more_area" method="post" v-on:submit.prevent="">
+                    <div>Div ajout SAÉ</div>
+                </form>
+                <div v-for="(value, index) in saesCH" v-bind:key="index" class="added_content_mccc">
+                    <div class="dark_bar">
+                        <p>{{ value.label }}</p>
+                    </div>
+                    <div class="panel_form_mccc container-fluid spa">
+                        <div class="left_side">
+                            <p>Code apogee : {{ value.sae.apogeeCode }}</p>
+                            <p>Nombre d'heures (formation initiale) : {{ value.saeHours.hours }}</p>
+                        </div>
+                        <div  class="right_side">
+                            <p>Coefficients UE : </p>
+                            <table>
+                                <tr>
+                                    <th v-for="(labelUe, index2) in value.ueCoefSae" v-bind:key="index2">{{ labelUe.ue.label }}</th>
+                                </tr>
+                                <tr>
+                                    <td v-for="(coefUe, index3) in value.ueCoefSae" v-bind:key="index3">{{ coefUe.coefficient }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style>
+#form_mccc_sae{
+  margin: 3vw 14vw;
+  justify-content: center;
+}
+</style>

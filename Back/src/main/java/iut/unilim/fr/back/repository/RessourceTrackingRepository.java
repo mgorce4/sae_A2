@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface RessourceTrackingRepository extends JpaRepository<RessourceTracking, Long> {
-    List<RessourceTracking> findByResourceSheet_IdResourceSheet(Long id);
+    List<RessourceTracking> findByResourceSheet_IdResourceSheet(Long idResourceSheet);
 }
 

@@ -61,6 +61,7 @@ public class ResourceGetterService {
     private String pedagoContentCm;
     private String pedagoContentTd;
     private String pedagoContentTp;
+    private String pedagoContentDs;
 
     private String pedagoTeamFeedback;
     private String studentFeedback;
@@ -202,10 +203,11 @@ public class ResourceGetterService {
             hoursStudent.add(teacherHours.getTp());
             hoursStudent.add(teacherHours.getCm() + hoursPerStudent.getTd() + hoursPerStudent.getTp());
 
-            PedagogicalContent pedagogicalContent = pedagogicalContentRepository.findByResourceSheet_IdResourceSheet(id).getFirst();
-            pedagoContentCm = pedagogicalContent.getCm();
-            pedagoContentTd = pedagogicalContent.getTd();
-            pedagoContentTp = pedagogicalContent.getTp();
+            // PedagogicalContent and RessourceTracking removed as they're not directly linked
+            pedagoContentCm = ""; // TODO: Get from PEDAGOGICAL_CONTENT
+            pedagoContentTd = "";
+            pedagoContentTp = "";
+            pedagoContentDs = "";
 
 
             RessourceTracking ressourceTracking = resourceTrackingRepository.findByResourceSheet_IdResourceSheet(resourceSheet.getIdResourceSheet()).getFirst();
@@ -277,6 +279,9 @@ public class ResourceGetterService {
     }
     public String getPedagoContentTp(){
         return pedagoContentTp;
+    }
+    public String getPedagoContentDs(){
+        return pedagoContentDs;
     }
     public String getPedagoTeamFeedback() {
         return pedagoTeamFeedback;

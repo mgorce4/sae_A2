@@ -1,9 +1,38 @@
+:root {
+  --main-theme-background-color:#3D4375;
+  --main-theme-secondary-background-color:#2C3158FF;
+  --main-theme-terciary-color:#000000FF;
+  --main-theme-secondary-color:#fff;
+  --sub-div-background-color:#8b8ea7;
+  --header-footer-color:#B51621;
+  --clickable-background-color:#202020FF;
+  --header-color:#4B575F;
+  --error-color:#ff6b6b;
+  --sub-section-background-color:#2C2C3B;
+
+}
+html {
+    height: 100%;
+}
+
 body {
     width: 100%;
-    height: 100%;
+    min-height: 100vh;
     font-family: Arial, Helvetica, sans-serif;
     margin: 0;
-    padding: 8vw 0 3vw 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
 }
 
 .container-fluid {
@@ -14,6 +43,7 @@ body {
     width: 100%;
     margin: 0;
     padding: 0;
+    gap: 5px;
 }
 
 .spb {
@@ -39,11 +69,164 @@ body {
     font-size: 1vw;
     text-align: center;
     text-decoration: none;
-    color: #FFFFFF;
-    background-color: #2C2C3B;
+    color: var(--main-theme-secondary-color);
+    background-color: var(--sub-section-background-color);
 }
 
 .btn1:active {
-    background-color: #8B8EA7;
-    color: #000000;
+    background-color: var(--sub-div-background-color);
+    color: black;
+}
+
+.return_arrow {
+    display: flex;
+    align-items: center;
+}
+
+.return_arrow>p {
+    font-size: 1.5vw;
+    font-weight: bold;
+    color: black;
+    margin-left: 1.5vw;
+    cursor: pointer;
+}
+
+.back_arrow {
+    font-size: 2vw;
+    border: none;
+    background-color: white;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* -- CSS forms MCCC -- */
+.background_form_mccc {
+    height: auto;
+    background-color: var(--main-theme-background-color);
+    border-radius: 15px;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    box-sizing: border-box;
+    padding-bottom: 1vw;
+}
+
+.form {
+    padding: 0 1vw;
+    overflow: hidden;
+}
+
+.form::-webkit-scrollbar {
+    width: 12px;
+}
+
+.form::-webkit-scrollbar-track {
+    margin: 1em;
+    background: var(--main-theme-secondary-background-color);
+    box-shadow: inset 0 0 5px rgb(24, 26, 50);
+    border-radius: 10px;
+}
+
+.form::-webkit-scrollbar-thumb {
+    background: var(--main-theme-secondary-color);
+    border-radius: 10px;
+}
+
+.header_form_mccc {
+    background-color: var(--main-theme-background-color);
+    height: auto;
+    border-radius: 10px;
+    margin: 1vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.title {
+    color: var(--main-theme-secondary-color);
+    text-align: center;
+    padding-top: 0.5vw;
+    padding-bottom: 0.5vw;
+    font-weight: lighter;
+    font-size: 2.1vw;
+    margin: 0;
+}
+
+.dark_bar {
+    color: var(--main-theme-secondary-color);
+    height: auto;
+    border-radius: 10px;
+    margin: 1vw 0 0 0;
+    padding: 1vw;
+    background-color: var(--clickable-background-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dark_bar>p {
+    margin: 0vw;
+    font-weight: lighter;
+    font-size: 1.05vw;
+}
+
+.button_more {
+    border: 2px solid white;
+    background-color: var(--clickable-background-color);
+    height: 2vw;
+    width: 2vw;
+    border-radius: 50%;
+    font-size: 1.2vw;
+    font-weight: bold;
+    color: var(--main-theme-secondary-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.button_more:hover {
+    background-color: var(--clickable-background-color);
+    transform: scale(1.1);
+}
+
+.panel_form_mccc {
+    width: 90%;
+    justify-self: center;
+    padding: 0 18px;
+    background-color: rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+    color: var(--main-theme-secondary-color);
+    margin-top: 0;
+    padding-top: 0.1vw;
+}
+
+.panel_form_mccc>p {
+    margin-top: 0;
+    padding-top: 1vw;
+}
+
+.accordion {
+    margin: 0vw;
+    font-weight: lighter;
+    font-size: 1.05vw;
+    cursor: pointer;
+    position: relative;
+}
+
+
+.accordion::after {
+    content: '^';
+    position: absolute;
+    right: 1vw;
+    transition: transform 0.3s ease;
+    font-size: 0.9vw;
+}
+
+.accordion.active::after {
+    transform: rotate(180deg);
 }

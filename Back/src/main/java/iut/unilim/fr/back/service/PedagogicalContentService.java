@@ -20,6 +20,10 @@ public class PedagogicalContentService {
         return pedagogicalContentRepository.findById(id);
     }
 
+    public List<PedagogicalContent> getPedagogicalContentsByResourceSheetId(Long idResourceSheet) {
+        return pedagogicalContentRepository.findByResourceSheet_IdResourceSheet(idResourceSheet);
+    }
+
     public PedagogicalContent createPedagogicalContent(PedagogicalContent pedagogicalContent) {
         return pedagogicalContentRepository.save(pedagogicalContent);
     }

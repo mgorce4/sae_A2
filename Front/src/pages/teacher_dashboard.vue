@@ -1,27 +1,33 @@
 <script setup>
-    import { ref, onMounted } from 'vue'
+    import { ref, onMounted, computed } from 'vue'
     import axios from 'axios'
 
-    import { status } from '../main' /*add , userName next to status to import it*/
+    import { status, institutionLocation } from '../main' /*add , userName next to status to import it*/
     status.value = "Professeur"
+    institutionLocation.value = localStorage.institutionLocation
 
-    const users = ref([]) //get the data from database ressources-sheets
+    const resourceSheets = ref([]) //get the data from database ressources-sheets
+    const mainTeacherForRessource = ref([])
 
     onMounted(async () => {
-        axios.get('http://localhost:8080/api/ressource-sheets').then(response => (users.value = response.data))
+        axios.get('http://localhost:8080/api/resource-sheets').then(response => (resourceSheets.value = response.data))
+        axios.get('http://localhost:8080/api/main-teachers-for-resource').then(response => (mainTeacherForRessource.value = response.data))
+    })
+
+    const joinTables = computed(() => {
+        // Join between users and access_rights where users.idUser = access_rights.idUser
+        return mainTeacherForRessource.value.map((teacher) => {
+            const resourceSheet = resourceSheets.value.filter((ar) => ar.resource.idResource === teacher.resource.idResource)
+            return {
+                ...teacher,
+                resourceSheet: resourceSheet
+            }
+        }).filter(teacher => teacher.user.institution.idInstitution == localStorage.idInstitution)
     })
 
     const goToRessourceSheet = (id) => {
         window.location.hash = `#/form-ressource-sheet?id=${id}`
     }
-
-    /*
-    const name = ref([]) //to get the username from who's connected
-    onMounted(async () => {
-        axios.get('http://localhost:8080/api/users').then(response => (name.value = response.data))
-    })
-    userName.value = name.value.username
-    */
 </script>
 
 <template>
@@ -29,8 +35,8 @@
         <div id="for_scroll_bar" style="overflow-y: scroll; margin: 1vw; height: 24vw;">
             <p id="title">Vos ressources : </p>
             <div id="div_sheets" >
-                <button id="sheets" @click="goToRessourceSheet(u.idRessourceSheet)" v-for="u in users" :key="u.idRessourceSheet">
-                    <p>{{ u.label}}</p>
+                <button id="sheets" @click="goToRessourceSheet(u.idResourceSheet)" v-for="u in joinTables" :key="u.idResourceSheet">
+                    <p>{{ u.resource.label}}</p>
                 </button>
             </div>
         </div>
@@ -44,12 +50,12 @@
     height: 25vw;
     margin: 3vw 14vw;
     justify-content: center;
-    background-color: rgb(61, 67, 117);
+    background-color: var(--main-theme-background-color);
     border-radius: 15px;
 }
 
 #title{
-    color: white;
+    color: var(--main-theme-secondary-color);
     padding-left: 10px ;
     font-size: 1.5vw;
     width: fit-content;
@@ -66,14 +72,14 @@
     max-height: 10vw;
     min-width: 20vw;
     margin: 1em;
-    background-color: rgb(47, 47, 70);
+    background-color: var(--sub-section-background-color);
     border-radius: 15px;
     align-items: center;
 }
 
 #sheets > p{
     font-size: 4.5vw;
-    color: white;
+    color: var(--main-theme-secondary-color);
     text-align: center;
     margin: 2vw;
 }
@@ -84,13 +90,13 @@
 
 #for_scroll_bar::-webkit-scrollbar-track {
     margin: 1em;
-    background: rgb(42,45,86);
+    background: var(--main-theme-secondary-background-color);
     box-shadow: inset 0 0 5px rgb(24, 26, 50);
     border-radius: 10px;
 }
 
 #for_scroll_bar::-webkit-scrollbar-thumb {
-    background: rgb(254,254,254);
+    background: var(--main-theme-secondary-color);
     border-radius: 10px;
 }
 </style>
