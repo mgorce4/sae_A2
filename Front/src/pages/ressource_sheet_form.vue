@@ -48,13 +48,12 @@ const pedagogicalContent = ref(null) // Pedagogical content from the database
 const localPedagogicalContent = ref({
   cm: [], // Array of { number: 1, content: 'text' }
   td: [],
-  tp: []
+  tp: [],
+  ds: []
 })
 
 // Function to parse CSV string into array of items
 const parseCSVContent = (csvString) => {
-  console.log('🔍 Parsing CSV string:', csvString)
-
   if (!csvString || csvString.trim() === '') {
     console.log('⚠️ CSV string is empty or null')
     return []
@@ -71,11 +70,8 @@ const parseCSVContent = (csvString) => {
       number: parseInt(match[1]),
       content: match[2].replace(/''/g, "'").trim() // Replace double quotes with single
     }
-    console.log('✅ Parsed item:', item)
     items.push(item)
   }
-
-  console.log('📊 Total items parsed:', items.length)
   return items
 }
 
@@ -92,27 +88,29 @@ const toCSVContent = (items) => {
 const addPedagogicalItem = (type) => {
   const list = localPedagogicalContent.value[type]
   const nextNumber = list.length > 0 ? Math.max(...list.map(item => item.number)) + 1 : 1
-
   list.push({
     number: nextNumber,
     content: ''
   })
-
-  console.log(`New ${type} item added. Total:`, list.length)
-
   // Update panel height after adding
   nextTick(() => {
     const pedagogicalPanel = document.querySelector('.pedagogical-content')?.closest('.panel')
     if (pedagogicalPanel) {
       updatePanelHeight(pedagogicalPanel)
     }
+    // Initialize textarea heights
+    initializeTextareaHeights()
   })
 }
 
 // Function to remove a pedagogical content item
 const removePedagogicalItem = (type, index) => {
   localPedagogicalContent.value[type].splice(index, 1)
-  console.log(`${type} item removed. Total:`, localPedagogicalContent.value[type].length)
+
+  // Recalculate numbers after removal
+  localPedagogicalContent.value[type].forEach((item, idx) => {
+    item.number = idx + 1
+  })
 
   // Update panel height after removing
   nextTick(() => {
@@ -120,7 +118,63 @@ const removePedagogicalItem = (type, index) => {
     if (pedagogicalPanel) {
       updatePanelHeight(pedagogicalPanel)
     }
+    // Initialize textarea heights
+    initializeTextareaHeights()
   })
+}
+
+// Drag and drop state for pedagogical items
+const draggedItem = ref(null)
+const draggedType = ref(null)
+
+// Function to handle drag start
+const onDragStart = (type, index) => {
+  draggedItem.value = index
+  draggedType.value = type
+}
+
+// Function to handle drag over
+const onDragOver = (event) => {
+  event.preventDefault()
+}
+
+// Function to handle drop
+const onDrop = (type, dropIndex) => {
+  if (draggedType.value === type && draggedItem.value !== null) {
+    const items = localPedagogicalContent.value[type]
+    const draggedElement = items[draggedItem.value]
+
+    // Remove from old position
+    items.splice(draggedItem.value, 1)
+
+    // Insert at new position
+    items.splice(dropIndex, 0, draggedElement)
+
+    // Recalculate all numbers sequentially
+    items.forEach((item, index) => {
+      item.number = index + 1
+    })
+
+    // Reset drag state
+    draggedItem.value = null
+    draggedType.value = null
+
+    // Update panel height
+    nextTick(() => {
+      const pedagogicalPanel = document.querySelector('.pedagogical-content')?.closest('.panel')
+      if (pedagogicalPanel) {
+        updatePanelHeight(pedagogicalPanel)
+      }
+      // Initialize textarea heights
+      initializeTextareaHeights()
+    })
+  }
+}
+
+// Function to handle drag end
+const onDragEnd = () => {
+  draggedItem.value = null
+  draggedType.value = null
 }
 
 // Function for return button
@@ -128,16 +182,34 @@ const goBack = () => {
   window.location.hash = '#/teacher-dashboard'
 }
 
+// Function to auto-resize textarea
+const autoResizeTextarea = (event) => {
+  const textarea = event.target
+  // Reset height to auto to get the correct scrollHeight
+  textarea.style.height = 'auto'
+  // Set height to scrollHeight to fit all content
+  textarea.style.height = textarea.scrollHeight + 'px'
+}
+
+// Function to initialize all textareas height on mount
+const initializeTextareaHeights = () => {
+  nextTick(() => {
+    const textareas = document.querySelectorAll('.pedagogical-input')
+    textareas.forEach(textarea => {
+      textarea.style.height = 'auto'
+      textarea.style.height = textarea.scrollHeight + 'px'
+    })
+  })
+}
+
 // Function to add a new keyword
 const addKeyword = () => {
   localKeywords.value.push({ keyword: '', isNew: true })
-  console.log('New keyword added. Total keywords:', localKeywords.value.length)
 }
 
 // Function to remove a keyword
 const removeKeyword = (index) => {
   localKeywords.value.splice(index, 1)
-  console.log('Keyword removed. Total keywords:', localKeywords.value.length)
 }
 
 // Function to handle Enter key in keyword input
@@ -158,8 +230,6 @@ const handleKeywordEnter = (index) => {
 // Function to add a new modality
 const addModality = () => {
   localModalities.value.push({ modality: '', isNew: true })
-  console.log('New modality added. Total modalities:', localModalities.value.length)
-
   // Update panel height after adding
   nextTick(() => {
     const modalitiesPanel = document.querySelector('.modalities-list')?.closest('.panel')
@@ -172,8 +242,6 @@ const addModality = () => {
 // Function to remove a modality
 const removeModality = (index) => {
   localModalities.value.splice(index, 1)
-  console.log('Modality removed. Total modalities:', localModalities.value.length)
-
   // Update panel height after removing
   nextTick(() => {
     const modalitiesPanel = document.querySelector('.modalities-list')?.closest('.panel')
@@ -196,8 +264,6 @@ const isSaeLinked = (saeId) => {
 const toggleSaeLink = (saeId) => {
   const currentState = isSaeLinked(saeId)
   localSaeChanges.value[saeId] = !currentState
-  console.log('SAE', saeId, 'toggled to:', !currentState)
-  console.log('Local changes:', localSaeChanges.value)
 }
 
 // Function to update panel max-height after content changes
@@ -213,8 +279,6 @@ const updatePanelHeight = (panelElement) => {
 // Function to add a new skill row
 const addSkillRow = () => {
   localSkills.value.push({ id: null, label: '', description: '' })
-  console.log('New skill row added. Total skills:', localSkills.value.length)
-
   // Update panel height after adding
   nextTick(() => {
     const skillsPanel = document.querySelector('.skills-table')?.closest('.panel')
@@ -228,8 +292,6 @@ const addSkillRow = () => {
 const removeSkillRow = (index) => {
   if (localSkills.value.length > 1) {
     localSkills.value.splice(index, 1)
-    console.log('Skill row removed. Total skills:', localSkills.value.length)
-
     // Update panel height after removing
     nextTick(() => {
       const skillsPanel = document.querySelector('.skills-table')?.closest('.panel')
@@ -254,14 +316,10 @@ const hasObjectiveChanges = computed(() => {
 })
 
 onMounted(async () => {
-  console.log('Component mounted, resourceSheetId:', resourceSheetId.value)
-
   // Get institution name from localStorage
   const storedInstitution = localStorage.getItem('institutionName')
-  console.log('Stored institution in localStorage:', storedInstitution)
   if (storedInstitution) {
     institutionName.value = storedInstitution
-    console.log('Institution from localStorage:', institutionName.value)
   } else {
     console.warn('No institution found in localStorage')
   }
@@ -269,49 +327,34 @@ onMounted(async () => {
   /* get the specific resource sheet from the DB using the ID */
   if (resourceSheetId.value) {
     try {
-      console.log('Fetching resource sheet with ID:', resourceSheetId.value)
       const response = await axios.get(`http://localhost:8080/api/resource-sheets/${resourceSheetId.value}/details`)
       resourceSheet.value = response.data
-      console.log('ResourceSheet data with details:', resourceSheet.value)
-
       // Get national program objectives for this resource sheet
       if (resourceSheetId.value) {
         try {
-          console.log('Fetching national program objectives for resource sheet ID:', resourceSheetId.value)
           const objectivesResponse = await axios.get(`http://localhost:8080/api/national-program-objectives/ressource-sheet/${resourceSheetId.value}`)
           nationalProgramObjectives.value = objectivesResponse.data
-          console.log('National program objectives:', nationalProgramObjectives.value)
-
           // Set the local content from the first objective (or combine multiple)
           if (nationalProgramObjectives.value.length > 0) {
             localObjectiveContent.value = nationalProgramObjectives.value
               .map(obj => obj.content)
               .join('\n\n')
           }
-          console.log('Local objective content initialized:', localObjectiveContent.value)
         } catch (error) {
           console.error('Error fetching national program objectives:', error)
         }
 
         // Get national program skills for this resource sheet
         try {
-          console.log('Fetching national program skills for resource sheet ID:', resourceSheetId.value)
           const skillsResponse = await axios.get(`http://localhost:8080/api/national-program-skills/resource-sheet/${resourceSheetId.value}`)
           nationalProgramSkills.value = skillsResponse.data
-          console.log('National program skills:', nationalProgramSkills.value)
-
           // Initialize local skills array from database
           if (nationalProgramSkills.value.length > 0) {
-            localSkills.value = nationalProgramSkills.value.map(skill => ({
-              id: skill.idSkill,
-              label: skill.label || '',
-              description: skill.description || ''
-            }))
+            localSkills.value = nationalProgramSkills.value.map(skill => ({ id: skill.idSkill, label: skill.label || '', description: skill.description || '' }))
           } else {
             // Start with one empty skill if none exist
             localSkills.value = [{ id: null, label: '', description: '' }]
           }
-          console.log('Local skills initialized:', localSkills.value)
         } catch (error) {
           console.error('Error fetching national program skills:', error)
           // Initialize with one empty skill on error
@@ -320,17 +363,11 @@ onMounted(async () => {
 
         // Get keywords for this resource sheet
         try {
-          console.log('Fetching keywords for resource sheet ID:', resourceSheetId.value)
           const keywordsResponse = await axios.get(`http://localhost:8080/api/keywords/resource-sheet/${resourceSheetId.value}`)
           keywords.value = keywordsResponse.data
-          console.log('Keywords:', keywords.value)
 
           // Initialize local keywords array from database
-          localKeywords.value = keywords.value.map(kw => ({
-            keyword: kw.keyword || '',
-            isNew: false
-          }))
-          console.log('Local keywords initialized:', localKeywords.value)
+          localKeywords.value = keywords.value.map(kw => ({ keyword: kw.keyword || '', isNew: false }))
         } catch (error) {
           console.error('Error fetching keywords:', error)
           // Initialize with empty array on error
@@ -339,17 +376,11 @@ onMounted(async () => {
 
         // Get modalities of implementation for this resource sheet
         try {
-          console.log('Fetching modalities for resource sheet ID:', resourceSheetId.value)
           const modalitiesResponse = await axios.get(`http://localhost:8080/api/modalities-of-implementation/resource-sheet/${resourceSheetId.value}`)
           modalities.value = modalitiesResponse.data
-          console.log('Modalities:', modalities.value)
 
           // Initialize local modalities array from database
-          localModalities.value = modalities.value.map(mod => ({
-            modality: mod.modality || '',
-            isNew: false
-          }))
-          console.log('Local modalities initialized:', localModalities.value)
+          localModalities.value = modalities.value.map(mod => ({ modality: mod.modality || '', isNew: false }))
         } catch (error) {
           console.error('Error fetching modalities:', error)
           // Initialize with empty array on error
@@ -358,43 +389,34 @@ onMounted(async () => {
 
         // Get pedagogical content for this resource sheet
         try {
-          console.log('📚 Fetching pedagogical content for resource sheet ID:', resourceSheetId.value)
           const pedagogicalResponse = await axios.get(`http://localhost:8080/api/pedagogical-contents/resource-sheet/${resourceSheetId.value}`)
 
-          console.log('📦 Pedagogical API response:', pedagogicalResponse.data)
-          console.log('📦 Response length:', pedagogicalResponse.data ? pedagogicalResponse.data.length : 0)
-
           if (pedagogicalResponse.data && pedagogicalResponse.data.length > 0) {
-            pedagogicalContent.value = pedagogicalResponse.data[0] // Take the first one
-            console.log('✅ Pedagogical content loaded:', pedagogicalContent.value)
-            console.log('  CM raw:', pedagogicalContent.value.cm)
-            console.log('  TD raw:', pedagogicalContent.value.td)
-            console.log('  TP raw:', pedagogicalContent.value.tp)
-
+            pedagogicalContent.value = pedagogicalResponse.data[0] // Take the first only
             // Parse CSV content into arrays
             localPedagogicalContent.value = {
               cm: parseCSVContent(pedagogicalContent.value.cm),
               td: parseCSVContent(pedagogicalContent.value.td),
-              tp: parseCSVContent(pedagogicalContent.value.tp)
+              tp: parseCSVContent(pedagogicalContent.value.tp),
+              ds: parseCSVContent(pedagogicalContent.value.ds)
             }
-            console.log('🎯 Local pedagogical content initialized:', localPedagogicalContent.value)
           } else {
             console.log('⚠️ No pedagogical content found in API response')
             // Initialize with empty arrays
             localPedagogicalContent.value = {
               cm: [],
               td: [],
-              tp: []
+              tp: [],
+              ds: []
             }
           }
         } catch (error) {
-          console.error('❌ Error fetching pedagogical content:', error)
-          console.error('Error details:', error.response?.data || error.message)
           // Initialize with empty arrays on error
           localPedagogicalContent.value = {
             cm: [],
             td: [],
-            tp: []
+            tp: [],
+            ds: []
           }
         }
       }
@@ -402,76 +424,55 @@ onMounted(async () => {
       // Extract resource data
       if (resourceSheet.value.resource) {
         resource.value = resourceSheet.value.resource
-        console.log('Resource data:', resource.value)
-        console.log('Resource ID:', resource.value.idResource)
-        console.log('Resource label:', resource.value.label)
-        console.log('Resource apogeeCode:', resource.value.apogeeCode)
 
         // Get UE labels from all UE coefficients linked to this resource
         if (resource.value.idResource) {
           try {
-            console.log('Fetching UE coefficients for resource ID:', resource.value.idResource)
-
             // Try the specific endpoint first
             try {
               const ueCoeffResponse = await axios.get(`http://localhost:8080/api/ue-coefficients/resource/${resource.value.idResource}`)
               const ueCoefficients = ueCoeffResponse.data
-              console.log('UE Coefficients from specific endpoint:', ueCoefficients)
-
               // Extract UE labels from coefficients
               ueLabels.value = ueCoefficients
                 .filter(coeff => coeff.ue && coeff.ue.label)
                 .map(coeff => coeff.ue.label)
 
-              console.log('UE Labels extracted:', ueLabels.value)
             } catch (endpointError) {
-              console.warn('Specific endpoint failed, trying fallback method:', endpointError.message)
-
               // Fallback: Get all UE coefficients and filter by resource ID
               const allUeCoeffsResponse = await axios.get('http://localhost:8080/api/ue-coefficients')
               const allUeCoefficients = allUeCoeffsResponse.data
-              console.log('All UE Coefficients fetched:', allUeCoefficients)
 
               // Filter by resource ID
               const filteredCoeffs = allUeCoefficients.filter(coeff =>
                 coeff.resource && coeff.resource.idResource === resource.value.idResource
               )
-              console.log('Filtered UE Coefficients:', filteredCoeffs)
-
               // Extract UE labels
               ueLabels.value = filteredCoeffs
                 .filter(coeff => coeff.ue && coeff.ue.label)
                 .map(coeff => coeff.ue.label)
 
-              console.log('UE Labels extracted from fallback:', ueLabels.value)
             }
           } catch (error) {
             console.error('Error fetching UE coefficients:', error)
             console.error('Error details:', error.response?.data || error.message)
           }
         } else {
-          console.warn('No idResource found in resource object')
         }
 
         // Get SAEs from the same semester and institution
         if (resource.value.semester && resource.value.idResource) {
           try {
-            console.log('Resource semester:', resource.value.semester)
-
             // Get all SAEs
             const allSaeResponse = await axios.get('http://localhost:8080/api/saes')
-            console.log('All SAEs fetched:', allSaeResponse.data)
 
             // Get all resources to filter SAEs by semester and institution
             const allResourcesResponse = await axios.get('http://localhost:8080/api/resources')
             const allResources = allResourcesResponse.data
-            console.log('All resources fetched:', allResources.length)
 
             // Filter resources by same semester and same institution
             const sameSemesterResources = allResources.filter(r =>
               r.semester === resource.value.semester
             )
-            console.log('Resources with same semester:', sameSemesterResources.length)
 
             // Get SAE links for resources in the same semester
             const saeLinkPromises = sameSemesterResources.map(r =>
@@ -483,13 +484,11 @@ onMounted(async () => {
 
             // Get unique SAE IDs from same semester resources
             const sameSemesterSaeIds = [...new Set(allSaeLinks.map(link => link.idSAE))]
-            console.log('SAE IDs from same semester:', sameSemesterSaeIds)
 
             // Filter SAEs to only include those from the same semester
             saeList.value = allSaeResponse.data.filter(sae =>
               sameSemesterSaeIds.includes(sae.idSAE)
             )
-            console.log('Filtered SAEs from same semester:', saeList.value)
           } catch (error) {
             console.error('Error fetching SAEs:', error)
           }
@@ -498,10 +497,8 @@ onMounted(async () => {
         // Get SAE links for this specific resource
         if (resource.value.idResource) {
           try {
-            console.log('Fetching SAE links for resource ID:', resource.value.idResource)
             const saeLinkResponse = await axios.get(`http://localhost:8080/api/sae-link-resources/resource/${resource.value.idResource}`)
             linkedSaeIds.value = saeLinkResponse.data.map(link => link.idSAE)
-            console.log('Linked SAE IDs:', linkedSaeIds.value)
           } catch (error) {
             console.error('Error fetching SAE links:', error)
           }
@@ -591,6 +588,9 @@ onMounted(async () => {
       }
     });
   });
+
+  // Initialize all textarea heights for pedagogical content
+  initializeTextareaHeights();
 })
 </script>
 <template>
@@ -697,9 +697,24 @@ onMounted(async () => {
                 <div v-if="localPedagogicalContent.cm.length === 0" class="no-content-message">
                   Aucun contenu CM
                 </div>
-                <div v-for="(item, index) in localPedagogicalContent.cm" :key="index" class="pedagogical-item">
+                <div
+                  v-for="(item, index) in localPedagogicalContent.cm"
+                  :key="index"
+                  class="pedagogical-item"
+                  draggable="true"
+                  @dragstart="onDragStart('cm', index)"
+                  @dragover="onDragOver"
+                  @drop="onDrop('cm', index)"
+                  @dragend="onDragEnd"
+                >
                   <span class="pedagogical-number">{{ item.number }}</span>
-                  <input type="text" v-model="item.content" placeholder="List item" class="pedagogical-input" />
+                  <textarea
+                    v-model="item.content"
+                    placeholder="List item"
+                    class="pedagogical-input"
+                    rows="1"
+                    @input="autoResizeTextarea"
+                  ></textarea>
                   <button @click="removePedagogicalItem('cm', index)" class="btn-remove-pedagogical" title="Supprimer">✕</button>
                 </div>
               </div>
@@ -720,9 +735,24 @@ onMounted(async () => {
                 <div v-if="localPedagogicalContent.td.length === 0" class="no-content-message">
                   Aucun contenu TD
                 </div>
-                <div v-for="(item, index) in localPedagogicalContent.td" :key="index" class="pedagogical-item">
+                <div
+                  v-for="(item, index) in localPedagogicalContent.td"
+                  :key="index"
+                  class="pedagogical-item"
+                  draggable="true"
+                  @dragstart="onDragStart('td', index)"
+                  @dragover="onDragOver"
+                  @drop="onDrop('td', index)"
+                  @dragend="onDragEnd"
+                >
                   <span class="pedagogical-number">{{ item.number }}</span>
-                  <input type="text" v-model="item.content" placeholder="List item" class="pedagogical-input" />
+                  <textarea
+                    v-model="item.content"
+                    placeholder="List item"
+                    class="pedagogical-input"
+                    rows="1"
+                    @input="autoResizeTextarea"
+                  ></textarea>
                   <button @click="removePedagogicalItem('td', index)" class="btn-remove-pedagogical" title="Supprimer">✕</button>
                 </div>
               </div>
@@ -743,15 +773,68 @@ onMounted(async () => {
                 <div v-if="localPedagogicalContent.tp.length === 0" class="no-content-message">
                   Aucun contenu TP
                 </div>
-                <div v-for="(item, index) in localPedagogicalContent.tp" :key="index" class="pedagogical-item">
+                <div
+                  v-for="(item, index) in localPedagogicalContent.tp"
+                  :key="index"
+                  class="pedagogical-item"
+                  draggable="true"
+                  @dragstart="onDragStart('tp', index)"
+                  @dragover="onDragOver"
+                  @drop="onDrop('tp', index)"
+                  @dragend="onDragEnd"
+                >
                   <span class="pedagogical-number">{{ item.number }}</span>
-                  <input type="text" v-model="item.content" placeholder="List item" class="pedagogical-input" />
+                  <textarea
+                    v-model="item.content"
+                    placeholder="List item"
+                    class="pedagogical-input"
+                    rows="1"
+                    @input="autoResizeTextarea"
+                  ></textarea>
                   <button @click="removePedagogicalItem('tp', index)" class="btn-remove-pedagogical" title="Supprimer">✕</button>
                 </div>
               </div>
 
               <div class="pedagogical-footer">
                 <button @click="addPedagogicalItem('tp')" class="btn-add-pedagogical">+ Ajouter</button>
+              </div>
+            </div>
+
+            <!-- DS Section -->
+            <div class="pedagogical-section">
+              <div class="pedagogical-header">
+                <p class="pedagogical-title">DS</p>
+              </div>
+              <p class="pedagogical-subtitle">Détailler ici le contenu pédagogique des DS</p>
+
+              <div class="pedagogical-items-container">
+                <div v-if="localPedagogicalContent.ds.length === 0" class="no-content-message">
+                  Aucun contenu DS
+                </div>
+                <div
+                  v-for="(item, index) in localPedagogicalContent.ds"
+                  :key="index"
+                  class="pedagogical-item"
+                  draggable="true"
+                  @dragstart="onDragStart('ds', index)"
+                  @dragover="onDragOver"
+                  @drop="onDrop('ds', index)"
+                  @dragend="onDragEnd"
+                >
+                  <span class="pedagogical-number">{{ item.number }}</span>
+                  <textarea
+                    v-model="item.content"
+                    placeholder="List item"
+                    class="pedagogical-input"
+                    rows="1"
+                    @input="autoResizeTextarea"
+                  ></textarea>
+                  <button @click="removePedagogicalItem('ds', index)" class="btn-remove-pedagogical" title="Supprimer">✕</button>
+                </div>
+              </div>
+
+              <div class="pedagogical-footer">
+                <button @click="addPedagogicalItem('ds')" class="btn-add-pedagogical">+ Ajouter</button>
               </div>
             </div>
           </div>
@@ -1290,10 +1373,13 @@ input:checked + .slider::before {
 .pedagogical-content {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5vw;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.2vw;
   margin: 1vw 0;
-  padding: 0 2vw;
+  padding: 0 2vw; /* Espaces à gauche et à droite */
+  box-sizing: border-box;
+  overflow: visible;
+  align-items: start; /* Permet à chaque section de garder sa propre hauteur */
 }
 
 .pedagogical-section {
@@ -1302,7 +1388,10 @@ input:checked + .slider::before {
   padding: 1.5vw;
   display: flex;
   flex-direction: column;
-  min-height: 25vw;
+  height: auto; /* Hauteur automatique basée sur le contenu */
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .pedagogical-header {
@@ -1326,15 +1415,52 @@ input:checked + .slider::before {
   line-height: 1.3;
 }
 
+.pedagogical-items-container {
+  flex: 0 1 auto; /* Ne pas forcer l'expansion, s'adapter au contenu */
+  overflow-y: visible; /* Permettre au contenu de déborder naturellement */
+  margin-bottom: 1vw;
+  min-height: 5vw; /* Hauteur minimale pour les sections vides */
+}
+
 .pedagogical-item {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.8vw;
   margin-bottom: 0.8vw;
   background-color: rgba(200, 200, 200, 0.3);
   border-radius: 8px;
   padding: 0.6vw 0.8vw;
+  cursor: move;
+  transition: all 0.2s ease;
+  min-height: 2.5vw;
+  box-sizing: border-box;
+  width: 100%;
+  overflow: visible;
+}
+
+.pedagogical-item:hover {
+  background-color: rgba(200, 200, 200, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.pedagogical-item[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+/* Style visuel pendant le drag */
+.pedagogical-item.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+}
+
+.no-content-message {
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  text-align: center;
+  padding: 2vw 0;
+  font-size: 0.9vw;
 }
 
 .pedagogical-number {
@@ -1360,6 +1486,11 @@ input:checked + .slider::before {
   font-family: inherit;
   font-size: 0.9vw;
   box-sizing: border-box;
+  resize: none;
+  overflow: hidden;
+  min-height: 1.5vw;
+  line-height: 1.4;
+  width: 100%;
 }
 
 .pedagogical-input::placeholder {
@@ -1373,8 +1504,7 @@ input:checked + .slider::before {
 .btn-remove-pedagogical {
   position: absolute;
   right: 0.5vw;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 0.6vw;
   background-color: transparent;
   color: white;
   border: none;
@@ -1393,12 +1523,6 @@ input:checked + .slider::before {
 
 .btn-remove-pedagogical:hover {
   color: #ff6b6b;
-}
-
-.pedagogical-items-container {
-  flex: 1;
-  overflow-y: auto;
-  margin-bottom: 1vw;
 }
 
 .pedagogical-footer {
@@ -1425,13 +1549,5 @@ input:checked + .slider::before {
 
 .btn-add-pedagogical:hover {
   background-color: rgba(108, 117, 125, 1);
-}
-
-.no-content-message {
-  padding: 1vw;
-  font-style: italic;
-  color: rgba(255, 255, 255, 0.4);
-  text-align: center;
-  font-size: 0.85vw;
 }
 </style>
