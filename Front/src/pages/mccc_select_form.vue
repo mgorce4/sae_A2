@@ -6,6 +6,10 @@ const afficherBoutons = ref([
     [{ show: false, status: 'Vierge' }, { show: false, status: 'Brouillon' }],
     [{ show: false, status: 'Brouillon' }, { show: false, status: 'Vierge' }]
 ])
+
+const goToRessourceSheet = (url, semester) => {
+    window.location.hash = `${url}?id=${semester}`
+}
 </script>
 
 <template>
@@ -23,9 +27,9 @@ const afficherBoutons = ref([
                     <p class="semester_display">Semestre {{ 2 * index + index2 + 1 }}</p>
                     <p class="status_display" v-show="!btn.show">{{ btn.status }}</p>
                     <div v-show="btn.show" class="container-fluid spe">
-                        <button class="btn_form_acces" onclick="document.location.href='#/form-mccc-UE'">UE</button>
-                        <button class="btn_form_acces" onclick="document.location.href='#/form-mccc-ressources'">Ressource</button>
-                        <button class="btn_form_acces" onclick="document.location.href='#/form-mccc-sae'">SAÉ</button>
+                        <button class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-UE', (2*index+index2+1))">UE</button>
+                        <button class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-ressources', (2*index+index2+1))">Ressource</button>
+                        <button class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-sae', (2*index+index2+1))">SAÉ</button>
                     </div>
                 </div>
             </div>
