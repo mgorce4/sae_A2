@@ -1,3 +1,16 @@
+:root {
+  --main-theme-background-color:#3D4375;
+  --main-theme-secondary-background-color:#2C3158FF;
+  --main-theme-terciary-color:#000000FF;
+  --main-theme-secondary-color:#fff;
+  --sub-div-background-color:#8b8ea7;
+  --header-footer-color:#B51621;
+  --clickable-background-color:#202020FF;
+  --header-color:#4B575F;
+  --error-color:#ff6b6b;
+  --sub-section-background-color:#2C2C3B;
+
+}
 html {
     height: 100%;
 }
@@ -55,13 +68,13 @@ main {
     font-size: 1vw;
     text-align: center;
     text-decoration: none;
-    color: #FFFFFF;
-    background-color: #2C2C3B;
+    color: var(--main-theme-secondary-color);
+    background-color: var(--sub-section-background-color);
 }
 
 .btn1:active {
-    background-color: #8B8EA7;
-    color: #000000;
+    background-color: var(--sub-div-background-color);
+    color: black;
 }
 
 .return_arrow {
@@ -89,7 +102,7 @@ main {
 /* -- CSS forms MCCC -- */
 .background_form_mccc {
     height: auto;
-    background-color: rgb(61, 67, 117);
+    background-color: var(--main-theme-background-color);
     border-radius: 15px;
     overflow-x: hidden;
     overflow-y: hidden;
@@ -108,18 +121,18 @@ main {
 
 .form::-webkit-scrollbar-track {
     margin: 1em;
-    background: rgb(42, 45, 86);
+    background: var(--main-theme-secondary-background-color);
     box-shadow: inset 0 0 5px rgb(24, 26, 50);
     border-radius: 10px;
 }
 
 .form::-webkit-scrollbar-thumb {
-    background: rgb(254, 254, 254);
+    background: var(--main-theme-secondary-color);
     border-radius: 10px;
 }
 
 .header_form_mccc {
-    background-color: rgb(44, 49, 88);
+    background-color: var(--main-theme-background-color);
     height: auto;
     border-radius: 10px;
     margin: 1vw;
@@ -129,7 +142,7 @@ main {
 }
 
 .title {
-    color: white;
+    color: var(--main-theme-secondary-color);
     text-align: center;
     padding-top: 0.5vw;
     padding-bottom: 0.5vw;
@@ -139,12 +152,12 @@ main {
 }
 
 .dark_bar {
-    color: white;
+    color: var(--main-theme-secondary-color);
     height: auto;
     border-radius: 10px;
     margin: 1vw 0 0 0;
     padding: 1vw;
-    background-color: rgb(32, 32, 32);
+    background-color: var(--clickable-background-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -158,13 +171,13 @@ main {
 
 .button_more {
     border: 2px solid white;
-    background-color: rgb(32, 32, 32);
+    background-color: var(--clickable-background-color);
     height: 2vw;
     width: 2vw;
     border-radius: 50%;
     font-size: 1.2vw;
     font-weight: bold;
-    color: white;
+    color: var(--main-theme-secondary-color);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -174,7 +187,7 @@ main {
 }
 
 .button_more:hover {
-    background-color: rgb(50, 50, 50);
+    background-color: var(--clickable-background-color);
     transform: scale(1.1);
 }
 
@@ -186,7 +199,7 @@ main {
     overflow: hidden;
     border-bottom-left-radius: 15px;
     border-bottom-right-radius: 15px;
-    color: white;
+    color: var(--main-theme-secondary-color);
     margin-top: 0;
     padding-top: 0.1vw;
 }
@@ -200,12 +213,10 @@ main {
     margin: 0vw;
     font-weight: lighter;
     font-size: 1.05vw;
-}
-
-.accordion {
     cursor: pointer;
     position: relative;
 }
+
 
 .accordion::after {
     content: '^';

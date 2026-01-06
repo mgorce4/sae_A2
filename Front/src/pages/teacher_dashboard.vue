@@ -50,12 +50,12 @@
     height: 25vw;
     margin: 3vw 14vw;
     justify-content: center;
-    background-color: rgb(61, 67, 117);
+    background-color: var(--main-theme-background-color);
     border-radius: 15px;
 }
 
 #title{
-    color: white;
+    color: var(--main-theme-secondary-color);
     padding-left: 10px ;
     font-size: 1.5vw;
     width: fit-content;
@@ -72,14 +72,14 @@
     max-height: 10vw;
     min-width: 20vw;
     margin: 1em;
-    background-color: rgb(47, 47, 70);
+    background-color: var(--sub-section-background-color);
     border-radius: 15px;
     align-items: center;
 }
 
 #sheets > p{
     font-size: 4.5vw;
-    color: white;
+    color: var(--main-theme-secondary-color);
     text-align: center;
     margin: 2vw;
 }
@@ -90,13 +90,13 @@
 
 #for_scroll_bar::-webkit-scrollbar-track {
     margin: 1em;
-    background: rgb(42,45,86);
+    background: var(--main-theme-secondary-background-color);
     box-shadow: inset 0 0 5px rgb(24, 26, 50);
     border-radius: 10px;
 }
 
 #for_scroll_bar::-webkit-scrollbar-thumb {
-    background: rgb(254,254,254);
+    background: var(--main-theme-secondary-color);
     border-radius: 10px;
 }
 </style>

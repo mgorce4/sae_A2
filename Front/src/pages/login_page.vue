@@ -148,7 +148,7 @@
 #blue_rect {
     width: 40vw;
     height: 25vw;
-    background-color: #3D4375;
+    background-color: var(--main-theme-background-color);
     border-radius: 2vw;
     margin: 5vw 30vw;
 }
@@ -168,7 +168,7 @@
     padding: 10% 0 5% 0;
     margin: 0;
     font-size: 1.5vw;
-    color: #FFFFFF;
+    color: var(--main-theme-secondary-color);
 }
 
 .input_login {
@@ -186,7 +186,7 @@
 }
 
 .login_error {
-    color: #ff6b6b;
+    color: var(--error-color);
     font-size: 1vw;
     margin-top: 0.5vw;
     font-weight: bold;

@@ -17,19 +17,19 @@
     width: 94%;
     height: 3.5vw;
     padding: 0 3%;
-    background-color: #B51621;
+    background-color: var(--header-footer-color);
     margin: 0;
 }
 
 #establishment_name {
-    color: #FFFFFF;
+    color: var(--main-theme-secondary-color);
     text-shadow: 0 0 5px black;
     font-size: 1.5vw;
 }
 
 #edit_year {
     font-size: 1.5vw;
-    color: #FFFFFF;
+    color: var(--main-theme-secondary-color);
     text-shadow: 0 0 5px black;
 }
 </style>

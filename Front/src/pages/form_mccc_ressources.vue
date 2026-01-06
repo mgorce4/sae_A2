@@ -272,13 +272,13 @@ onMounted(async() => {
 #return_arrow > p {
   font-size: 1.5vw;
   font-weight: bold;
-  color: black;
+  color: var(--main-theme-terciary-color);
   margin-left: 1.5vw;
 }
 
 #background_form {
   height: auto;
-  background-color: rgb(61, 67, 117);
+  background-color: var(--main-theme-background-color);
   border-radius: 15px;
   overflow-x: hidden;
   overflow-y: hidden;
@@ -287,14 +287,14 @@ onMounted(async() => {
 }
 
 #header_ressource {
-  background-color: rgb(44, 49, 88);
+  background-color: var(--main-theme-secondary-background-color);
   height: auto;
   border-radius: 10px;
   margin: 1vw;
 }
 
 #title {
-  color: white;
+  color: var(--main-theme-secondary-color);
   text-align: center;
   padding-top: 0.5vw;
   padding-bottom: 0.5vw;
@@ -340,13 +340,13 @@ onMounted(async() => {
 
 #form::-webkit-scrollbar-track {
   margin: 1em;
-  background: rgb(42, 45, 86);
+  background: var(--main-theme-secondary-background-color);
   box-shadow: inset 0 0 5px rgb(24, 26, 50);
   border-radius: 10px;
 }
 
 #form::-webkit-scrollbar-thumb {
-  background: rgb(254, 254, 254);
+  background: var(--main-theme-secondary-color);
   border-radius: 10px;
 }
 
@@ -360,7 +360,7 @@ onMounted(async() => {
   transition: max-height 0.2s ease-out;
   border-bottom-left-radius: 15px;
   border-bottom-right-radius: 15px;
-  color: white;
+  color: var(--main-theme-secondary-color);
   margin-top: 0;
   display: flex;
 }
@@ -372,8 +372,8 @@ onMounted(async() => {
 
 .input {
   border-radius: 5px;
-  background-color: rgb(117, 117, 117, 100);
-  color: #ffffff;
+  background-color: rgba(117, 117, 117, 100);
+  color: var(--main-theme-secondary-color);
   width: 100px;
 }
 
@@ -430,7 +430,7 @@ onMounted(async() => {
 }
 
 #resources_list {
-  background-color: rgb(61, 67, 117);
+  background-color: var(--main-theme-background-color);
   border-radius: 15px;
   padding: 10px;
   margin-top: 3%;
@@ -444,7 +444,7 @@ onMounted(async() => {
 }
 
 #resources_list > p {
-  color: white;
+  color: var(--main-theme-secondary-color);
   font-size: 1.5vw;
 }
 </style>

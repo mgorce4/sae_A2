@@ -2,17 +2,17 @@
     import { status } from '../main'
     import { onMounted, ref} from 'vue'
     import axios from 'axios'
-    
+
     status.value = "Administration"
 
     let display_more_area = ref(false)
-    
+
     //the input fields for the function
     const nb_UE = ref('')
     const apogee_code = ref('')
     const name_comp = ref('')
     const comp_level = ref('')
-    
+
     //accordion
     onMounted(async () => {
         const acc = document.getElementsByClassName("accordion_UE");
@@ -40,7 +40,7 @@
                 name: name_comp.value,
                 competenceLevel: parseInt(comp_level.value)
             });
-            
+
             nb_UE.value = ''
             apogee_code.value = ''
             name_comp.value = ''
@@ -54,7 +54,7 @@
 </script>
 
 <template>
-    <div id="UE"> 
+    <div id="UE">
         <div id="return_arrow">
             <button id="back_arrow" onclick="document.location.href='#/mccc-select-form'">←</button>
             <p>Retour</p>
@@ -89,7 +89,7 @@
                                 <input type="text" class="input" v-model="comp_level" required/>
                             </div>
                         </div>
-                        
+
                         <div id="right">
                             <input id="btn_cancel_UE" class="btn1" type="reset" value="Annuler">
                             <input id="btn_save_UE" class="btn1" type="submit" value="Sauvegarder" @click="save">
@@ -119,13 +119,13 @@
 #return_arrow > p{
     font-size: 1.5vw;
     font-weight: bold;
-    color: black;
+    color: var(--main-theme-terciary-color);
     margin-left: 1.5vw;
 }
 
 #background_form_UE{
     height: auto;
-    background-color: rgb(61, 67, 117);
+    background-color: var(--main-theme-background-color);
     border-radius: 15px;
     overflow-x: hidden;
     overflow-y: hidden;
@@ -134,7 +134,7 @@
 }
 
 #header_UE{
-    background-color: rgb(44,49,88); 
+    background-color: var(--main-theme-secondary-background-color);
     height: auto;
     border-radius: 10px;
     margin: 1vw;
@@ -144,7 +144,7 @@
 }
 
 #title{
-    color: white;
+    color: var(--main-theme-secondary-color);
     text-align: center;
     padding-top: 0.5vw;
     padding-bottom: 0.5vw;
@@ -177,12 +177,12 @@
 }
 
 #dark_bar{
-    color: white;
+    color: var(--main-theme-secondary-color);
     height: auto;
     border-radius: 10px;
     margin: 1vw 0 0 0;
     padding: 1vw;
-    background-color: rgb(32,32,32);
+    background-color: var(--clickable-background-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -190,13 +190,13 @@
 
 #button_more{
     border: 2px solid white;
-    background-color: rgb(32,32,32);
+    background-color: var(--clickable-background-color);
     height: 2vw;
     width: 2vw;
     border-radius: 50%;
     font-size: 1.2vw;
     font-weight: bold;
-    color: white;
+    color: var(--main-theme-secondary-color);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -219,7 +219,7 @@
   transition: max-height 0.2s ease-out;
   border-bottom-left-radius: 15px;
   border-bottom-right-radius: 15px;
-  color: white;
+  color: var(--main-theme-secondary-color);
   margin-top: 0;
   display: flex;
 }
