@@ -1,31 +1,120 @@
 <script setup>
 import axios from 'axios'
 import { status } from '../main'
-import { onMounted, ref, nextTick } from 'vue'
+import { onMounted, ref, nextTick, computed } from 'vue'
 
 status.value = "Professeur"
 
 /* Extract ID from hash URL parameters */
 const getQueryParam = (param) => {
   const hash = window.location.hash
+  console.log('Full hash:', hash)
+
+  // Hash format: #/form-ressource-sheet?id=5
   const queryString = hash.split('?')[1]
-  if (!queryString) return null
+  console.log('Query string:', queryString)
+
+  if (!queryString) {
+    console.warn('No query string found in hash')
+    return null
+  }
+
   const params = new URLSearchParams(queryString)
-  return params.get(param)
+  const value = params.get(param)
+  console.log(`Extracted ${param}:`, value)
+  return value
 }
 
 const resourceSheetId = ref(getQueryParam('id'))
+console.log('Parsed resourceSheetId:', resourceSheetId.value)
 
 /* link with the API */
 const resourceSheet = ref(null)
 const resource = ref(null)
 const ueLabels = ref([])
 const institutionName = ref(null)
+const saeList = ref([]) // List of SAEs from the same semester
+const linkedSaeIds = ref([]) // IDs of SAEs linked to this resource
+const localSaeChanges = ref({}) // Local state to track SAE switch changes
+const nationalProgramObjectives = ref([]) // List of objectives from the database
+const localObjectiveContent = ref('') // Local state for objective textarea
+const nationalProgramSkills = ref([]) // List of skills from the database
+const localSkills = ref([]) // Local state for skills array (with label and description)
 
 // Function for return button
 const goBack = () => {
   window.location.hash = '#/teacher-dashboard'
 }
+
+// Function to check if a SAE is linked to the resource (including local changes)
+const isSaeLinked = (saeId) => {
+  // Check if there's a local change, otherwise use the original linked state
+  if (saeId in localSaeChanges.value) {
+    return localSaeChanges.value[saeId]
+  }
+  return linkedSaeIds.value.includes(saeId)
+}
+
+// Function to toggle SAE link state locally
+const toggleSaeLink = (saeId) => {
+  const currentState = isSaeLinked(saeId)
+  localSaeChanges.value[saeId] = !currentState
+  console.log('SAE', saeId, 'toggled to:', !currentState)
+  console.log('Local changes:', localSaeChanges.value)
+}
+
+// Function to update panel max-height after content changes
+const updatePanelHeight = (panelElement) => {
+  if (panelElement && panelElement.style.maxHeight) {
+    // Use nextTick to wait for DOM update
+    nextTick(() => {
+      panelElement.style.maxHeight = panelElement.scrollHeight + 'px'
+    })
+  }
+}
+
+// Function to add a new skill row
+const addSkillRow = () => {
+  localSkills.value.push({ id: null, label: '', description: '' })
+  console.log('New skill row added. Total skills:', localSkills.value.length)
+
+  // Update panel height after adding
+  nextTick(() => {
+    const skillsPanel = document.querySelector('.skills-table')?.closest('.panel')
+    if (skillsPanel) {
+      updatePanelHeight(skillsPanel)
+    }
+  })
+}
+
+// Function to remove a skill row
+const removeSkillRow = (index) => {
+  if (localSkills.value.length > 1) {
+    localSkills.value.splice(index, 1)
+    console.log('Skill row removed. Total skills:', localSkills.value.length)
+
+    // Update panel height after removing
+    nextTick(() => {
+      const skillsPanel = document.querySelector('.skills-table')?.closest('.panel')
+      if (skillsPanel) {
+        updatePanelHeight(skillsPanel)
+      }
+    })
+  }
+}
+
+// Computed property to check if objective content has been modified
+const hasObjectiveChanges = computed(() => {
+  if (!nationalProgramObjectives.value || nationalProgramObjectives.value.length === 0) {
+    return localObjectiveContent.value.trim() !== ''
+  }
+
+  const originalContent = nationalProgramObjectives.value
+    .map(obj => obj.content)
+    .join('\n\n')
+
+  return localObjectiveContent.value !== originalContent
+})
 
 onMounted(async () => {
   console.log('Component mounted, resourceSheetId:', resourceSheetId.value)
@@ -48,11 +137,58 @@ onMounted(async () => {
       resourceSheet.value = response.data
       console.log('ResourceSheet data with details:', resourceSheet.value)
 
+      // Get national program objectives for this resource sheet
+      if (resourceSheetId.value) {
+        try {
+          console.log('Fetching national program objectives for resource sheet ID:', resourceSheetId.value)
+          const objectivesResponse = await axios.get(`http://localhost:8080/api/national-program-objectives/ressource-sheet/${resourceSheetId.value}`)
+          nationalProgramObjectives.value = objectivesResponse.data
+          console.log('National program objectives:', nationalProgramObjectives.value)
+
+          // Set the local content from the first objective (or combine multiple)
+          if (nationalProgramObjectives.value.length > 0) {
+            localObjectiveContent.value = nationalProgramObjectives.value
+              .map(obj => obj.content)
+              .join('\n\n')
+          }
+          console.log('Local objective content initialized:', localObjectiveContent.value)
+        } catch (error) {
+          console.error('Error fetching national program objectives:', error)
+        }
+
+        // Get national program skills for this resource sheet
+        try {
+          console.log('Fetching national program skills for resource sheet ID:', resourceSheetId.value)
+          const skillsResponse = await axios.get(`http://localhost:8080/api/national-program-skills/resource-sheet/${resourceSheetId.value}`)
+          nationalProgramSkills.value = skillsResponse.data
+          console.log('National program skills:', nationalProgramSkills.value)
+
+          // Initialize local skills array from database
+          if (nationalProgramSkills.value.length > 0) {
+            localSkills.value = nationalProgramSkills.value.map(skill => ({
+              id: skill.idSkill,
+              label: skill.label || '',
+              description: skill.description || ''
+            }))
+          } else {
+            // Start with one empty skill if none exist
+            localSkills.value = [{ id: null, label: '', description: '' }]
+          }
+          console.log('Local skills initialized:', localSkills.value)
+        } catch (error) {
+          console.error('Error fetching national program skills:', error)
+          // Initialize with one empty skill on error
+          localSkills.value = [{ id: null, label: '', description: '' }]
+        }
+      }
+
       // Extract resource data
       if (resourceSheet.value.resource) {
         resource.value = resourceSheet.value.resource
         console.log('Resource data:', resource.value)
         console.log('Resource ID:', resource.value.idResource)
+        console.log('Resource label:', resource.value.label)
+        console.log('Resource apogeeCode:', resource.value.apogeeCode)
 
         // Get UE labels from all UE coefficients linked to this resource
         if (resource.value.idResource) {
@@ -99,6 +235,60 @@ onMounted(async () => {
         } else {
           console.warn('No idResource found in resource object')
         }
+
+        // Get SAEs from the same semester and institution
+        if (resource.value.semester && resource.value.idResource) {
+          try {
+            console.log('Resource semester:', resource.value.semester)
+
+            // Get all SAEs
+            const allSaeResponse = await axios.get('http://localhost:8080/api/saes')
+            console.log('All SAEs fetched:', allSaeResponse.data)
+
+            // Get all resources to filter SAEs by semester and institution
+            const allResourcesResponse = await axios.get('http://localhost:8080/api/resources')
+            const allResources = allResourcesResponse.data
+            console.log('All resources fetched:', allResources.length)
+
+            // Filter resources by same semester and same institution
+            const sameSemesterResources = allResources.filter(r =>
+              r.semester === resource.value.semester
+            )
+            console.log('Resources with same semester:', sameSemesterResources.length)
+
+            // Get SAE links for resources in the same semester
+            const saeLinkPromises = sameSemesterResources.map(r =>
+              axios.get(`http://localhost:8080/api/sae-link-resources/resource/${r.idResource}`)
+                .catch(() => ({ data: [] }))
+            )
+            const saeLinkResponses = await Promise.all(saeLinkPromises)
+            const allSaeLinks = saeLinkResponses.flatMap(response => response.data)
+
+            // Get unique SAE IDs from same semester resources
+            const sameSemesterSaeIds = [...new Set(allSaeLinks.map(link => link.idSAE))]
+            console.log('SAE IDs from same semester:', sameSemesterSaeIds)
+
+            // Filter SAEs to only include those from the same semester
+            saeList.value = allSaeResponse.data.filter(sae =>
+              sameSemesterSaeIds.includes(sae.idSAE)
+            )
+            console.log('Filtered SAEs from same semester:', saeList.value)
+          } catch (error) {
+            console.error('Error fetching SAEs:', error)
+          }
+        }
+
+        // Get SAE links for this specific resource
+        if (resource.value.idResource) {
+          try {
+            console.log('Fetching SAE links for resource ID:', resource.value.idResource)
+            const saeLinkResponse = await axios.get(`http://localhost:8080/api/sae-link-resources/resource/${resource.value.idResource}`)
+            linkedSaeIds.value = saeLinkResponse.data.map(link => link.idSAE)
+            console.log('Linked SAE IDs:', linkedSaeIds.value)
+          } catch (error) {
+            console.error('Error fetching SAE links:', error)
+          }
+        }
       } else {
         console.log('No resource found in resourceSheet')
       }
@@ -131,7 +321,7 @@ onMounted(async () => {
   }
 
   // Auto-resize textareas (only those with specific classes)
-  const textareas = document.querySelectorAll('#text_area_styled, .auto-resize-textarea');
+  const textareas = document.querySelectorAll('#text_area_styled, .auto-resize-textarea, .skill-input-description');
   textareas.forEach(textarea => {
     const autoResize = () => {
       textarea.style.height = 'auto';
@@ -158,6 +348,19 @@ onMounted(async () => {
       });
     }
   });
+
+  // Also add listeners to skill label inputs to update panel height
+  const skillInputs = document.querySelectorAll('.skill-input-label');
+  skillInputs.forEach(input => {
+    input.addEventListener('input', () => {
+      const panel = input.closest('.panel');
+      if (panel && panel.style.maxHeight) {
+        nextTick(() => {
+          panel.style.maxHeight = panel.scrollHeight + 'px';
+        });
+      }
+    });
+  });
 })
 </script>
 
@@ -170,34 +373,63 @@ onMounted(async () => {
     <div id="background_Form">
       <div class="header_Form">
         <p>Réf. UE : </p>
-        <p>{{ ueLabels.length > 0 ? ueLabels.join(', ') : '###' }}</p>
-        <h2 class="title">{{ resource?.label || resourceSheet?.name || 'Nom de la ressource' }}</h2>
+        <p>{{ ueLabels && ueLabels.length > 0 ? ueLabels.join(', ') : '###' }}</p>
+        <p class="title">{{ (resource && resource.name) || (resourceSheet && resourceSheet.name) || 'Nom de la ressource' }}</p>
         <p>Dep : </p>
         <p>{{ institutionName || '###' }}</p>
       </div>
       <div class="ref_Section">
         <p>Réf. ressource : </p>
-        <p>{{ resource?.label || '###' }}</p>
+        <p>{{ (resource && resource.label) || '###' }}</p>
       </div>
       <div id="form">
-        <button class="accordion" id="dark_Bar">Objectif de la ressource</button>
+        <button class="accordion" id="dark_Bar">
+          Objectif de la ressource
+          <span v-if="hasObjectiveChanges" class="unsaved_indicator_small">*</span>
+        </button>
         <div class="panel">
-          <textarea id="text_area_styled">Il faut manger beaucoup de pâtes pour être heureux</textarea>
+          <textarea
+            id="text_area_styled"
+            v-model="localObjectiveContent"
+            placeholder="Saisissez les objectifs de la ressource..."
+          ></textarea>
         </div>
       </div>
       <div id="form">
-        <button class="accordion" id="dark_Bar">Compétences *</button>
+        <button class="accordion" id="dark_Bar">
+          Compétences *
+        </button>
         <div class="panel">
-          <textarea id="text_area_styled">zlkdjlzkez</textarea>
+          <div class="skills-table">
+            <div class="skills-header">
+              <div class="skill-column-label">Label</div>
+              <div class="skill-column-description">Description</div>
+            </div>
+            <div v-for="(skill, index) in localSkills" :key="index" class="skill-row">
+              <div class="skill-inputs">
+                <input type="text" v-model="skill.label" placeholder="Label de la compétence..." class="skill-input skill-input-label" />
+                <textarea v-model="skill.description" placeholder="Description de la compétence..." class="skill-input skill-input-description" rows="2"></textarea>
+              </div>
+              <button @click="removeSkillRow(index)" class="btn-remove-skill" :disabled="localSkills.length === 1" title="Supprimer cette compétence">✕ Supprimer</button>
+            </div>
+            <button @click="addSkillRow" class="btn-add-skill">+ Ajouter une compétence</button>
+          </div>
         </div>
       </div>
-      <div>
+      <div id="sae_alignement">
         <p class="section_title">SAE concernée(s)* :</p>
-        <label class="switch">
-          <input type="checkbox">
-          <span class="slider"></span>
-          <span>SAE x</span>
-        </label>
+        <div v-if="saeList.length === 0" class="no_sae_message">
+          <p>Aucune SAE trouvée pour ce semestre</p>
+        </div>
+        <div v-else class="sae_switches_container">
+          <div v-for="sae in saeList" :key="sae.idSAE" class="sae_switch_item">
+            <label class="switch">
+              <input type="checkbox" :checked="isSaeLinked(sae.idSAE)" @change="toggleSaeLink(sae.idSAE)">
+              <span class="slider"></span>
+            </label>
+            <span class="sae_label" :title="`ID: ${sae.idSAE}, ApogeeCode: ${sae.apogeeCode}, Label: ${sae.label}`">{{  sae.label || 'SAE sans nom' }}</span>
+          </div>
+        </div>
       </div>
       <div>
         <p class="subsection_title">Mots clés</p>
@@ -448,5 +680,139 @@ input:checked + .slider {
 
 input:checked + .slider::before {
   transform: translateX(24px);
+}
+
+#sae_alignement{
+  padding: 1vw 2vw;
+}
+
+.sae_switches_container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 2vw;
+  margin-top: 1vw;
+}
+
+.sae_switch_item {
+  display: flex;
+  align-items: center;
+  gap: 0.5vw;
+}
+
+.sae_label {
+  font-size: 1.1vw;
+  color: white;
+}
+
+.no_sae_message {
+  padding: 0.5vw 0;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
+/* Skills table styles */
+.skills-table {
+  width: 100%;
+  margin-top: 1vw;
+}
+
+.skills-header {
+  display: grid;
+  grid-template-columns: 2fr 4fr;
+  gap: 1vw;
+  padding: 0.5vw 0;
+  font-weight: bold;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  margin-bottom: 1vw;
+}
+
+.skill-column-label,
+.skill-column-description {
+  padding: 0.5vw;
+}
+
+.skill-row {
+  margin-bottom: 1.5vw;
+}
+
+.skill-inputs {
+  display: grid;
+  grid-template-columns: 2fr 4fr;
+  gap: 1vw;
+  margin-bottom: 0.5vw;
+}
+
+.skill-input {
+  background-color: rgb(117, 117, 117);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 0.8vw;
+  font-family: inherit;
+  font-size: 1vw;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.skill-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.skill-input-label {
+  height: 2.5vw;
+}
+
+.skill-input-description {
+  resize: vertical;
+  min-height: 3vw;
+}
+
+.btn-remove-skill {
+  background-color: transparent;
+  color: #d9534f;
+  border: 1px solid #d9534f;
+  border-radius: 5px;
+  padding: 0.4vw 1vw;
+  cursor: pointer;
+  font-size: 0.9vw;
+  font-weight: bold;
+  transition: all 0.3s;
+  display: inline-block;
+  width: auto;
+  align-self: flex-start;
+}
+
+.btn-remove-skill:hover:not(:disabled) {
+  background-color: #d9534f;
+  color: white;
+}
+
+.btn-remove-skill:disabled {
+  color: #6c757d;
+  border-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.btn-add-skill {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.8vw 1.5vw;
+  cursor: pointer;
+  font-size: 1vw;
+  font-weight: bold;
+  margin-top: 1vw;
+  transition: background-color 0.3s;
+}
+
+.btn-add-skill:hover {
+  background-color: #2C2C3B;
 }
 </style>

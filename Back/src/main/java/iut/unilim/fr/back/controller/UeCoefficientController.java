@@ -36,11 +36,6 @@ public class UeCoefficientController {
         return ueCoefficientService.getUeCoefficientsByResourceId(idResource);
     }
 
-    @PostMapping
-    public UeCoefficient createUeCoefficient(@RequestBody UeCoefficient ueCoefficient) {
-        return ueCoefficientService.createUeCoefficient(ueCoefficient);
-    }
-
     @PutMapping("/{id}")
     public UeCoefficient updateUeCoefficient(@PathVariable Long id, @RequestBody UeCoefficient ueCoefficient) {
         return ueCoefficientService.updateUeCoefficient(id, ueCoefficient);
