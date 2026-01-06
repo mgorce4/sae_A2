@@ -105,13 +105,10 @@ onMounted(async () => {
 
   /* add cm, td, tp and total to each resource in resources_filterd */
   for (let i = 0; i < resources_filterd.value.length ; i++) {
-    console.log(resources_filterd.value[i].resource[0])
-    console.log(i)
-    console.log(hours_per_student.value.find((hour) => hour.resource.idResource === resources_filterd.value[i].resource[0].idResource).cm)
-    resources_filterd.value[i].resource[i].cm = hours_per_student.value.find((hour) => hour.resource.idResource === resources_filterd.value[i].resource[0].idResource).cm
-    resources_filterd.value[i].resource[i].td = hours_per_student.value.find((hour) => hour.resource.idResource === resources_filterd.value[i].resource[0].idResource).td
-    resources_filterd.value[i].resource[i].tp = hours_per_student.value.find((hour) => hour.resource.idResource === resources_filterd.value[i].resource[0].idResource).tp
-    resources_filterd.value[i].resource[i].total = resources_filterd.value[i].resource[0].cm + resources_filterd.value[i].resource[0].td + resources_filterd.value[i].resource[0].tp
+    resources_filterd.value[i].resource[0].cm = hours_per_student.value.find((hour) => hour.resource.idResource === resources_filterd.value[i].resource[0].idResource).cm
+    resources_filterd.value[i].resource[0].td = hours_per_student.value.find((hour) => hour.resource.idResource === resources_filterd.value[i].resource[0].idResource).td
+    resources_filterd.value[i].resource[0].tp = hours_per_student.value.find((hour) => hour.resource.idResource === resources_filterd.value[i].resource[0].idResource).tp
+    resources_filterd.value[i].resource[0].total = resources_filterd.value[i].resource[0].cm + resources_filterd.value[i].resource[0].td + resources_filterd.value[i].resource[0].tp
   }
 
 })
@@ -136,14 +133,7 @@ onMounted(async () => {
           <button id="button_more" v-on:click="display_more_area = true">+</button>
         </div>
 
-        <a
-          class="accordion"
-          id="dark_bar"
-          v-show="display_more_area"
-          method="post"
-          v-on:submit.prevent=""
-          >Ajout d'une ressource :</a
-        >
+        <a class="accordion" id="dark_bar" v-show="display_more_area" method="post" v-on:submit.prevent="">Ajout d'une ressource :</a>
 
         <form class="panel_resource">
           <div id="left">
@@ -273,8 +263,8 @@ onMounted(async () => {
         <p v-if="resources.length > 0">Ressources créées :</p>
         <p v-else>Aucune ressource n'a été crée</p>
 
-        <div v-for="(resource, index) in resources_filterd" :key="resource.idResource">
-          <a class="accordion" id="dark_bar">{{ resource.resource[index].label }} {{ resource.resource[index].name}}</a>
+        <div v-for="resource in resources_filterd" :key="resource.idResource">
+          <a class="accordion" id="dark_bar">{{ resource.resource[0].label }} {{ resource.resource[0].name}}</a>
 
           <div class="panel_resource">
             <div id="left_resource">
