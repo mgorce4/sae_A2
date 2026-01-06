@@ -19,8 +19,6 @@ const list_semesters = [1, 2, 3, 4, 5, 6]
 /* we can use selected_semester to get the semester*/
 let selected_semester_sheets = ref(list_semesters[0])
 
-let selected_semester_calendar = ref(list_semesters[0])
-
 /* link with the API */
 
 const sheets = ref([])
@@ -35,6 +33,8 @@ function filterSheetsBySemester(semester) {
   /* the filter function anebal to filter the array sheets depending on the semester with "sheet.ressource.semester === semester */
   return sheets.value.filter(sheet => sheet.resource.semester === semester)
 }
+
+console.log(sheets)
 
 function getSheetLabel(sheet) {
   return sheet.resource.label
@@ -56,11 +56,6 @@ function isNoSheetsForSemester(semester) {
       </div>
 
       <div id="calender_div">
-        <select name="semesters" class="semesters" v-model="selected_semester_calendar">
-          <option v-for="index in list_semesters" :key="index" :value="index">
-            S{{ index }}
-          </option>
-        </select>
 
         <!-- for the calender -->
 

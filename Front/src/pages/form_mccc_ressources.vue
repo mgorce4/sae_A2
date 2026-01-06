@@ -1,9 +1,11 @@
 <script setup>
 import { status } from '../main'
-import { onMounted, ref, nextTick } from 'vue'
+import { onMounted, ref, nextTick, computed } from 'vue'
 import axios from 'axios'
 
 status.value = 'Administration'
+
+let display_more_area = ref(false)
 
 /* constant for the form */
 
@@ -35,41 +37,64 @@ const list_of_lesson = ['CM', 'TD', 'TP', 'Projet']
 
 const UEs = ref([])
 
+const hours_per_student = ref([])
+
 const resources = ref([])
 
 function areTotalNaN() {
   return isNaN(total_initial_formation.value) && isNaN(total_work_study.value)
 }
 
-onMounted(async() => {
-
+onMounted(async () => {
   /* usage of await to wait for the data to be fetched before adding event listeners */
 
   await Promise.all([
-    axios.get('http://localhost:8080/api/ues').then(response => (UEs.value = response.data)),
-    axios.get('http://localhost:8080/api/resources').then(response => (resources.value = response.data))
+    axios
+      .get('http://localhost:8080/api/ue-coefficients')
+      .then((response) => (UEs.value = response.data)),
+    axios
+      .get('http://localhost:8080/api/hours-per-student')
+      .then((response) => (hours_per_student.value = response.data)),
+    axios
+      .get('http://localhost:8080/api/resources')
+      .then((response) => (resources.value = response.data))
   ])
+
+  /* get the resources from hours_per_student to have the resources with their hours */
+  for (let i = 0; i < hours_per_student.value.length; i++) {
+    resources.value.push(hours_per_student.value[i].resource)
+    resources.value[i].cm = hours_per_student.value[i].cm
+    resources.value[i].td = hours_per_student.value[i].td
+    resources.value[i].tp = hours_per_student.value[i].tp
+    resources.value[i].total =
+      hours_per_student.value[i].cm + hours_per_student.value[i].td + hours_per_student.value[i].tp
+  }
 
   await nextTick()
 
-  console.log(document.querySelectorAll(".accordion"))
-
-  document.querySelectorAll(".accordion").forEach(acc => {
-    console.log(acc)
-    acc.addEventListener("click", function() {
-      this.classList.toggle("active")
+  document.querySelectorAll('.accordion').forEach((acc) => {
+    acc.addEventListener('click', function () {
+      this.classList.toggle('active')
       const panel = this.nextElementSibling
       if (panel.style.maxHeight) {
         panel.style.maxHeight = null
       } else {
-        panel.style.maxHeight = panel.scrollHeight + "px"
+        panel.style.maxHeight = '100%'
       }
     })
   })
 
   document.getElementById('save').addEventListener('click', () => {
-    total_initial_formation.value = parseInt(CM_initial_formation.value) + parseInt(TD_initial_formation.value) + parseInt(TP_initial_formation.value) + parseInt(Project_initial_formation.value)
-    total_work_study.value = parseInt(CM_work_study.value) + parseInt(TD_work_study.value) + parseInt(TP_work_study.value) + parseInt(Project_work_study.value)
+    total_initial_formation.value =
+      parseInt(CM_initial_formation.value) +
+      parseInt(TD_initial_formation.value) +
+      parseInt(TP_initial_formation.value) +
+      parseInt(Project_initial_formation.value)
+    total_work_study.value =
+      parseInt(CM_work_study.value) +
+      parseInt(TD_work_study.value) +
+      parseInt(TP_work_study.value) +
+      parseInt(Project_work_study.value)
 
     /* if the forms are empty or filled with non-numeric values set totals to 0 */
 
@@ -77,8 +102,9 @@ onMounted(async() => {
       total_initial_formation.value = 0
       total_work_study.value = 0
     }
-  })
 
+    display_more_area.value = false
+  })
 })
 </script>
 
@@ -97,21 +123,21 @@ onMounted(async() => {
 
         <div id="dark_bar">
           <h2>Ajouter une ressource</h2>
-          <button id="button_more">+</button>
+          <button id="button_more" v-on:click="display_more_area = true">+</button>
         </div>
 
-        <a class="accordion" id="dark_bar">Ajout d'une ressource :</a>
+        <a class="accordion" id="dark_bar" v-show="display_more_area" method="post" v-on:submit.prevent="">Ajout d'une ressource :</a>
 
-        <form class="panel">
+        <form class="panel_resource">
           <div id="left">
             <div>
               <label>Intitule de la ressource : </label>
-              <input type="text" class="input" v-model="resource_label" required/>
+              <input type="text" class="input" v-model="resource_label" required />
             </div>
 
             <div>
               <label>Code apogée : </label>
-              <input type="text" class="input" v-model="apogee_code" required/>
+              <input type="text" class="input" v-model="apogee_code" required />
             </div>
 
             <div>
@@ -137,17 +163,19 @@ onMounted(async() => {
                 </th>
               </tr>
 
-              <p>Nombre d'heures total : {{ total_initial_formation }} / {{ total_pn_initial_formation }}</p>
+              <p>
+                Nombre d'heures total : {{ total_initial_formation }} /
+                {{ total_pn_initial_formation }}
+              </p>
             </div>
 
             <div id="btn">
               <input class="btn1" type="reset" value="Annuler" />
-              <input class="btn1" type="submit" value="Sauvegarder" id="save"/>
+              <input class="btn1" type="submit" value="Sauvegarder" id="save" />
             </div>
           </div>
 
           <div id="right">
-
             <div id="work_study">
               <div class="component">
                 <label class="switch">
@@ -180,7 +208,7 @@ onMounted(async() => {
                   </th>
                 </tr>
 
-                <p>Nombre d'heures total : {{ total_work_study }} / {{total_pn_work_study}}</p>
+                <p>Nombre d'heures total : {{ total_work_study }} / {{ total_pn_work_study }}</p>
               </div>
             </div>
 
@@ -199,7 +227,9 @@ onMounted(async() => {
                   <label>UE affectées : </label>
 
                   <select class="input">
-                    <option v-for="UE in UEs" :key="UE.ueNumber" :value="UE.label">{{UE.label}}</option>
+                    <option v-for="UE in UEs" :key="UE.ueNumber" :value="UE.ue.label">
+                      {{ UE.ue.label }}
+                    </option>
                   </select>
 
                   <!-- button to add UE -->
@@ -208,12 +238,12 @@ onMounted(async() => {
 
                 <div class="component">
                   <label>Coefficient : </label>
-                  <input type="text" class="input" v-model="coefficient" required/>
+                  <input type="text" class="input" v-model="coefficient" required />
                 </div>
 
                 <div class="component">
                   <label>Professeur(s) associé(s) : </label>
-                  <input type="text" class="input" v-model="teacher" required/>
+                  <input type="text" class="input" v-model="teacher" required />
 
                   <button id="button_more">+</button>
                 </div>
@@ -222,39 +252,76 @@ onMounted(async() => {
           </div>
         </form>
       </div>
-    </div>
+      <div id="form_resources">
+        <p v-if="resources.length > 0">Ressources créées :</p>
+        <p v-else>Aucune ressource n'a été crée</p>
 
-    <div id="resources_list">
-      <p v-if="resources.length > 0" >Ressources créées :</p>
-      <p v-else>Aucune ressource n'a été crée</p>
+        <div v-for="resource in resources" :key="resource.idResource">
+          <a class="accordion" id="dark_bar">{{ resource.label }} {{ resource.name }}</a>
 
-      <div v-for="resource in resources" :key="resource.idResource">
-        <a class="accordion" id="dark_bar">{{ resource.label }} {{resource.name}}</a>
+          <div class="panel_resource">
+            <div id="left_resource">
+              <div class="container-fluid">
+                <p>Code Apogee :</p>
+                <input type="text" class="input" :value="resource.apogeeCode" />
+              </div>
 
-        <div class="panel">
-          <div id="left">
-            <p>Code Apogee : </p>
-            <p>{{ resource.apogeeCode }}</p>
+              <p>Nombre d'heure (formation initial) :</p>
 
-            <p>Nombre d'heure (formation initial) : </p>
-            <p>CM : </p>
-            <p>TD : </p>
-            <p>TP : </p>
-            <p>Projet : </p>
-            <p>Total : </p>
-            <input class="btn1" value="Supprimer"/>
-            <input class="btn1" value="Modifier"/>
-          </div>
+              <div class="container-fluid">
+                <p>CM :</p>
+                <input type="text" class="input" :value="resource.cm" />
+              </div>
 
-          <div id="right">
-            <p>UE(s) affectée(s) :</p>
-            <p>coefficient : </p>
+              <div class="container-fluid">
+                <p>TD :</p>
+                <input type="text" class="input" :value="resource.td" />
+              </div>
+
+              <div class="container-fluid">
+                <p>TP :</p>
+                <input type="text" class="input" :value="resource.tp" />
+              </div>
+
+              <div class="container-fluid">
+                <p>SAE :</p>
+                <input type="text" class="input" />
+              </div>
+
+              <div class="container-fluid">
+                <p>Total :</p>
+                <input type="text" class="input" :value="resource.total" />
+              </div>
+            </div>
+
+            <div class="vertical-line"></div>
+
+            <div id="right_resource">
+              <div class="container-fluid">
+                <p>UE(s) affectée(s) :</p>
+                <input type="text" class="input" :value="resource.label" />
+              </div>
+
+              <div class="container-fluid">
+                <p>Coefficient(s) :</p>
+                <input type="text" class="input" :value="resource.coefficient" />
+              </div>
+
+              <div class="container-fluid">
+                <p>Professeur(s) associé(s) :</p>
+              </div>
+
+              <br />
+              <br />
+
+              <input class="btn1" value="Supprimer" />
+              <br />
+              <input class="btn1" value="Modifier" />
+            </div>
           </div>
         </div>
       </div>
-
     </div>
-
   </div>
 </template>
 
@@ -302,11 +369,8 @@ onMounted(async() => {
   font-size: 2.3vw;
 }
 
-#dark_bar {
-  max-width: 97%;
-}
-
-.accordion, #dark_bar >p{
+.accordion,
+#dark_bar > p {
   margin: 0vw;
   font-weight: lighter;
   font-size: 1.05vw;
@@ -327,6 +391,10 @@ onMounted(async() => {
 
 .accordion.active::after {
   transform: rotate(180deg);
+}
+
+#dark_bar {
+  width: 95%;
 }
 
 #form {
@@ -350,7 +418,7 @@ onMounted(async() => {
   border-radius: 10px;
 }
 
-.panel {
+.panel_resource {
   width: 90%;
   max-height: 0;
   justify-self: center;
@@ -365,7 +433,7 @@ onMounted(async() => {
   display: flex;
 }
 
-.panel p {
+.panel_resource > p {
   margin-top: 0;
   padding-top: 1vw;
 }
@@ -375,6 +443,7 @@ onMounted(async() => {
   background-color: rgb(117, 117, 117, 100);
   color: #ffffff;
   width: 100px;
+  text-align: center;
 }
 
 #work_study {
@@ -406,11 +475,6 @@ onMounted(async() => {
   gap: 5px;
 }
 
-#right_bottom {
-  display: flex;
-  padding-top: 10px;
-}
-
 .component {
   display: flex;
   align-items: center;
@@ -429,22 +493,43 @@ onMounted(async() => {
   margin: 0px 35px 0px 35px;
 }
 
-#resources_list {
-  background-color: rgb(61, 67, 117);
-  border-radius: 15px;
-  padding: 10px;
-  margin-top: 3%;
+#form_resources {
+  padding: 0 1vw;
 }
 
-#resources_list > a {
-  display: block;
-  padding: 10px;
-  margin-bottom: 10px;
-  font-size: 20px;
-}
-
-#resources_list > p {
+#form_resources > p {
   color: white;
   font-size: 1.5vw;
+}
+
+#left_resource {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  padding: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+#left_resource > div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.vertical-line {
+  border-left: 3px solid #242222;
+  display: inline-block;
+  height: 330px;
+  margin-top: 20px;
+}
+
+#right_resource {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  padding: 10px;
+  align-items: center;
+  justify-content: center;
 }
 </style>
