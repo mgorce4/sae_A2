@@ -8,5 +8,6 @@ import java.util.List;
 @Repository
 public interface UeCoefficientRepository extends JpaRepository<UeCoefficient, Long> {
     List<UeCoefficient> findByUe_UeNumber(Long ueNumber);
+    List<UeCoefficient> findByResource_IdResource(Long idResource);
 }
 

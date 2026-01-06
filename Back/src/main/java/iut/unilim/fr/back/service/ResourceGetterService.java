@@ -1,16 +1,12 @@
 package iut.unilim.fr.back.service;
 
 import iut.unilim.fr.back.entity.*;
-import iut.unilim.fr.back.repository.HoursPerStudentRepository;
-import iut.unilim.fr.back.repository.RessourceRepository;
-import iut.unilim.fr.back.repository.RessourceSheetRepository;
-import iut.unilim.fr.back.users.User;
+import iut.unilim.fr.back.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,24 +18,45 @@ public class ResourceGetterService {
     private RessourceRepository ressourceRepository;
     @Autowired
     private RessourceSheetRepository  ressourceSheetRepository;
+    @Autowired
+    private SAELinkResourceRepository saeLinkResourceRepository;
+    @Autowired
+    private MainTeacherForResourceRepository mainTeacherForResourceRepository;
+    @Autowired
+    private UeCoefficientRepository ueCoefficientRepository;
+    @Autowired
+    private HoursPerStudentRepository hoursPerStudentRepository;
+    @Autowired
+    private PedagogicalContentRepository pedagogicalContentRepository;
+    @Autowired
+    private RessourceTrackingRepository resourceTrackingRepository;
+    @Autowired
+    private KeywordRepository keywordRepository;
+    @Autowired
+    private TeacherHoursRepository teacherHoursRepository;
+    @Autowired
+    private NationalProgramObjectiveRepository nationalProgramObjectiveRepository;
+    @Autowired
+    private NationalProgramSkillRepository nationalProgramSkillRepository;
 
     private String fileName = "";
 
     private String ref;
-    private String nResource;
+    private String qualityReference;
     private String refUE;
+    private String pedagoContentDs;
     private String profRef;
     private String labelResource;
 
     private String objectiveContent;
-    private List<String> competences;
+    private final List<String> skills;
 
-    private List<String> saes;
-    private String keyWords;
-    private List<String> modalities;
+    private final List<String> saes;
+    private final List<String> modalities;
+    private final List<String> keywords;
 
-    private List<Integer> hoursPN;
-    private List<Integer> hoursStudent;
+    private final List<Integer> hoursPN;
+    private final List<Integer> hoursStudent;
 
     private String pedagoContentCm;
     private String pedagoContentTd;
@@ -50,9 +67,10 @@ public class ResourceGetterService {
     private String improvements;
 
     public ResourceGetterService() {
-        competences = new ArrayList<>();
+        skills = new ArrayList<>();
         saes = new ArrayList<>();
         modalities = new ArrayList<>();
+        keywords = new ArrayList<>();
 
         hoursPN = new ArrayList<>();
         hoursStudent = new ArrayList<>();
@@ -61,9 +79,9 @@ public class ResourceGetterService {
     }
 
     private void initializePlaceHolderValues() {
-        String PLACEHOLDER = "No resource for that category";
+        String PLACEHOLDER = "No content for that category";
         String PLACEHOLDER_TITLE = "None";
-        competences.add(PLACEHOLDER);
+        skills.add(PLACEHOLDER);
         saes.add(PLACEHOLDER);
         modalities.add(PLACEHOLDER);
 
@@ -73,12 +91,13 @@ public class ResourceGetterService {
         }
 
         ref = PLACEHOLDER_TITLE;
-        nResource = PLACEHOLDER_TITLE;
+        qualityReference = PLACEHOLDER_TITLE;
         refUE = PLACEHOLDER_TITLE;
         profRef = PLACEHOLDER_TITLE;
         labelResource = PLACEHOLDER_TITLE;
         objectiveContent = PLACEHOLDER;
-        keyWords = PLACEHOLDER;
+        keywords.add(PLACEHOLDER);
+        pedagoContentDs = PLACEHOLDER;
         pedagoContentCm = PLACEHOLDER;
         pedagoContentTd = PLACEHOLDER;
         pedagoContentTp = PLACEHOLDER;
@@ -90,11 +109,11 @@ public class ResourceGetterService {
 
     @Transactional
     public void setValuesFromRessource(String ressourceName) {
-        Optional<RessourceSheet> resultResourceSheet = null;
+        Optional<RessourceSheet> resultResourceSheet = Optional.empty();
         Long id;
         String label;
 
-        Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(ressourceName + " ");
+        Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(ressourceName);
 
         if (resultResource.isPresent()) {
             resultResourceSheet = ressourceSheetRepository.findFirstByResource_IdResource(resultResource.get().getIdResource());
@@ -108,53 +127,103 @@ public class ResourceGetterService {
             id = resource.getIdResource();
             label = resource.getLabel();
 
+            List<MainTeacherForResource> mainTeacherForResource = mainTeacherForResourceRepository.findByIdResource(id);
+            List<SAELinkResource> SAELinkResources = saeLinkResourceRepository.findByIdResource(id);
+
             writeInLog("Get ressource \n"
-                    + "id : " + id + "\n"
-                    + "label : " + label + "\n");
+                    + "     - id : " + id + "\n"
+                    + "     - label : " + label + "\n");
 
             ref = ressourceName;
-            String resC = resource.getLabel().split(" ")[0];
-            nResource = resC.split("R")[1];// TODO : Changer pour la reference de la ressource ( 1.10... ) -> Should work
+            qualityReference = "IU EN FOR 001";
+
+            List<UeCoefficient> ueCoefficient = ueCoefficientRepository.findByResource_IdResource(id);
+            UE ue = ueCoefficient.getFirst().getUe();
+            refUE = ue.getLabel();
+
+            List<NationalProgramObjective> npObjectives = nationalProgramObjectiveRepository.findByResourceSheet_IdResourceSheet(id);
             Boolean isMultiCompetences = resource.getDiffMultiCompetences();
-            if (!isMultiCompetences) {
-                // TODO: Handle UE coefficients
-                refUE = ""; // Temporarily empty
-                // TODO: PN -> competences.add();
-            } else {
-                //todo : multi comp
+
+            if (!npObjectives.isEmpty()) {
+                if (isMultiCompetences) {
+                    objectiveContent = "";
+                    for (NationalProgramObjective npObjective : npObjectives) {
+                        objectiveContent += npObjective.getContent() + ", ";
+                    }
+                } else {
+                    objectiveContent = npObjectives.getFirst().getContent();
+                }
             }
-            
+
+            List<NationalProgramSkill> npSkill = nationalProgramSkillRepository.findByResourceSheet_IdResourceSheet(id);
+
+            skills.clear();
+            if (npSkill.size() > 1) {
+                for (NationalProgramSkill programSkill : npSkill) {
+                    skills.add(programSkill.getDescription());
+                }
+            }else {
+                skills.add(npSkill.getFirst().getDescription());
+            }
+
             // User and SAE info removed as they're not in the new schema
-            profRef = ""; // TODO: Get from MAIN_TEACHER_FOR_RESOURCE or TEACHERS_FOR_RESOURCE
-            labelResource = resource.getLabel();
+            UserSyncadia referent = mainTeacherForResource.getFirst().getUser();
+            profRef = referent.getFirstname() + " " + referent.getLastname();
+            labelResource = resource.getLabel() + ": " + resource.getName();
 
             saes.clear();
-            // TODO: Get SAEs from SAE_LINK_RESOURCE table
-            
-            // TODO: PN -> keyWord
+            for (SAELinkResource saeLinkResource : SAELinkResources) {
+                SAE sae = saeLinkResource.getSae();
+                saes.add(sae.getLabel());
+            }
+
+            List<Keyword> keyWordsList = keywordRepository.findByIdResourceSheet(resourceSheet.getIdResourceSheet());
+            keywords.clear();
+            for (Keyword keyword : keyWordsList) {
+                keywords.add(keyword.getKeyword());
+            }
+
 
             Terms terms = resource.getTerms();
             modalities.clear();
             modalities.add(terms.getCode());
 
-            // Hours info removed as it's not directly in Ressource anymore
+            HoursPerStudent hoursPerStudent = hoursPerStudentRepository.findByResource_IdResource(id).getFirst();
+            hoursPN.clear();
+            hoursPN.add(hoursPerStudent.getCm());
+            hoursPN.add(hoursPerStudent.getTd());
+            hoursPN.add(hoursPerStudent.getTp());
+            hoursPN.add(hoursPerStudent.getCm() + hoursPerStudent.getTd() + hoursPerStudent.getTp());
+
+            TeacherHours teacherHours = teacherHoursRepository.findByResourceSheet_IdResourceSheet(id).getFirst();
             hoursStudent.clear();
-            hoursStudent.add(0); // TODO: Get from HOURS_PER_STUDENT
-            hoursStudent.add(0);
-            hoursStudent.add(0);
-            hoursStudent.add(0);
+            hoursStudent.add(teacherHours.getCm());
+            hoursStudent.add(teacherHours.getTd());
+            hoursStudent.add(teacherHours.getTp());
+            hoursStudent.add(teacherHours.getCm() + hoursPerStudent.getTd() + hoursPerStudent.getTp());
 
-            // PedagogicalContent and RessourceTracking removed as they're not directly linked
-            pedagoContentCm = ""; // TODO: Get from PEDAGOGICAL_CONTENT
-            pedagoContentTd = "";
-            pedagoContentTp = "";
+            PedagogicalContent pedagogicalContent = pedagogicalContentRepository.findByResourceSheet_IdResourceSheet(id).getFirst();
+            pedagoContentCm = pedagogicalContent.getCm();
+            pedagoContentTd = pedagogicalContent.getTd();
+            pedagoContentTp = pedagogicalContent.getTp();
 
-            studentFeedback = ""; // TODO: Get from RESOURCE_TRACKING
-            pedagoTeamFeedback = "";
-            improvements = "";
+
+            RessourceTracking ressourceTracking = resourceTrackingRepository.findByResourceSheet_IdResourceSheet(resourceSheet.getIdResourceSheet()).getFirst();
+            studentFeedback = ressourceTracking.getStudentFeedback();
+            pedagoTeamFeedback = ressourceTracking.getPedagogicalFeedback();
+            improvements = ressourceTracking.getImprovementSuggestions();
 
             writeInLog("Get from database :\n"
-                + "- Ressource (" + labelResource + "; " + nResource + "; " + refUE + "; " + profRef + ";" + ")\n- saes(TBD)\n- terms(" + modalities.toString() + ")\n-  hoursStudent(" + hoursStudent.toString() +")\n- pedagoContent(TBD)\n- feedBack(TBD)\n");
+                + "- Ressource (" + labelResource + "; " + qualityReference + "; " + refUE + "; " + profRef + ";" + ")\n" +
+                    "   - objectives(" + objectiveContent + ")\n" +
+                    "   - skills(" + skills.toString() + ")\n" +
+                    "   - saes(" + saes + ")\n" +
+                    "   - terms(" + modalities.toString() + ")\n" +
+                    "   - keywords(" + keywords.toString() + ")\n" +
+                    "   - hoursStudent(" + hoursStudent.toString() +")\n" +
+                    "   - hoursPN(" + hoursPN.toString() + ")\n" +
+                    "   - pedagoContent( CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
+                    "   - feedBack(Student: " + studentFeedback + "; Pedagogical team: " + pedagoTeamFeedback + "; Improvements: " + improvements + ")\n");
         } else {
             writeInLog("Attempt to get from database with resource name: " + ressourceName +
                     "\n-> " + ressourceName + " not found in resources tables");
@@ -165,7 +234,7 @@ public class ResourceGetterService {
         return ref;
     }
     public String getNbRessource() {
-        return nResource;
+        return qualityReference;
     }
     public String getRefUE() {
         return refUE;
@@ -179,14 +248,14 @@ public class ResourceGetterService {
     public String getObjectiveContent() {
         return objectiveContent;
     }
-    public List<String> getCompetences() {
-        return competences;
+    public List<String> getSkills() {
+        return skills;
     }
     public List<String> getSaes() {
         return saes;
     }
-    public String getKeyWords() {
-        return keyWords;
+    public List<String> getKeyWords() {
+        return keywords;
     }
     public List<String> getModalities() {
         return modalities;
@@ -196,6 +265,9 @@ public class ResourceGetterService {
     }
     public List<Integer> getHoursStudent() {
         return hoursStudent;
+    }
+    public String getPedagoContentDs(){
+        return pedagoContentDs;
     }
     public String getPedagoContentCm() {
         return pedagoContentCm;
