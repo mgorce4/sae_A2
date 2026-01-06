@@ -44,6 +44,84 @@ const keywords = ref([]) // List of keywords from the database
 const localKeywords = ref([]) // Local state for keywords array
 const modalities = ref([]) // List of modalities from the database
 const localModalities = ref([]) // Local state for modalities array
+const pedagogicalContent = ref(null) // Pedagogical content from the database
+const localPedagogicalContent = ref({
+  cm: [], // Array of { number: 1, content: 'text' }
+  td: [],
+  tp: []
+})
+
+// Function to parse CSV string into array of items
+const parseCSVContent = (csvString) => {
+  console.log('🔍 Parsing CSV string:', csvString)
+
+  if (!csvString || csvString.trim() === '') {
+    console.log('⚠️ CSV string is empty or null')
+    return []
+  }
+
+  // Split by comma followed by a number and a space
+  // Format: "1 text,2 text,3 text"
+  const items = []
+  const regex = /(\d+)\s+([^,]+)(?:,|$)/g
+  let match
+
+  while ((match = regex.exec(csvString)) !== null) {
+    const item = {
+      number: parseInt(match[1]),
+      content: match[2].replace(/''/g, "'").trim() // Replace double quotes with single
+    }
+    console.log('✅ Parsed item:', item)
+    items.push(item)
+  }
+
+  console.log('📊 Total items parsed:', items.length)
+  return items
+}
+
+// Function to convert array back to CSV string (for saving to database)
+const toCSVContent = (items) => {
+  if (!items || items.length === 0) return ''
+
+  return items
+    .map(item => `${item.number} ${item.content.replace(/'/g, "''")}`)
+    .join(',')
+}
+
+// Function to add a new pedagogical content item
+const addPedagogicalItem = (type) => {
+  const list = localPedagogicalContent.value[type]
+  const nextNumber = list.length > 0 ? Math.max(...list.map(item => item.number)) + 1 : 1
+
+  list.push({
+    number: nextNumber,
+    content: ''
+  })
+
+  console.log(`New ${type} item added. Total:`, list.length)
+
+  // Update panel height after adding
+  nextTick(() => {
+    const pedagogicalPanel = document.querySelector('.pedagogical-content')?.closest('.panel')
+    if (pedagogicalPanel) {
+      updatePanelHeight(pedagogicalPanel)
+    }
+  })
+}
+
+// Function to remove a pedagogical content item
+const removePedagogicalItem = (type, index) => {
+  localPedagogicalContent.value[type].splice(index, 1)
+  console.log(`${type} item removed. Total:`, localPedagogicalContent.value[type].length)
+
+  // Update panel height after removing
+  nextTick(() => {
+    const pedagogicalPanel = document.querySelector('.pedagogical-content')?.closest('.panel')
+    if (pedagogicalPanel) {
+      updatePanelHeight(pedagogicalPanel)
+    }
+  })
+}
 
 // Function for return button
 const goBack = () => {
@@ -248,20 +326,15 @@ onMounted(async () => {
           console.log('Keywords:', keywords.value)
 
           // Initialize local keywords array from database
-          if (keywords.value.length > 0) {
-            localKeywords.value = keywords.value.map(kw => ({
-              keyword: kw.keyword || '',
-              isNew: false
-            }))
-          } else {
-            // Start with one empty keyword if none exist
-            localKeywords.value = [{ keyword: '', isNew: true }]
-          }
+          localKeywords.value = keywords.value.map(kw => ({
+            keyword: kw.keyword || '',
+            isNew: false
+          }))
           console.log('Local keywords initialized:', localKeywords.value)
         } catch (error) {
           console.error('Error fetching keywords:', error)
-          // Initialize with one empty keyword on error
-          localKeywords.value = [{ keyword: '', isNew: true }]
+          // Initialize with empty array on error
+          localKeywords.value = []
         }
 
         // Get modalities of implementation for this resource sheet
@@ -272,20 +345,57 @@ onMounted(async () => {
           console.log('Modalities:', modalities.value)
 
           // Initialize local modalities array from database
-          if (modalities.value.length > 0) {
-            localModalities.value = modalities.value.map(mod => ({
-              modality: mod.modality || '',
-              isNew: false
-            }))
-          } else {
-            // Start with one empty modality if none exist
-            localModalities.value = [{ modality: '', isNew: true }]
-          }
+          localModalities.value = modalities.value.map(mod => ({
+            modality: mod.modality || '',
+            isNew: false
+          }))
           console.log('Local modalities initialized:', localModalities.value)
         } catch (error) {
           console.error('Error fetching modalities:', error)
-          // Initialize with one empty modality on error
-          localModalities.value = [{ modality: '', isNew: true }]
+          // Initialize with empty array on error
+          localModalities.value = []
+        }
+
+        // Get pedagogical content for this resource sheet
+        try {
+          console.log('📚 Fetching pedagogical content for resource sheet ID:', resourceSheetId.value)
+          const pedagogicalResponse = await axios.get(`http://localhost:8080/api/pedagogical-contents/resource-sheet/${resourceSheetId.value}`)
+
+          console.log('📦 Pedagogical API response:', pedagogicalResponse.data)
+          console.log('📦 Response length:', pedagogicalResponse.data ? pedagogicalResponse.data.length : 0)
+
+          if (pedagogicalResponse.data && pedagogicalResponse.data.length > 0) {
+            pedagogicalContent.value = pedagogicalResponse.data[0] // Take the first one
+            console.log('✅ Pedagogical content loaded:', pedagogicalContent.value)
+            console.log('  CM raw:', pedagogicalContent.value.cm)
+            console.log('  TD raw:', pedagogicalContent.value.td)
+            console.log('  TP raw:', pedagogicalContent.value.tp)
+
+            // Parse CSV content into arrays
+            localPedagogicalContent.value = {
+              cm: parseCSVContent(pedagogicalContent.value.cm),
+              td: parseCSVContent(pedagogicalContent.value.td),
+              tp: parseCSVContent(pedagogicalContent.value.tp)
+            }
+            console.log('🎯 Local pedagogical content initialized:', localPedagogicalContent.value)
+          } else {
+            console.log('⚠️ No pedagogical content found in API response')
+            // Initialize with empty arrays
+            localPedagogicalContent.value = {
+              cm: [],
+              td: [],
+              tp: []
+            }
+          }
+        } catch (error) {
+          console.error('❌ Error fetching pedagogical content:', error)
+          console.error('Error details:', error.response?.data || error.message)
+          // Initialize with empty arrays on error
+          localPedagogicalContent.value = {
+            cm: [],
+            td: [],
+            tp: []
+          }
         }
       }
 
@@ -468,6 +578,19 @@ onMounted(async () => {
       }
     });
   });
+
+  // Add listeners to pedagogical inputs to update panel height
+  const pedagogicalInputs = document.querySelectorAll('.pedagogical-input');
+  pedagogicalInputs.forEach(input => {
+    input.addEventListener('input', () => {
+      const panel = input.closest('.panel');
+      if (panel && panel.style.maxHeight) {
+        nextTick(() => {
+          panel.style.maxHeight = panel.scrollHeight + 'px';
+        });
+      }
+    });
+  });
 })
 </script>
 <template>
@@ -489,7 +612,7 @@ onMounted(async () => {
         <p>{{ (resource && resource.label) || '###' }}</p>
       </div>
       <div id="form">
-        <button class="accordion" id="dark_Bar">Objectif de la ressource</button>
+        <button class="accordion" id="dark_Bar">Objectif de la ressource *</button>
         <div class="panel">
           <textarea id="text_area_styled" v-model="localObjectiveContent" placeholder="Saisissez les objectifs de la ressource..."></textarea>
         </div>
@@ -534,7 +657,7 @@ onMounted(async () => {
           <div class="keywords-container">
             <div v-for="(keyword, index) in localKeywords" :key="index" class="keyword-item">
               <input type="text" v-model="keyword.keyword" @keydown.enter="handleKeywordEnter(index)" placeholder="Mot-clé..." class="keyword-input" />
-              <button @click="removeKeyword(index)" class="btn-remove-keyword" :disabled="localKeywords.length === 1" title="Supprimer ce mot-clé">✕</button>
+              <button @click="removeKeyword(index)" class="btn-remove-keyword" title="Supprimer ce mot-clé">✕</button>
             </div>
             <button @click="addKeyword" class="btn-add-keyword">+ Ajouter un mot-clé</button>
           </div>
@@ -544,7 +667,7 @@ onMounted(async () => {
           <div class="modalities-list">
             <div v-for="(modality, index) in localModalities" :key="index" class="modality-item">
               <textarea v-model="modality.modality" placeholder="Modalité de mise en œuvre..." class="modality-textarea" rows="3"></textarea>
-              <button @click="removeModality(index)" class="btn-remove-modality" :disabled="localModalities.length === 1" title="Supprimer cette modalité">✕</button>
+              <button @click="removeModality(index)" class="btn-remove-modality" title="Supprimer cette modalité">✕</button>
             </div>
             <button @click="addModality" class="btn-add-modality">+ Ajouter une modalité</button>
           </div>
@@ -561,9 +684,79 @@ onMounted(async () => {
         <span>Le nombre total d'heure est .../...</span>
       </div>
       <div>
-        <p class="section_title">Contenu pédagogique : </p>
+        <p class="section_title">Contenu pédagogique</p>
+        <div class="pedagogical-content">
+          <!-- CM Section -->
+          <div class="pedagogical-section">
+              <div class="pedagogical-header">
+                <p class="pedagogical-title">CM</p>
+              </div>
+              <p class="pedagogical-subtitle">Détailler ici le contenu pédagogique des CM</p>
+
+              <div class="pedagogical-items-container">
+                <div v-if="localPedagogicalContent.cm.length === 0" class="no-content-message">
+                  Aucun contenu CM
+                </div>
+                <div v-for="(item, index) in localPedagogicalContent.cm" :key="index" class="pedagogical-item">
+                  <span class="pedagogical-number">{{ item.number }}</span>
+                  <input type="text" v-model="item.content" placeholder="List item" class="pedagogical-input" />
+                  <button @click="removePedagogicalItem('cm', index)" class="btn-remove-pedagogical" title="Supprimer">✕</button>
+                </div>
+              </div>
+
+              <div class="pedagogical-footer">
+                <button @click="addPedagogicalItem('cm')" class="btn-add-pedagogical">+ Ajouter</button>
+              </div>
+            </div>
+
+            <!-- TD Section -->
+            <div class="pedagogical-section">
+              <div class="pedagogical-header">
+                <p class="pedagogical-title">TD</p>
+              </div>
+              <p class="pedagogical-subtitle">Détailler ici le contenu pédagogique des TD</p>
+
+              <div class="pedagogical-items-container">
+                <div v-if="localPedagogicalContent.td.length === 0" class="no-content-message">
+                  Aucun contenu TD
+                </div>
+                <div v-for="(item, index) in localPedagogicalContent.td" :key="index" class="pedagogical-item">
+                  <span class="pedagogical-number">{{ item.number }}</span>
+                  <input type="text" v-model="item.content" placeholder="List item" class="pedagogical-input" />
+                  <button @click="removePedagogicalItem('td', index)" class="btn-remove-pedagogical" title="Supprimer">✕</button>
+                </div>
+              </div>
+
+              <div class="pedagogical-footer">
+                <button @click="addPedagogicalItem('td')" class="btn-add-pedagogical">+ Ajouter</button>
+              </div>
+            </div>
+
+            <!-- TP Section -->
+            <div class="pedagogical-section">
+              <div class="pedagogical-header">
+                <p class="pedagogical-title">TP</p>
+              </div>
+              <p class="pedagogical-subtitle">Détailler ici le contenu pédagogique des TP</p>
+
+              <div class="pedagogical-items-container">
+                <div v-if="localPedagogicalContent.tp.length === 0" class="no-content-message">
+                  Aucun contenu TP
+                </div>
+                <div v-for="(item, index) in localPedagogicalContent.tp" :key="index" class="pedagogical-item">
+                  <span class="pedagogical-number">{{ item.number }}</span>
+                  <input type="text" v-model="item.content" placeholder="List item" class="pedagogical-input" />
+                  <button @click="removePedagogicalItem('tp', index)" class="btn-remove-pedagogical" title="Supprimer">✕</button>
+                </div>
+              </div>
+
+              <div class="pedagogical-footer">
+                <button @click="addPedagogicalItem('tp')" class="btn-add-pedagogical">+ Ajouter</button>
+              </div>
+            </div>
+          </div>
       </div>
-      <div>
+      <div id="form">
         <p class="section_title">Suivi de la ressource / module</p>
         <div>
           <p>Retour de l'équipe pédagogique et des acteurs impactés</p>
@@ -996,15 +1189,10 @@ input:checked + .slider::before {
   padding: 0;
 }
 
-.btn-remove-keyword:hover:not(:disabled) {
+.btn-remove-keyword:hover {
   color: #ff6b6b;
 }
 
-.btn-remove-keyword:disabled {
-  color: #6c757d;
-  cursor: not-allowed;
-  opacity: 0.5;
-}
 
 .btn-add-keyword {
   background-color: #6c757d;
@@ -1076,15 +1264,10 @@ input:checked + .slider::before {
   padding: 0;
 }
 
-.btn-remove-modality:hover:not(:disabled) {
+.btn-remove-modality:hover {
   color: #ff6b6b;
 }
 
-.btn-remove-modality:disabled {
-  color: #6c757d;
-  cursor: not-allowed;
-  opacity: 0.5;
-}
 
 .btn-add-modality {
   background-color: #6c757d;
@@ -1101,5 +1284,154 @@ input:checked + .slider::before {
 
 .btn-add-modality:hover {
   background-color: #2C2C3B;
+}
+
+/* Pedagogical content styles */
+.pedagogical-content {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5vw;
+  margin: 1vw 0;
+  padding: 0 2vw;
+}
+
+.pedagogical-section {
+  background-color: rgba(117, 117, 117, 0.8);
+  border-radius: 15px;
+  padding: 1.5vw;
+  display: flex;
+  flex-direction: column;
+  min-height: 25vw;
+}
+
+.pedagogical-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1vw;
+}
+
+.pedagogical-title {
+  font-size: 1.3vw;
+  font-weight: bold;
+  margin: 0;
+  color: white;
+}
+
+.pedagogical-subtitle {
+  font-size: 0.75vw;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 1vw 0;
+  line-height: 1.3;
+}
+
+.pedagogical-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.8vw;
+  margin-bottom: 0.8vw;
+  background-color: rgba(200, 200, 200, 0.3);
+  border-radius: 8px;
+  padding: 0.6vw 0.8vw;
+}
+
+.pedagogical-number {
+  background-color: #2C2C3B;
+  color: white;
+  border-radius: 50%;
+  width: 1.8vw;
+  height: 1.8vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9vw;
+  flex-shrink: 0;
+}
+
+.pedagogical-input {
+  flex: 1;
+  background-color: transparent;
+  color: white;
+  border: none;
+  padding: 0.4vw 2.5vw 0.4vw 0.5vw;
+  font-family: inherit;
+  font-size: 0.9vw;
+  box-sizing: border-box;
+}
+
+.pedagogical-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.pedagogical-input:focus {
+  outline: none;
+}
+
+.btn-remove-pedagogical {
+  position: absolute;
+  right: 0.5vw;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: transparent;
+  color: white;
+  border: none;
+  width: 1.5vw;
+  height: 1.5vw;
+  cursor: pointer;
+  font-size: 1.1vw;
+  font-weight: bold;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.btn-remove-pedagogical:hover {
+  color: #ff6b6b;
+}
+
+.pedagogical-items-container {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 1vw;
+}
+
+.pedagogical-footer {
+  display: flex;
+  gap: 0.8vw;
+  justify-content: flex-end;
+  margin-top: auto;
+  padding-top: 1vw;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-add-pedagogical {
+  background-color: rgba(108, 117, 125, 0.8);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6vw 1.2vw;
+  cursor: pointer;
+  font-size: 0.85vw;
+  font-weight: bold;
+  transition: background-color 0.3s;
+  width: 100%;
+}
+
+.btn-add-pedagogical:hover {
+  background-color: rgba(108, 117, 125, 1);
+}
+
+.no-content-message {
+  padding: 1vw;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+  font-size: 0.85vw;
 }
 </style>
