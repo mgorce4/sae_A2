@@ -13,22 +13,36 @@
     const name_comp = ref('')
     const comp_level = ref('')
     
-    //accordion
+    const ueList = ref([])
+    
+    const attachAccordionListeners = () => {
+        setTimeout(() => {
+            const acc = document.getElementsByClassName("accordion_UE");
+            for (let i = 0; i < acc.length; i++) {
+                const newElement = acc[i].cloneNode(true);
+                acc[i].parentNode.replaceChild(newElement, acc[i]);
+                
+                newElement.addEventListener("click", function() {
+                    this.classList.toggle("active");
+                    const panel = this.nextElementSibling;
+                    if (panel.style.maxHeight) {
+                        panel.style.maxHeight = null;
+                        panel.style.padding = "0 18px";
+                    } else {
+                        panel.style.maxHeight = panel.scrollHeight + "px";
+                        panel.style.padding = "3px 18px 15px";
+                    }
+                });
+            }
+        }, 100);
+    }
+    
     onMounted(async () => {
-        const acc = document.getElementsByClassName("accordion_UE");
-        for (let i = 0; i < acc.length; i++) {
-            acc[i].addEventListener("click", function() {
-                this.classList.toggle("active");
-                const panel = this.nextElementSibling;
-                if (panel.style.maxHeight) {
-                    panel.style.maxHeight = null;
-                    panel.style.padding = "0 18px";
-                } else {
-                    panel.style.maxHeight = panel.scrollHeight + "px";
-                    panel.style.padding = "3px 18px 15px";
-                }
-            });
-        }
+        await axios.get('http://localhost:8080/api/ues').then(response => {
+            ueList.value = response.data;
+        });
+        
+        attachAccordionListeners();
     })
 
     //function link to save
@@ -46,10 +60,37 @@
             name_comp.value = ''
             comp_level.value = ''
             display_more_area.value = false
+            
+            // Recharger les UE et réattacher les écouteurs
+            await axios.get('http://localhost:8080/api/ues').then(response => {
+                ueList.value = response.data;
+            });
+            attachAccordionListeners();
         }
         catch (error){
             console.error('Erreur lors de la sauvegarde', error);
         }
+    }
+
+    const del = async (id) =>{
+        if (!confirm('cette action est irréversible (pour le moment), continuer à vos risques et périls.')) {
+            return;
+        }
+        try{
+            await axios.delete(`http://localhost:8080/api/ues/${id}`);
+            
+            await axios.get('http://localhost:8080/api/ues').then(response => {
+                ueList.value = response.data;
+            });
+        
+            // Réattacher les écouteurs d'événements
+            attachAccordionListeners();
+
+            console.log('OK'); 
+        }
+        catch (error){
+            console.error('Erreur lors de la suppression', error);
+        }        
     }
 </script>
 
@@ -97,8 +138,29 @@
                     </div>
                 </form>
 
-                <div>
-
+                <div v-for="ue in ueList" :key="ue.ueNumber">             
+                    <a class="accordion_UE" id="dark_bar">{{ue.label}} {{ue.name}}</a>
+                    <div class="panel_UE">
+                        <div id="left">
+                            <div>
+                                <label>Numéro de l'UE : {{ue.label}}</label>
+                            </div>
+                            <div>
+                                <label>Code apogee : {{ue.euApogeeCode}}</label>
+                            </div>
+                            <div>
+                                <label>Intitulé de la compétence : {{ue.name}}</label>
+                            </div>
+                            <div>
+                                <label>Niveau de la compétence : {{ue.competenceLevel}}</label>
+                            </div>
+                        </div>
+                        
+                        <div id="right">
+                            <input id="btn_cancel_UE" class="btn1" type="reset" value="Supprimer" @click="del(ue.ueNumber)">
+                            <input id="btn_save_UE" class="btn1" type="submit" value="Modifier" @click="modify">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
