@@ -57,6 +57,7 @@ CREATE TABLE TERMS(
 CREATE TABLE SAE(
     id_SAE SERIAL PRIMARY KEY,
     label TEXT NOT NULL,
+    apogeeCode TEXT,
     id_terms INT REFERENCES TERMS(id_Terms)
 );
 
@@ -128,6 +129,7 @@ CREATE TABLE NATIONAL_PROGRAM_OBJECTIVE(
 
 CREATE TABLE NATIONAL_PROGRAM_SKILL(
     id_Skill SERIAL PRIMARY KEY,
+    label TEXT NOT NULL,
     description TEXT NOT NULL,
     id_ResourceSheet INT REFERENCES RESOURCE_SHEET(id_ResourceSheet)
 );
@@ -137,6 +139,7 @@ CREATE TABLE PEDAGOGICAL_CONTENT(
     cm TEXT,
     td TEXT,
     tp TEXT,
+    ds TEXT,
     id_ResourceSheet INT REFERENCES RESOURCE_SHEET(id_ResourceSheet)
 );
 
@@ -145,6 +148,11 @@ CREATE TABLE RESOURCE_TRACKING(
     pedagogicalFeedback TEXT,
     studentFeedback TEXT,
     improvementSuggestions TEXT,
+    id_ResourceSheet INT REFERENCES RESOURCE_SHEET(id_ResourceSheet)
+);
+
+CREATE TABLE MODALITIES_OF_IMPLEMENTATION(
+    modality TEXT NOT NULL,
     id_ResourceSheet INT REFERENCES RESOURCE_SHEET(id_ResourceSheet)
 );
 
@@ -261,7 +269,7 @@ INSERT INTO UE_COEFFICIENT_RESOURCE(coefficient, UE_Number,id_resource) VALUES
 (2, 3, 3),
 (5, 1, 4);
 INSERT INTO UE_COEFFICIENT_SAE(coefficient, UE_Number,id_SAE) VALUES
-(3, 1, 1),
+(3, 2, 1),
 (4, 2, 2),
 (2, 3, 3),
 (5, 1, 4);
@@ -291,11 +299,11 @@ INSERT INTO NATIONAL_PROGRAM_OBJECTIVE(content, id_ResourceSheet) VALUES
 ('Connaître l''architecture des ordinateurs', 3),
 ('Tester des ressources pédagogiques', 4);
 
-INSERT INTO NATIONAL_PROGRAM_SKILL(description, id_ResourceSheet) VALUES
-('Être capable de coder en Python', 1),
-('Maîtriser HTML et CSS', 2),
-('Comprendre le fonctionnement des processeurs', 3),
-('Savoir évaluer une ressource pédagogique', 4);
+INSERT INTO NATIONAL_PROGRAM_SKILL(label, description, id_ResourceSheet) VALUES
+('dev','Être capable de coder en Python', 1),
+('web','Maîtriser HTML et CSS', 2),
+('arch','Comprendre le fonctionnement des processeurs', 3),
+('test','Savoir évaluer une ressource pédagogique', 4);
 
 INSERT INTO PEDAGOGICAL_CONTENT(cm, td, tp,id_resourceSheet) VALUES
 ('1 Ennui ultime du python,2 pourquoi le prof il fait des dessins frr?,3 j''abandonne c''est trop là', '1 waw en vrai c''est ok de fou,2 euh ok c''est chelou mais ok ig,3 c''est quoi cette merde là laissez moi mourir', '1 hello world,2 bibliothèque des pleurs,3 putain c''est quoi pickle ;-;',1),
@@ -318,3 +326,9 @@ INSERT INTO KEYWORD(keyword, id_ResourceSheet) VALUES
 ('ordinateur', 3),
 ('test', 4),
 ('ressource pédagogique', 4);
+
+INSERT INTO MODALITIES_OF_IMPLEMENTATION(modality, id_ResourceSheet) VALUES
+('IUZHDEIZUHDEOID', 1),
+('ZEUDHZEUDHZEUDH', 2),
+('EZUDHZEUDHZEUDH', 3),
+('ZEUDHZEUDHZEUDH', 4);
