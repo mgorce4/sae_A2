@@ -44,6 +44,7 @@ public class ResourceGetterService {
     private String pedagoContentCm;
     private String pedagoContentTd;
     private String pedagoContentTp;
+    private String pedagoContentDs;
 
     private String pedagoTeamFeedback;
     private String studentFeedback;
@@ -148,6 +149,7 @@ public class ResourceGetterService {
             pedagoContentCm = ""; // TODO: Get from PEDAGOGICAL_CONTENT
             pedagoContentTd = "";
             pedagoContentTp = "";
+            pedagoContentDs = "";
 
             studentFeedback = ""; // TODO: Get from RESOURCE_TRACKING
             pedagoTeamFeedback = "";
@@ -205,6 +207,9 @@ public class ResourceGetterService {
     }
     public String getPedagoContentTp(){
         return pedagoContentTp;
+    }
+    public String getPedagoContentDs(){
+        return pedagoContentDs;
     }
     public String getPedagoTeamFeedback() {
         return pedagoTeamFeedback;

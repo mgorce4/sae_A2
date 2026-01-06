@@ -1,26 +1,30 @@
 package iut.unilim.fr.back.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "RESOURCE_TRACKING")
+@Table(name = "resource_tracking")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RessourceTracking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_ResourceTracking")
+    @Column(name = "id_resourcetracking")
     private Long idResourceTracking;
 
-    @Column(name = "pedagogicalFeedback", columnDefinition = "TEXT")
+    @Column(name = "pedagogicalfeedback", columnDefinition = "TEXT")
     private String pedagogicalFeedback;
 
-    @Column(name = "studentFeedback", columnDefinition = "TEXT")
+    @Column(name = "studentfeedback", columnDefinition = "TEXT")
     private String studentFeedback;
 
-    @Column(name = "improvementSuggestions", columnDefinition = "TEXT")
+    @Column(name = "improvementsuggestions", columnDefinition = "TEXT")
     private String improvementSuggestions;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_ResourceSheet")
+    @JoinColumn(name = "id_resourcesheet")
+    @JsonIgnore
     private RessourceSheet resourceSheet;
 
     public RessourceTracking() {
