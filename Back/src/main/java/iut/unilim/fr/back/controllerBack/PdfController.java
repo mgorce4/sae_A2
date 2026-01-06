@@ -119,9 +119,13 @@ public class PdfController {
                 pedagoTable.setWidthPercentage(100);
                 pedagoTable.setWidths(new float[]{1f, 6f});
 
+                String pedagoContentDs = res.getPedagoContentDs();
                 String pedagoContentCm = res.getPedagoContentCm();
                 String pedagoContentTd = res.getPedagoContentTd();
                 String pedagoContentTp = res.getPedagoContentTp();
+
+                String[] itemsDs = pedagoContentDs.split(",");
+                ajouterLigneCategorie(pedagoTable, "DS", itemsDs, contentFont);
 
                 String[] itemsCM = pedagoContentCm.split(",");
                 ajouterLigneCategorie(pedagoTable, "CM", itemsCM, contentFont);
