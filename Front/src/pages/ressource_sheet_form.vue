@@ -40,10 +40,69 @@ const nationalProgramObjectives = ref([]) // List of objectives from the databas
 const localObjectiveContent = ref('') // Local state for objective textarea
 const nationalProgramSkills = ref([]) // List of skills from the database
 const localSkills = ref([]) // Local state for skills array (with label and description)
+const keywords = ref([]) // List of keywords from the database
+const localKeywords = ref([]) // Local state for keywords array
+const modalities = ref([]) // List of modalities from the database
+const localModalities = ref([]) // Local state for modalities array
 
 // Function for return button
 const goBack = () => {
   window.location.hash = '#/teacher-dashboard'
+}
+
+// Function to add a new keyword
+const addKeyword = () => {
+  localKeywords.value.push({ keyword: '', isNew: true })
+  console.log('New keyword added. Total keywords:', localKeywords.value.length)
+}
+
+// Function to remove a keyword
+const removeKeyword = (index) => {
+  localKeywords.value.splice(index, 1)
+  console.log('Keyword removed. Total keywords:', localKeywords.value.length)
+}
+
+// Function to handle Enter key in keyword input
+const handleKeywordEnter = (index) => {
+  // Only add a new keyword if the current one is not empty
+  if (localKeywords.value[index].keyword.trim() !== '') {
+    addKeyword()
+    // Focus on the new input after a short delay
+    nextTick(() => {
+      const inputs = document.querySelectorAll('.keyword-input')
+      if (inputs[index + 1]) {
+        inputs[index + 1].focus()
+      }
+    })
+  }
+}
+
+// Function to add a new modality
+const addModality = () => {
+  localModalities.value.push({ modality: '', isNew: true })
+  console.log('New modality added. Total modalities:', localModalities.value.length)
+
+  // Update panel height after adding
+  nextTick(() => {
+    const modalitiesPanel = document.querySelector('.modalities-list')?.closest('.panel')
+    if (modalitiesPanel) {
+      updatePanelHeight(modalitiesPanel)
+    }
+  })
+}
+
+// Function to remove a modality
+const removeModality = (index) => {
+  localModalities.value.splice(index, 1)
+  console.log('Modality removed. Total modalities:', localModalities.value.length)
+
+  // Update panel height after removing
+  nextTick(() => {
+    const modalitiesPanel = document.querySelector('.modalities-list')?.closest('.panel')
+    if (modalitiesPanel) {
+      updatePanelHeight(modalitiesPanel)
+    }
+  })
 }
 
 // Function to check if a SAE is linked to the resource (including local changes)
@@ -179,6 +238,54 @@ onMounted(async () => {
           console.error('Error fetching national program skills:', error)
           // Initialize with one empty skill on error
           localSkills.value = [{ id: null, label: '', description: '' }]
+        }
+
+        // Get keywords for this resource sheet
+        try {
+          console.log('Fetching keywords for resource sheet ID:', resourceSheetId.value)
+          const keywordsResponse = await axios.get(`http://localhost:8080/api/keywords/resource-sheet/${resourceSheetId.value}`)
+          keywords.value = keywordsResponse.data
+          console.log('Keywords:', keywords.value)
+
+          // Initialize local keywords array from database
+          if (keywords.value.length > 0) {
+            localKeywords.value = keywords.value.map(kw => ({
+              keyword: kw.keyword || '',
+              isNew: false
+            }))
+          } else {
+            // Start with one empty keyword if none exist
+            localKeywords.value = [{ keyword: '', isNew: true }]
+          }
+          console.log('Local keywords initialized:', localKeywords.value)
+        } catch (error) {
+          console.error('Error fetching keywords:', error)
+          // Initialize with one empty keyword on error
+          localKeywords.value = [{ keyword: '', isNew: true }]
+        }
+
+        // Get modalities of implementation for this resource sheet
+        try {
+          console.log('Fetching modalities for resource sheet ID:', resourceSheetId.value)
+          const modalitiesResponse = await axios.get(`http://localhost:8080/api/modalities-of-implementation/resource-sheet/${resourceSheetId.value}`)
+          modalities.value = modalitiesResponse.data
+          console.log('Modalities:', modalities.value)
+
+          // Initialize local modalities array from database
+          if (modalities.value.length > 0) {
+            localModalities.value = modalities.value.map(mod => ({
+              modality: mod.modality || '',
+              isNew: false
+            }))
+          } else {
+            // Start with one empty modality if none exist
+            localModalities.value = [{ modality: '', isNew: true }]
+          }
+          console.log('Local modalities initialized:', localModalities.value)
+        } catch (error) {
+          console.error('Error fetching modalities:', error)
+          // Initialize with one empty modality on error
+          localModalities.value = [{ modality: '', isNew: true }]
         }
       }
 
@@ -321,7 +428,7 @@ onMounted(async () => {
   }
 
   // Auto-resize textareas (only those with specific classes)
-  const textareas = document.querySelectorAll('#text_area_styled, .auto-resize-textarea, .skill-input-description');
+  const textareas = document.querySelectorAll('#text_area_styled, .auto-resize-textarea, .skill-input-description, .modality-textarea');
   textareas.forEach(textarea => {
     const autoResize = () => {
       textarea.style.height = 'auto';
@@ -363,7 +470,6 @@ onMounted(async () => {
   });
 })
 </script>
-
 <template>
   <div id="Ressource_Sheet">
     <div id="return_Arrow" @click="goBack">
@@ -383,22 +489,13 @@ onMounted(async () => {
         <p>{{ (resource && resource.label) || '###' }}</p>
       </div>
       <div id="form">
-        <button class="accordion" id="dark_Bar">
-          Objectif de la ressource
-          <span v-if="hasObjectiveChanges" class="unsaved_indicator_small">*</span>
-        </button>
+        <button class="accordion" id="dark_Bar">Objectif de la ressource</button>
         <div class="panel">
-          <textarea
-            id="text_area_styled"
-            v-model="localObjectiveContent"
-            placeholder="Saisissez les objectifs de la ressource..."
-          ></textarea>
+          <textarea id="text_area_styled" v-model="localObjectiveContent" placeholder="Saisissez les objectifs de la ressource..."></textarea>
         </div>
       </div>
       <div id="form">
-        <button class="accordion" id="dark_Bar">
-          Compétences *
-        </button>
+        <button class="accordion" id="dark_Bar">Compétences *</button>
         <div class="panel">
           <div class="skills-table">
             <div class="skills-header">
@@ -431,13 +528,27 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-      <div>
-        <p class="subsection_title">Mots clés</p>
-        <textarea class="auto-resize-textarea">mots clés...</textarea>
-      </div>
-      <div>
-        <p class="subsection_title">Modalités de mise en oeuvre : </p>
-        <textarea class="auto-resize-textarea">modalités...</textarea>
+      <div id="align_items_inline_center">
+        <div id="align_items_column_left">
+          <p class="subsection_title">Mots clés</p>
+          <div class="keywords-container">
+            <div v-for="(keyword, index) in localKeywords" :key="index" class="keyword-item">
+              <input type="text" v-model="keyword.keyword" @keydown.enter="handleKeywordEnter(index)" placeholder="Mot-clé..." class="keyword-input" />
+              <button @click="removeKeyword(index)" class="btn-remove-keyword" :disabled="localKeywords.length === 1" title="Supprimer ce mot-clé">✕</button>
+            </div>
+            <button @click="addKeyword" class="btn-add-keyword">+ Ajouter un mot-clé</button>
+          </div>
+        </div>
+        <div id="align_items_column_left">
+          <p class="subsection_title">Modalités de mise en œuvre :</p>
+          <div class="modalities-list">
+            <div v-for="(modality, index) in localModalities" :key="index" class="modality-item">
+              <textarea v-model="modality.modality" placeholder="Modalité de mise en œuvre..." class="modality-textarea" rows="3"></textarea>
+              <button @click="removeModality(index)" class="btn-remove-modality" :disabled="localModalities.length === 1" title="Supprimer cette modalité">✕</button>
+            </div>
+            <button @click="addModality" class="btn-add-modality">+ Ajouter une modalité</button>
+          </div>
+        </div>
       </div>
       <div>
         <p class="section_title">Répartition de heures ( volume étudiant ) : </p>
@@ -813,6 +924,182 @@ input:checked + .slider::before {
 }
 
 .btn-add-skill:hover {
+  background-color: #2C2C3B;
+}
+
+#align_items_inline_center{
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2vw;
+  padding: 1vw 2vw;
+}
+
+#align_items_column_left{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 1vw;
+  flex: 1;
+}
+
+/* Keywords styles */
+.keywords-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8vw;
+}
+
+.keyword-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.keyword-input {
+  flex: 1;
+  background-color: rgb(117, 117, 117);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 0.6vw 3vw 0.6vw 1vw;
+  font-family: inherit;
+  font-size: 1vw;
+  box-sizing: border-box;
+}
+
+.keyword-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.btn-remove-keyword {
+  position: absolute;
+  right: 0.5vw;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: transparent;
+  color: white;
+  border: none;
+  width: 1.5vw;
+  height: 1.5vw;
+  cursor: pointer;
+  font-size: 1.2vw;
+  font-weight: bold;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.btn-remove-keyword:hover:not(:disabled) {
+  color: #ff6b6b;
+}
+
+.btn-remove-keyword:disabled {
+  color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.btn-add-keyword {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6vw 1.2vw;
+  cursor: pointer;
+  font-size: 0.9vw;
+  font-weight: bold;
+  transition: background-color 0.3s;
+  align-self: flex-start;
+}
+
+.btn-add-keyword:hover {
+  background-color: #2C2C3B;
+}
+
+/* Modalities styles */
+.modalities-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1vw;
+}
+
+.modality-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+}
+
+.modality-textarea {
+  flex: 1;
+  background-color: rgb(117, 117, 117);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 0.8vw 3vw 0.8vw 0.8vw;
+  font-family: inherit;
+  font-size: 1vw;
+  resize: vertical;
+  min-height: 4vw;
+  box-sizing: border-box;
+}
+
+.modality-textarea:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.btn-remove-modality {
+  position: absolute;
+  right: 0.5vw;
+  top: 0.8vw;
+  background-color: transparent;
+  color: white;
+  border: none;
+  width: 1.5vw;
+  height: 1.5vw;
+  cursor: pointer;
+  font-size: 1.2vw;
+  font-weight: bold;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.btn-remove-modality:hover:not(:disabled) {
+  color: #ff6b6b;
+}
+
+.btn-remove-modality:disabled {
+  color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.btn-add-modality {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6vw 1.2vw;
+  cursor: pointer;
+  font-size: 0.9vw;
+  font-weight: bold;
+  transition: background-color 0.3s;
+  align-self: flex-start;
+}
+
+.btn-add-modality:hover {
   background-color: #2C2C3B;
 }
 </style>
