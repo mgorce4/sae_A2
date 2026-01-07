@@ -31,45 +31,36 @@
         axios.get('http://localhost:8080/api/ue-coefficient-saes').then(response => (ueCoef.value = response.data))
     })
 
-    const saesH = computed(() => {
-        // Join between users and access_rights where users.idUser = access_rights.idUser
-        return saeLinkResources.value.map((saeLinkResources) => {
-            const hours = saeHours.value.find((sh) => sh.idSAEHours === saeLinkResources.idSAE)
+    const joinSaesTables = computed(() => {
+        // Get teachers for current institution
+        const teachersForInstitution = teachers.value.filter(teacher => teacher.user?.institution?.idInstitution == localStorage.idInstitution)
+        
+        // Get resource IDs from those teachers
+        const resourceIds = new Set(teachersForInstitution.map(teacher => teacher.idResource))
+        
+        // Filter SAEs by semester and resources from current institution
+        const saesWithHours = saeLinkResources.value
+            .filter(sae => resourceIds.has(sae.idResource) && sae.resource?.semester == semesterNumber.value)
+            .map((saeLinkResource) => {
+                const hours = saeHours.value.find((sh) => sh.idSAEHours === saeLinkResource.idSAE)
+                return {
+                    ...saeLinkResource,
+                    saeHours: hours
+                }
+            })
+        
+        // Join with UE coefficients
+        return saesWithHours.map((sae) => {
+            const coef = ueCoef.value.filter((uec) => uec.sae?.idSAE === sae.idSAE)
             return {
-                ...saeLinkResources,
-                saeHours: hours
-            }
-        }).filter(saeLinkResources => saeLinkResources.resource.semester == semesterNumber.value)
-    })
-
-    const saesCH = computed(() => {
-        // Join between users and access_rights where users.idUser = access_rights.idUser
-        return saesH.value.map((saesH) => {
-            const coef = ueCoef.value.filter((uec) => uec.sae.idSAE === saesH.idSAE)
-            return {
-                ...saesH,
+                ...sae,
                 ueCoefSae: coef
             }
         })
     })
-
-    const saesCHI = computed(() => {
-        // Join between users and access_rights where users.idUser = access_rights.idUser
-        return teachers.value.map((teachers) => {
-            const saes = saesCH.value.filter((sch) => sch.idResource === teachers.idResource)
-            return {
-                ...teachers,
-                saeCoefHours: saes
-            }
-        }).filter(teachers => teachers.user.institution.idInstitution == localStorage.idInstitution)
-    })
-    console.log(saesCH)
 </script>
 
 <template>
-    <p>{{ teachers }}</p>
-    <p>{{ saesCH }}</p>
-    <p>{{ saesCHI }}</p>
     <div id="form_mccc_sae"> 
         <div class="return_arrow">
             <button class="back_arrow" onclick="document.location.href='#/mccc-select-form'">←</button>
@@ -87,7 +78,7 @@
                 <form v-show="display_more_area" method="post" v-on:submit.prevent="">
                     <div>Div ajout SAÉ</div>
                 </form>
-                <div v-for="(value, index) in saesCH" v-bind:key="index" class="added_content_mccc">
+                <div v-for="(value, index) in joinSaesTables" v-bind:key="index" class="added_content_mccc">
                     <div class="dark_bar">
                         <p>{{ value.label }}</p>
                     </div>
