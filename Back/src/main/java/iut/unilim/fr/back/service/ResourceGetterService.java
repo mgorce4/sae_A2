@@ -202,8 +202,7 @@ public class ResourceGetterService {
             hoursStudent.add(teacherHours.getTp());
             hoursStudent.add(teacherHours.getCm() + hoursPerStudent.getTd() + hoursPerStudent.getTp());
 
-            // PedagogicalContent and RessourceTracking removed as they're not directly linked
-            pedagoContentCm = ""; // TODO: Get from PEDAGOGICAL_CONTENT
+            pedagoContentCm = "";
             pedagoContentTd = "";
             pedagoContentTp = "";
             pedagoContentDs = "";
@@ -217,12 +216,12 @@ public class ResourceGetterService {
             writeInLog("Get from database :\n"
                 + "- Ressource (" + labelResource + "; " + qualityReference + "; " + refUE + "; " + profRef + ";" + ")\n" +
                     "   - objectives(" + objectiveContent + ")\n" +
-                    "   - skills(" + skills.toString() + ")\n" +
+                    "   - skills(" + skills + ")\n" +
                     "   - saes(" + saes + ")\n" +
-                    "   - terms(" + modalities.toString() + ")\n" +
-                    "   - keywords(" + keywords.toString() + ")\n" +
-                    "   - hoursStudent(" + hoursStudent.toString() +")\n" +
-                    "   - hoursPN(" + hoursPN.toString() + ")\n" +
+                    "   - terms(" + modalities + ")\n" +
+                    "   - keywords(" + keywords + ")\n" +
+                    "   - hoursStudent(" + hoursStudent +")\n" +
+                    "   - hoursPN(" + hoursPN + ")\n" +
                     "   - pedagoContent( CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
                     "   - feedBack(Student: " + studentFeedback + "; Pedagogical team: " + pedagoTeamFeedback + "; Improvements: " + improvements + ")\n");
         } else {
