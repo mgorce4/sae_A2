@@ -202,10 +202,10 @@ public class ResourceGetterService {
             hoursStudent.add(teacherHours.getTp());
             hoursStudent.add(teacherHours.getCm() + hoursPerStudent.getTd() + hoursPerStudent.getTp());
 
-            pedagoContentCm = "";
-            pedagoContentTd = "";
-            pedagoContentTp = "";
-            pedagoContentDs = "";
+            PedagogicalContent pedagogicalContent = pedagogicalContentRepository.findByResourceSheet_IdResourceSheet(id).getFirst();
+            pedagoContentCm = pedagogicalContent.getCm();
+            pedagoContentTd = pedagogicalContent.getTd();
+            pedagoContentTp = pedagogicalContent.getTp();
 
 
             RessourceTracking ressourceTracking = resourceTrackingRepository.findByResourceSheet_IdResourceSheet(resourceSheet.getIdResourceSheet()).getFirst();
