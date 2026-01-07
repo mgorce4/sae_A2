@@ -43,6 +43,8 @@ const resources = ref([])
 
 const main_teachers_for_resource = ref([])
 
+const saes = ref([])
+
 const resources_filterd = computed(() => {
   return main_teachers_for_resource.value.map((user) => {
     const resource = resources.value.filter((sh) => sh.idResource === user.resource.idResource)
@@ -51,11 +53,22 @@ const resources_filterd = computed(() => {
       resource: resource,
     }
   }).filter((user) => String(user.user.institution.idInstitution) === localStorage.idInstitution)
+    .filter((resource) => String(resource.resource[0].semester) === semesterNumber.value)
 })
 
 function areTotalNaN() {
   return isNaN(total_initial_formation.value) && isNaN(total_work_study.value)
 }
+
+const getQueryParam = (param) => {
+  const hash = window.location.hash
+  const queryString = hash.split('?')[1]
+  if (!queryString) return null
+  const params = new URLSearchParams(queryString)
+  return params.get(param)
+}
+
+const semesterNumber = ref(getQueryParam('id'))
 
 onMounted(async () => {
   /* usage of await to wait for the data to be fetched before adding event listeners */
@@ -73,6 +86,9 @@ onMounted(async () => {
     axios
       .get('http://localhost:8080/api/main-teachers-for-resource')
       .then((response) => (main_teachers_for_resource.value = response.data)),
+    axios
+      .get('http://localhost:8080/api/sae-link-resources')
+      .then((response) => (saes.value = response.data)),
   ])
 
   await nextTick()
@@ -110,13 +126,13 @@ onMounted(async () => {
     resources_filterd.value[i].resource[0].tp = hours_per_student.value.find((hour) => hour.resource.idResource === resources_filterd.value[i].resource[0].idResource).tp
     resources_filterd.value[i].resource[0].total = resources_filterd.value[i].resource[0].cm + resources_filterd.value[i].resource[0].td + resources_filterd.value[i].resource[0].tp
   }
-
 })
+
 </script>
 
 <template>
   <div id="ressource">
-    <div>{{ resources_filterd }}</div>
+    <div>{{resources_filterd}}</div>
     <div id="return_arrow">
       <button id="back_arrow" onclick="document.location.href='#/mccc-select-form'">←</button>
       <p>Retour</p>
@@ -260,11 +276,11 @@ onMounted(async () => {
         </form>
       </div>
       <div id="form_resources">
-        <p v-if="resources.length > 0">Ressources créées :</p>
+        <p v-if="resources_filterd.length > 0">Ressources créées :</p>
         <p v-else>Aucune ressource n'a été crée</p>
 
         <div v-for="resource in resources_filterd" :key="resource.idResource">
-          <a class="accordion" id="dark_bar">{{ resource.resource[0].label }} {{ resource.resource[0].name}}</a>
+          <a class="accordion" id="dark_bar" style="width: 97%">{{ resource.resource[0].label }} {{ resource.resource[0].name}}</a>
 
           <div class="panel_resource">
             <div id="left_resource">
@@ -321,9 +337,11 @@ onMounted(async () => {
               <br />
               <br />
 
-              <input class="btn1" value="Supprimer" />
-              <br />
-              <input class="btn1" value="Modifier" />
+              <div style="display: flex; gap: 10px;">
+                <input class="btn1" type="button" value="Supprimer" />
+                <br>
+                <input class="btn1" type="button" value="Modifier" />
+              </div>
             </div>
           </div>
         </div>
@@ -374,34 +392,6 @@ onMounted(async () => {
   padding-bottom: 0.5vw;
   font-weight: lighter;
   font-size: 2.3vw;
-}
-
-.accordion,
-#dark_bar > p {
-  margin: 0vw;
-  font-weight: lighter;
-  font-size: 1.05vw;
-}
-
-.accordion {
-  cursor: pointer;
-  position: relative;
-}
-
-.accordion::after {
-  content: '^';
-  position: absolute;
-  right: 1vw;
-  transition: transform 0.3s ease;
-  font-size: 0.9vw;
-}
-
-.accordion.active::after {
-  transform: rotate(180deg);
-}
-
-#dark_bar {
-  width: 95%;
 }
 
 #form {
