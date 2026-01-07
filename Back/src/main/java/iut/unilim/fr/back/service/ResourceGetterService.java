@@ -99,7 +99,6 @@ public class ResourceGetterService {
         Long id;
         String label;
 
-
         Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(ressourceName);
 
         if (resultResource.isPresent()) {
@@ -209,13 +208,17 @@ public class ResourceGetterService {
                     "   - keywords(" + keywords + ")\n" +
                     "   - hoursStudent(" + hoursStudent +")\n" +
                     "   - hoursPN(" + hoursPN + ")\n" +
+                    "   - pedagoContent( CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
+                    "   - terms(" + modalities + ")\n" +
+                    "   - keywords(" + keywords + ")\n" +
+                    "   - hoursStudent(" + hoursStudent +")\n" +
+                    "   - hoursPN(" + hoursPN + ")\n" +
                     "   - pedagoContent( DS: " + pedagoContentDs + "; CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
                     "   - feedBack(Student: " + studentFeedback + "; Pedagogical team: " + pedagoTeamFeedback + "; Improvements: " + improvements + ")\n");
         } else {
             writeInLog("Attempt to get from database with resource name: " + ressourceName +
                     "\n-> " + ressourceName + " not found in resources tables");
         }
-
     }
 
     public String getRef() {
