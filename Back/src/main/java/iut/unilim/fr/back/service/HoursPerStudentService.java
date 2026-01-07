@@ -20,6 +20,10 @@ public class HoursPerStudentService {
         return hoursPerStudentRepository.findById(id);
     }
 
+    public List<HoursPerStudent> getHoursPerStudentByResourceId(Long resourceId) {
+        return hoursPerStudentRepository.findByResource_IdResource(resourceId);
+    }
+
     public HoursPerStudent createHoursPerStudent(HoursPerStudent hoursPerStudent) {
         return hoursPerStudentRepository.save(hoursPerStudent);
     }
