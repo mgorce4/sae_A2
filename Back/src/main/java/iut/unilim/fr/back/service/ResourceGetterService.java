@@ -148,7 +148,10 @@ public class ResourceGetterService {
 
             saes.clear();
             for (SaeInfoDTO saeLinkResource : SAELinkResources) {
-                saes.add(saeLinkResource.getLabel());
+                if (saeLinkResource.getIsLinked()) {
+                    saes.add(saeLinkResource.getLabel());
+                }
+                // Ajout uniquement si isLink. A voir comment ca marche sinon ? MAX !!! OSKOUR!
             }
 
             List<String> keyWordsList = resourceSheetDTO.getKeywords();
