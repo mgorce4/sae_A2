@@ -60,6 +60,24 @@ const localResourceTracking = ref({
   improvementSuggestions: ''
 })
 
+// Hours variables
+const hoursPerStudent = ref(null) // Hours from database (hours_per_student table)
+const localHours = ref({
+  cm: 0,
+  td: 0,
+  tp: 0
+})
+
+// Computed properties for hours totals
+const localHoursTotal = computed(() => {
+  return (localHours.value.cm || 0) + (localHours.value.td || 0) + (localHours.value.tp || 0)
+})
+
+const dbHoursTotal = computed(() => {
+  if (!hoursPerStudent.value) return 0
+  return (hoursPerStudent.value.cm || 0) + (hoursPerStudent.value.td || 0) + (hoursPerStudent.value.tp || 0)
+})
+
 // Function to parse CSV string into array of items
 const parseCSVContent = (csvString) => {
   if (!csvString || csvString.trim() === '') {
@@ -558,6 +576,39 @@ onMounted(async () => {
             console.error('Error fetching SAE links:', error)
           }
         }
+
+        // Get hours per student for this resource
+        if (resource.value.idResource) {
+          try {
+            console.log('🔍 Fetching hours per student for resource ID:', resource.value.idResource)
+            const hoursResponse = await axios.get(`http://localhost:8080/api/hours-per-student/resource/${resource.value.idResource}`)
+            console.log('📦 Hours per student API response:', hoursResponse.data)
+
+            if (hoursResponse.data && hoursResponse.data.length > 0) {
+              hoursPerStudent.value = hoursResponse.data[0]
+              console.log('✅ Hours per student loaded:', hoursPerStudent.value)
+              // Initialize local hours with database values (editable by user)
+              localHours.value = {
+                cm: hoursPerStudent.value.cm || 0,
+                td: hoursPerStudent.value.td || 0,
+                tp: hoursPerStudent.value.tp || 0
+              }
+              console.log('✅ Local hours initialized from database:', localHours.value)
+            } else {
+              console.log('⚠️ No hours per student found in API response')
+              hoursPerStudent.value = null
+              localHours.value = { cm: 0, td: 0, tp: 0 }
+            }
+          } catch (error) {
+            console.error('❌ Error fetching hours per student:', error)
+            console.error('Error details:', error.response?.data || error.message)
+            hoursPerStudent.value = null
+            localHours.value = { cm: 0, td: 0, tp: 0 }
+          }
+        } else {
+          console.warn('⚠️ No resource ID found, cannot fetch hours')
+          localHours.value = { cm: 0, td: 0, tp: 0 }
+        }
       } else {
         console.log('No resource found in resourceSheet')
       }
@@ -728,15 +779,54 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-      <div>
+      <div id="hours_section">
         <p class="section_title">Répartition de heures ( volume étudiant ) : </p>
-        <p>CM</p>
-        <textarea class="auto-resize-textarea">1</textarea>
-        <p>TD</p>
-        <textarea class="auto-resize-textarea">1</textarea>
-        <p>TP</p>
-        <textarea class="auto-resize-textarea">1</textarea>
-        <span>Le nombre total d'heure est .../...</span>
+        <div class="hours_container">
+          <div class="hours_row">
+            <div class="hours_item">
+              <label class="hours_label">CM</label>
+              <div class="hours_box">
+                <input
+                  type="number"
+                  v-model.number="localHours.cm"
+                  class="hours_display"
+                  min="0"
+                  step="0.5"
+                  :placeholder="hoursPerStudent?.cm || 0"
+                />
+              </div>
+            </div>
+            <div class="hours_item">
+              <label class="hours_label">TD</label>
+              <div class="hours_box">
+                <input
+                  type="number"
+                  v-model.number="localHours.td"
+                  class="hours_display"
+                  min="0"
+                  step="0.5"
+                  :placeholder="hoursPerStudent?.td || 0"
+                />
+              </div>
+            </div>
+            <div class="hours_item">
+              <label class="hours_label">TP</label>
+              <div class="hours_box">
+                <input
+                  type="number"
+                  v-model.number="localHours.tp"
+                  class="hours_display"
+                  min="0"
+                  step="0.5"
+                  :placeholder="hoursPerStudent?.tp || 0"
+                />
+              </div>
+            </div>
+            <div class="hours_total_display">
+              <p class="hours_total_text">Nombre d'heures total : <span class="hours_total_value">{{ localHoursTotal }}</span> / <span class="hours_total_value">{{ dbHoursTotal }}</span></p>
+            </div>
+          </div>
+        </div>
       </div>
       <div>
         <p class="section_title">Contenu pédagogique</p>
@@ -1556,4 +1646,121 @@ input:checked + .slider::before {
 .btn-add-pedagogical:hover {
   background-color: rgba(108, 117, 125, 1);
 }
+
+/* Hours Section Styles */
+#hours_section {
+  padding: 2vw 1vw;
+  margin-top: 1.5vw;
+  background-color: var(--main-theme-background-color);
+  border-radius: 15px;
+}
+
+.hours_container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.hours_row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5vw;
+  margin: 1.5vw 0;
+  flex-wrap: wrap;
+}
+
+.hours_item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8vw;
+  align-items: center;
+}
+
+.hours_label {
+  font-weight: bold;
+  font-size: 1.1vw;
+  color: var(--main-theme-secondary-color);
+  text-transform: uppercase;
+  letter-spacing: 0.1vw;
+}
+
+.hours_box {
+  background-color: rgba(117, 117, 117, 0.8);
+  border-radius: 12px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  padding: 1vw 1.2vw;
+  min-width: 4.5vw;
+  max-width: 5vw;
+  min-height: 3.5vw;
+  max-height: 4vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+
+.hours_display {
+  background-color: transparent;
+  color: var(--main-theme-secondary-color);
+  border: none;
+  font-size: 2.2vw;
+  font-weight: bold;
+  text-align: center;
+  width: 100%;
+  padding: 0;
+  outline: none;
+}
+
+.hours_display::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+  opacity: 1;
+  font-weight: bold;
+}
+
+.hours_display::-webkit-inner-spin-button,
+.hours_display::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.hours_display[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.hours_total_display {
+  display: flex;
+  align-items: center;
+  padding: 0.8vw 1.5vw;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  margin-left: 2vw;
+}
+
+.hours_total_text {
+  font-size: 1.1vw;
+  color: white;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.hours_total_value {
+  font-weight: bold;
+  color: white;
+  font-size: 1.3vw;
+}
 </style>
+
+
+
+
+
+
+
+
+
+
+
+
+
