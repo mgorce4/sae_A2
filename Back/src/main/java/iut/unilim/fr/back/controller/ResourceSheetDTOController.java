@@ -4,7 +4,6 @@ import iut.unilim.fr.back.dto.ResourceSheetDTO;
 import iut.unilim.fr.back.entity.RessourceSheet;
 import iut.unilim.fr.back.mapper.ResourceSheetMapper;
 import iut.unilim.fr.back.repository.RessourceSheetRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,11 +17,16 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 public class ResourceSheetDTOController {
 
-    @Autowired
-    private RessourceSheetRepository ressourceSheetRepository;
+    private final RessourceSheetRepository ressourceSheetRepository;
+    private final ResourceSheetMapper resourceSheetMapper;
 
-    @Autowired
-    private ResourceSheetMapper resourceSheetMapper;
+    // Constructor injection (better than @Autowired on fields)
+    public ResourceSheetDTOController(
+            RessourceSheetRepository ressourceSheetRepository,
+            ResourceSheetMapper resourceSheetMapper) {
+        this.ressourceSheetRepository = ressourceSheetRepository;
+        this.resourceSheetMapper = resourceSheetMapper;
+    }
 
     /**
      * GET /api/v2/resource-sheets
