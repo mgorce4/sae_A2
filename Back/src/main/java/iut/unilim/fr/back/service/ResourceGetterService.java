@@ -1,7 +1,5 @@
 package iut.unilim.fr.back.service;
 
-import iut.unilim.fr.back.controller.ResourceSheetDTOController;
-import iut.unilim.fr.back.dto.*;
 import iut.unilim.fr.back.entity.*;
 import iut.unilim.fr.back.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static iut.unilim.fr.back.controllerBack.LogController.writeInPdfLog;
+import static iut.unilim.fr.back.controllerBack.LogController.writeInLog;
 
 @Service
 public class ResourceGetterService {
@@ -20,9 +18,26 @@ public class ResourceGetterService {
     private RessourceRepository ressourceRepository;
     @Autowired
     private RessourceSheetRepository  ressourceSheetRepository;
-
     @Autowired
-    private ResourceSheetDTOController rsDTOController;
+    private SAELinkResourceRepository saeLinkResourceRepository;
+    @Autowired
+    private MainTeacherForResourceRepository mainTeacherForResourceRepository;
+    @Autowired
+    private UeCoefficientRepository ueCoefficientRepository;
+    @Autowired
+    private HoursPerStudentRepository hoursPerStudentRepository;
+    @Autowired
+    private PedagogicalContentRepository pedagogicalContentRepository;
+    @Autowired
+    private RessourceTrackingRepository resourceTrackingRepository;
+    @Autowired
+    private KeywordRepository keywordRepository;
+    @Autowired
+    private TeacherHoursRepository teacherHoursRepository;
+    @Autowired
+    private NationalProgramObjectiveRepository nationalProgramObjectiveRepository;
+    @Autowired
+    private NationalProgramSkillRepository nationalProgramSkillRepository;
 
     private String fileName = "";
 
@@ -31,7 +46,6 @@ public class ResourceGetterService {
     private String refUE;
     private String profRef;
     private String labelResource;
-    private String department;
 
     private String objectiveContent;
     private final List<String> skills;
@@ -65,18 +79,15 @@ public class ResourceGetterService {
     }
 
     private void initializePlaceHolderValues() {
-        String PLACEHOLDER = "Aucun contenue pour cette catégorie";
-        String PLACEHOLDER_TITLE = "Aucun";
-        int PLACEHOLDER_HOURS = -1;
-        int NB_ELEMENTS_HOURS = 4;
-
+        String PLACEHOLDER = "No content for that category";
+        String PLACEHOLDER_TITLE = "None";
         skills.add(PLACEHOLDER);
         saes.add(PLACEHOLDER);
         modalities.add(PLACEHOLDER);
 
-        for (int i=0; i<NB_ELEMENTS_HOURS; i++) {
-            hoursPN.add(PLACEHOLDER_HOURS);
-            hoursStudent.add(PLACEHOLDER_HOURS);
+        for (int i=0; i<4; i++) {
+            hoursPN.add(-1);
+            hoursStudent.add(-1);
         }
 
         ref = PLACEHOLDER_TITLE;
@@ -84,7 +95,6 @@ public class ResourceGetterService {
         refUE = PLACEHOLDER_TITLE;
         profRef = PLACEHOLDER_TITLE;
         labelResource = PLACEHOLDER_TITLE;
-        department = PLACEHOLDER_TITLE;
         objectiveContent = PLACEHOLDER;
         keywords.add(PLACEHOLDER);
         pedagoContentDs = PLACEHOLDER;
@@ -98,152 +108,132 @@ public class ResourceGetterService {
     }
 
     @Transactional
-    public void setValuesFromResource(String resourceName) {
-        int multi_skill_limit = 1;
-
+    public void setValuesFromRessource(String ressourceName) {
         Optional<RessourceSheet> resultResourceSheet = Optional.empty();
         Long id;
         String label;
 
-
-        Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(resourceName);
+        Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(ressourceName);
 
         if (resultResource.isPresent()) {
             resultResourceSheet = ressourceSheetRepository.findFirstByResource_IdResource(resultResource.get().getIdResource());
-        } else {
-            writeInPdfLog("Could not get the resource sheet from the database because there is no resource with id = " + resourceName);}
+        } else {writeInLog("Could not get the resource sheet from the database because there is no resource with id = " + ressourceName);}
 
         if (resultResource.isPresent() && resultResourceSheet.isPresent()) {
-            fileName = resourceName;
+            fileName = ressourceName;
             Ressource resource = resultResource.get();
+            RessourceSheet resourceSheet = resultResourceSheet.get();
 
             id = resource.getIdResource();
+            label = resource.getLabel();
 
-            List<ResourceSheetDTO> resourcesSheets = rsDTOController.getResourceSheetsByResourceId(id);
-            ResourceSheetDTO resourceSheetDTO = resourcesSheets.getLast();
-            label = resourceSheetDTO.getResourceName();
-            department = resourceSheetDTO.getDepartment();
+            List<MainTeacherForResource> mainTeacherForResource = mainTeacherForResourceRepository.findByIdResource(id);
+            List<SAELinkResource> SAELinkResources = saeLinkResourceRepository.findByIdResource(id);
 
-            List<SaeInfoDTO> SAELinkResources = resourceSheetDTO.getLinkedSaes();
-
-            ref = resourceName;
-            qualityReference = "IU EN FOR 001";
-
-            List<UeInfoDTO> UeReferences = resourceSheetDTO.getUeReferences();
-            UeInfoDTO ue = UeReferences.getFirst();
-            refUE = ue.getLabel();
-
-            writeInPdfLog("Get resource \n"
+            writeInLog("Get ressource \n"
                     + "     - id : " + id + "\n"
                     + "     - label : " + label + "\n");
 
-            objectiveContent = resourceSheetDTO.getObjective();
+            ref = ressourceName;
+            qualityReference = "IU EN FOR 001";
 
-            List<SkillDTO> npSkill = resourceSheetDTO.getSkills();
+            List<UeCoefficient> ueCoefficient = ueCoefficientRepository.findByResource_IdResource(id);
+            UE ue = ueCoefficient.getFirst().getUe();
+            refUE = ue.getLabel();
+
+            List<NationalProgramObjective> npObjectives = nationalProgramObjectiveRepository.findByResourceSheet_IdResourceSheet(id);
+            Boolean isMultiCompetences = resource.getDiffMultiCompetences();
+
+            if (!npObjectives.isEmpty()) {
+                if (isMultiCompetences) {
+                    objectiveContent = "";
+                    for (NationalProgramObjective npObjective : npObjectives) {
+                        objectiveContent += npObjective.getContent() + ", ";
+                    }
+                } else {
+                    objectiveContent = npObjectives.getFirst().getContent();
+                }
+            }
+
+            List<NationalProgramSkill> npSkill = nationalProgramSkillRepository.findByResourceSheet_IdResourceSheet(id);
 
             skills.clear();
-            if (npSkill.size() > multi_skill_limit) {
-                for (SkillDTO programSkill : npSkill) {
+            if (npSkill.size() > 1) {
+                for (NationalProgramSkill programSkill : npSkill) {
                     skills.add(programSkill.getDescription());
                 }
             }else {
                 skills.add(npSkill.getFirst().getDescription());
             }
 
-            profRef = resourceSheetDTO.getMainTeacher();
+            // User and SAE info removed as they're not in the new schema
+            UserSyncadia referent = mainTeacherForResource.getFirst().getUser();
+            profRef = referent.getFirstname() + " " + referent.getLastname();
             labelResource = resource.getLabel() + ": " + resource.getName();
 
             saes.clear();
-            for (SaeInfoDTO saeLinkResource : SAELinkResources) {
-                if (saeLinkResource.getIsLinked()) {
-                    saes.add(saeLinkResource.getLabel());
-                }
+            for (SAELinkResource saeLinkResource : SAELinkResources) {
+                SAE sae = saeLinkResource.getSae();
+                saes.add(sae.getLabel());
             }
 
-            List<String> keyWordsList = resourceSheetDTO.getKeywords();
+            List<Keyword> keyWordsList = keywordRepository.findByIdResourceSheet(resourceSheet.getIdResourceSheet());
             keywords.clear();
-            keywords.addAll(keyWordsList);
+            for (Keyword keyword : keyWordsList) {
+                keywords.add(keyword.getKeyword());
+            }
 
 
             Terms terms = resource.getTerms();
             modalities.clear();
             modalities.add(terms.getCode());
 
-            HoursDTO hoursDTOPN = resourceSheetDTO.getHoursPN();
+            HoursPerStudent hoursPerStudent = hoursPerStudentRepository.findByResource_IdResource(id).getFirst();
             hoursPN.clear();
-            hoursPN.add(hoursDTOPN.getCm());
-            hoursPN.add(hoursDTOPN.getTd());
-            hoursPN.add(hoursDTOPN.getTp());
-            hoursPN.add(hoursDTOPN.getCm() + hoursDTOPN.getTd() + hoursDTOPN.getTp());
+            hoursPN.add(hoursPerStudent.getCm());
+            hoursPN.add(hoursPerStudent.getTd());
+            hoursPN.add(hoursPerStudent.getTp());
+            hoursPN.add(hoursPerStudent.getCm() + hoursPerStudent.getTd() + hoursPerStudent.getTp());
 
-            HoursDTO teacherHours = resourceSheetDTO.getHoursTeacher();
+            TeacherHours teacherHours = teacherHoursRepository.findByResourceSheet_IdResourceSheet(id).getFirst();
             hoursStudent.clear();
             hoursStudent.add(teacherHours.getCm());
             hoursStudent.add(teacherHours.getTd());
             hoursStudent.add(teacherHours.getTp());
-            hoursStudent.add(teacherHours.getCm() + hoursDTOPN.getTd() + hoursDTOPN.getTp());
+            hoursStudent.add(teacherHours.getCm() + hoursPerStudent.getTd() + hoursPerStudent.getTp());
 
-            PedagogicalContentDTO pedagogicalContent = resourceSheetDTO.getPedagogicalContent();
-            StringBuilder pedagoContentBuilder;
+            PedagogicalContent pedagogicalContent = pedagogicalContentRepository.findByResourceSheet_IdResourceSheet(id).getFirst();
+            pedagoContentCm = pedagogicalContent.getCm();
+            pedagoContentTd = pedagogicalContent.getTd();
+            pedagoContentTp = pedagogicalContent.getTp();
 
-            
-            if (!pedagogicalContent.getCm().isEmpty()) {
-                pedagoContentBuilder = createPedagoContent(pedagogicalContent.getCm());
-                pedagoContentCm = pedagoContentBuilder.toString();
-            }
 
-            if (!pedagogicalContent.getTd().isEmpty()) {
-                pedagoContentBuilder = createPedagoContent(pedagogicalContent.getTd());
-                pedagoContentTd = pedagoContentBuilder.toString();
-            }
+            RessourceTracking ressourceTracking = resourceTrackingRepository.findByResourceSheet_IdResourceSheet(resourceSheet.getIdResourceSheet()).getFirst();
+            studentFeedback = ressourceTracking.getStudentFeedback();
+            pedagoTeamFeedback = ressourceTracking.getPedagogicalFeedback();
+            improvements = ressourceTracking.getImprovementSuggestions();
 
-            if (!pedagogicalContent.getTd().isEmpty()) {
-                pedagoContentBuilder = createPedagoContent(pedagogicalContent.getTp());
-                pedagoContentTp = pedagoContentBuilder.toString();
-            }
-
-            if (!pedagogicalContent.getDs().isEmpty()) {
-                pedagoContentBuilder = createPedagoContent(pedagogicalContent.getDs());
-                pedagoContentDs = pedagoContentBuilder.toString();
-            }
-
-            ResourceTrackingDTO resourceTracking = resourceSheetDTO.getTracking();
-            studentFeedback = resourceTracking.getStudentFeedback();
-            pedagoTeamFeedback = resourceTracking.getPedagogicalFeedback();
-            improvements = resourceTracking.getImprovementSuggestions();
-
-            writeInPdfLog("Get from database :\n" +
-                    "   - Resource (" + labelResource + "; " + qualityReference + "; " + refUE + "; " + profRef + ";" + ")\n" +
-                    "   - department(" + department + ")\n" +
+            writeInLog("Get from database :\n"
+                + "- Ressource (" + labelResource + "; " + qualityReference + "; " + refUE + "; " + profRef + ";" + ")\n" +
                     "   - objectives(" + objectiveContent + ")\n" +
                     "   - skills(" + skills + ")\n" +
                     "   - saes(" + saes + ")\n" +
                     "   - terms(" + modalities + ")\n" +
                     "   - keywords(" + keywords + ")\n" +
                     "   - hoursStudent(" + hoursStudent +")\n" +
-                    "   - hoursNP(" + hoursPN + ")\n" +
-                    "   - pedagoContent( DS: " + pedagoContentDs + "; CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
+                    "   - hoursPN(" + hoursPN + ")\n" +
+                    "   - pedagoContent( CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
                     "   - feedBack(Student: " + studentFeedback + "; Pedagogical team: " + pedagoTeamFeedback + "; Improvements: " + improvements + ")\n");
         } else {
-            writeInPdfLog("Attempt to get from database with resource name: " + resourceName +
-                    "\n-> " + resourceName + " not found in resources tables");
+            writeInLog("Attempt to get from database with resource name: " + ressourceName +
+                    "\n-> " + ressourceName + " not found in resources tables");
         }
-
-    }
-
-    private StringBuilder createPedagoContent(List<PedagogicalContentDTO.ContentItemDTO> pedagogicalContent) {
-        StringBuilder pedagoContentBuilder = new StringBuilder();
-        for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent) {
-            pedagoContentBuilder.append(contentItemDTO.getOrder()).append(". ").append(contentItemDTO.getContent()).append("\n");
-        }
-        return pedagoContentBuilder;
     }
 
     public String getRef() {
         return ref;
     }
-    public String getDepartment(){return department;}
-    public String qualityReference() {
+    public String getNbRessource() {
         return qualityReference;
     }
     public String getRefUE() {
