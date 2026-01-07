@@ -85,6 +85,7 @@ public class ResourceSheetMapper {
 
         // Department (via main teacher's institution)
         dto.setDepartment(getDepartment(resource.getIdResource()));
+        dto.setLocation(getLocation(resource.getIdResource()));
 
         // Main teacher and teachers
         dto.setMainTeacher(getMainTeacher(resource.getIdResource()));
@@ -131,6 +132,17 @@ public class ResourceSheetMapper {
             UserSyncadia user = mainTeachers.get(0).getUser();
             if (user != null && user.getInstitution() != null) {
                 return user.getInstitution().getName();
+            }
+        }
+        return null;
+    }
+
+    private String getLocation(Long resourceId) {
+        List<MainTeacherForResource> mainTeachers = mainTeacherForResourceRepository.findByIdResource(resourceId);
+        if (!mainTeachers.isEmpty()) {
+            UserSyncadia user = mainTeachers.get(0).getUser();
+            if (user != null && user.getInstitution() != null) {
+                return user.getInstitution().getLocation();
             }
         }
         return null;

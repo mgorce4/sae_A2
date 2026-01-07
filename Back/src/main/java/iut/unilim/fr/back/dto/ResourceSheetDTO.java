@@ -20,6 +20,7 @@ public class ResourceSheetDTO {
 
     // Department
     private String department;          // e.g., "GEA"
+    private String location;            // e.g., "Limoges" - Institution location
 
     // Main teacher and teachers
     private String mainTeacher;         // e.g., "Jean Dupont"
@@ -136,6 +137,14 @@ public class ResourceSheetDTO {
 
     public void setDepartment(String department) {
         this.department = department;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 
     public String getMainTeacher() {
