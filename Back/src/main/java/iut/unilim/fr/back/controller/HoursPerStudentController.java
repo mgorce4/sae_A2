@@ -26,6 +26,11 @@ public class HoursPerStudentController {
             .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/resource/{resourceId}")
+    public List<HoursPerStudent> getHoursPerStudentByResourceId(@PathVariable Long resourceId) {
+        return hoursPerStudentService.getHoursPerStudentByResourceId(resourceId);
+    }
+
     @PostMapping
     public HoursPerStudent createHoursPerStudent(@RequestBody HoursPerStudent hoursPerStudent) {
         return hoursPerStudentService.createHoursPerStudent(hoursPerStudent);
