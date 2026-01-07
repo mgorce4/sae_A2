@@ -1,9 +1,6 @@
 package iut.unilim.fr.back.service;
 
-import iut.unilim.fr.back.controller.ResourceSheetDTOController;
-import iut.unilim.fr.back.dto.*;
 import iut.unilim.fr.back.entity.*;
-import iut.unilim.fr.back.mapper.ResourceSheetMapper;
 import iut.unilim.fr.back.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,9 +18,26 @@ public class ResourceGetterService {
     private RessourceRepository ressourceRepository;
     @Autowired
     private RessourceSheetRepository  ressourceSheetRepository;
-
     @Autowired
-    private ResourceSheetDTOController rsDTOController;
+    private SAELinkResourceRepository saeLinkResourceRepository;
+    @Autowired
+    private MainTeacherForResourceRepository mainTeacherForResourceRepository;
+    @Autowired
+    private UeCoefficientRepository ueCoefficientRepository;
+    @Autowired
+    private HoursPerStudentRepository hoursPerStudentRepository;
+    @Autowired
+    private PedagogicalContentRepository pedagogicalContentRepository;
+    @Autowired
+    private RessourceTrackingRepository resourceTrackingRepository;
+    @Autowired
+    private KeywordRepository keywordRepository;
+    @Autowired
+    private TeacherHoursRepository teacherHoursRepository;
+    @Autowired
+    private NationalProgramObjectiveRepository nationalProgramObjectiveRepository;
+    @Autowired
+    private NationalProgramSkillRepository nationalProgramSkillRepository;
 
     private String fileName = "";
 
@@ -99,7 +113,6 @@ public class ResourceGetterService {
         Long id;
         String label;
 
-
         Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(ressourceName);
 
         if (resultResource.isPresent()) {
@@ -112,96 +125,96 @@ public class ResourceGetterService {
             RessourceSheet resourceSheet = resultResourceSheet.get();
 
             id = resource.getIdResource();
+            label = resource.getLabel();
 
-            List<ResourceSheetDTO> resourcesSheets = rsDTOController.getResourceSheetsByResourceId(id);
-            ResourceSheetDTO resourceSheetDTO = resourcesSheets.getLast();
-            label = resourceSheetDTO.getResourceName();
-
-            List<String> mainTeacherForResource = resourceSheetDTO.getTeachers();
-            List<SaeInfoDTO> SAELinkResources = resourceSheetDTO.getLinkedSaes();
-
-            ref = ressourceName;
-            qualityReference = "IU EN FOR 001";
-
-            List<UeInfoDTO> UeReferences = resourceSheetDTO.getUeReferences();
-            UeInfoDTO ue = UeReferences.getFirst();
-            refUE = ue.getLabel();
+            List<MainTeacherForResource> mainTeacherForResource = mainTeacherForResourceRepository.findByIdResource(id);
+            List<SAELinkResource> SAELinkResources = saeLinkResourceRepository.findByIdResource(id);
 
             writeInLog("Get ressource \n"
                     + "     - id : " + id + "\n"
                     + "     - label : " + label + "\n");
 
-            objectiveContent = resourceSheetDTO.getObjective();
+            ref = ressourceName;
+            qualityReference = "IU EN FOR 001";
 
-            List<SkillDTO> npSkill = resourceSheetDTO.getSkills();
+            List<UeCoefficient> ueCoefficient = ueCoefficientRepository.findByResource_IdResource(id);
+            UE ue = ueCoefficient.getFirst().getUe();
+            refUE = ue.getLabel();
+
+            List<NationalProgramObjective> npObjectives = nationalProgramObjectiveRepository.findByResourceSheet_IdResourceSheet(id);
+            Boolean isMultiCompetences = resource.getDiffMultiCompetences();
+
+            if (!npObjectives.isEmpty()) {
+                if (isMultiCompetences) {
+                    objectiveContent = "";
+                    for (NationalProgramObjective npObjective : npObjectives) {
+                        objectiveContent += npObjective.getContent() + ", ";
+                    }
+                } else {
+                    objectiveContent = npObjectives.getFirst().getContent();
+                }
+            }
+
+            List<NationalProgramSkill> npSkill = nationalProgramSkillRepository.findByResourceSheet_IdResourceSheet(id);
 
             skills.clear();
             if (npSkill.size() > 1) {
-                for (SkillDTO programSkill : npSkill) {
+                for (NationalProgramSkill programSkill : npSkill) {
                     skills.add(programSkill.getDescription());
                 }
             }else {
                 skills.add(npSkill.getFirst().getDescription());
             }
 
-            profRef = resourceSheetDTO.getMainTeacher();
+            // User and SAE info removed as they're not in the new schema
+            UserSyncadia referent = mainTeacherForResource.getFirst().getUser();
+            profRef = referent.getFirstname() + " " + referent.getLastname();
             labelResource = resource.getLabel() + ": " + resource.getName();
 
             saes.clear();
-            for (SaeInfoDTO saeLinkResource : SAELinkResources) {
-                saes.add(saeLinkResource.getLabel());
+            for (SAELinkResource saeLinkResource : SAELinkResources) {
+                SAE sae = saeLinkResource.getSae();
+                saes.add(sae.getLabel());
             }
 
-            List<String> keyWordsList = resourceSheetDTO.getKeywords();
+            List<Keyword> keyWordsList = keywordRepository.findByIdResourceSheet(resourceSheet.getIdResourceSheet());
             keywords.clear();
-            keywords.addAll(keyWordsList);
+            for (Keyword keyword : keyWordsList) {
+                keywords.add(keyword.getKeyword());
+            }
 
 
             Terms terms = resource.getTerms();
             modalities.clear();
             modalities.add(terms.getCode());
 
-            HoursDTO hoursDTOPN = resourceSheetDTO.getHoursPN();
+            HoursPerStudent hoursPerStudent = hoursPerStudentRepository.findByResource_IdResource(id).getFirst();
             hoursPN.clear();
-            hoursPN.add(hoursDTOPN.getCm());
-            hoursPN.add(hoursDTOPN.getTd());
-            hoursPN.add(hoursDTOPN.getTp());
-            hoursPN.add(hoursDTOPN.getCm() + hoursDTOPN.getTd() + hoursDTOPN.getTp());
+            hoursPN.add(hoursPerStudent.getCm());
+            hoursPN.add(hoursPerStudent.getTd());
+            hoursPN.add(hoursPerStudent.getTp());
+            hoursPN.add(hoursPerStudent.getCm() + hoursPerStudent.getTd() + hoursPerStudent.getTp());
 
-            HoursDTO teacherHours = resourceSheetDTO.getHoursTeacher();
+            TeacherHours teacherHours = teacherHoursRepository.findByResourceSheet_IdResourceSheet(id).getFirst();
             hoursStudent.clear();
             hoursStudent.add(teacherHours.getCm());
             hoursStudent.add(teacherHours.getTd());
             hoursStudent.add(teacherHours.getTp());
-            hoursStudent.add(teacherHours.getCm() + hoursDTOPN.getTd() + hoursDTOPN.getTp());
+            hoursStudent.add(teacherHours.getCm() + hoursPerStudent.getTd() + hoursPerStudent.getTp());
 
-            PedagogicalContentDTO pedagogicalContent = resourceSheetDTO.getPedagogicalContent();
-            // Des listes ???
             pedagoContentCm = "";
-            for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent.getCm()) {
-                pedagoContentCm += contentItemDTO.getOrder() + ". " + contentItemDTO.getContent() + "\n";
-            }
             pedagoContentTd = "";
-            for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent.getTd()) {
-                pedagoContentTd += contentItemDTO.getOrder() + ". " + contentItemDTO.getContent() + "\n";
-            }
             pedagoContentTp = "";
-            for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent.getTp()) {
-                pedagoContentTp += contentItemDTO.getOrder() + ". " + contentItemDTO.getContent() + "\n";
-            }
             pedagoContentDs = "";
-            for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent.getDs()) {
-                pedagoContentDs += contentItemDTO.getOrder() + ". " + contentItemDTO.getContent() + "\n";
-            }
 
 
-            ResourceTrackingDTO ressourceTracking = resourceSheetDTO.getTracking();
+            RessourceTracking ressourceTracking = resourceTrackingRepository.findByResourceSheet_IdResourceSheet(resourceSheet.getIdResourceSheet()).getFirst();
             studentFeedback = ressourceTracking.getStudentFeedback();
             pedagoTeamFeedback = ressourceTracking.getPedagogicalFeedback();
             improvements = ressourceTracking.getImprovementSuggestions();
 
-            writeInLog("Get from database :\n" +
-                    "   - Ressource (" + labelResource + "; " + qualityReference + "; " + refUE + "; " + profRef + ";" + ")\n" +
+            writeInLog("Get from database :\n"
+                + "- Ressource (" + labelResource + "; " + qualityReference + "; " + refUE + "; " + profRef + ";" + ")\n" +
                     "   - objectives(" + objectiveContent + ")\n" +
                     "   - skills(" + skills + ")\n" +
                     "   - saes(" + saes + ")\n" +
@@ -209,13 +222,12 @@ public class ResourceGetterService {
                     "   - keywords(" + keywords + ")\n" +
                     "   - hoursStudent(" + hoursStudent +")\n" +
                     "   - hoursPN(" + hoursPN + ")\n" +
-                    "   - pedagoContent( DS: " + pedagoContentDs + "; CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
+                    "   - pedagoContent( CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
                     "   - feedBack(Student: " + studentFeedback + "; Pedagogical team: " + pedagoTeamFeedback + "; Improvements: " + improvements + ")\n");
         } else {
             writeInLog("Attempt to get from database with resource name: " + ressourceName +
                     "\n-> " + ressourceName + " not found in resources tables");
         }
-
     }
 
     public String getRef() {
