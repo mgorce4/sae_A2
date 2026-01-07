@@ -1,7 +1,7 @@
 package iut.unilim.fr.back.service;
 
 import iut.unilim.fr.back.controller.ResourceSheetDTOController;
-import iut.unilim.fr.back.dto.ResourceSheetDTO;
+import iut.unilim.fr.back.dto.*;
 import iut.unilim.fr.back.entity.*;
 import iut.unilim.fr.back.mapper.ResourceSheetMapper;
 import iut.unilim.fr.back.repository.*;
@@ -21,31 +21,9 @@ public class ResourceGetterService {
     private RessourceRepository ressourceRepository;
     @Autowired
     private RessourceSheetRepository  ressourceSheetRepository;
-    @Autowired
-    private SAELinkResourceRepository saeLinkResourceRepository;
-    @Autowired
-    private MainTeacherForResourceRepository mainTeacherForResourceRepository;
-    @Autowired
-    private UeCoefficientRepository ueCoefficientRepository;
-    @Autowired
-    private HoursPerStudentRepository hoursPerStudentRepository;
-    @Autowired
-    private PedagogicalContentRepository pedagogicalContentRepository;
-    @Autowired
-    private RessourceTrackingRepository resourceTrackingRepository;
-    @Autowired
-    private KeywordRepository keywordRepository;
-    @Autowired
-    private TeacherHoursRepository teacherHoursRepository;
-    @Autowired
-    private NationalProgramObjectiveRepository nationalProgramObjectiveRepository;
-    @Autowired
-    private NationalProgramSkillRepository nationalProgramSkillRepository;
 
     @Autowired
     private ResourceSheetDTOController rsDTOController;
-    @Autowired
-    private ResourceSheetMapper resourceSheetMapper;
 
     private String fileName = "";
 
@@ -139,88 +117,85 @@ public class ResourceGetterService {
             ResourceSheetDTO resourceSheetDTO = resourcesSheets.getLast();
             label = resourceSheetDTO.getResourceName();
 
-            List<MainTeacherForResource> mainTeacherForResource = mainTeacherForResourceRepository.findByIdResource(id);
-            List<SAELinkResource> SAELinkResources = saeLinkResourceRepository.findByIdResource(id);
+            List<String> mainTeacherForResource = resourceSheetDTO.getTeachers();
+            List<SaeInfoDTO> SAELinkResources = resourceSheetDTO.getLinkedSaes();
 
             ref = ressourceName;
             qualityReference = "IU EN FOR 001";
 
-            List<UeCoefficient> ueCoefficient = ueCoefficientRepository.findByResource_IdResource(id);
-            UE ue = ueCoefficient.getFirst().getUe();
+            List<UeInfoDTO> UeReferences = resourceSheetDTO.getUeReferences();
+            UeInfoDTO ue = UeReferences.getFirst();
             refUE = ue.getLabel();
 
             writeInLog("Get ressource \n"
                     + "     - id : " + id + "\n"
                     + "     - label : " + label + "\n");
 
-            List<NationalProgramObjective> npObjectives = nationalProgramObjectiveRepository.findByResourceSheet_IdResourceSheet(id);
-            Boolean isMultiCompetences = resource.getDiffMultiCompetences();
+            objectiveContent = resourceSheetDTO.getObjective();
 
-            if (!npObjectives.isEmpty()) {
-                if (isMultiCompetences) {
-                    objectiveContent = "";
-                    for (NationalProgramObjective npObjective : npObjectives) {
-                        objectiveContent += npObjective.getContent() + ", ";
-                    }
-                } else {
-                    objectiveContent = npObjectives.getFirst().getContent();
-                }
-            }
-
-            List<NationalProgramSkill> npSkill = nationalProgramSkillRepository.findByResourceSheet_IdResourceSheet(id);
+            List<SkillDTO> npSkill = resourceSheetDTO.getSkills();
 
             skills.clear();
             if (npSkill.size() > 1) {
-                for (NationalProgramSkill programSkill : npSkill) {
+                for (SkillDTO programSkill : npSkill) {
                     skills.add(programSkill.getDescription());
                 }
             }else {
                 skills.add(npSkill.getFirst().getDescription());
             }
 
-            // User and SAE info removed as they're not in the new schema
-            UserSyncadia referent = mainTeacherForResource.getFirst().getUser();
-            profRef = referent.getFirstname() + " " + referent.getLastname();
+            profRef = resourceSheetDTO.getMainTeacher();
             labelResource = resource.getLabel() + ": " + resource.getName();
 
             saes.clear();
-            for (SAELinkResource saeLinkResource : SAELinkResources) {
-                SAE sae = saeLinkResource.getSae();
-                saes.add(sae.getLabel());
+            for (SaeInfoDTO saeLinkResource : SAELinkResources) {
+                saes.add(saeLinkResource.getLabel());
             }
 
-            List<Keyword> keyWordsList = keywordRepository.findByIdResourceSheet(resourceSheet.getIdResourceSheet());
+            List<String> keyWordsList = resourceSheetDTO.getKeywords();
             keywords.clear();
-            for (Keyword keyword : keyWordsList) {
-                keywords.add(keyword.getKeyword());
-            }
+            keywords.addAll(keyWordsList);
 
 
             Terms terms = resource.getTerms();
             modalities.clear();
             modalities.add(terms.getCode());
 
-            HoursPerStudent hoursPerStudent = hoursPerStudentRepository.findByResource_IdResource(id).getFirst();
+            HoursDTO hoursDTOPN = resourceSheetDTO.getHoursPN();
             hoursPN.clear();
-            hoursPN.add(hoursPerStudent.getCm());
-            hoursPN.add(hoursPerStudent.getTd());
-            hoursPN.add(hoursPerStudent.getTp());
-            hoursPN.add(hoursPerStudent.getCm() + hoursPerStudent.getTd() + hoursPerStudent.getTp());
+            hoursPN.add(hoursDTOPN.getCm());
+            hoursPN.add(hoursDTOPN.getTd());
+            hoursPN.add(hoursDTOPN.getTp());
+            hoursPN.add(hoursDTOPN.getCm() + hoursDTOPN.getTd() + hoursDTOPN.getTp());
 
-            TeacherHours teacherHours = teacherHoursRepository.findByResourceSheet_IdResourceSheet(id).getFirst();
+            HoursDTO teacherHours = resourceSheetDTO.getHoursTeacher();
             hoursStudent.clear();
             hoursStudent.add(teacherHours.getCm());
             hoursStudent.add(teacherHours.getTd());
             hoursStudent.add(teacherHours.getTp());
-            hoursStudent.add(teacherHours.getCm() + hoursPerStudent.getTd() + hoursPerStudent.getTp());
+            hoursStudent.add(teacherHours.getCm() + hoursDTOPN.getTd() + hoursDTOPN.getTp());
 
-            PedagogicalContent pedagogicalContent = pedagogicalContentRepository.findByResourceSheet_IdResourceSheet(id).getFirst();
-            pedagoContentCm = pedagogicalContent.getCm();
-            pedagoContentTd = pedagogicalContent.getTd();
-            pedagoContentTp = pedagogicalContent.getTp();
+            PedagogicalContentDTO pedagogicalContent = resourceSheetDTO.getPedagogicalContent();
+            // Des listes ???
+            pedagoContentCm = "";
+            for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent.getCm()) {
+                pedagoContentCm += contentItemDTO.getOrder() + ". " + contentItemDTO.getContent() + "\n";
+            }
+            pedagoContentTd = "";
+            for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent.getTd()) {
+                pedagoContentTd += contentItemDTO.getOrder() + ". " + contentItemDTO.getContent() + "\n";
+            }
+            pedagoContentTp = "";
+            for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent.getTp()) {
+                pedagoContentTp += contentItemDTO.getOrder() + ". " + contentItemDTO.getContent() + "\n";
+            }
+            pedagoContentDs = "";
+            for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent.getDs()) {
+                pedagoContentDs += contentItemDTO.getOrder() + ". " + contentItemDTO.getContent() + "\n";
+            }
 
 
-            RessourceTracking ressourceTracking = resourceTrackingRepository.findByResourceSheet_IdResourceSheet(resourceSheet.getIdResourceSheet()).getFirst();
+            ResourceTrackingDTO ressourceTracking = resourceSheetDTO.getTracking();
             studentFeedback = ressourceTracking.getStudentFeedback();
             pedagoTeamFeedback = ressourceTracking.getPedagogicalFeedback();
             improvements = ressourceTracking.getImprovementSuggestions();
