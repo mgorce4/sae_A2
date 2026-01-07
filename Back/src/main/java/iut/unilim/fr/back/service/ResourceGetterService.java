@@ -213,8 +213,8 @@ public class ResourceGetterService {
             pedagoTeamFeedback = ressourceTracking.getPedagogicalFeedback();
             improvements = ressourceTracking.getImprovementSuggestions();
 
-            writeInLog("Get from database :\n"
-                + "- Ressource (" + labelResource + "; " + qualityReference + "; " + refUE + "; " + profRef + ";" + ")\n" +
+            writeInLog("Get from database :\n" +
+                    "   - Ressource (" + labelResource + "; " + qualityReference + "; " + refUE + "; " + profRef + ";" + ")\n" +
                     "   - objectives(" + objectiveContent + ")\n" +
                     "   - skills(" + skills + ")\n" +
                     "   - saes(" + saes + ")\n" +
@@ -222,7 +222,7 @@ public class ResourceGetterService {
                     "   - keywords(" + keywords + ")\n" +
                     "   - hoursStudent(" + hoursStudent +")\n" +
                     "   - hoursPN(" + hoursPN + ")\n" +
-                    "   - pedagoContent( CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
+                    "   - pedagoContent( DS: " + pedagoContentDs + "; CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
                     "   - feedBack(Student: " + studentFeedback + "; Pedagogical team: " + pedagoTeamFeedback + "; Improvements: " + improvements + ")\n");
         } else {
             writeInLog("Attempt to get from database with resource name: " + ressourceName +
