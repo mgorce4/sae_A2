@@ -1,6 +1,9 @@
 package iut.unilim.fr.back.service;
 
+import iut.unilim.fr.back.controller.ResourceSheetDTOController;
+import iut.unilim.fr.back.dto.ResourceSheetDTO;
 import iut.unilim.fr.back.entity.*;
+import iut.unilim.fr.back.mapper.ResourceSheetMapper;
 import iut.unilim.fr.back.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,6 +41,11 @@ public class ResourceGetterService {
     private NationalProgramObjectiveRepository nationalProgramObjectiveRepository;
     @Autowired
     private NationalProgramSkillRepository nationalProgramSkillRepository;
+
+    @Autowired
+    private ResourceSheetDTOController rsDTOController;
+    @Autowired
+    private ResourceSheetMapper resourceSheetMapper;
 
     private String fileName = "";
 
@@ -113,6 +121,7 @@ public class ResourceGetterService {
         Long id;
         String label;
 
+
         Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(ressourceName);
 
         if (resultResource.isPresent()) {
@@ -125,14 +134,13 @@ public class ResourceGetterService {
             RessourceSheet resourceSheet = resultResourceSheet.get();
 
             id = resource.getIdResource();
-            label = resource.getLabel();
+
+            List<ResourceSheetDTO> resourcesSheets = rsDTOController.getResourceSheetsByResourceId(id);
+            ResourceSheetDTO resourceSheetDTO = resourcesSheets.getLast();
+            label = resourceSheetDTO.getResourceName();
 
             List<MainTeacherForResource> mainTeacherForResource = mainTeacherForResourceRepository.findByIdResource(id);
             List<SAELinkResource> SAELinkResources = saeLinkResourceRepository.findByIdResource(id);
-
-            writeInLog("Get ressource \n"
-                    + "     - id : " + id + "\n"
-                    + "     - label : " + label + "\n");
 
             ref = ressourceName;
             qualityReference = "IU EN FOR 001";
@@ -140,6 +148,10 @@ public class ResourceGetterService {
             List<UeCoefficient> ueCoefficient = ueCoefficientRepository.findByResource_IdResource(id);
             UE ue = ueCoefficient.getFirst().getUe();
             refUE = ue.getLabel();
+
+            writeInLog("Get ressource \n"
+                    + "     - id : " + id + "\n"
+                    + "     - label : " + label + "\n");
 
             List<NationalProgramObjective> npObjectives = nationalProgramObjectiveRepository.findByResourceSheet_IdResourceSheet(id);
             Boolean isMultiCompetences = resource.getDiffMultiCompetences();
@@ -228,6 +240,7 @@ public class ResourceGetterService {
             writeInLog("Attempt to get from database with resource name: " + ressourceName +
                     "\n-> " + ressourceName + " not found in resources tables");
         }
+
     }
 
     public String getRef() {
