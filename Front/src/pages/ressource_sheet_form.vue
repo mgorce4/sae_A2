@@ -8,67 +8,55 @@ status.value = "Professeur"
 /* Extract ID from hash URL parameters */
 const getQueryParam = (param) => {
   const hash = window.location.hash
-  console.log('Full hash:', hash)
-
-  // Hash format: #/form-ressource-sheet?id=5
   const queryString = hash.split('?')[1]
-  console.log('Query string:', queryString)
 
   if (!queryString) {
-    console.warn('No query string found in hash')
     return null
   }
 
   const params = new URLSearchParams(queryString)
-  const value = params.get(param)
-  console.log(`Extracted ${param}:`, value)
-  return value
+  return params.get(param)
 }
 
 const resourceSheetId = ref(getQueryParam('id'))
-console.log('Parsed resourceSheetId:', resourceSheetId.value)
 
-/* link with the API */
-const resourceSheet = ref(null)
-const resource = ref(null)
-const ueLabels = ref([])
-const institutionName = ref(null)
-const saeList = ref([]) // List of SAEs from the same semester
-const linkedSaeIds = ref([]) // IDs of SAEs linked to this resource
-const localSaeChanges = ref({}) // Local state to track SAE switch changes
-const nationalProgramObjectives = ref([]) // List of objectives from the database
-const localObjectiveContent = ref('') // Local state for objective textarea
-const nationalProgramSkills = ref([]) // List of skills from the database
-const localSkills = ref([]) // Local state for skills array (with label and description)
-const keywords = ref([]) // List of keywords from the database
-const localKeywords = ref([]) // Local state for keywords array
-const modalities = ref([]) // List of modalities from the database
-const localModalities = ref([]) // Local state for modalities array
-const pedagogicalContent = ref(null) // Pedagogical content from the database
+/* DTO API - Single data source */
+const resourceSheetDTO = ref(null)
+
+/* Local editable states */
+const localObjectiveContent = ref('')
+const localSkills = ref([])
+const localKeywords = ref([])
+const localModalities = ref([])
+const localHours = ref({ cm: 0, td: 0, tp: 0 })
+const localSaeChanges = ref({})
 const localPedagogicalContent = ref({
-  cm: [], // Array of { number: 1, content: 'text' }
+  cm: [],
   td: [],
   tp: [],
   ds: []
 })
-
-// Resource Tracking variables
-const resourceTracking = ref(null) // Resource tracking from the database
 const localResourceTracking = ref({
   pedagogicalFeedback: '',
   studentFeedback: '',
   improvementSuggestions: ''
 })
 
-// Hours variables
-const hoursPerStudent = ref(null) // Hours from database (hours_per_student table)
-const localHours = ref({
-  cm: 0,
-  td: 0,
-  tp: 0
+// SAE list - needs to be a ref to be populated after loading
+const saeList = ref([])
+
+// Computed properties from DTO
+const ueLabels = computed(() => {
+  if (!resourceSheetDTO.value?.ueReferences) return []
+  return resourceSheetDTO.value.ueReferences.map(ue => ue.label)
 })
 
-// Computed properties for hours totals
+const institutionName = computed(() => resourceSheetDTO.value?.department || '###')
+const resourceName = computed(() => resourceSheetDTO.value?.resourceName || 'Nom de la ressource')
+const resourceLabel = computed(() => resourceSheetDTO.value?.resourceLabel || '###')
+
+const hoursPerStudent = computed(() => resourceSheetDTO.value?.hoursPN || null)
+
 const localHoursTotal = computed(() => {
   return (localHours.value.cm || 0) + (localHours.value.td || 0) + (localHours.value.tp || 0)
 })
@@ -78,36 +66,21 @@ const dbHoursTotal = computed(() => {
   return (hoursPerStudent.value.cm || 0) + (hoursPerStudent.value.td || 0) + (hoursPerStudent.value.tp || 0)
 })
 
-// Function to parse CSV string into array of items
-const parseCSVContent = (csvString) => {
-  if (!csvString || csvString.trim() === '') {
-    console.log('⚠️ CSV string is empty or null')
-    return []
+// Function to check if SAE is linked
+const isSaeLinked = (saeId) => {
+  // Check if there's a local change
+  if (saeId in localSaeChanges.value) {
+    return localSaeChanges.value[saeId]
   }
-
-  // Split by comma followed by a number and a space
-  // Format: "1 text,2 text,3 text"
-  const items = []
-  const regex = /(\d+)\s+([^,]+)(?:,|$)/g
-  let match
-
-  while ((match = regex.exec(csvString)) !== null) {
-    const item = {
-      number: parseInt(match[1]),
-      content: match[2].replace(/''/g, "'").trim() // Replace double quotes with single
-    }
-    items.push(item)
-  }
-  return items
+  // Otherwise use the original value from DTO
+  const sae = saeList.value.find(s => s.id === saeId)
+  return sae?.isLinked || false
 }
 
-// Function to convert array back to CSV string (for saving to database)
-const toCSVContent = (items) => {
-  if (!items || items.length === 0) return ''
-
-  return items
-    .map(item => `${item.number} ${item.content.replace(/'/g, "''")}`)
-    .join(',')
+// Function to toggle SAE link
+const toggleSaeLink = (saeId) => {
+  const currentState = isSaeLinked(saeId)
+  localSaeChanges.value[saeId] = !currentState
 }
 
 // Function to add a new pedagogical content item
@@ -277,21 +250,6 @@ const removeModality = (index) => {
   })
 }
 
-// Function to check if a SAE is linked to the resource (including local changes)
-const isSaeLinked = (saeId) => {
-  // Check if there's a local change, otherwise use the original linked state
-  if (saeId in localSaeChanges.value) {
-    return localSaeChanges.value[saeId]
-  }
-  return linkedSaeIds.value.includes(saeId)
-}
-
-// Function to toggle SAE link state locally
-const toggleSaeLink = (saeId) => {
-  const currentState = isSaeLinked(saeId)
-  localSaeChanges.value[saeId] = !currentState
-}
-
 // Function to update panel max-height after content changes
 const updatePanelHeight = (panelElement) => {
   if (panelElement && panelElement.style.maxHeight) {
@@ -328,224 +286,97 @@ const removeSkillRow = (index) => {
   }
 }
 
-// Computed property to check if objective content has been modified
-const hasObjectiveChanges = computed(() => {
-  if (!nationalProgramObjectives.value || nationalProgramObjectives.value.length === 0) {
-    return localObjectiveContent.value.trim() !== ''
-  }
-
-  const originalContent = nationalProgramObjectives.value
-    .map(obj => obj.content)
-    .join('\n\n')
-
-  return localObjectiveContent.value !== originalContent
-})
-
 onMounted(async () => {
-  // Get institution name from localStorage
-  const storedInstitution = localStorage.getItem('institutionName')
-  if (storedInstitution) {
-    institutionName.value = storedInstitution
-  } else {
-    console.warn('No institution found in localStorage')
-  }
-
-  /* get the specific resource sheet from the DB using the ID */
+  /* Fetch complete resource sheet using DTO API - ONE REQUEST FOR ALL DATA! */
   if (resourceSheetId.value) {
-    console.log('🔍 Fetching resource sheet with ID:', resourceSheetId.value)
     try {
-      const response = await axios.get(`http://localhost:8080/api/resource-sheets/${resourceSheetId.value}/details`)
-      resourceSheet.value = response.data
-      console.log('✅ Resource sheet loaded:', resourceSheet.value)
-      console.log('🔍 resourceSheet.value.resource:', resourceSheet.value.resource)
-      console.log('🔍 Type of resourceSheet.value:', typeof resourceSheet.value)
-      console.log('🔍 Keys in resourceSheet.value:', Object.keys(resourceSheet.value))
+      const response = await axios.get(`http://localhost:8080/api/v2/resource-sheets/${resourceSheetId.value}`)
+      resourceSheetDTO.value = response.data
 
-      // Get national program objectives for this resource sheet
-      if (resourceSheetId.value) {
-        try {
-          const objectivesResponse = await axios.get(`http://localhost:8080/api/national-program-objectives/ressource-sheet/${resourceSheetId.value}`)
-          nationalProgramObjectives.value = objectivesResponse.data
-          // Set the local content from the first objective (or combine multiple)
-          if (nationalProgramObjectives.value.length > 0) {
-            localObjectiveContent.value = nationalProgramObjectives.value
-              .map(obj => obj.content)
-              .join('\n\n')
-          }
-        } catch (error) {
-          console.error('Error fetching national program objectives:', error)
-        }
+      // Vérifier immédiatement si le DTO contient des données
+      if (!resourceSheetDTO.value) {
+        return
+      }
 
-        // Get national program skills for this resource sheet
-        try {
-          const skillsResponse = await axios.get(`http://localhost:8080/api/national-program-skills/resource-sheet/${resourceSheetId.value}`)
-          nationalProgramSkills.value = skillsResponse.data
-          // Initialize local skills array from database
-          if (nationalProgramSkills.value.length > 0) {
-            localSkills.value = nationalProgramSkills.value.map(skill => ({ id: skill.idSkill, label: skill.label || '', description: skill.description || '' }))
-          } else {
-            // Start with one empty skill if none exist
-            localSkills.value = [{ id: null, label: '', description: '' }]
-          }
-        } catch (error) {
-          console.error('Error fetching national program skills:', error)
-          // Initialize with one empty skill on error
-          localSkills.value = [{ id: null, label: '', description: '' }]
-        }
+      // Initialize local states from DTO
 
-        // Get keywords for this resource sheet
-        try {
-          const keywordsResponse = await axios.get(`http://localhost:8080/api/keywords/resource-sheet/${resourceSheetId.value}`)
-          keywords.value = keywordsResponse.data
+      // Objective
+      localObjectiveContent.value = resourceSheetDTO.value.objective || ''
 
-          // Initialize local keywords array from database
-          localKeywords.value = keywords.value.map(kw => ({ keyword: kw.keyword || '', isNew: false }))
-        } catch (error) {
-          console.error('Error fetching keywords:', error)
-          // Initialize with empty array on error
-          localKeywords.value = []
-        }
+      // Skills
+      if (resourceSheetDTO.value.skills && resourceSheetDTO.value.skills.length > 0) {
+        localSkills.value = resourceSheetDTO.value.skills.map(skill => ({
+          id: skill.id,
+          label: skill.label || '',
+          description: skill.description || ''
+        }))
+      } else {
+        localSkills.value = [{ id: null, label: '', description: '' }]
+      }
 
-        // Get modalities of implementation for this resource sheet
-        try {
-          const modalitiesResponse = await axios.get(`http://localhost:8080/api/modalities-of-implementation/resource-sheet/${resourceSheetId.value}`)
-          modalities.value = modalitiesResponse.data
+      // Keywords
+      if (resourceSheetDTO.value.keywords && resourceSheetDTO.value.keywords.length > 0) {
+        localKeywords.value = resourceSheetDTO.value.keywords.map(kw => ({ keyword: kw, isNew: false }))
+      } else {
+        localKeywords.value = []
+      }
 
-          // Initialize local modalities array from database
-          localModalities.value = modalities.value.map(mod => ({ modality: mod.modality || '', isNew: false }))
-        } catch (error) {
-          console.error('Error fetching modalities:', error)
-          // Initialize with empty array on error
-          localModalities.value = []
-        }
+      // Modalities
+      if (resourceSheetDTO.value.modalities && resourceSheetDTO.value.modalities.length > 0) {
+        localModalities.value = resourceSheetDTO.value.modalities.map(mod => ({ modality: mod, isNew: false }))
+      } else {
+        localModalities.value = []
+      }
 
-        // Get pedagogical content for this resource sheet
-        try {
-          const pedagogicalResponse = await axios.get(`http://localhost:8080/api/pedagogical-contents/resource-sheet/${resourceSheetId.value}`)
-
-          if (pedagogicalResponse.data && pedagogicalResponse.data.length > 0) {
-            pedagogicalContent.value = pedagogicalResponse.data[0] // Take the first only
-            // Parse CSV content into arrays
-            localPedagogicalContent.value = {
-              cm: parseCSVContent(pedagogicalContent.value.cm),
-              td: parseCSVContent(pedagogicalContent.value.td),
-              tp: parseCSVContent(pedagogicalContent.value.tp),
-              ds: parseCSVContent(pedagogicalContent.value.ds)
-            }
-          } else {
-            console.log('⚠️ No pedagogical content found in API response')
-            // Initialize with empty arrays
-            localPedagogicalContent.value = {
-              cm: [],
-              td: [],
-              tp: [],
-              ds: []
-            }
-          }
-        } catch (error) {
-          // Initialize with empty arrays on error
-          localPedagogicalContent.value = {
-            cm: [],
-            td: [],
-            tp: [],
-            ds: []
-          }
-        }
-
-        // Get resource tracking for this resource sheet
-        try {
-          console.log('🔍 Fetching resource tracking for resource sheet ID:', resourceSheetId.value)
-          const trackingResponse = await axios.get(`http://localhost:8080/api/resource-trackings/resource-sheet/${resourceSheetId.value}`)
-          console.log('📦 Resource tracking API response:', trackingResponse.data)
-
-          if (trackingResponse.data && trackingResponse.data.length > 0) {
-            resourceTracking.value = trackingResponse.data[0] // Take the first only
-            console.log('✅ Resource tracking loaded:', resourceTracking.value)
-            // Initialize local tracking data from database
-            localResourceTracking.value = {
-              pedagogicalFeedback: resourceTracking.value.pedagogicalFeedback || '',
-              studentFeedback: resourceTracking.value.studentFeedback || '',
-              improvementSuggestions: resourceTracking.value.improvementSuggestions || ''
-            }
-            console.log('✅ Local resource tracking initialized:', localResourceTracking.value)
-          } else {
-            console.log('⚠️ No resource tracking found in API response')
-            // Initialize with empty strings
-            localResourceTracking.value = {
-              pedagogicalFeedback: '',
-              studentFeedback: '',
-              improvementSuggestions: ''
-            }
-          }
-        } catch (error) {
-          console.error('❌ Error fetching resource tracking:', error)
-          console.error('Error details:', error.response?.data || error.message)
-          // Initialize with empty strings on error
-          localResourceTracking.value = {
-            pedagogicalFeedback: '',
-            studentFeedback: '',
-            improvementSuggestions: ''
-          }
+      // Hours
+      if (resourceSheetDTO.value.hoursPN) {
+        localHours.value = {
+          cm: resourceSheetDTO.value.hoursPN.cm || 0,
+          td: resourceSheetDTO.value.hoursPN.td || 0,
+          tp: resourceSheetDTO.value.hoursPN.tp || 0
         }
       }
 
-      // Extract resource data
-      console.log('🔍 Checking if resourceSheet.value.resource exists...')
-      if (resourceSheet.value && resourceSheet.value.resource) {
-        resource.value = resourceSheet.value.resource
-        console.log('✅ Resource extracted:', resource.value)
-        console.log('✅ Resource name:', resource.value.name)
-        console.log('✅ Resource label:', resource.value.label)
-
-        // Get UE labels from all UE coefficients linked to this resource
-        if (resource.value.idResource) {
-          try {
-            // Try the specific endpoint first
-            try {
-              const ueCoeffResponse = await axios.get(`http://localhost:8080/api/ue-coefficients/resource/${resource.value.idResource}`)
-              const ueCoefficients = ueCoeffResponse.data
-              console.log('📋 UE Coefficients loaded:', ueCoefficients)
-              // Extract UE labels from coefficients
-              ueLabels.value = ueCoefficients
-                .filter(coeff => coeff.ue && coeff.ue.label)
-                .map(coeff => coeff.ue.label)
-              console.log('🏷️ UE Labels:', ueLabels.value)
-
-            } catch (endpointError) {
-              // Fallback: Get all UE coefficients and filter by resource ID
-              const allUeCoeffsResponse = await axios.get('http://localhost:8080/api/ue-coefficients')
-              const allUeCoefficients = allUeCoeffsResponse.data
-
-              // Filter by resource ID
-              const filteredCoeffs = allUeCoefficients.filter(coeff =>
-                coeff.resource && coeff.resource.idResource === resource.value.idResource
-              )
-              // Extract UE labels
-              ueLabels.value = filteredCoeffs
-                .filter(coeff => coeff.ue && coeff.ue.label)
-                .map(coeff => coeff.ue.label)
-
-            }
-          } catch (error) {
-            console.error('Error fetching UE coefficients:', error)
-            console.error('Error details:', error.response?.data || error.message)
-          }
+      // Pedagogical content
+      if (resourceSheetDTO.value.pedagogicalContent) {
+        const content = resourceSheetDTO.value.pedagogicalContent
+        // Convert DTO format (order, content) to local format (number, content)
+        localPedagogicalContent.value = {
+          cm: (content.cm || []).map(item => ({ number: item.order, content: item.content })),
+          td: (content.td || []).map(item => ({ number: item.order, content: item.content })),
+          tp: (content.tp || []).map(item => ({ number: item.order, content: item.content })),
+          ds: (content.ds || []).map(item => ({ number: item.order, content: item.content }))
         }
+      } else {
+        localPedagogicalContent.value = { cm: [], td: [], tp: [], ds: [] }
+      }
 
-        // Get SAEs from the same semester and institution
-        if (resource.value.semester && resource.value.idResource) {
+      // Resource tracking
+      if (resourceSheetDTO.value.tracking) {
+        localResourceTracking.value = {
+          pedagogicalFeedback: resourceSheetDTO.value.tracking.pedagogicalFeedback || '',
+          studentFeedback: resourceSheetDTO.value.tracking.studentFeedback || '',
+          improvementSuggestions: resourceSheetDTO.value.tracking.improvementSuggestions || ''
+        }
+      }
+
+      // SAEs list - the DTO contains ALL SAEs from the same semester via SAELinkResource
+      if (resourceSheetDTO.value.linkedSaes && resourceSheetDTO.value.linkedSaes.length > 0) {
+        saeList.value = resourceSheetDTO.value.linkedSaes
+      } else {
+        // Fallback: Load SAEs manually if DTO doesn't contain them
+        if (resourceSheetDTO.value.semester && resourceSheetDTO.value.resourceId) {
           try {
+
             // Get all SAEs
             const allSaeResponse = await axios.get('http://localhost:8080/api/saes')
 
-            // Get all resources to filter SAEs by semester and institution
+            // Get all resources to filter SAEs by semester
             const allResourcesResponse = await axios.get('http://localhost:8080/api/resources')
             const allResources = allResourcesResponse.data
 
-            // Filter resources by same semester and same institution
-            const sameSemesterResources = allResources.filter(r =>
-              r.semester === resource.value.semester
-            )
+            // Filter resources by same semester
+            const sameSemesterResources = allResources.filter(r => r.semester === resourceSheetDTO.value.semester)
 
             // Get SAE links for resources in the same semester
             const saeLinkPromises = sameSemesterResources.map(r =>
@@ -559,85 +390,52 @@ onMounted(async () => {
             const sameSemesterSaeIds = [...new Set(allSaeLinks.map(link => link.idSAE))]
 
             // Filter SAEs to only include those from the same semester
-            saeList.value = allSaeResponse.data.filter(sae =>
+            const sameSemesterSaes = allSaeResponse.data.filter(sae =>
               sameSemesterSaeIds.includes(sae.idSAE)
             )
-          } catch (error) {
-            console.error('Error fetching SAEs:', error)
-          }
-        }
 
-        // Get SAE links for this specific resource
-        if (resource.value.idResource) {
-          try {
-            const saeLinkResponse = await axios.get(`http://localhost:8080/api/sae-link-resources/resource/${resource.value.idResource}`)
-            linkedSaeIds.value = saeLinkResponse.data.map(link => link.idSAE)
-          } catch (error) {
-            console.error('Error fetching SAE links:', error)
-          }
-        }
+            // Get linked SAE IDs for THIS resource specifically
+            const thisResourceLinksResponse = await axios.get(`http://localhost:8080/api/sae-link-resources/resource/${resourceSheetDTO.value.resourceId}`)
+            const thisResourceLinkedSaeIds = new Set(thisResourceLinksResponse.data.map(link => link.idSAE))
 
-        // Get hours per student for this resource
-        if (resource.value.idResource) {
-          try {
-            console.log('🔍 Fetching hours per student for resource ID:', resource.value.idResource)
-            const hoursResponse = await axios.get(`http://localhost:8080/api/hours-per-student/resource/${resource.value.idResource}`)
-            console.log('📦 Hours per student API response:', hoursResponse.data)
-
-            if (hoursResponse.data && hoursResponse.data.length > 0) {
-              hoursPerStudent.value = hoursResponse.data[0]
-              console.log('✅ Hours per student loaded:', hoursPerStudent.value)
-              // Initialize local hours with database values (editable by user)
-              localHours.value = {
-                cm: hoursPerStudent.value.cm || 0,
-                td: hoursPerStudent.value.td || 0,
-                tp: hoursPerStudent.value.tp || 0
-              }
-              console.log('✅ Local hours initialized from database:', localHours.value)
-            } else {
-              console.log('⚠️ No hours per student found in API response')
-              hoursPerStudent.value = null
-              localHours.value = { cm: 0, td: 0, tp: 0 }
-            }
-          } catch (error) {
-            console.error('❌ Error fetching hours per student:', error)
-            console.error('Error details:', error.response?.data || error.message)
-            hoursPerStudent.value = null
-            localHours.value = { cm: 0, td: 0, tp: 0 }
+            // Create the SAE list with isLinked properly set
+            saeList.value = sameSemesterSaes.map(sae => ({
+              id: sae.idSAE,
+              label: sae.label,
+              apogeeCode: sae.apogeeCode,
+              isLinked: thisResourceLinkedSaeIds.has(sae.idSAE)
+            }))
+          } catch {
+            saeList.value = []
           }
         } else {
-          console.warn('⚠️ No resource ID found, cannot fetch hours')
-          localHours.value = { cm: 0, td: 0, tp: 0 }
+          saeList.value = []
         }
-      } else {
-        console.log('No resource found in resourceSheet')
       }
-    } catch (error) {
-      console.error('Error fetching resource sheet:', error)
-      console.error('Error details:', error.response?.data || error.message)
+
+    } catch {
+      // Error loading resource sheet
     }
-  } else {
-    console.warn('No resourceSheetId found in URL')
   }
 
   // Wait for DOM to be fully rendered
   await nextTick()
 
   // Initialize accordion after DOM is ready
-  const acc = document.getElementsByClassName("accordion");
+  const acc = document.getElementsByClassName("accordion")
 
   for (let i = 0; i < acc.length; i++) {
     acc[i].addEventListener("click", function() {
-      this.classList.toggle("active");
-      const panel = this.nextElementSibling;
+      this.classList.toggle("active")
+      const panel = this.nextElementSibling
       if (panel.style.maxHeight) {
-        panel.style.maxHeight = null;
-        panel.style.padding = "0 18px";
+        panel.style.maxHeight = null
+        panel.style.padding = "0 18px"
       } else {
-        panel.style.padding = "2vw 18px";
-        panel.style.maxHeight = panel.scrollHeight + "px";
+        panel.style.padding = "2vw 18px"
+        panel.style.maxHeight = panel.scrollHeight + "px"
       }
-    });
+    })
   }
 
   // Auto-resize textareas (only those with specific classes)
@@ -709,13 +507,13 @@ onMounted(async () => {
       <div class="header_Form">
         <p>Réf. UE : </p>
         <p>{{ ueLabels && ueLabels.length > 0 ? ueLabels.join(', ') : '###' }}</p>
-        <p class="title">{{ (resource && resource.name) || (resourceSheet && resourceSheet.name) || 'Nom de la ressource' }}</p>
+        <p class="title">{{ resourceName }}</p>
         <p>Dep : </p>
-        <p>{{ institutionName || '###' }}</p>
+        <p>{{ institutionName }}</p>
       </div>
       <div class="ref_Section">
         <p>Réf. ressource : </p>
-        <p>{{ (resource && resource.label) || '###' }}</p>
+        <p>{{ resourceLabel }}</p>
       </div>
       <div id="form">
         <button class="accordion" id="dark_Bar">Objectif de la ressource *</button>
@@ -748,12 +546,12 @@ onMounted(async () => {
           <p>Aucune SAE trouvée pour ce semestre</p>
         </div>
         <div v-else class="sae_switches_container">
-          <div v-for="sae in saeList" :key="sae.idSAE" class="sae_switch_item">
+          <div v-for="sae in saeList" :key="sae.id" class="sae_switch_item">
             <label class="switch">
-              <input type="checkbox" :checked="isSaeLinked(sae.idSAE)" @change="toggleSaeLink(sae.idSAE)">
+              <input type="checkbox" :checked="isSaeLinked(sae.id)" @change="toggleSaeLink(sae.id)">
               <span class="slider"></span>
             </label>
-            <span class="sae_label" :title="`ID: ${sae.idSAE}, ApogeeCode: ${sae.apogeeCode}, Label: ${sae.label}`">{{  sae.label || 'SAE sans nom' }}</span>
+            <span class="sae_label" :title="`ID: ${sae.id}, ApogeeCode: ${sae.apogeeCode}, Label: ${sae.label}`">{{  sae.label || 'SAE sans nom' }}</span>
           </div>
         </div>
       </div>

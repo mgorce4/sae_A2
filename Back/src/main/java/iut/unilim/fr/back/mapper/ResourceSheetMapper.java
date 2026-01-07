@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -34,6 +36,9 @@ public class ResourceSheetMapper {
 
     @Autowired
     private SAELinkResourceRepository saeLinkResourceRepository;
+
+    @Autowired
+    private RessourceRepository ressourceRepository;
 
     @Autowired
     private KeywordRepository keywordRepository;
@@ -202,15 +207,31 @@ public class ResourceSheetMapper {
         // Get SAEs linked to this resource
         List<SAELinkResource> linkedSaes = saeLinkResourceRepository.findByIdResource(resource.getIdResource());
         List<Long> linkedSaeIds = linkedSaes.stream()
-            .map(link -> link.getSae().getIdSAE())
+            .map(SAELinkResource::getIdSAE)
             .collect(Collectors.toList());
 
-        // Get all SAEs from the same term (semester)
-        List<SAE> allSaes = resource.getTerms() != null
-            ? saeRepository.findByTerms_IdTerms(resource.getTerms().getIdTerms())
-            : new ArrayList<>();
+        // Get all SAEs from the same semester
+        // Use semester field directly instead of going through Terms
+        List<SAE> allSaes = new ArrayList<>();
 
-        // Create DTOs
+        if (resource.getSemester() != null) {
+            // Get all resources from the same semester
+            List<Ressource> sameSemesterResources = ressourceRepository.findBySemester(resource.getSemester());
+
+            // Get all SAE links for these resources
+            Set<Long> sameSemesterSaeIds = new HashSet<>();
+            for (Ressource r : sameSemesterResources) {
+                List<SAELinkResource> links = saeLinkResourceRepository.findByIdResource(r.getIdResource());
+                for (SAELinkResource link : links) {
+                    sameSemesterSaeIds.add(link.getIdSAE());
+                }
+            }
+
+            // Get all SAEs with these IDs
+            allSaes = saeRepository.findAllById(sameSemesterSaeIds);
+        }
+
+        // Create DTOs with isLinked property
         return allSaes.stream()
             .map(sae -> new SaeInfoDTO(
                 sae.getIdSAE(),
