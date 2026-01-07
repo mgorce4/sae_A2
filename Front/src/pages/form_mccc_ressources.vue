@@ -1,11 +1,15 @@
 <script setup>
 import { status } from '../main'
-import { onMounted, ref, nextTick, computed } from 'vue'
+import { onMounted, ref, nextTick} from 'vue'
 import axios from 'axios'
 
 status.value = 'Administration'
 
 let display_more_area = ref(false)
+
+const resource_sheets = ref([])
+
+const resource_name = ref('')
 
 /* constant for the form */
 
@@ -27,8 +31,6 @@ const total_work_study = ref(0)
 const teacher = ref('')
 const coefficient = ref()
 
-/* get from the pn*/
-const total_pn_initial_formation = ref(0)
 const total_pn_work_study = ref(0)
 
 /* list of lesson to use for the v-for */
@@ -36,25 +38,6 @@ const total_pn_work_study = ref(0)
 const list_of_lesson = ['CM', 'TD', 'TP', 'Projet']
 
 const UEs = ref([])
-
-const hours_per_student = ref([])
-
-const resources = ref([])
-
-const main_teachers_for_resource = ref([])
-
-const saes = ref([])
-
-const resources_filterd = computed(() => {
-  return main_teachers_for_resource.value.map((user) => {
-    const resource = resources.value.filter((sh) => sh.idResource === user.resource.idResource)
-    return {
-      ...user,
-      resource: resource,
-    }
-  }).filter((user) => String(user.user.institution.idInstitution) === localStorage.idInstitution)
-    .filter((resource) => String(resource.resource[0].semester) === semesterNumber.value)
-})
 
 function areTotalNaN() {
   return isNaN(total_initial_formation.value) && isNaN(total_work_study.value)
@@ -68,27 +51,12 @@ const getQueryParam = (param) => {
   return params.get(param)
 }
 
-const semesterNumber = ref(getQueryParam('id'))
-
 onMounted(async () => {
-  /* usage of await to wait for the data to be fetched before adding event listeners */
 
   await Promise.all([
     axios
-      .get('http://localhost:8080/api/ue-coefficients')
-      .then((response) => (UEs.value = response.data)),
-    axios
-      .get('http://localhost:8080/api/hours-per-student')
-      .then((response) => (hours_per_student.value = response.data)),
-    axios
-      .get('http://localhost:8080/api/resources')
-      .then((response) => (resources.value = response.data)),
-    axios
-      .get('http://localhost:8080/api/main-teachers-for-resource')
-      .then((response) => (main_teachers_for_resource.value = response.data)),
-    axios
-      .get('http://localhost:8080/api/sae-link-resources')
-      .then((response) => (saes.value = response.data)),
+      .get('http://localhost:8080/api/v2/resource-sheets')
+      .then((reponse) => (resource_sheets.value = reponse.data)),
   ])
 
   await nextTick()
@@ -119,20 +87,17 @@ onMounted(async () => {
     display_more_area.value = false
   })
 
-  /* add cm, td, tp and total to each resource in resources_filterd */
-  for (let i = 0; i < resources_filterd.value.length ; i++) {
-    resources_filterd.value[i].resource[0].cm = hours_per_student.value.find((hour) => hour.resource.idResource === resources_filterd.value[i].resource[0].idResource).cm
-    resources_filterd.value[i].resource[0].td = hours_per_student.value.find((hour) => hour.resource.idResource === resources_filterd.value[i].resource[0].idResource).td
-    resources_filterd.value[i].resource[0].tp = hours_per_student.value.find((hour) => hour.resource.idResource === resources_filterd.value[i].resource[0].idResource).tp
-    resources_filterd.value[i].resource[0].total = resources_filterd.value[i].resource[0].cm + resources_filterd.value[i].resource[0].td + resources_filterd.value[i].resource[0].tp
-  }
 })
+
+function getResourcesForSemester() {
+  return resource_sheets.value.filter((sheet) => sheet.semester == getQueryParam('id'))
+    .filter((sheet) => sheet.location === localStorage.institutionLocation)
+}
 
 </script>
 
 <template>
   <div id="ressource">
-    <div>{{resources_filterd}}</div>
     <div id="return_arrow">
       <button id="back_arrow" onclick="document.location.href='#/mccc-select-form'">←</button>
       <p>Retour</p>
@@ -149,13 +114,18 @@ onMounted(async () => {
           <button id="button_more" v-on:click="display_more_area = true">+</button>
         </div>
 
-        <a class="accordion" id="dark_bar" v-show="display_more_area" method="post" v-on:submit.prevent="">Ajout d'une ressource :</a>
+        <a class="accordion" id="dark_bar" style="width: 97%" v-show="display_more_area" method="post" v-on:submit.prevent="">Ajout d'une ressource :</a>
 
         <form class="panel_resource">
           <div id="left">
             <div>
               <label>Intitule de la ressource : </label>
               <input type="text" class="input" v-model="resource_label" required />
+            </div>
+
+            <div>
+              <label>Nom de la ressource : </label>
+              <input type="text" class="input" v-model="resource_name" required />
             </div>
 
             <div>
@@ -187,8 +157,7 @@ onMounted(async () => {
               </tr>
 
               <p>
-                Nombre d'heures total : {{ total_initial_formation }} /
-                {{ total_pn_initial_formation }}
+                Nombre d'heures total : {{ total_initial_formation }}
               </p>
             </div>
 
@@ -250,8 +219,8 @@ onMounted(async () => {
                   <label>UE affectées : </label>
 
                   <select class="input">
-                    <option v-for="UE in UEs" :key="UE.ueNumber" :value="UE.ue.label">
-                      {{ UE.ue.label }}
+                    <option v-for="ue in getResourcesForSemester().ueReferences" :key="ue.ueNumber" :value="ue.label">
+                      {{ ue.label }}
                     </option>
                   </select>
 
@@ -276,34 +245,34 @@ onMounted(async () => {
         </form>
       </div>
       <div id="form_resources">
-        <p v-if="resources_filterd.length > 0">Ressources créées :</p>
+        <p v-if="getResourcesForSemester().length > 0">Ressources créées :</p>
         <p v-else>Aucune ressource n'a été crée</p>
 
-        <div v-for="resource in resources_filterd" :key="resource.idResource">
-          <a class="accordion" id="dark_bar" style="width: 97%">{{ resource.resource[0].label }} {{ resource.resource[0].name}}</a>
+        <div v-for="resource in getResourcesForSemester()" :key="resource.resourceId">
+          <a class="accordion" id="dark_bar" style="width: 97%">{{ resource.resourceLabel }} {{ resource.resourceName}}</a>
 
           <div class="panel_resource">
             <div id="left_resource">
               <div class="container-fluid">
                 <p>Code Apogee :</p>
-                <input type="text" class="input" :value="resource.apogeeCode" />
+                <input type="text" class="input" :value="resource.resourceApogeeCode" />
               </div>
 
               <p>Nombre d'heure (formation initial) :</p>
 
               <div class="container-fluid">
                 <p>CM :</p>
-                <input type="text" class="input" :value="resource.cm" />
+                <input type="text" class="input" :value="resource.hoursTeacher.cm" />
               </div>
 
               <div class="container-fluid">
                 <p>TD :</p>
-                <input type="text" class="input" :value="resource.td" />
+                <input type="text" class="input" :value="resource.hoursTeacher.td" />
               </div>
 
               <div class="container-fluid">
                 <p>TP :</p>
-                <input type="text" class="input" :value="resource.tp" />
+                <input type="text" class="input" :value="resource.hoursTeacher.tp" />
               </div>
 
               <div class="container-fluid">
@@ -313,7 +282,7 @@ onMounted(async () => {
 
               <div class="container-fluid">
                 <p>Total :</p>
-                <input type="text" class="input" :value="resource.total" />
+                <input type="text" class="input" :value="resource.hoursTeacher.total" />
               </div>
             </div>
 
@@ -322,16 +291,23 @@ onMounted(async () => {
             <div id="right_resource">
               <div class="container-fluid">
                 <p>UE(s) affectée(s) :</p>
-                <input type="text" class="input" :value="resource.label" />
+                <div v-for="ue in resource.ueReferences" :key="ue.ueNumber">
+                  <input type="text" class="input" :value="ue.label">
+                </div>
               </div>
 
               <div class="container-fluid">
                 <p>Coefficient(s) :</p>
-                <input type="text" class="input" :value="resource.coefficient" />
+                <div v-for="ue in resource.ueReferences" :key="ue.ueNumber">
+                  <input type="text" class="input" :value="ue.coefficient">
+                </div>
               </div>
 
               <div class="container-fluid">
                 <p>Professeur(s) associé(s) :</p>
+                <div v-for="teacher in resource.teachers" :key="teacher">
+                  <input type="text" class="input" :value="teacher">
+                </div>
               </div>
 
               <br />

@@ -36,8 +36,6 @@ function getResourcesForSemester(semester) {
                               .filter((sheet) => sheet.location === localStorage.institutionLocation)
 }
 
-console.log(selected_semester_sheets,getResourcesForSemester(selected_semester_sheets))
-
 </script>
 
 <template>
