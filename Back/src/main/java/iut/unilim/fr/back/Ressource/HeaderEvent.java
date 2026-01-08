@@ -3,7 +3,7 @@ package iut.unilim.fr.back.Ressource;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 
-import static iut.unilim.fr.back.controllerBack.LogController.writeInLog;
+import static iut.unilim.fr.back.controllerBack.LogController.writeInPdfLog;
 
 public record HeaderEvent(String titre, Font font, BaseColor fondHeader) implements PdfPCellEvent {
 
@@ -33,7 +33,7 @@ public record HeaderEvent(String titre, Font font, BaseColor fondHeader) impleme
         try {
             ct.go();
         } catch (DocumentException e) {
-            writeInLog(e.getMessage());
+            writeInPdfLog(e.getMessage());
         }
 
         cb.restoreState();

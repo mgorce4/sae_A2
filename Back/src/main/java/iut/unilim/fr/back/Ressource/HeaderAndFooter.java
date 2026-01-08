@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static iut.unilim.fr.back.controllerBack.LogController.writeInLog;
+import static iut.unilim.fr.back.controllerBack.LogController.writeInPdfLog;
 
 public class HeaderAndFooter extends PdfPageEventHelper {
     private static final BaseColor COL_ROUGE_BARRE = new BaseColor(176, 32, 40);
@@ -38,7 +38,7 @@ public class HeaderAndFooter extends PdfPageEventHelper {
             this.department = department;
             this.ue = ue;
         } catch (Exception e) {
-            writeInLog(e.getMessage());
+            writeInPdfLog(e.getMessage());
         }
     }
 
