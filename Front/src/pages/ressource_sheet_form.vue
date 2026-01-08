@@ -287,6 +287,73 @@ const removeSkillRow = (index) => {
   }
 }
 
+// Save function - sends data to backend
+const saveResourceSheet = async () => {
+  if (!resourceSheetId.value) {
+    console.error('❌ No resource sheet ID')
+    return
+  }
+
+  try {
+    console.log('💾 Saving resource sheet...')
+
+    // Prepare the update DTO
+    const updateDTO = {
+      objective: localObjectiveContent.value,
+      skills: localSkills.value.map(skill => ({
+        id: skill.id,
+        label: skill.label,
+        description: skill.description
+      })),
+      keywords: localKeywords.value.map(kw => kw.keyword).filter(k => k && k.trim()),
+      modalities: localModalities.value.map(m => m.modality).filter(m => m && m.trim()),
+      linkedSaeIds: Object.entries(localSaeChanges.value)
+        .filter(([id, isLinked]) => isLinked)
+        .map(([id]) => parseInt(id))
+        .concat(
+          // Add SAEs that were already linked and not changed
+          saeList.value
+            .filter(sae => sae.isLinked && !(sae.id in localSaeChanges.value))
+            .map(sae => sae.id)
+        ),
+      teacherHours: {
+        cm: localHours.value.cm || 0,
+        td: localHours.value.td || 0,
+        tp: localHours.value.tp || 0
+      },
+      pedagogicalContent: {
+        cm: localPedagogicalContent.value.cm.map(item => ({ order: item.number, content: item.content })),
+        td: localPedagogicalContent.value.td.map(item => ({ order: item.number, content: item.content })),
+        tp: localPedagogicalContent.value.tp.map(item => ({ order: item.number, content: item.content })),
+        ds: localPedagogicalContent.value.ds.map(item => ({ order: item.number, content: item.content }))
+      },
+      tracking: {
+        pedagogicalFeedback: localResourceTracking.value.pedagogicalFeedback,
+        studentFeedback: localResourceTracking.value.studentFeedback,
+        improvementSuggestions: localResourceTracking.value.improvementSuggestions
+      }
+    }
+
+    console.log('📤 Update DTO:', updateDTO)
+
+    // Send PUT request
+    const response = await axios.put(
+      `http://localhost:8080/api/v2/resource-sheets/${resourceSheetId.value}`,
+      updateDTO
+    )
+
+    console.log('✅ Resource sheet saved successfully!')
+    console.log('📥 Response:', response.data)
+
+    // Reload the data to show updated values
+    location.reload()
+
+  } catch (error) {
+    console.error('❌ Error saving resource sheet:', error)
+    console.error('Error details:', error.response?.data || error.message)
+  }
+}
+
 onMounted(async () => {
   /* Fetch complete resource sheet using DTO API - ONE REQUEST FOR ALL DATA! */
   if (resourceSheetId.value) {
@@ -337,13 +404,22 @@ onMounted(async () => {
         localModalities.value = []
       }
 
-      // Hours
-      if (resourceSheetDTO.value.hoursPN) {
+      // Hours - prioritize teacher hours, but if empty show PN hours in placeholder
+      if (resourceSheetDTO.value.hoursTeacher &&
+          (resourceSheetDTO.value.hoursTeacher.cm ||
+           resourceSheetDTO.value.hoursTeacher.td ||
+           resourceSheetDTO.value.hoursTeacher.tp)) {
+        // Teacher hours exist - use them
         localHours.value = {
-          cm: resourceSheetDTO.value.hoursPN.cm || 0,
-          td: resourceSheetDTO.value.hoursPN.td || 0,
-          tp: resourceSheetDTO.value.hoursPN.tp || 0
+          cm: resourceSheetDTO.value.hoursTeacher.cm || 0,
+          td: resourceSheetDTO.value.hoursTeacher.td || 0,
+          tp: resourceSheetDTO.value.hoursTeacher.tp || 0
         }
+        console.log('📊 Using teacher hours:', localHours.value)
+      } else {
+        // No teacher hours - leave empty (will show PN hours in placeholder)
+        localHours.value = { cm: 0, td: 0, tp: 0 }
+        console.log('📊 No teacher hours, using empty values (PN hours will show in placeholder)')
       }
 
       // Pedagogical content
@@ -519,7 +595,7 @@ onMounted(async () => {
         </div>
       </div>
       <div id="sae_alignement">
-        <p class="section_title">SAE concernée(s)* :</p>
+        <p class="section_title">SAE concernée(s) * :</p>
         <div v-if="saeList.length === 0" class="no_sae_message">
           <p>Aucune SAE trouvée pour ce semestre</p>
         </div>
@@ -556,7 +632,7 @@ onMounted(async () => {
         </div>
       </div>
       <div id="hours_section">
-        <p class="section_title">Répartition de heures ( volume étudiant ) : </p>
+        <p class="section_title">Répartition de heures ( volume étudiant ) * : </p>
         <div class="hours_container">
           <div class="hours_row">
             <div class="hours_item">
@@ -605,7 +681,7 @@ onMounted(async () => {
         </div>
       </div>
       <div>
-        <p class="section_title">Contenu pédagogique</p>
+        <p class="section_title">Contenu pédagogique *</p>
         <div class="pedagogical-content">
           <!-- CM Section -->
           <div class="pedagogical-section">
@@ -724,7 +800,7 @@ onMounted(async () => {
 
       <!-- Save button container -->
       <div class="save-button-container">
-        <button id="button_save">Sauvegarder</button>
+        <button id="button_save" @click="saveResourceSheet">Sauvegarder</button>
       </div>
     </div>
   </div>
