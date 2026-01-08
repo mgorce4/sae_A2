@@ -410,10 +410,14 @@ public class PdfController {
         list.setListSymbol(bulletSymbol);
 
         for (String item : items) {
-            ListItem li = new ListItem(item, font);
-            li.setAlignment(Element.ALIGN_LEFT);
-            li.setSpacingAfter(spacing);
-            list.add(li);
+            String[] singleLine = item.split("\\r?\\n");
+
+            for (String ligne : singleLine) {
+                ListItem li = new ListItem(ligne.trim(), font);
+                li.setAlignment(Element.ALIGN_LEFT);
+                li.setSpacingAfter(spacing);
+                list.add(li);
+            }
         }
 
         cellListe.addElement(list);
