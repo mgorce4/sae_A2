@@ -88,6 +88,18 @@ onMounted(async () => {
     display_more_area.value = false
   })
 
+  document.getElementById('work_study_slider').addEventListener('click', () => {
+    const inputs = document.querySelectorAll('.input_work_study')
+    const checkbox = document.querySelector('#work_study_slider input[type="checkbox"]')
+
+    inputs.forEach((input) => {
+      if (checkbox.checked) {
+        input.disabled = true
+      } else {
+        input.disabled = false
+      }
+    })
+  })
 })
 
 function getUEsForInstitution() {
@@ -180,7 +192,7 @@ function getResourcesForSemester() {
           <div id="right">
             <div id="work_study">
               <div class="component">
-                <label class="switch">
+                <label class="switch" id="work_study_slider">
                   <input type="checkbox" />
                   <span class="slider"></span>
                 </label>
@@ -200,16 +212,16 @@ function getResourcesForSemester() {
                   <tbody>
                     <tr>
                       <td>
-                        <input type="text" class="input" v-model="CM_work_study" required />
+                        <input type="text" class="input input_work_study" v-model="CM_work_study" required />
                       </td>
                       <td>
-                        <input type="text" class="input" v-model="TD_work_study" required />
+                        <input type="text" class="input input_work_study" v-model="TD_work_study" required />
                       </td>
                       <td>
-                        <input type="text" class="input" v-model="TP_work_study" required />
+                        <input type="text" class="input input_work_study" v-model="TP_work_study" required />
                       </td>
                       <td>
-                        <input type="text" class="input" v-model="Project_work_study" required />
+                        <input type="text" class="input input_work_study" v-model="Project_work_study" required />
                       </td>
                     </tr>
                   </tbody>
@@ -235,7 +247,7 @@ function getResourcesForSemester() {
 
                   <p v-if="getUEsForInstitution().length == 0">Aucune UE créée</p>
 
-                  <div v-else>
+                  <div v-else class="component">
                     <select id="ue_select" class="input">
                       <option v-for="ue in getUEsForInstitution()" :key="ue.ueNumber">
                         {{ ue.label }}
@@ -253,17 +265,15 @@ function getResourcesForSemester() {
 
                   <p v-if="getUEsForInstitution().length == 0">Aucune UE créée</p>
 
-                  <div v-else>
-                    <input id="coefficient" type="text" class="input" v-model="coefficient" required />
-
-                    <label for="teacher">Professeur(s) associé(s) : </label>
-                    <input id="teacher" type="text" class="input" v-model="teacher" required />
-
-                    <button id="button_more">+</button>
-                  </div>
-
+                  <input v-else id="coefficient" type="text" class="input" v-model="coefficient" required />
                 </div>
 
+                <div class="component">
+                  <label for="teacher">Professeur(s) associé(s) : </label>
+                  <input id="teacher" type="text" class="input" v-model="teacher" required />
+
+                  <button id="button_more">+</button>
+                </div>
               </div>
             </div>
           </div>
