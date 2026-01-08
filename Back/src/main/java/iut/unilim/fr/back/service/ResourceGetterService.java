@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static iut.unilim.fr.back.controllerBack.LogController.writeInLog;
+import static iut.unilim.fr.back.controllerBack.LogController.writeInPdfLog;
 
 @Service
 public class ResourceGetterService {
@@ -104,7 +104,8 @@ public class ResourceGetterService {
 
         if (resultResource.isPresent()) {
             resultResourceSheet = ressourceSheetRepository.findFirstByResource_IdResource(resultResource.get().getIdResource());
-        } else {writeInLog("Could not get the resource sheet from the database because there is no resource with id = " + ressourceName);}
+        } else {
+            writeInPdfLog("Could not get the resource sheet from the database because there is no resource with id = " + ressourceName);}
 
         if (resultResource.isPresent() && resultResourceSheet.isPresent()) {
             fileName = ressourceName;
@@ -126,7 +127,7 @@ public class ResourceGetterService {
             UeInfoDTO ue = UeReferences.getFirst();
             refUE = ue.getLabel();
 
-            writeInLog("Get ressource \n"
+            writeInPdfLog("Get ressource \n"
                     + "     - id : " + id + "\n"
                     + "     - label : " + label + "\n");
 
@@ -212,7 +213,7 @@ public class ResourceGetterService {
             pedagoTeamFeedback = ressourceTracking.getPedagogicalFeedback();
             improvements = ressourceTracking.getImprovementSuggestions();
 
-            writeInLog("Get from database :\n" +
+            writeInPdfLog("Get from database :\n" +
                     "   - Ressource (" + labelResource + "; " + qualityReference + "; " + refUE + "; " + profRef + ";" + ")\n" +
                     "   - department(" + department + ")\n" +
                     "   - objectives(" + objectiveContent + ")\n" +
@@ -230,7 +231,7 @@ public class ResourceGetterService {
                     "   - pedagoContent( DS: " + pedagoContentDs + "; CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
                     "   - feedBack(Student: " + studentFeedback + "; Pedagogical team: " + pedagoTeamFeedback + "; Improvements: " + improvements + ")\n");
         } else {
-            writeInLog("Attempt to get from database with resource name: " + ressourceName +
+            writeInPdfLog("Attempt to get from database with resource name: " + ressourceName +
                     "\n-> " + ressourceName + " not found in resources tables");
         }
     }

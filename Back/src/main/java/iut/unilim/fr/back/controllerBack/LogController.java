@@ -9,8 +9,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class LogController {
-    public static void writeInLog(String message) {
-        String fileName = "log.txt";
+    public static void writeInPdfLog(String message) {
+        String fileName = ".pdf_log.txt";
         Path path = Paths.get(fileName);
         
         String format = "dd:MM:yyyy HH:mm:ss:SS";
