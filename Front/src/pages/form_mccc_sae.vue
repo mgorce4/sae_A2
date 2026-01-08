@@ -20,18 +20,14 @@
 
     const semesterNumber = ref(getQueryParam('id'))
     console.log("semestre saé : ", semesterNumber.value)
-    
-    // Filter and sort SAE data by semester and institution
+        // Filter SAE data by institution from localStorage
     const filteredSaeTableV2 = computed(() => {
         return saeTableV2.value.filter((sae) => {
-            const matchesSemester = sae.semester == semesterNumber.value
-            const matchesInstitution = sae.institutionId == localStorage.idInstitution
-            return matchesSemester && matchesInstitution
+            return sae.institutionId == localStorage.idInstitution
         })
     })
-    
-    onMounted(async () => {
-        const response = await axios.get(`http://localhost:8080/api/v2/mccc/saes`)
+        onMounted(async () => {
+        const response = await axios.get(`http://localhost:8080/api/v2/mccc/saes/semester/${semesterNumber.value}`)
         saeTableV2.value = response.data
     })
 </script>
