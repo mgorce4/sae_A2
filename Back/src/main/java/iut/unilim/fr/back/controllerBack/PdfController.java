@@ -217,6 +217,12 @@ public class PdfController {
         Chunk tp = new Chunk("TP", contentFont);
         Chunk total = new Chunk("Total", contentFont);
 
+        ArrayList<Chunk> programmeContent = new ArrayList<>();
+        programmeContent.add(resource);
+        programmeContent.add(cm);
+        programmeContent.add(td);
+        programmeContent.add(tp);
+        programmeContent.add(total);
         ArrayList<Chunk> programContent = new ArrayList<>();
         programContent.add(resource);
         programContent.add(cm);
