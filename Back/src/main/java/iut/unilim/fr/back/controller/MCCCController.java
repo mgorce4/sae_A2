@@ -143,6 +143,27 @@ public class MCCCController {
         }
     }
 
+    /**
+     * Get MCCC SAEs by institution ID
+     * GET /api/v2/mccc/saes/institution/{institutionId}
+     */
+    @GetMapping("/saes/institution/{institutionId}")
+    public ResponseEntity<List<MCCCSaeDTO>> getMCCCSaesByInstitution(@PathVariable Long institutionId) {
+        try {
+            List<SAE> saes = saeRepository.findAll();
+            List<MCCCSaeDTO> dtos = mcccSaeMapper.toDTOList(saes);
+
+            // Filter by institution ID
+            List<MCCCSaeDTO> filteredDtos = dtos.stream()
+                .filter(dto -> dto.getInstitutionId() != null && dto.getInstitutionId().equals(institutionId))
+                .toList();
+
+            return ResponseEntity.ok(filteredDtos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     // ==================== UE ENDPOINTS ====================
 
     /**
@@ -204,6 +225,27 @@ public class MCCCController {
             List<UE> ues = ueRepository.findBySemester(semester);
             List<MCCCUEDTO> dtos = mcccUEMapper.toDTOList(ues);
             return ResponseEntity.ok(dtos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Get MCCC UEs by institution ID
+     * GET /api/v2/mccc/ues/institution/{institutionId}
+     */
+    @GetMapping("/ues/institution/{institutionId}")
+    public ResponseEntity<List<MCCCUEDTO>> getMCCCUEsByInstitution(@PathVariable Long institutionId) {
+        try {
+            List<UE> ues = ueRepository.findAll();
+            List<MCCCUEDTO> dtos = mcccUEMapper.toDTOList(ues);
+
+            // Filter by institution ID
+            List<MCCCUEDTO> filteredDtos = dtos.stream()
+                .filter(dto -> dto.getInstitutionId() != null && dto.getInstitutionId().equals(institutionId))
+                .toList();
+
+            return ResponseEntity.ok(filteredDtos);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
