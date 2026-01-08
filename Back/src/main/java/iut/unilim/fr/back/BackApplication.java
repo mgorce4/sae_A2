@@ -21,7 +21,7 @@ public class BackApplication implements CommandLineRunner {
         resourceGetterService.setValuesFromRessource("R1.01");
         PdfController pdfController = new PdfController();
 
-        pdfController.generatePdf(resourceGetterService, "./");
+        boolean result = pdfController.generatePdf(resourceGetterService, "./");
     }
 
 }

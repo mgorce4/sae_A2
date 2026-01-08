@@ -19,6 +19,7 @@ public class PdfController {
     private final BaseColor COL_CONTENT_TEXTE = BaseColor.WHITE;
     private final BaseColor COL_TEXTE = BaseColor.BLACK;
     private final String baseFont = "src/main/resources/font/trade-gothic-lt-std-58a78e64434a9.otf";
+    private String absolutePath;
 
     private final int NONE = 0;
     private final int listIndent = 12;
@@ -29,7 +30,13 @@ public class PdfController {
 
 
 
-    public void generatePdf(ResourceGetterService res, String absolutePath) {
+    public boolean generatePdf(ResourceGetterService res, String path) {
+        if (path.trim().isEmpty()) {
+            absolutePath = "./";
+        }else {
+            absolutePath = path;
+        }
+
         int documentMargin = 36;
         int documentMarginTop = 110;
         int documentMarginBottom = 40;
@@ -40,6 +47,8 @@ public class PdfController {
         int pedagoTableNbColumn = 2;
         float[] pedagoTableWidth = {1f, 6f};
         String pedagoContentSplitDelimitator = ",";
+
+        boolean resultValue;
 
 
         String fileName = res.getFileName();
@@ -189,12 +198,16 @@ public class PdfController {
                 document.close();
 
                 writeInPdfLog("{user} Create a pdf for resource sheet: " + fileName + "_resource_sheet.pdf at " + absolutePath);
+                resultValue = true;
             } catch (Exception e) {
                 writeInPdfLog(e.getMessage());
+                resultValue = false;
             }
         } else {
             writeInPdfLog("{user} attempt to generate a resource sheet pdf, but no matches found for the resource name");
+            resultValue = false;
         }
+        return resultValue;
     }
 
     private ArrayList<Chunk> completeProgrammContent(ResourceGetterService res, Font contentFont) {
