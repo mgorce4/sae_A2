@@ -7,12 +7,7 @@
 
     let display_more_area = ref(false)
 
-    const saeLinkResources = ref([])
-    const teachers = ref([])
-    const saeHours = ref([])
-    const ueCoef = ref([])
-
-    const saeTableV2 = ref(null)
+    const saeTableV2 = ref([])
 
     /* Extract ID from hash URL parameters */
     const getQueryParam = (param) => {
@@ -26,48 +21,22 @@
     const semesterNumber = ref(getQueryParam('id'))
     console.log("semestre saé : ", semesterNumber.value)
     
+    // Filter and sort SAE data by semester and institution
+    const filteredSaeTableV2 = computed(() => {
+        return saeTableV2.value.filter((sae) => {
+            const matchesSemester = sae.semester == semesterNumber.value
+            const matchesInstitution = sae.institutionId == localStorage.idInstitution
+            return matchesSemester && matchesInstitution
+        })
+    })
+    
     onMounted(async () => {
-        axios.get('http://localhost:8080/api/sae-link-resources').then(response => (saeLinkResources.value = response.data))
-        axios.get('http://localhost:8080/api/main-teachers-for-resource').then(response => (teachers.value = response.data))
-        axios.get('http://localhost:8080/api/sae-hours').then(response => (saeHours.value = response.data))
-        axios.get('http://localhost:8080/api/ue-coefficient-saes').then(response => (ueCoef.value = response.data))
-
         const response = await axios.get(`http://localhost:8080/api/v2/mccc/saes`)
         saeTableV2.value = response.data
-    })
-    console.log(saeTableV2.value)
-
-    const joinSaesTables = computed(() => {
-        // Get teachers for current institution
-        const teachersForInstitution = teachers.value.filter(teacher => teacher.user?.institution?.idInstitution == localStorage.idInstitution)
-        
-        // Get resource IDs from those teachers
-        const resourceIds = new Set(teachersForInstitution.map(teacher => teacher.idResource))
-        
-        // Filter SAEs by semester and resources from current institution
-        const saesWithHours = saeLinkResources.value
-            .filter(sae => resourceIds.has(sae.idResource) && sae.resource?.semester == semesterNumber.value)
-            .map((saeLinkResource) => {
-                const hours = saeHours.value.find((sh) => sh.idSAEHours === saeLinkResource.idSAE)
-                return {
-                    ...saeLinkResource,
-                    saeHours: hours
-                }
-            })
-        
-        // Join with UE coefficients
-        return saesWithHours.map((sae) => {
-            const coef = ueCoef.value.filter((uec) => uec.sae?.idSAE === sae.idSAE)
-            return {
-                ...sae,
-                ueCoefSae: coef
-            }
-        })
     })
 </script>
 
 <template>
-    <p>{{ joinSaesTables }}</p>
     <p>{{ saeTableV2 }}</p>
     <div id="form_mccc_sae"> 
         <div class="return_arrow">
@@ -86,23 +55,27 @@
                 <form v-show="display_more_area" method="post" v-on:submit.prevent="">
                     <div>Div ajout SAÉ</div>
                 </form>
-                <div v-for="(value, index) in joinSaesTables" v-bind:key="index" class="added_content_mccc">
+                <div v-for="(value, index) in filteredSaeTableV2" v-bind:key="index" class="added_content_mccc">
                     <div class="dark_bar">
-                        <p>{{ value.sae.label }}</p>
+                        <p>{{ value.label }}</p>
                     </div>
                     <div class="panel_form_mccc container-fluid spa">
                         <div class="left_side">
-                            <p>Code apogee : {{ value.sae.apogeeCode }}</p>
-                            <p>Nombre d'heures (formation initiale) : {{ value.saeHours.hours }}</p>
+                            <p>Code apogee : {{ value.apogeeCode }}</p>
+                            <p>Nombre d'heures (formation initiale) : {{ value.hours }}</p>
+                            <div class="container-fluid">
+                            <input id="btn_cancel_UE" class="btn1" type="reset" value="Supprimer" @click="del(ue.ueNumber)">
+                            <input id="btn_save_UE" class="btn1" type="submit" value="Modifier" @click="modify">
+                            </div>
                         </div>
                         <div  class="right_side">
                             <p>Coefficients UE : </p>
                             <table>
                                 <tr>
-                                    <th v-for="(labelUe, index2) in value.ueCoefSae" v-bind:key="index2">{{ labelUe.ue.label }}</th>
+                                    <th v-for="(labelUe, index2) in value.ueCoefficients" v-bind:key="index2">{{ labelUe.ueLabel }}</th>
                                 </tr>
                                 <tr>
-                                    <td v-for="(coefUe, index3) in value.ueCoefSae" v-bind:key="index3">{{ coefUe.coefficient }}</td>
+                                    <td v-for="(coefUe, index3) in value.ueCoefficients" v-bind:key="index3">{{ coefUe.coefficient }}</td>
                                 </tr>
                             </table>
                         </div>
