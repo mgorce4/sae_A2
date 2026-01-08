@@ -1,0 +1,179 @@
+[08:01:2026 14:48:41:683] Create log file
+[08:01:2026 14:48:41:682] Get resource 
+     - id : 1
+     - label :  Initiation au développement
+
+[08:01:2026 14:48:41:713] Get from database :
+   - Resource (R1.01:  Initiation au développement; IU EN FOR 001; UE1.1; Anais Poursat;)
+   - department(INFORMATIQUE)
+   - objectives(Comprendre les bases de la programmation)
+   - skills([Être capable de coder en Python])
+   - saes([SAE 1])
+   - terms([NGCC])
+   - keywords([programmation, python])
+   - hoursStudent([6, 10, 20, 36])
+   - hoursNP([6, 10, 20, 36])
+   - pedagoContent( DS: Aucun contenue pour cette catégorie; CM: 1. Ennui ultime du python
+2. pourquoi le prof il fait des dessins frr?
+3. j'abandonne c'est trop là
+; TD: 1. waw en vrai c'est ok de fou
+2. euh ok c'est chelou mais ok ig
+3. c'est quoi cette merde là laissez moi mourir
+; TP: 1. hello world
+2. bibliothèque des pleurs
+3. putain c'est quoi pickle ;-;
+)
+   - feedBack(Student: Trop facile; Pedagogical team: Besoin de plus d'exemples; Improvements: Ajouter des exercices)
+
+[08:01:2026 14:48:42:00] {user} Create a pdf for resource sheet: R1.01_resource_sheet.pdf at ./
+[08:01:2026 14:50:28:114] Get resource 
+     - id : 1
+     - label :  Initiation au développement
+
+[08:01:2026 14:50:28:131] Get from database :
+   - Resource (R1.01:  Initiation au développement; IU EN FOR 001; UE1.1; Anais Poursat;)
+   - department(INFORMATIQUE)
+   - objectives(Comprendre les bases de la programmation)
+   - skills([Être capable de coder en Python])
+   - saes([SAE 1])
+   - terms([NGCC])
+   - keywords([programmation, python])
+   - hoursStudent([6, 10, 20, 36])
+   - hoursNP([6, 10, 20, 36])
+   - pedagoContent( DS: Aucun contenue pour cette catégorie; CM: 1. Ennui ultime du python
+2. pourquoi le prof il fait des dessins frr?
+3. j'abandonne c'est trop là
+; TD: 1. waw en vrai c'est ok de fou
+2. euh ok c'est chelou mais ok ig
+3. c'est quoi cette merde là laissez moi mourir
+; TP: 1. hello world
+2. bibliothèque des pleurs
+3. putain c'est quoi pickle ;-;
+)
+   - feedBack(Student: Trop facile; Pedagogical team: Besoin de plus d'exemples; Improvements: Ajouter des exercices)
+
+[08:01:2026 14:50:28:406] {user} Create a pdf for resource sheet: R1.01_resource_sheet.pdf at ./
+[08:01:2026 14:52:16:154] Get resource 
+     - id : 1
+     - label :  Initiation au développement
+
+[08:01:2026 14:52:16:175] Get from database :
+   - Resource (R1.01:  Initiation au développement; IU EN FOR 001; UE1.1; Anais Poursat;)
+   - department(INFORMATIQUE)
+   - objectives(Comprendre les bases de la programmation)
+   - skills([Être capable de coder en Python])
+   - saes([SAE 1])
+   - terms([NGCC])
+   - keywords([programmation, python])
+   - hoursStudent([6, 10, 20, 36])
+   - hoursNP([6, 10, 20, 36])
+   - pedagoContent( DS: Aucun contenue pour cette catégorie; CM: 1. Ennui ultime du python
+2. pourquoi le prof il fait des dessins frr?
+3. j'abandonne c'est trop là
+; TD: 1. waw en vrai c'est ok de fou
+2. euh ok c'est chelou mais ok ig
+3. c'est quoi cette merde là laissez moi mourir
+; TP: 1. hello world
+2. bibliothèque des pleurs
+3. putain c'est quoi pickle ;-;
+)
+   - feedBack(Student: Trop facile; Pedagogical team: Besoin de plus d'exemples; Improvements: Ajouter des exercices)
+alternance :true
+[08:01:2026 14:52:16:458] {user} Create a pdf for resource sheet: R1.01_resource_sheet.pdf at ./
+[08:01:2026 14:55:25:928] Get resource 
+     - id : 1
+     - label :  Initiation au développement
+
+[08:01:2026 14:55:25:944] Get from database :
+   - Resource (R1.01:  Initiation au développement; IU EN FOR 001; UE1.1; Anais Poursat;)
+   - department(INFORMATIQUE)
+   - objectives(Comprendre les bases de la programmation)
+   - skills([Être capable de coder en Python])
+   - saes([SAE 1])
+   - terms([NGCC])
+   - keywords([programmation, python])
+   - hoursStudent([6, 10, 20, 36])
+   - hoursNP([6, 10, 20, 36])
+   - pedagoContent( DS: Aucun contenue pour cette catégorie; CM: 1. Ennui ultime du python
+2. pourquoi le prof il fait des dessins frr?
+3. j'abandonne c'est trop là
+; TD: 1. waw en vrai c'est ok de fou
+2. euh ok c'est chelou mais ok ig
+3. c'est quoi cette merde là laissez moi mourir
+; TP: 1. hello world
+2. bibliothèque des pleurs
+3. putain c'est quoi pickle ;-;
+)
+   - feedBack(Student: Trop facile; Pedagogical team: Besoin de plus d'exemples; Improvements: Ajouter des exercices)
+alternance :true
+[08:01:2026 14:55:26:220] {user} Create a pdf for resource sheet: R1.01_resource_sheet.pdf at ./
+[08:01:2026 15:02:51:944] Get resource 
+     - id : 1
+     - label :  Initiation au développement
+
+[08:01:2026 15:02:51:963] Get from database :
+   - Resource (R1.01:  Initiation au développement; IU EN FOR 001; UE1.1; Anais Poursat;)
+   - department(INFORMATIQUE)
+   - objectives(Comprendre les bases de la programmation)
+   - skills([Être capable de coder en Python])
+   - saes([SAE 1])
+   - terms([NGCC])
+   - keywords([programmation, python])
+   - hoursStudent([6, 9, 14, 29])
+   - hoursNP([6, 10, 20, 36])
+   - pedagoContent( DS: Aucun contenue pour cette catégorie; CM: 1. Ennui ultime du python
+2. pourquoi le prof il fait des dessins frr?
+3. j'abandonne c'est trop là
+; TD: 1. waw en vrai c'est ok de fou
+2. euh ok c'est chelou mais ok ig
+3. c'est quoi cette merde là laissez moi mourir
+; TP: 1. hello world
+2. bibliothèque des pleurs
+3. putain c'est quoi pickle ;-;
+)
+   - feedBack(Student: Trop facile; Pedagogical team: Besoin de plus d'exemples; Improvements: Ajouter des exercices)
+alternance :true
+[08:01:2026 15:02:52:256] {user} Create a pdf for resource sheet: R1.01_resource_sheet.pdf at ./
+[08:01:2026 15:22:08:28] Get resource 
+     - id : 1
+     - label :  Initiation au développement
+
+[08:01:2026 15:25:37:31] Get resource 
+     - id : 1
+     - label :  Initiation au développement
+
+[08:01:2026 15:27:52:71] Get resource 
+     - id : 1
+     - label :  Initiation au développement
+
+[08:01:2026 15:32:24:255] Get resource 
+     - id : 1
+     - label :  Initiation au développement
+
+[08:01:2026 15:32:24:279] Get from database :
+   - Resource (R1.01:  Initiation au développement; IU EN FOR 001; UE1.1; Anais Poursat;)
+   - department(INFORMATIQUE)
+   - objectives(Comprendre les bases de la programmation)
+   - skills([Être capable de coder en Python])
+   - saes([SAE 1])
+   - terms([NGCC])
+   - keywords([programmation, python])
+   - hoursStudent([6, 9, 14, 29])
+   - hoursNP([6, 10, 20, 36])
+   - pedagoContent( DS: Aucun contenue pour cette catégorie; CM: 1. Ennui ultime du python
+2. pourquoi le prof il fait des dessins frr?
+3. j'abandonne c'est trop là
+; TD: 1. waw en vrai c'est ok de fou
+2. euh ok c'est chelou mais ok ig
+3. c'est quoi cette merde là laissez moi mourir
+; TP: 1. hello world
+2. bibliothèque des pleurs
+3. putain c'est quoi pickle ;-;
+)
+   - feedBack(Student: Trop facile; Pedagogical team: Besoin de plus d'exemples; Improvements: Ajouter des exercices)
+alternance :true
+[08:01:2026 15:32:24:579] {user} Create a pdf for resource sheet: R1.01_resource_sheet.pdf at ./
+[08:01:2026 15:33:43:00] Get resource 
+     - id : 2
+     - label : Développement d'interfaces web
+
