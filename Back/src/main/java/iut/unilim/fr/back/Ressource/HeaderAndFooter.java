@@ -11,8 +11,8 @@ import java.util.Date;
 import static iut.unilim.fr.back.controllerBack.LogController.writeInPdfLog;
 
 public class HeaderAndFooter extends PdfPageEventHelper {
-    private static final BaseColor COL_ROUGE_BARRE = new BaseColor(176, 32, 40);
-    private static final BaseColor COL_LIGNE_SEPARATRICE = BaseColor.GRAY;
+    private static final BaseColor COL_RED_BAR = new BaseColor(176, 32, 40);
+    private static final BaseColor COL_SEPARATOR_LINE = BaseColor.GRAY;
 
     private static final String baseFont = "src/main/resources/font/trade-gothic-lt-std-58a78e64434a9.otf";
     private static Font whiteFont;
@@ -26,41 +26,20 @@ public class HeaderAndFooter extends PdfPageEventHelper {
     private String ue;
     private String resource;
 
-    private int imageWidth = 100;
-    private int imageHeight = 50;
+    private final int initialPadding = 0;
+    private final int initialMargin = 0;
 
-    private float standardBorderWidth = 2f;
-    private int initialPadding = 0;
-    private int initialMargin = 0;
+    private final float[] footerWidth = new float[]{4, 1};
 
-    private int footerNbColumns = 2;
-    private float[] footerWidth = new float[]{4, 1};
-    private int footerInitalOffset = 0;
-    private int footerInitialPosition = 0;
-    private int footerYPosDif = 10;
-    private int footerXFinalPosition = -1;
-
-    private int headerNbColumns = 3;
-    private float[] headerWidth = new float[]{4, 1, 2};
-    private float[] headerSubWidth = new float[]{1.5f, 0.1f, 3f};
-    private float headerSubHeight = 30f;
-    private int headerInitialPosition = 0;
-    private int headerXFinalPosition = -1;
-    private int headerYDiff = 15;
-    private int headerSubDivYDiff = 70;
-    private int headerPaddingTop = 10;
-
-    private int cellPadding = 8;
-
-    private int pageNumberPosition = 2;
-    private int pageNumberRotation = 0;
-
-    private int redHeaderNumColumns = 2;
-
-    private int fontSize = 11;
+    private final float[] headerWidth = new float[]{4, 1, 2};
+    private final float[] headerSubWidth = new float[]{1.5f, 0.1f, 3f};
 
     public HeaderAndFooter(String reference, String department, String ue, String resource) {
         try {
+            int fontSize = 11;
+            int imageWidth = 100;
+            int imageHeight = 50;
+            
             blackFont = FontFactory.getFont(baseFont, fontSize, BaseColor.BLACK);
             whiteFont = FontFactory.getFont(baseFont, fontSize, BaseColor.WHITE);
 
@@ -93,6 +72,12 @@ public class HeaderAndFooter extends PdfPageEventHelper {
     }
 
     private void createFooter(PdfWriter writer, Document document) throws DocumentException {
+        int footerNbColumns = 2;
+        int footerInitialOffset = 0;
+        int footerInitialPosition = 0;
+        int footerYPosDif = 10;
+        int footerXFinalPosition = -1;
+
         PdfPTable footerTable = new PdfPTable(footerNbColumns);
         footerTable.setTotalWidth(document.getPageSize().getWidth());
         footerTable.setLockedWidth(true);
@@ -110,7 +95,7 @@ public class HeaderAndFooter extends PdfPageEventHelper {
         cellPage.setHorizontalAlignment(Element.ALIGN_RIGHT);
 
         Paragraph p = new Paragraph(textPage, whiteFont);
-        p.add(new Chunk(Image.getInstance(totalPagesTemplate), footerInitalOffset, footerInitalOffset));
+        p.add(new Chunk(Image.getInstance(totalPagesTemplate), footerInitialOffset, footerInitialOffset));
         p.setAlignment(Element.ALIGN_RIGHT);
 
         cellPage.addElement(p);
@@ -120,6 +105,16 @@ public class HeaderAndFooter extends PdfPageEventHelper {
     }
 
     private void createHeader(PdfWriter writer, Document document) throws DocumentException {
+        int headerSubDivYDiff = 70;
+        int headerInitialPosition = 0;
+        int headerXFinalPosition = -1;
+        int headerYDiff = 15;
+        int redHeaderNumColumns = 2;
+        int headerPaddingTop = 10;
+        int headerNbColumns = 3;
+        float standardBorderWidth = 2f;
+        float headerSubHeight = 30f;
+
         PdfPTable headerTable = new PdfPTable(headerNbColumns);
         headerTable.setTotalWidth(document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin());
         headerTable.setLockedWidth(true);
@@ -143,14 +138,14 @@ public class HeaderAndFooter extends PdfPageEventHelper {
         PdfPCell cBar = new PdfPCell();
         cBar.setBorder(Rectangle.NO_BORDER);
         cBar.setBorderWidthLeft(standardBorderWidth);
-        cBar.setBorderColorLeft(COL_LIGNE_SEPARATRICE);
+        cBar.setBorderColorLeft(COL_SEPARATOR_LINE);
         cBar.setFixedHeight(headerSubHeight);
         subTable.addCell(cBar);
 
-        PdfPCell ressourceSheet = new PdfPCell(new Phrase(" Fiche Ressource", blackFont));
-        ressourceSheet.setBorder(Rectangle.NO_BORDER);
-        ressourceSheet.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        subTable.addCell(ressourceSheet);
+        PdfPCell resourceSheet = new PdfPCell(new Phrase(" Fiche Ressource", blackFont));
+        resourceSheet.setBorder(Rectangle.NO_BORDER);
+        resourceSheet.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        subTable.addCell(resourceSheet);
 
         cellLogoTitre.addElement(subTable);
         headerTable.addCell(cellLogoTitre);
@@ -168,7 +163,7 @@ public class HeaderAndFooter extends PdfPageEventHelper {
 
         float pageTop = document.getPageSize().getHeight();
 
-        headerTable.writeSelectedRows(headerInitialPosition, headerXFinalPosition, document.left(), pageTop - headerYDiff , writer.getDirectContent());
+        headerTable.writeSelectedRows(headerInitialPosition, headerXFinalPosition, document.left(), pageTop - headerYDiff, writer.getDirectContent());
 
 
         PdfPTable redHeaderTable = new PdfPTable(redHeaderNumColumns);
@@ -194,7 +189,9 @@ public class HeaderAndFooter extends PdfPageEventHelper {
     }
 
     private void styleCelluleRouge(PdfPCell cell) {
-        cell.setBackgroundColor(COL_ROUGE_BARRE);
+        int cellPadding = 8;
+        
+        cell.setBackgroundColor(COL_RED_BAR);
         cell.setBorder(Rectangle.NO_BORDER);
         cell.setPadding(cellPadding);
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
@@ -202,77 +199,11 @@ public class HeaderAndFooter extends PdfPageEventHelper {
 
     @Override
     public void onCloseDocument(PdfWriter writer, Document document) {
+        int pageNumberPosition = 2;
+        int pageNumberRotation = 0;
+        
         ColumnText.showTextAligned(totalPagesTemplate, Element.ALIGN_LEFT,
                 new Phrase(String.valueOf(writer.getPageNumber()), whiteFont),
                 pageNumberPosition, pageNumberPosition, pageNumberRotation);
     }
-
-    public static Font getWhiteFont() {return whiteFont;}
-    public static void setWhiteFont(Font whiteFont) {HeaderAndFooter.whiteFont = whiteFont;}
-    public static Font getBlackFont() {return blackFont;}
-    public static void setBlackFont(Font blackFont) {HeaderAndFooter.blackFont = blackFont;}
-    public PdfTemplate getTotalPagesTemplate() {return totalPagesTemplate;}
-    public void setTotalPagesTemplate(PdfTemplate totalPagesTemplate) {this.totalPagesTemplate = totalPagesTemplate;}
-    public Path getImagePath() {return imagePath;}
-    public void setImagePath(Path imagePath) {this.imagePath = imagePath;}
-    public Image getImage() {return image;}
-    public void setImage(Image image) {this.image = image;}
-    public String getReference() {return reference;}
-    public void setReference(String reference) {this.reference = reference;}
-    public String getDepartment() {return department;}
-    public void setDepartment(String department) {this.department = department;}
-    public String getUe() {return ue;}
-    public void setUe(String ue) {this.ue = ue;}
-    public String getResource() {return resource;}
-    public void setResource(String resource) {this.resource = resource;}
-    public int getImageWidth() {return imageWidth;}
-    public void setImageWidth(int imageWidth) {this.imageWidth = imageWidth;}
-    public int getImageHeight() {return imageHeight;}
-    public void setImageHeight(int imageHeight) {this.imageHeight = imageHeight;}
-    public float getStandardBorderWidth() {return standardBorderWidth;}
-    public void setStandardBorderWidth(float standardBorderWidth) {this.standardBorderWidth = standardBorderWidth;}
-    public int getInitialPadding() {return initialPadding;}
-    public void setInitialPadding(int initialPadding) {this.initialPadding = initialPadding;}
-    public int getInitialMargin() {return initialMargin;}
-    public void setInitialMargin(int initialMargin) {this.initialMargin = initialMargin;}
-    public int getFooterNbColumns() {return footerNbColumns;}
-    public void setFooterNbColumns(int footerNbColumns) {this.footerNbColumns = footerNbColumns;}
-    public float[] getFooterWidth() {return footerWidth;}
-    public void setFooterWidth(float[] footerWidth) {this.footerWidth = footerWidth;}
-    public int getFooterInitalOffset() {return footerInitalOffset;}
-    public void setFooterInitalOffset(int footerInitalOffset) {this.footerInitalOffset = footerInitalOffset;}
-    public int getFooterInitialPosition() {return footerInitialPosition;}
-    public void setFooterInitialPosition(int footerInitialPosition) {this.footerInitialPosition = footerInitialPosition;}
-    public int getFooterYPosDif() {return footerYPosDif;}
-    public void setFooterYPosDif(int footerYPosDif) {this.footerYPosDif = footerYPosDif;}
-    public int getFooterXFinalPosition() {return footerXFinalPosition;}
-    public void setFooterXFinalPosition(int footerXFinalPosition) {this.footerXFinalPosition = footerXFinalPosition;}
-    public int getHeaderNbColumns() {return headerNbColumns;}
-    public void setHeaderNbColumns(int headerNbColumns) {this.headerNbColumns = headerNbColumns;}
-    public float[] getHeaderWidth() {return headerWidth;}
-    public void setHeaderWidth(float[] headerWidth) {this.headerWidth = headerWidth;}
-    public float[] getHeaderSubWidth() {return headerSubWidth;}
-    public void setHeaderSubWidth(float[] headerSubWidth) {this.headerSubWidth = headerSubWidth;}
-    public float getHeaderSubHeight() {return headerSubHeight;}
-    public void setHeaderSubHeight(float headerSubHeight) {this.headerSubHeight = headerSubHeight;}
-    public int getHeaderInitialPosition() {return headerInitialPosition;}
-    public void setHeaderInitialPosition(int headerInitialPosition) {this.headerInitialPosition = headerInitialPosition;}
-    public int getHeaderXFinalPosition() {return headerXFinalPosition;}
-    public void setHeaderXFinalPosition(int headerXFinalPosition) {this.headerXFinalPosition = headerXFinalPosition;}
-    public int getHeaderYDiff() {return headerYDiff;}
-    public void setHeaderYDiff(int headerYDiff) {this.headerYDiff = headerYDiff;}
-    public int getHeaderSubDivYDiff() {return headerSubDivYDiff;}
-    public void setHeaderSubDivYDiff(int headerSubDivYDiff) {this.headerSubDivYDiff = headerSubDivYDiff;}
-    public int getHeaderPaddingTop() {return headerPaddingTop;}
-    public void setHeaderPaddingTop(int headerPaddingTop) {this.headerPaddingTop = headerPaddingTop;}
-    public int getCellPadding() {return cellPadding;}
-    public void setCellPadding(int cellPadding) {this.cellPadding = cellPadding;}
-    public int getPageNumberPosition() {return pageNumberPosition;}
-    public void setPageNumberPosition(int pageNumberPosition) {this.pageNumberPosition = pageNumberPosition;}
-    public int getPageNumberRotation() {return pageNumberRotation;}
-    public void setPageNumberRotation(int pageNumberRotation) {this.pageNumberRotation = pageNumberRotation;}
-    public int getRedHeaderNumColumns() {return redHeaderNumColumns;}
-    public void setRedHeaderNumColumns(int redHeaderNumColumns) {this.redHeaderNumColumns = redHeaderNumColumns;}
-    public int getFontSize() {return fontSize;}
-    public void setFontSize(int fontSize) {this.fontSize = fontSize;}
 }
