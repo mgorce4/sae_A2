@@ -22,8 +22,11 @@ public class HeaderAndFooter extends PdfPageEventHelper {
     Path imagePath = Paths.get("src/main/resources/img/unilim.jpg");
     private Image image;
     private String reference;
+    private String department;
+    private String ue;
+    private String resource;
 
-    public HeaderAndFooter(String reference) {
+    public HeaderAndFooter(String reference, String department, String ue, String resource) {
         try {
             blackFont = FontFactory.getFont(baseFont, 11, BaseColor.BLACK);
             whiteFont = FontFactory.getFont(baseFont, 11, BaseColor.WHITE);
@@ -31,7 +34,9 @@ public class HeaderAndFooter extends PdfPageEventHelper {
             this.image = Image.getInstance(imagePath.toAbsolutePath().toString());
             this.image.scaleToFit(100, 50);
             this.reference = reference;
-
+            this.resource = resource;
+            this.department = department;
+            this.ue = ue;
         } catch (Exception e) {
             writeInLog(e.getMessage());
         }
@@ -60,7 +65,7 @@ public class HeaderAndFooter extends PdfPageEventHelper {
         footerTable.setLockedWidth(true);
         footerTable.setWidths(new float[]{4, 1});
 
-        PdfPCell cellNomUE = new PdfPCell(new Phrase("  NOM UE/ N° ressource", whiteFont));
+        PdfPCell cellNomUE = new PdfPCell(new Phrase("  " + ue + " - " + resource, whiteFont));
         styleCelluleRouge(cellNomUE);
         cellNomUE.setHorizontalAlignment(Element.ALIGN_LEFT);
         footerTable.addCell(cellNomUE);
@@ -121,12 +126,12 @@ public class HeaderAndFooter extends PdfPageEventHelper {
         cellVide.setBorder(Rectangle.NO_BORDER);
         headerTable.addCell(cellVide);
 
-        PdfPCell department = new PdfPCell(new Phrase("Dep. Informatique", blackFont));
-        department.setBorder(Rectangle.NO_BORDER);
-        department.setHorizontalAlignment(Element.ALIGN_RIGHT);
-        department.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        department.setPaddingTop(10);
-        headerTable.addCell(department);
+        PdfPCell departmentCell = new PdfPCell(new Phrase("Département " + this.department, blackFont));
+        departmentCell.setBorder(Rectangle.NO_BORDER);
+        departmentCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        departmentCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        departmentCell.setPaddingTop(10);
+        headerTable.addCell(departmentCell);
 
         float pageTop = document.getPageSize().getHeight();
 
