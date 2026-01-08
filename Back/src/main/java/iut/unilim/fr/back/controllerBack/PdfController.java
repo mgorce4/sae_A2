@@ -29,7 +29,7 @@ public class PdfController {
 
 
 
-    public void generatePdf(ResourceGetterService res) {
+    public void generatePdf(ResourceGetterService res, String absolutePath) {
         int documentMargin = 36;
         int documentMarginTop = 110;
         int documentMarginBottom = 40;
@@ -46,7 +46,7 @@ public class PdfController {
         if (!fileName.isEmpty()) {
             try {
                 Document document = new Document(PageSize.A4, documentMargin, documentMargin, documentMarginTop, documentMarginBottom);
-                PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(fileName + "_ressource_sheet.pdf"));
+                PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(absolutePath + fileName + "_ressource_sheet.pdf"));
 
                 HeaderAndFooter event = new HeaderAndFooter(res.getNbRessource(), res.getDepartment(), res.getRefUE(), res.getLabelResource());
                 writer.setPageEvent(event);
@@ -188,7 +188,7 @@ public class PdfController {
                 document.add(suiviRessourcesTable);
                 document.close();
 
-                writeInPdfLog("{user} Create a pdf for resource sheet: " + fileName + "_resource_sheet.pdf");
+                writeInPdfLog("{user} Create a pdf for resource sheet: " + fileName + "_resource_sheet.pdf at " + absolutePath);
             } catch (Exception e) {
                 writeInPdfLog(e.getMessage());
             }
