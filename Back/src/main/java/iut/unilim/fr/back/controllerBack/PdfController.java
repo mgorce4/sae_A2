@@ -217,32 +217,32 @@ public class PdfController {
         Chunk tp = new Chunk("TP", contentFont);
         Chunk total = new Chunk("Total", contentFont);
 
-        ArrayList<Chunk> programmeContent = new ArrayList<>();
-        programmeContent.add(resource);
-        programmeContent.add(cm);
-        programmeContent.add(td);
-        programmeContent.add(tp);
-        programmeContent.add(total);
+        ArrayList<Chunk> programContent = new ArrayList<>();
+        programContent.add(resource);
+        programContent.add(cm);
+        programContent.add(td);
+        programContent.add(tp);
+        programContent.add(total);
 
         // PN :
         Chunk pn = new Chunk("Programme Nationnal", contentFont);
-        programmeContent.add(pn);
+        programContent.add(pn);
 
         ArrayList<Integer> pnContent = (ArrayList<Integer>) res.getHoursPN();
         for (Integer h : pnContent) {
             Chunk chunk = new Chunk(h.toString(), contentFont);
-            programmeContent.add(chunk);
+            programContent.add(chunk);
         }
 
         // Actual :
         Chunk programme = new Chunk("Votre programme", contentFont);
-        programmeContent.add(programme);
+        programContent.add(programme);
         ArrayList<Integer> hours = (ArrayList<Integer>) res.getHoursStudent();
         for (Integer h : hours) {
             Chunk chunk = new Chunk(h.toString(), contentFont);
-            programmeContent.add(chunk);
+            programContent.add(chunk);
         }
-        return programmeContent;
+        return programContent;
     }
 
     private PdfPTable createPdfPTable(ResourceGetterService res, Font font, Font fontTitle) {
