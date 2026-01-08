@@ -65,8 +65,8 @@ public class ResourceGetterService {
     }
 
     private void initializePlaceHolderValues() {
-        String PLACEHOLDER = "No content for that category";
-        String PLACEHOLDER_TITLE = "None";
+        String PLACEHOLDER = "Aucun contenue pour cette catégorie";
+        String PLACEHOLDER_TITLE = "Aucun";
         skills.add(PLACEHOLDER);
         saes.add(PLACEHOLDER);
         modalities.add(PLACEHOLDER);
@@ -179,34 +179,27 @@ public class ResourceGetterService {
 
             PedagogicalContentDTO pedagogicalContent = resourceSheetDTO.getPedagogicalContent();
             StringBuilder pedagoContentBuilder = new StringBuilder();
-            pedagoContentCm = "";
-            pedagoContentTd = "";
-            pedagoContentTp = "";
-            pedagoContentDs = "";
 
-
-            for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent.getCm()) {
-                pedagoContentBuilder.append(contentItemDTO.getOrder()).append(". ").append(contentItemDTO.getContent()).append("\n");
+            
+            if (!pedagogicalContent.getCm().isEmpty()) {
+                pedagoContentBuilder = createPedagoContent(pedagogicalContent.getCm());
+                pedagoContentCm = pedagoContentBuilder.toString();
             }
-            pedagoContentCm = pedagoContentBuilder.toString();
-            pedagoContentBuilder = new StringBuilder();
 
-            for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent.getTd()) {
-                 pedagoContentBuilder.append(contentItemDTO.getOrder()).append(". ").append(contentItemDTO.getContent()).append("\n");
+            if (!pedagogicalContent.getTd().isEmpty()) {
+                pedagoContentBuilder = createPedagoContent(pedagogicalContent.getTd());
+                pedagoContentTd = pedagoContentBuilder.toString();
             }
-            pedagoContentTd = pedagoContentBuilder.toString();
-            pedagoContentBuilder = new StringBuilder();
 
-            for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent.getTp()) {
-                 pedagoContentBuilder.append(contentItemDTO.getOrder()).append(". ").append(contentItemDTO.getContent()).append("\n");
+            if (!pedagogicalContent.getTd().isEmpty()) {
+                pedagoContentBuilder = createPedagoContent(pedagogicalContent.getTp());
+                pedagoContentTp = pedagoContentBuilder.toString();
             }
-            pedagoContentTp = pedagoContentBuilder.toString();
-            pedagoContentBuilder = new StringBuilder();
 
-            for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent.getDs()) {
-                pedagoContentBuilder.append(contentItemDTO.getOrder()).append(". ").append(contentItemDTO.getContent()).append("\n");
+            if (!pedagogicalContent.getDs().isEmpty()) {
+                pedagoContentBuilder = createPedagoContent(pedagogicalContent.getDs());
+                pedagoContentDs = pedagoContentBuilder.toString();
             }
-            pedagoContentDs = pedagoContentBuilder.toString();
 
             ResourceTrackingDTO ressourceTracking = resourceSheetDTO.getTracking();
             studentFeedback = ressourceTracking.getStudentFeedback();
@@ -234,6 +227,14 @@ public class ResourceGetterService {
             writeInPdfLog("Attempt to get from database with resource name: " + ressourceName +
                     "\n-> " + ressourceName + " not found in resources tables");
         }
+    }
+
+    private StringBuilder createPedagoContent(List<PedagogicalContentDTO.ContentItemDTO> pedagogicalContent) {
+        StringBuilder pedagoContentBuilder = new StringBuilder();
+        for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent) {
+            pedagoContentBuilder.append(contentItemDTO.getOrder()).append(". ").append(contentItemDTO.getContent()).append("\n");
+        }
+        return pedagoContentBuilder;
     }
 
     public String getRef() {
