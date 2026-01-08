@@ -42,6 +42,7 @@ public class ResourceGetterService {
 
     private final List<Integer> hoursPN;
     private final List<Integer> hoursStudent;
+    private final List<Integer> hoursPNInternship;
     private final List<Integer> hoursStudentInternship;
     private boolean isAlternance;
 
@@ -61,6 +62,7 @@ public class ResourceGetterService {
         keywords = new ArrayList<>();
 
         hoursPN = new ArrayList<>();
+        hoursPNInternship = new ArrayList<>();
         hoursStudent = new ArrayList<>();
         hoursStudentInternship = new ArrayList<>();
 
@@ -176,6 +178,9 @@ public class ResourceGetterService {
             if (resourceSheetDTO.getHoursTeacherAlternance().getHasAlternance()) {
                 HoursDTO hoursDTOInternship = resourceSheetDTO.getHoursTeacherAlternance();
                 setHoursDTO(hoursDTOInternship, hoursStudentInternship);
+                HoursDTO hoursDTOPNInternship = resourceSheetDTO.getHoursPNAlternance();
+                System.out.println(hoursDTOPNInternship);
+                setHoursDTO(hoursDTOPNInternship, hoursPNInternship);
                 isAlternance = true;
             }
 
@@ -288,6 +293,9 @@ public class ResourceGetterService {
     }
     public List<Integer> getHoursStudent() {
         return hoursStudent;
+    }
+    public List<Integer> getHoursPNInternship() {
+        return hoursPNInternship;
     }
     public List<Integer> getHoursStudentInternship() {
         return hoursStudentInternship;

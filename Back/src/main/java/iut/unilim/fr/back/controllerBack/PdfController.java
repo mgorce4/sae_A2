@@ -243,13 +243,38 @@ public class PdfController {
     }
 
     private ArrayList<Chunk> completeInternshipProgramContent(ResourceGetterService res, Font contentFont) {
-        ArrayList<Chunk> programmeContent = completeNationalProgram(res, contentFont);
+        ArrayList<Chunk> programmeContent = completeInternshipNationalProgram(res, contentFont);
 
         // Actual :
         Chunk programme = new Chunk("Votre programme - Alternance", contentFont);
         programmeContent.add(programme);
         ArrayList<Integer> hours = (ArrayList<Integer>) res.getHoursStudentInternship();
         for (Integer h : hours) {
+            Chunk chunk = new Chunk(h.toString(), contentFont);
+            programmeContent.add(chunk);
+        }
+        return programmeContent;
+    }
+
+    private ArrayList<Chunk> completeInternshipNationalProgram(ResourceGetterService res, Font contentFont) {
+        Chunk resource = new Chunk("Ressource", contentFont);
+        Chunk cm = new Chunk("CM", contentFont);
+        Chunk td = new Chunk("TD", contentFont);
+        Chunk tp = new Chunk("TP", contentFont);
+        Chunk total = new Chunk("Total", contentFont);
+
+        ArrayList<Chunk> programmeContent = new ArrayList<>();
+        programmeContent.add(resource);
+        programmeContent.add(cm);
+        programmeContent.add(td);
+        programmeContent.add(tp);
+        programmeContent.add(total);
+
+        Chunk pn = new Chunk("Programme Nationnal - Alternance", contentFont);
+        programmeContent.add(pn);
+
+        ArrayList<Integer> pnContent = (ArrayList<Integer>) res.getHoursPNInternship();
+        for (Integer h : pnContent) {
             Chunk chunk = new Chunk(h.toString(), contentFont);
             programmeContent.add(chunk);
         }
