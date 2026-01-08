@@ -55,10 +55,14 @@ public class HeaderAndFooter extends PdfPageEventHelper {
     private int pageNumberPosition = 2;
     private int pageNumberRotation = 0;
 
+    private int redHeaderNumColumns = 2;
+
+    private int fontSize = 11;
+
     public HeaderAndFooter(String reference, String department, String ue, String resource) {
         try {
-            blackFont = FontFactory.getFont(baseFont, 11, BaseColor.BLACK);
-            whiteFont = FontFactory.getFont(baseFont, 11, BaseColor.WHITE);
+            blackFont = FontFactory.getFont(baseFont, fontSize, BaseColor.BLACK);
+            whiteFont = FontFactory.getFont(baseFont, fontSize, BaseColor.WHITE);
 
             this.image = Image.getInstance(imagePath.toAbsolutePath().toString());
             this.image.scaleToFit(imageWidth, imageHeight);
@@ -167,7 +171,7 @@ public class HeaderAndFooter extends PdfPageEventHelper {
         headerTable.writeSelectedRows(headerInitialPosition, headerXFinalPosition, document.left(), pageTop - headerYDiff , writer.getDirectContent());
 
 
-        PdfPTable redHeaderTable = new PdfPTable(2);
+        PdfPTable redHeaderTable = new PdfPTable(redHeaderNumColumns);
         redHeaderTable.setTotalWidth(document.getPageSize().getWidth());
         redHeaderTable.setLockedWidth(true);
 
@@ -267,4 +271,8 @@ public class HeaderAndFooter extends PdfPageEventHelper {
     public void setPageNumberPosition(int pageNumberPosition) {this.pageNumberPosition = pageNumberPosition;}
     public int getPageNumberRotation() {return pageNumberRotation;}
     public void setPageNumberRotation(int pageNumberRotation) {this.pageNumberRotation = pageNumberRotation;}
+    public int getRedHeaderNumColumns() {return redHeaderNumColumns;}
+    public void setRedHeaderNumColumns(int redHeaderNumColumns) {this.redHeaderNumColumns = redHeaderNumColumns;}
+    public int getFontSize() {return fontSize;}
+    public void setFontSize(int fontSize) {this.fontSize = fontSize;}
 }

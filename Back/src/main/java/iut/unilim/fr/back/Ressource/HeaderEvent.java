@@ -17,17 +17,21 @@ public record HeaderEvent(String titre, Font font, BaseColor fondHeader) impleme
         float left = position.getLeft();
         float width = position.getWidth();
 
+        int leading = 15;
+        int topDiffY = 25;
+        int subTopDiffY = 8;
+
         cb.setColorFill(fondHeader);
         cb.rectangle(left, top - headerHeight, width, headerHeight);
         cb.fill();
 
         ColumnText ct = new ColumnText(cb);
         ct.setSimpleColumn(new Phrase(titre, font),
-                left + 15,
-                top - 25,
-                left + width - 15,
-                top - 8,
-                15,
+                left + leading,
+                top - topDiffY,
+                left + width - leading,
+                top - subTopDiffY,
+                leading,
                 Element.ALIGN_LEFT
         );
         try {
