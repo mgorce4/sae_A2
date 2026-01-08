@@ -98,22 +98,23 @@ public class ResourceGetterService {
     }
 
     @Transactional
-    public void setValuesFromRessource(String ressourceName) {
+    public void setValuesFromResource(String resourceName) {
         int multi_skill_limit = 1;
 
         Optional<RessourceSheet> resultResourceSheet = Optional.empty();
         Long id;
         String label;
 
-        Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(ressourceName);
+
+        Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(resourceName);
 
         if (resultResource.isPresent()) {
             resultResourceSheet = ressourceSheetRepository.findFirstByResource_IdResource(resultResource.get().getIdResource());
         } else {
-            writeInPdfLog("Could not get the resource sheet from the database because there is no resource with id = " + ressourceName);}
+            writeInPdfLog("Could not get the resource sheet from the database because there is no resource with id = " + resourceName);}
 
         if (resultResource.isPresent() && resultResourceSheet.isPresent()) {
-            fileName = ressourceName;
+            fileName = resourceName;
             Ressource resource = resultResource.get();
 
             id = resource.getIdResource();
@@ -125,14 +126,14 @@ public class ResourceGetterService {
 
             List<SaeInfoDTO> SAELinkResources = resourceSheetDTO.getLinkedSaes();
 
-            ref = ressourceName;
+            ref = resourceName;
             qualityReference = "IU EN FOR 001";
 
             List<UeInfoDTO> UeReferences = resourceSheetDTO.getUeReferences();
             UeInfoDTO ue = UeReferences.getFirst();
             refUE = ue.getLabel();
 
-            writeInPdfLog("Get ressource \n"
+            writeInPdfLog("Get resource \n"
                     + "     - id : " + id + "\n"
                     + "     - label : " + label + "\n");
 
@@ -206,13 +207,13 @@ public class ResourceGetterService {
                 pedagoContentDs = pedagoContentBuilder.toString();
             }
 
-            ResourceTrackingDTO ressourceTracking = resourceSheetDTO.getTracking();
-            studentFeedback = ressourceTracking.getStudentFeedback();
-            pedagoTeamFeedback = ressourceTracking.getPedagogicalFeedback();
-            improvements = ressourceTracking.getImprovementSuggestions();
+            ResourceTrackingDTO resourceTracking = resourceSheetDTO.getTracking();
+            studentFeedback = resourceTracking.getStudentFeedback();
+            pedagoTeamFeedback = resourceTracking.getPedagogicalFeedback();
+            improvements = resourceTracking.getImprovementSuggestions();
 
             writeInPdfLog("Get from database :\n" +
-                    "   - Ressource (" + labelResource + "; " + qualityReference + "; " + refUE + "; " + profRef + ";" + ")\n" +
+                    "   - Resource (" + labelResource + "; " + qualityReference + "; " + refUE + "; " + profRef + ";" + ")\n" +
                     "   - department(" + department + ")\n" +
                     "   - objectives(" + objectiveContent + ")\n" +
                     "   - skills(" + skills + ")\n" +
@@ -220,18 +221,14 @@ public class ResourceGetterService {
                     "   - terms(" + modalities + ")\n" +
                     "   - keywords(" + keywords + ")\n" +
                     "   - hoursStudent(" + hoursStudent +")\n" +
-                    "   - hoursPN(" + hoursPN + ")\n" +
-                    "   - pedagoContent( CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
-                    "   - terms(" + modalities + ")\n" +
-                    "   - keywords(" + keywords + ")\n" +
-                    "   - hoursStudent(" + hoursStudent +")\n" +
-                    "   - hoursPN(" + hoursPN + ")\n" +
+                    "   - hoursNP(" + hoursPN + ")\n" +
                     "   - pedagoContent( DS: " + pedagoContentDs + "; CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
                     "   - feedBack(Student: " + studentFeedback + "; Pedagogical team: " + pedagoTeamFeedback + "; Improvements: " + improvements + ")\n");
         } else {
-            writeInPdfLog("Attempt to get from database with resource name: " + ressourceName +
-                    "\n-> " + ressourceName + " not found in resources tables");
+            writeInPdfLog("Attempt to get from database with resource name: " + resourceName +
+                    "\n-> " + resourceName + " not found in resources tables");
         }
+
     }
 
     private StringBuilder createPedagoContent(List<PedagogicalContentDTO.ContentItemDTO> pedagogicalContent) {
@@ -246,7 +243,7 @@ public class ResourceGetterService {
         return ref;
     }
     public String getDepartment(){return department;}
-    public String getNbRessource() {
+    public String qualityReference() {
         return qualityReference;
     }
     public String getRefUE() {

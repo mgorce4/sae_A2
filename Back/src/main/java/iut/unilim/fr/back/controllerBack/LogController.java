@@ -10,7 +10,7 @@ import java.util.Date;
 
 public class LogController {
     public static void writeInPdfLog(String message) {
-        String fileName = ".pdf_log.txt";
+        String fileName = "logs/.pdf_log.txt";
         String openSymbol = "[";
         String closeSymbol = "] ";
         Path path = Paths.get(fileName);
