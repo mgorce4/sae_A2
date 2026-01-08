@@ -17,11 +17,11 @@ public class BackApplication implements CommandLineRunner {
 	}
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         resourceGetterService.setValuesFromRessource("R1.01");
         PdfController pdfController = new PdfController();
 
-        pdfController.generatePdf(resourceGetterService);
+        pdfController.generatePdf(resourceGetterService, "./");
     }
 
 }
