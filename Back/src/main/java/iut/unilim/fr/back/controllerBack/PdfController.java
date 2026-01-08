@@ -16,8 +16,8 @@ public class PdfController {
     private final BaseColor COL_BLEU_FOND = new BaseColor(59, 66, 117);
     private final BaseColor COL_NOIR_HEADER = new BaseColor(34, 34, 34);
     private final BaseColor COL_GRIS_CORPS = new BaseColor(128, 128, 128);
-    private final BaseColor COL_CONTENT_TEXTE = BaseColor.WHITE;
-    private final BaseColor COL_TEXTE = BaseColor.BLACK;
+    private final BaseColor COL_CONTENT_TEXT = BaseColor.WHITE;
+    private final BaseColor COL_TEXT = BaseColor.BLACK;
     private final String baseFont = "src/main/resources/font/trade-gothic-lt-std-58a78e64434a9.otf";
     private String absolutePath;
 
@@ -63,17 +63,17 @@ public class PdfController {
                 document.open();
 
 
-                Font font = FontFactory.getFont(baseFont, documentStandardFontSize, COL_TEXTE);
-                Font contentFont = FontFactory.getFont(baseFont, documentStandardFontSize, COL_CONTENT_TEXTE);
-                Font fontTitle = FontFactory.getFont(baseFont, documentTitleFontSize, COL_TEXTE);
+                Font font = FontFactory.getFont(baseFont, documentStandardFontSize, COL_TEXT);
+                Font contentFont = FontFactory.getFont(baseFont, documentStandardFontSize, COL_CONTENT_TEXT);
+                Font fontTitle = FontFactory.getFont(baseFont, documentTitleFontSize, COL_TEXT);
 
                 PdfPTable table = createPdfPTable(res, font, fontTitle);
 
                 // Premiere div
-                Chunk descriptif = new Chunk("Descriptif", contentFont);
-                Chunk objectif = new Chunk("Objectif", contentFont);
-                Chunk objectifContent = new Chunk(res.getObjectiveContent(), contentFont);
-                PdfPTable content = createContentDiv(objectif, objectifContent);
+                Chunk descriptive = new Chunk("Descriptif", contentFont);
+                Chunk objective = new Chunk("Objectif", contentFont);
+                Chunk objectiveContent = new Chunk(res.getObjectiveContent(), contentFont);
+                PdfPTable content = createContentDiv(objective, objectiveContent);
 
                 ArrayList<PdfPTable> contents = new ArrayList<>();
                 contents.add(content);
@@ -82,70 +82,70 @@ public class PdfController {
                 Chunk competenceTitle = new Chunk("Compétence", contentFont);
 
                 ArrayList<String> competences = (ArrayList<String>) res.getSkills();
-                com.itextpdf.text.List listePuces = new com.itextpdf.text.List(UNORDERED);
+                com.itextpdf.text.List bulletedList = new com.itextpdf.text.List(UNORDERED);
 
 
                 for (String competence : competences) {
-                    listePuces.setListSymbol("•");
-                    listePuces.setSymbolIndent(listIndent);
+                    bulletedList.setListSymbol("•");
+                    bulletedList.setSymbolIndent(listIndent);
 
-                    listePuces.add(new ListItem(new Chunk(competence, contentFont)));
+                    bulletedList.add(new ListItem(new Chunk(competence, contentFont)));
                 }
 
 
-                PdfPTable contentCompetence = createContentDiv(competenceTitle, listePuces);
+                PdfPTable contentCompetence = createContentDiv(competenceTitle, bulletedList);
                 contents.add(contentCompetence);
 
                 // Div SAE
-                Chunk saeConcerne = new Chunk("SAÉ Concernée", contentFont);
+                Chunk saeConcerned = new Chunk("SAÉ Concernée", contentFont);
                 ArrayList<String> saes = (ArrayList<String>) res.getSaes();
 
-                createITextList(contentFont, contents, saeConcerne, saes);
+                createITextList(contentFont, contents, saeConcerned, saes);
 
-                // Div mot cles
+                // Div keywords
                 Chunk motsCleTitre = new Chunk("Mots Clé", contentFont);
-                ArrayList<String> motsCles = (ArrayList<String>) res.getKeyWords();
-                StringBuilder motCle = new StringBuilder(motsCles.getFirst());
-                for  (int index=keyWordStartIndex; index<motsCles.size(); index++) {
-                    motCle.append(", ").append(motsCles.get(index));
+                ArrayList<String> keyWords = (ArrayList<String>) res.getKeyWords();
+                StringBuilder keyWord = new StringBuilder(keyWords.getFirst());
+                for  (int index=keyWordStartIndex; index<keyWords.size(); index++) {
+                    keyWord.append(", ").append(keyWords.get(index));
                 }
 
 
-                Chunk motsCleChunk = new Chunk(motCle.toString(), contentFont);
+                Chunk motsCleChunk = new Chunk(keyWord.toString(), contentFont);
 
                 PdfPTable motCleContent = createContentDiv(motsCleTitre, motsCleChunk);
                 contents.add(motCleContent);
 
 
-                Chunk modalite = new Chunk("Modalité", contentFont);
-                ArrayList<String> modalites = (ArrayList<String>) res.getModalities();
+                Chunk modality = new Chunk("Modalité", contentFont);
+                ArrayList<String> modalities = (ArrayList<String>) res.getModalities();
 
-                createITextList(contentFont, contents, modalite, modalites);
+                createITextList(contentFont, contents, modality, modalities);
 
                 document.add(table);
 
-                // Repartition des heures
-                Chunk repartitionHeure = new Chunk("Répartition des heures par élève:", contentFont);
+                // hours repartition
+                Chunk hoursRepartition = new Chunk("Répartition des heures par élève:", contentFont);
                 PdfPTable repartitionProgrammeTable = new PdfPTable(repartitionProgramNbColumn);
                 repartitionProgrammeTable.setWidthPercentage(widthPercentage);
 
-                ArrayList<Chunk> programmeContent = completeProgrammContent(res, contentFont);
+                ArrayList<Chunk> programmeContent = completeProgramContent(res, contentFont);
 
                 for (Chunk chunk : programmeContent) {
                     PdfPCell cell = new PdfPCell(new Phrase(chunk.getContent(), contentFont));
 
-                    styleCelluleGrise(cell);
+                    greyCellStyle(cell);
                     cell.setHorizontalAlignment(Element.ALIGN_CENTER);
                     cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
 
                     repartitionProgrammeTable.addCell(cell);
                 }
 
-                PdfPTable repartitionContent = createContentDiv(repartitionHeure, repartitionProgrammeTable);
+                PdfPTable repartitionContent = createContentDiv(hoursRepartition, repartitionProgrammeTable);
                 repartitionContent.setPaddingTop(standardPadding);
                 contents.add(repartitionContent);
 
-                Chunk contenuePedago = new Chunk("Contenue pédagogique", contentFont);
+                Chunk pedagogicalContent = new Chunk("Contenue pédagogique", contentFont);
                 PdfPTable pedagoTable = new PdfPTable(pedagoTableNbColumn);
                 pedagoTable.setWidthPercentage(widthPercentage);
                 pedagoTable.setWidths(pedagoTableWidth);
@@ -156,45 +156,45 @@ public class PdfController {
                 String pedagoContentTp = res.getPedagoContentTp();
 
                 String[] itemsDs = pedagoContentDs.split(pedagoContentSplitDelimitator);
-                ajouterLigneCategorie(pedagoTable, "DS", itemsDs, contentFont);
+                addCategoryLine(pedagoTable, "DS", itemsDs, contentFont);
 
                 String[] itemsCM = pedagoContentCm.split(pedagoContentSplitDelimitator);
-                ajouterLigneCategorie(pedagoTable, "CM", itemsCM, contentFont);
+                addCategoryLine(pedagoTable, "CM", itemsCM, contentFont);
 
                 String[] itemsTD = pedagoContentTd.split(pedagoContentSplitDelimitator);
-                ajouterLigneCategorie(pedagoTable, "TD", itemsTD, contentFont);
+                addCategoryLine(pedagoTable, "TD", itemsTD, contentFont);
 
                 String[] itemsTP = pedagoContentTp.split(pedagoContentSplitDelimitator);
-                ajouterLigneCategorie(pedagoTable, "TP", itemsTP, contentFont);
+                addCategoryLine(pedagoTable, "TP", itemsTP, contentFont);
 
-                PdfPTable contentPedagoContent = createContentDiv(contenuePedago, pedagoTable);
+                PdfPTable contentPedagoContent = createContentDiv(pedagogicalContent, pedagoTable);
                 contents.add(contentPedagoContent);
 
-                PdfPTable contentDiv = createContent(descriptif, contents);
+                PdfPTable contentDiv = createContent(descriptive, contents);
                 document.add(contentDiv);
                 document.newPage();
-                ArrayList<PdfPTable> suiviRessourceContents = new ArrayList<>();
+                ArrayList<PdfPTable> resourceContentsTracking = new ArrayList<>();
 
-                Chunk suiviRessource = new Chunk("Suivi de la Ressource/Module", contentFont);
-                Chunk retourEquipePedago = new Chunk("Retour de l'équipe pédagogique", contentFont);
-                Chunk retourEquipePedagoContent = new Chunk(res.getPedagoTeamFeedback(), contentFont);
+                Chunk resourceTracking = new Chunk("Suivi de la Ressource/Module", contentFont);
+                Chunk pedagogicalTeamFeedback = new Chunk("Retour de l'équipe pédagogique", contentFont);
+                Chunk pedagogicalTeamFeedbackContent = new Chunk(res.getPedagoTeamFeedback(), contentFont);
 
-                suiviRessourceContents.add(createContentDiv(retourEquipePedago, retourEquipePedagoContent));
+                resourceContentsTracking.add(createContentDiv(pedagogicalTeamFeedback, pedagogicalTeamFeedbackContent));
 
-                Chunk retourEtu = new Chunk("Retour étudiant", contentFont);
-                Chunk retourEtuContent = new Chunk(res.getStudentFeedback(), contentFont);
+                Chunk studentFeedback = new Chunk("Retour étudiant", contentFont);
+                Chunk studentFeedbackContent = new Chunk(res.getStudentFeedback(), contentFont);
 
-                suiviRessourceContents.add(createContentDiv(retourEtu, retourEtuContent));
+                resourceContentsTracking.add(createContentDiv(studentFeedback, studentFeedbackContent));
 
                 Chunk amelioration = new Chunk("Améliorations à mettre en oeuvre", contentFont);
                 Chunk ameliorationContent = new Chunk(res.getImprovements(), contentFont);
 
-                suiviRessourceContents.add(createContentDiv(amelioration, ameliorationContent));
+                resourceContentsTracking.add(createContentDiv(amelioration, ameliorationContent));
 
-                PdfPTable suiviRessourcesTable = createContent(suiviRessource, suiviRessourceContents);
-                suiviRessourcesTable.setPaddingTop(standardPadding);
+                PdfPTable resourceTrackingTable = createContent(resourceTracking, resourceContentsTracking);
+                resourceTrackingTable.setPaddingTop(standardPadding);
 
-                document.add(suiviRessourcesTable);
+                document.add(resourceTrackingTable);
                 document.close();
 
                 writeInPdfLog("{user} Create a pdf for resource sheet: " + fileName + "_resource_sheet.pdf at " + absolutePath);
@@ -210,15 +210,15 @@ public class PdfController {
         return resultValue;
     }
 
-    private ArrayList<Chunk> completeProgrammContent(ResourceGetterService res, Font contentFont) {
-        Chunk ressource = new Chunk("Ressource", contentFont);
+    private ArrayList<Chunk> completeProgramContent(ResourceGetterService res, Font contentFont) {
+        Chunk resource = new Chunk("Ressource", contentFont);
         Chunk cm = new Chunk("CM", contentFont);
         Chunk td = new Chunk("TD", contentFont);
         Chunk tp = new Chunk("TP", contentFont);
         Chunk total = new Chunk("Total", contentFont);
 
         ArrayList<Chunk> programmeContent = new ArrayList<>();
-        programmeContent.add(ressource);
+        programmeContent.add(resource);
         programmeContent.add(cm);
         programmeContent.add(td);
         programmeContent.add(tp);
@@ -234,7 +234,7 @@ public class PdfController {
             programmeContent.add(chunk);
         }
 
-        // Actuel :
+        // Actual :
         Chunk programme = new Chunk("Votre programme", contentFont);
         programmeContent.add(programme);
         ArrayList<Integer> hours = (ArrayList<Integer>) res.getHoursStudent();
@@ -247,34 +247,34 @@ public class PdfController {
 
     private PdfPTable createPdfPTable(ResourceGetterService res, Font font, Font fontTitle) {
         int numColumns = 3;
-        int standartLeading = 0;
+        int standardLeading = 0;
         int refUeMultipliedLeading = 2;
         float refResourceStandardLeading = 10f;
 
         PdfPTable table = new PdfPTable(numColumns);
         table.setWidthPercentage(widthPercentage);
 
-        // Titre Ressource
+        // Resource title
         PdfPCell cellLeft = new PdfPCell();
         cellLeft.setBorder(Rectangle.NO_BORDER);
 
 
         Paragraph refUE = new Paragraph(res.getRefUE(), font);
-        Paragraph refRessource = new Paragraph(res.getRef(), font);
+        Paragraph resourceRef = new Paragraph(res.getRef(), font);
 
-        Paragraph titreRessource = new Paragraph(res.getLabelResource(), fontTitle);
+        Paragraph resourceTitle = new Paragraph(res.getLabelResource(), fontTitle);
         Paragraph profReferent = new Paragraph(res.getProfRef(), font);
 
-        refUE.setLeading(standartLeading, refUeMultipliedLeading);
-        refRessource.setLeading(refResourceStandardLeading, standartLeading);
+        refUE.setLeading(standardLeading, refUeMultipliedLeading);
+        resourceRef.setLeading(refResourceStandardLeading, standardLeading);
 
         cellLeft.addElement(refUE);
-        cellLeft.addElement(refRessource);
+        cellLeft.addElement(resourceRef);
         cellLeft.setVerticalAlignment(Element.ALIGN_MIDDLE);
         cellLeft.setPaddingBottom(standardPadding);
         table.addCell(cellLeft);
 
-        PdfPCell cellCenter = new PdfPCell(titreRessource);
+        PdfPCell cellCenter = new PdfPCell(resourceTitle);
         cellCenter.setBorder(Rectangle.NO_BORDER);
         cellCenter.setHorizontalAlignment(Element.ALIGN_CENTER);
         cellCenter.setVerticalAlignment(Element.ALIGN_MIDDLE);
@@ -292,19 +292,19 @@ public class PdfController {
         List modaliteList = new List(UNORDERED);
         modaliteList.setListSymbol("•");
         modaliteList.setSymbolIndent(listIndent);
-        for (String u_modalite : items) {
-            modaliteList.add(new ListItem(new Chunk(u_modalite, contentFont)));
+        for (String u_modality : items) {
+            modaliteList.add(new ListItem(new Chunk(u_modality, contentFont)));
         }
 
-        PdfPTable contentModalite = createContentDiv(title, modaliteList);
-        contents.add(contentModalite);
+        PdfPTable modalityContent = createContentDiv(title, modaliteList);
+        contents.add(modalityContent);
     }
 
     public PdfPTable createContentDiv(Chunk titreHeader, Element elementBody) {
         int headerFontSize = 12;
         int cellPaddingTop = 45;
         float spacingAfter = 10f;
-        Font FONT_HEADER_BLOCK = FontFactory.getFont(baseFont, headerFontSize, Font.BOLD, COL_CONTENT_TEXTE);
+        Font FONT_HEADER_BLOCK = FontFactory.getFont(baseFont, headerFontSize, Font.BOLD, COL_CONTENT_TEXT);
 
         PdfPTable table = new PdfPTable(specialTableNbRow);
         table.setWidthPercentage(widthPercentage);
@@ -333,7 +333,7 @@ public class PdfController {
 
     private PdfPTable createContent(Chunk containerTitle, ArrayList<PdfPTable> contents)  {
         int containerFontSize = 14;
-        Font FONT_TITRE_CONTAINER = FontFactory.getFont(baseFont, containerFontSize, Font.NORMAL, COL_CONTENT_TEXTE);
+        Font FONT_TITRE_CONTAINER = FontFactory.getFont(baseFont, containerFontSize, Font.NORMAL, COL_CONTENT_TEXT);
 
         PdfPTable masterTable = new PdfPTable(specialTableNbRow);
         masterTable.setPaddingTop(standardPadding);
@@ -386,7 +386,7 @@ public class PdfController {
         return masterTable;
     }
 
-    private void ajouterLigneCategorie(PdfPTable table, String label, String[] items, Font font) {
+    private void addCategoryLine(PdfPTable table, String label, String[] items, Font font) {
         int colspan = 2;
 
         PdfPCell cellLabel = new PdfPCell(new Phrase(label, font));
@@ -398,8 +398,8 @@ public class PdfController {
         cellLabel.setPaddingTop(NONE);
         table.addCell(cellLabel);
 
-        PdfPCell cellListe = generatePdfPCell(items, font);
-        table.addCell(cellListe);
+        PdfPCell cellList = generatePdfPCell(items, font);
+        table.addCell(cellList);
 
         PdfPCell cellSpace = new PdfPCell();
         cellSpace.setColspan(colspan);
@@ -411,10 +411,10 @@ public class PdfController {
     private PdfPCell generatePdfPCell(String[] items, Font font) {
         float spacing = 2f;
 
-        PdfPCell cellListe = new PdfPCell();
-        cellListe.setBorder(Rectangle.NO_BORDER);
-        cellListe.setBackgroundColor(null);
-        cellListe.setPadding(NONE);
+        PdfPCell cellList = new PdfPCell();
+        cellList.setBorder(Rectangle.NO_BORDER);
+        cellList.setBackgroundColor(null);
+        cellList.setPadding(NONE);
 
         List list = new List(List.UNORDERED);
         list.setListSymbol("•");
@@ -433,11 +433,11 @@ public class PdfController {
             }
         }
 
-        cellListe.addElement(list);
-        return cellListe;
+        cellList.addElement(list);
+        return cellList;
     }
 
-    private void styleCelluleGrise(PdfPCell cell) {
+    private void greyCellStyle(PdfPCell cell) {
         float borderWidth = 1f;
 
         cell.setBackgroundColor(COL_GRIS_CORPS);
