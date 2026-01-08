@@ -60,9 +60,24 @@ const hoursPerStudent = computed(() => resourceSheetDTO.value?.hoursPN || null)
 const hoursPerStudentAlternance = computed(() => resourceSheetDTO.value?.hoursPNAlternance || null)
 
 const hasAlternanceHours = computed(() => {
-  return resourceSheetDTO.value?.hoursTeacherAlternance != null ||
-         resourceSheetDTO.value?.hoursPNAlternance != null ||
-         (localHoursAlternance.value.cm > 0 || localHoursAlternance.value.td > 0 || localHoursAlternance.value.tp > 0)
+  // Check if teacher alternance hours exist and have non-zero values
+  const hasTeacherAlternance = resourceSheetDTO.value?.hoursTeacherAlternance != null &&
+    (resourceSheetDTO.value.hoursTeacherAlternance.cm > 0 ||
+     resourceSheetDTO.value.hoursTeacherAlternance.td > 0 ||
+     resourceSheetDTO.value.hoursTeacherAlternance.tp > 0)
+
+  // Check if PN alternance hours exist and have non-zero values
+  const hasPNAlternance = resourceSheetDTO.value?.hoursPNAlternance != null &&
+    (resourceSheetDTO.value.hoursPNAlternance.cm > 0 ||
+     resourceSheetDTO.value.hoursPNAlternance.td > 0 ||
+     resourceSheetDTO.value.hoursPNAlternance.tp > 0)
+
+  // Check if local alternance hours have been entered
+  const hasLocalAlternance = (localHoursAlternance.value.cm && localHoursAlternance.value.cm > 0) ||
+                              (localHoursAlternance.value.td && localHoursAlternance.value.td > 0) ||
+                              (localHoursAlternance.value.tp && localHoursAlternance.value.tp > 0)
+
+  return hasTeacherAlternance || hasPNAlternance || hasLocalAlternance
 })
 
 const localHoursTotal = computed(() => {
