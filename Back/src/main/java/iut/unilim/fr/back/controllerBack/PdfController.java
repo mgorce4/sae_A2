@@ -26,7 +26,7 @@ public class PdfController {
                 Document document = new Document(PageSize.A4, 36, 36, 110, 40);
                 PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(fileName + "_ressource_sheet.pdf"));
 
-                HeaderAndFooter event = new HeaderAndFooter(res.getNbRessource());
+                HeaderAndFooter event = new HeaderAndFooter(res.getNbRessource(), res.getDepartment(), res.getRefUE(), res.getLabelResource());
                 writer.setPageEvent(event);
 
                 document.open();

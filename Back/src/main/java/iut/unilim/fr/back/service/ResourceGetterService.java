@@ -3,7 +3,6 @@ package iut.unilim.fr.back.service;
 import iut.unilim.fr.back.controller.ResourceSheetDTOController;
 import iut.unilim.fr.back.dto.*;
 import iut.unilim.fr.back.entity.*;
-import iut.unilim.fr.back.mapper.ResourceSheetMapper;
 import iut.unilim.fr.back.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,6 +31,7 @@ public class ResourceGetterService {
     private String refUE;
     private String profRef;
     private String labelResource;
+    private String department;
 
     private String objectiveContent;
     private final List<String> skills;
@@ -81,6 +81,7 @@ public class ResourceGetterService {
         refUE = PLACEHOLDER_TITLE;
         profRef = PLACEHOLDER_TITLE;
         labelResource = PLACEHOLDER_TITLE;
+        department = PLACEHOLDER_TITLE;
         objectiveContent = PLACEHOLDER;
         keywords.add(PLACEHOLDER);
         pedagoContentDs = PLACEHOLDER;
@@ -109,15 +110,14 @@ public class ResourceGetterService {
         if (resultResource.isPresent() && resultResourceSheet.isPresent()) {
             fileName = ressourceName;
             Ressource resource = resultResource.get();
-            RessourceSheet resourceSheet = resultResourceSheet.get();
 
             id = resource.getIdResource();
 
             List<ResourceSheetDTO> resourcesSheets = rsDTOController.getResourceSheetsByResourceId(id);
             ResourceSheetDTO resourceSheetDTO = resourcesSheets.getLast();
             label = resourceSheetDTO.getResourceName();
+            department = resourceSheetDTO.getDepartment();
 
-            List<String> mainTeacherForResource = resourceSheetDTO.getTeachers();
             List<SaeInfoDTO> SAELinkResources = resourceSheetDTO.getLinkedSaes();
 
             ref = ressourceName;
@@ -152,7 +152,6 @@ public class ResourceGetterService {
                 if (saeLinkResource.getIsLinked()) {
                     saes.add(saeLinkResource.getLabel());
                 }
-                // Ajout uniquement si isLink. A voir comment ca marche sinon ? MAX !!! OSKOUR!
             }
 
             List<String> keyWordsList = resourceSheetDTO.getKeywords();
@@ -179,24 +178,35 @@ public class ResourceGetterService {
             hoursStudent.add(teacherHours.getCm() + hoursDTOPN.getTd() + hoursDTOPN.getTp());
 
             PedagogicalContentDTO pedagogicalContent = resourceSheetDTO.getPedagogicalContent();
-            // Des listes ???
+            StringBuilder pedagoContentBuilder = new StringBuilder();
             pedagoContentCm = "";
-            for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent.getCm()) {
-                pedagoContentCm += contentItemDTO.getOrder() + ". " + contentItemDTO.getContent() + "\n";
-            }
             pedagoContentTd = "";
-            for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent.getTd()) {
-                pedagoContentTd += contentItemDTO.getOrder() + ". " + contentItemDTO.getContent() + "\n";
-            }
             pedagoContentTp = "";
-            for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent.getTp()) {
-                pedagoContentTp += contentItemDTO.getOrder() + ". " + contentItemDTO.getContent() + "\n";
-            }
             pedagoContentDs = "";
-            for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent.getDs()) {
-                pedagoContentDs += contentItemDTO.getOrder() + ". " + contentItemDTO.getContent() + "\n";
-            }
 
+
+            for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent.getCm()) {
+                pedagoContentBuilder.append(contentItemDTO.getOrder()).append(". ").append(contentItemDTO.getContent()).append("\n");
+            }
+            pedagoContentCm = pedagoContentBuilder.toString();
+            pedagoContentBuilder = new StringBuilder();
+
+            for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent.getTd()) {
+                 pedagoContentBuilder.append(contentItemDTO.getOrder()).append(". ").append(contentItemDTO.getContent()).append("\n");
+            }
+            pedagoContentTd = pedagoContentBuilder.toString();
+            pedagoContentBuilder = new StringBuilder();
+
+            for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent.getTp()) {
+                 pedagoContentBuilder.append(contentItemDTO.getOrder()).append(". ").append(contentItemDTO.getContent()).append("\n");
+            }
+            pedagoContentTp = pedagoContentBuilder.toString();
+            pedagoContentBuilder = new StringBuilder();
+
+            for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent.getDs()) {
+                pedagoContentBuilder.append(contentItemDTO.getOrder()).append(". ").append(contentItemDTO.getContent()).append("\n");
+            }
+            pedagoContentDs = pedagoContentBuilder.toString();
 
             ResourceTrackingDTO ressourceTracking = resourceSheetDTO.getTracking();
             studentFeedback = ressourceTracking.getStudentFeedback();
@@ -205,6 +215,7 @@ public class ResourceGetterService {
 
             writeInLog("Get from database :\n" +
                     "   - Ressource (" + labelResource + "; " + qualityReference + "; " + refUE + "; " + profRef + ";" + ")\n" +
+                    "   - department(" + department + ")\n" +
                     "   - objectives(" + objectiveContent + ")\n" +
                     "   - skills(" + skills + ")\n" +
                     "   - saes(" + saes + ")\n" +
@@ -224,6 +235,7 @@ public class ResourceGetterService {
     public String getRef() {
         return ref;
     }
+    public String getDepartment(){return department;}
     public String getNbRessource() {
         return qualityReference;
     }
