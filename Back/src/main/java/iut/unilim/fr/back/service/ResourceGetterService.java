@@ -42,6 +42,8 @@ public class ResourceGetterService {
 
     private final List<Integer> hoursPN;
     private final List<Integer> hoursStudent;
+    private final List<Integer> hoursStudentInternship;
+    private boolean isAlternance;
 
     private String pedagoContentCm;
     private String pedagoContentTd;
@@ -60,6 +62,7 @@ public class ResourceGetterService {
 
         hoursPN = new ArrayList<>();
         hoursStudent = new ArrayList<>();
+        hoursStudentInternship = new ArrayList<>();
 
         initializePlaceHolderValues();
     }
@@ -78,6 +81,7 @@ public class ResourceGetterService {
             hoursPN.add(PLACEHOLDER_HOURS);
             hoursStudent.add(PLACEHOLDER_HOURS);
         }
+        isAlternance = false;
 
         ref = PLACEHOLDER_TITLE;
         qualityReference = PLACEHOLDER_TITLE;
@@ -169,19 +173,16 @@ public class ResourceGetterService {
             modalities.clear();
             modalities.add(terms.getCode());
 
-            HoursDTO hoursDTOPN = resourceSheetDTO.getHoursPN();
-            hoursPN.clear();
-            hoursPN.add(hoursDTOPN.getCm());
-            hoursPN.add(hoursDTOPN.getTd());
-            hoursPN.add(hoursDTOPN.getTp());
-            hoursPN.add(hoursDTOPN.getCm() + hoursDTOPN.getTd() + hoursDTOPN.getTp());
+            if (resourceSheetDTO.getHoursTeacherAlternance().getHasAlternance()) {
+                HoursDTO hoursDTOInternship = resourceSheetDTO.getHoursTeacherAlternance();
+                setHoursDTO(hoursDTOInternship, hoursStudentInternship);
+                isAlternance = true;
+            }
 
-            HoursDTO teacherHours = resourceSheetDTO.getHoursTeacher();
-            hoursStudent.clear();
-            hoursStudent.add(teacherHours.getCm());
-            hoursStudent.add(teacherHours.getTd());
-            hoursStudent.add(teacherHours.getTp());
-            hoursStudent.add(teacherHours.getCm() + hoursDTOPN.getTd() + hoursDTOPN.getTp());
+            HoursDTO hoursDTOPN = resourceSheetDTO.getHoursPN();
+            HoursDTO hoursDTOStudent = resourceSheetDTO.getHoursTeacher();
+            setHoursDTO(hoursDTOPN, hoursPN);
+            setHoursDTO(hoursDTOStudent, hoursStudent);
 
             PedagogicalContentDTO pedagogicalContent = resourceSheetDTO.getPedagogicalContent();
             StringBuilder pedagoContentBuilder;
@@ -223,12 +224,20 @@ public class ResourceGetterService {
                     "   - hoursStudent(" + hoursStudent +")\n" +
                     "   - hoursNP(" + hoursPN + ")\n" +
                     "   - pedagoContent( DS: " + pedagoContentDs + "; CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
-                    "   - feedBack(Student: " + studentFeedback + "; Pedagogical team: " + pedagoTeamFeedback + "; Improvements: " + improvements + ")\n");
+                    "   - feedBack(Student: " + studentFeedback + "; Pedagogical team: " + pedagoTeamFeedback + "; Improvements: " + improvements + ")\nalternance :" + resourceSheetDTO.getHoursTeacherAlternance().getHasAlternance());
         } else {
             writeInPdfLog("Attempt to get from database with resource name: " + resourceName +
                     "\n-> " + resourceName + " not found in resources tables");
         }
 
+    }
+
+    private void setHoursDTO(HoursDTO hoursDTO, List<Integer> hours) {
+        hours.clear();
+        hours.add(hoursDTO.getCm());
+        hours.add(hoursDTO.getTd());
+        hours.add(hoursDTO.getTp());
+        hours.add(hoursDTO.getTotal());
     }
 
     private StringBuilder createPedagoContent(List<PedagogicalContentDTO.ContentItemDTO> pedagogicalContent) {
@@ -237,6 +246,10 @@ public class ResourceGetterService {
             pedagoContentBuilder.append(contentItemDTO.getOrder()).append(". ").append(contentItemDTO.getContent()).append("\n");
         }
         return pedagoContentBuilder;
+    }
+
+    public boolean isAlternance() {
+        return isAlternance;
     }
 
     public String getRef() {
@@ -275,6 +288,9 @@ public class ResourceGetterService {
     }
     public List<Integer> getHoursStudent() {
         return hoursStudent;
+    }
+    public List<Integer> getHoursStudentInternship() {
+        return hoursStudentInternship;
     }
     public String getPedagoContentDs(){
         return pedagoContentDs;

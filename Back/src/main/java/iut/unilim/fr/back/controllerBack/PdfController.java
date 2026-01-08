@@ -125,7 +125,35 @@ public class PdfController {
                 document.add(table);
 
                 // hours repartition
+                // ------------------------------------------------------------------------------
+                boolean isAlternance = res.isAlternance();
                 Chunk hoursRepartition = new Chunk("Répartition des heures par élève:", contentFont);
+                ArrayList<PdfPTable> hours = new ArrayList<>();
+
+                System.out.println(isAlternance);
+
+                if (isAlternance) {
+                    Chunk internshipRepartition = new Chunk("Répartition des heures par élève en alternance :");
+                    PdfPTable internshipProgramTable = new PdfPTable(repartitionProgramNbColumn);
+                    internshipProgramTable.setWidthPercentage(widthPercentage);
+
+                    ArrayList<Chunk> programmeContent = completeInternshipProgramContent(res, contentFont);
+
+                    for (Chunk chunk : programmeContent) {
+                        PdfPCell cell = new PdfPCell(new Phrase(chunk.getContent(), contentFont));
+
+                        greyCellStyle(cell);
+                        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+                        internshipProgramTable.addCell(cell);
+                    }
+
+                    PdfPTable repartitionContent = createContentDiv(internshipRepartition, internshipProgramTable);
+                    hours.add(repartitionContent);
+
+                }
+                
                 PdfPTable repartitionProgrammeTable = new PdfPTable(repartitionProgramNbColumn);
                 repartitionProgrammeTable.setWidthPercentage(widthPercentage);
 
@@ -142,9 +170,13 @@ public class PdfController {
                 }
 
                 PdfPTable repartitionContent = createContentDiv(hoursRepartition, repartitionProgrammeTable);
+                hours.add(repartitionContent);
                 repartitionContent.setPaddingTop(standardPadding);
-                contents.add(repartitionContent);
 
+                contents.addAll(hours);
+
+                // ------------------------------------------------------------------------------
+                
                 Chunk pedagogicalContent = new Chunk("Contenue pédagogique", contentFont);
                 PdfPTable pedagoTable = new PdfPTable(pedagoTableNbColumn);
                 pedagoTable.setWidthPercentage(widthPercentage);
@@ -210,7 +242,21 @@ public class PdfController {
         return resultValue;
     }
 
-    private ArrayList<Chunk> completeProgramContent(ResourceGetterService res, Font contentFont) {
+    private ArrayList<Chunk> completeInternshipProgramContent(ResourceGetterService res, Font contentFont) {
+        ArrayList<Chunk> programmeContent = completeNationalProgram(res, contentFont);
+
+        // Actual :
+        Chunk programme = new Chunk("Votre programme - Alternance", contentFont);
+        programmeContent.add(programme);
+        ArrayList<Integer> hours = (ArrayList<Integer>) res.getHoursStudentInternship();
+        for (Integer h : hours) {
+            Chunk chunk = new Chunk(h.toString(), contentFont);
+            programmeContent.add(chunk);
+        }
+        return programmeContent;
+    }
+
+    private static ArrayList<Chunk> completeNationalProgram(ResourceGetterService res, Font contentFont) {
         Chunk resource = new Chunk("Ressource", contentFont);
         Chunk cm = new Chunk("CM", contentFont);
         Chunk td = new Chunk("TD", contentFont);
@@ -224,7 +270,6 @@ public class PdfController {
         programmeContent.add(tp);
         programmeContent.add(total);
 
-        // PN :
         Chunk pn = new Chunk("Programme Nationnal", contentFont);
         programmeContent.add(pn);
 
@@ -233,6 +278,11 @@ public class PdfController {
             Chunk chunk = new Chunk(h.toString(), contentFont);
             programmeContent.add(chunk);
         }
+        return programmeContent;
+    }
+
+    private ArrayList<Chunk> completeProgramContent(ResourceGetterService res, Font contentFont) {
+        ArrayList<Chunk> programmeContent = completeNationalProgram(res, contentFont);
 
         // Actual :
         Chunk programme = new Chunk("Votre programme", contentFont);
