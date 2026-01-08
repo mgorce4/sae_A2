@@ -12,6 +12,8 @@
     const saeHours = ref([])
     const ueCoef = ref([])
 
+    const saeTableV2 = ref(null)
+
     /* Extract ID from hash URL parameters */
     const getQueryParam = (param) => {
     const hash = window.location.hash
@@ -29,7 +31,11 @@
         axios.get('http://localhost:8080/api/main-teachers-for-resource').then(response => (teachers.value = response.data))
         axios.get('http://localhost:8080/api/sae-hours').then(response => (saeHours.value = response.data))
         axios.get('http://localhost:8080/api/ue-coefficient-saes').then(response => (ueCoef.value = response.data))
+
+        const response = await axios.get(`http://localhost:8080/api/v2/mccc/saes`)
+        saeTableV2.value = response.data
     })
+    console.log(saeTableV2.value)
 
     const joinSaesTables = computed(() => {
         // Get teachers for current institution
@@ -61,6 +67,8 @@
 </script>
 
 <template>
+    <p>{{ joinSaesTables }}</p>
+    <p>{{ saeTableV2 }}</p>
     <div id="form_mccc_sae"> 
         <div class="return_arrow">
             <button class="back_arrow" onclick="document.location.href='#/mccc-select-form'">←</button>
@@ -80,7 +88,7 @@
                 </form>
                 <div v-for="(value, index) in joinSaesTables" v-bind:key="index" class="added_content_mccc">
                     <div class="dark_bar">
-                        <p>{{ value.label }}</p>
+                        <p>{{ value.sae.label }}</p>
                     </div>
                     <div class="panel_form_mccc container-fluid spa">
                         <div class="left_side">
