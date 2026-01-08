@@ -67,13 +67,16 @@ public class ResourceGetterService {
     private void initializePlaceHolderValues() {
         String PLACEHOLDER = "Aucun contenue pour cette catégorie";
         String PLACEHOLDER_TITLE = "Aucun";
+        int PLACEHOLDER_HOURS = -1;
+        int NB_ELEMENTS_HOURS = 4;
+
         skills.add(PLACEHOLDER);
         saes.add(PLACEHOLDER);
         modalities.add(PLACEHOLDER);
 
-        for (int i=0; i<4; i++) {
-            hoursPN.add(-1);
-            hoursStudent.add(-1);
+        for (int i=0; i<NB_ELEMENTS_HOURS; i++) {
+            hoursPN.add(PLACEHOLDER_HOURS);
+            hoursStudent.add(PLACEHOLDER_HOURS);
         }
 
         ref = PLACEHOLDER_TITLE;
@@ -96,6 +99,8 @@ public class ResourceGetterService {
 
     @Transactional
     public void setValuesFromRessource(String ressourceName) {
+        int multi_skill_limit = 1;
+
         Optional<RessourceSheet> resultResourceSheet = Optional.empty();
         Long id;
         String label;
@@ -137,7 +142,7 @@ public class ResourceGetterService {
             List<SkillDTO> npSkill = resourceSheetDTO.getSkills();
 
             skills.clear();
-            if (npSkill.size() > 1) {
+            if (npSkill.size() > multi_skill_limit) {
                 for (SkillDTO programSkill : npSkill) {
                     skills.add(programSkill.getDescription());
                 }
@@ -179,7 +184,7 @@ public class ResourceGetterService {
             hoursStudent.add(teacherHours.getCm() + hoursDTOPN.getTd() + hoursDTOPN.getTp());
 
             PedagogicalContentDTO pedagogicalContent = resourceSheetDTO.getPedagogicalContent();
-            StringBuilder pedagoContentBuilder = new StringBuilder();
+            StringBuilder pedagoContentBuilder;
 
             
             if (!pedagogicalContent.getCm().isEmpty()) {
