@@ -135,15 +135,9 @@ public class MCCCController {
     @GetMapping("/saes/semester/{semester}")
     public ResponseEntity<List<MCCCSaeDTO>> getMCCCSaesBySemester(@PathVariable Integer semester) {
         try {
-            List<SAE> saes = saeRepository.findAll();
-            List<MCCCSaeDTO> allDtos = mcccSaeMapper.toDTOList(saes);
-
-            // Filter by semester
-            List<MCCCSaeDTO> filteredDtos = allDtos.stream()
-                .filter(dto -> dto.getSemester() != null && dto.getSemester().equals(semester))
-                .toList();
-
-            return ResponseEntity.ok(filteredDtos);
+            List<SAE> saes = saeRepository.findBySemester(semester);
+            List<MCCCSaeDTO> dtos = mcccSaeMapper.toDTOList(saes);
+            return ResponseEntity.ok(dtos);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -192,15 +186,24 @@ public class MCCCController {
     @GetMapping("/ues/level/{level}")
     public ResponseEntity<List<MCCCUEDTO>> getMCCCUEsByLevel(@PathVariable Integer level) {
         try {
-            List<UE> ues = ueRepository.findAll();
-            List<MCCCUEDTO> allDtos = mcccUEMapper.toDTOList(ues);
+            List<UE> ues = ueRepository.findByCompetenceLevel(level);
+            List<MCCCUEDTO> dtos = mcccUEMapper.toDTOList(ues);
+            return ResponseEntity.ok(dtos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
-            // Filter by competence level
-            List<MCCCUEDTO> filteredDtos = allDtos.stream()
-                .filter(dto -> dto.getCompetenceLevel() != null && dto.getCompetenceLevel().equals(level))
-                .toList();
-
-            return ResponseEntity.ok(filteredDtos);
+    /**
+     * Get MCCC UEs by semester
+     * GET /api/v2/mccc/ues/semester/{semester}
+     */
+    @GetMapping("/ues/semester/{semester}")
+    public ResponseEntity<List<MCCCUEDTO>> getMCCCUEsBySemester(@PathVariable Integer semester) {
+        try {
+            List<UE> ues = ueRepository.findBySemester(semester);
+            List<MCCCUEDTO> dtos = mcccUEMapper.toDTOList(ues);
+            return ResponseEntity.ok(dtos);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

@@ -32,6 +32,7 @@ public class MCCCUEMapper {
         dto.setName(ue.getName());
         dto.setEuApogeeCode(ue.getEuApogeeCode());
         dto.setCompetenceLevel(ue.getCompetenceLevel());
+        dto.setSemester(ue.getSemester());
 
         // Path information
         if (ue.getPath() != null) {

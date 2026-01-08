@@ -9,6 +9,7 @@ public class MCCCUEDTO {
     private String name;               // e.g., "Understanding organizations"
     private String euApogeeCode;       // e.g., "UE21"
     private Integer competenceLevel;   // Competence level
+    private Integer semester;          // Semester
 
     // Path information
     private Integer pathNumber;
@@ -62,6 +63,14 @@ public class MCCCUEDTO {
 
     public void setCompetenceLevel(Integer competenceLevel) {
         this.competenceLevel = competenceLevel;
+    }
+
+    public Integer getSemester() {
+        return semester;
+    }
+
+    public void setSemester(Integer semester) {
+        this.semester = semester;
     }
 
     public Integer getPathNumber() {

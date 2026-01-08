@@ -9,5 +9,6 @@ import java.util.List;
 @Repository
 public interface SAERepository extends JpaRepository<SAE, Long> {
     List<SAE> findByTerms_IdTerms(Long idTerms);
+    List<SAE> findBySemester(Integer semester);
 }
 

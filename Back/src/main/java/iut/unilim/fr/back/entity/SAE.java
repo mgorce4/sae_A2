@@ -18,6 +18,9 @@ public class SAE {
     @Column(name = "apogeeCode", columnDefinition = "TEXT")
     private String apogeeCode;
 
+    @Column(nullable = false)
+    private Integer semester;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_terms")
     private Terms terms;
@@ -25,10 +28,11 @@ public class SAE {
     public SAE() {
     }
 
-    public SAE(Long idSAE, String label, String apogeeCode, Terms terms) {
+    public SAE(Long idSAE, String label, String apogeeCode, Integer semester, Terms terms) {
         this.idSAE = idSAE;
         this.label = label;
         this.apogeeCode = apogeeCode;
+        this.semester = semester;
         this.terms = terms;
     }
 
@@ -54,6 +58,14 @@ public class SAE {
 
     public void setApogeeCode(String apogeeCode) {
         this.apogeeCode = apogeeCode;
+    }
+
+    public Integer getSemester() {
+        return semester;
+    }
+
+    public void setSemester(Integer semester) {
+        this.semester = semester;
     }
 
     public Terms getTerms() {

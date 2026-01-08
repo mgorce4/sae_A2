@@ -37,8 +37,8 @@ public class MCCCSaeMapper {
         dto.setLabel(sae.getLabel());
         dto.setApogeeCode(sae.getApogeeCode());
 
-        // Semester (derived from linked resources or terms)
-        dto.setSemester(getSemester(sae));
+        // Semester (directly from SAE entity)
+        dto.setSemester(sae.getSemester());
 
         // Hours from SAEHours table
         dto.setHours(getHours(sae.getIdSAE()));
@@ -55,43 +55,6 @@ public class MCCCSaeMapper {
         return dto;
     }
 
-    /**
-     * Get semester from linked resources or terms
-     */
-    private Integer getSemester(SAE sae) {
-        // First try to get semester from linked resources
-        List<SAELinkResource> links = saeLinkResourceRepository.findByIdSAE(sae.getIdSAE());
-        if (!links.isEmpty()) {
-            SAELinkResource firstLink = links.get(0);
-            if (firstLink.getResource() != null) {
-                return firstLink.getResource().getSemester();
-            }
-        }
-
-        // Fallback: extract from terms code if available
-        if (sae.getTerms() != null && sae.getTerms().getCode() != null) {
-            return extractSemesterFromTerms(sae.getTerms().getCode());
-        }
-
-        return null;
-    }
-
-    /**
-     * Extract semester number from terms code
-     */
-    private Integer extractSemesterFromTerms(String termsCode) {
-        if (termsCode == null) return null;
-        // Extract number from terms code (e.g., "S1" -> 1, "S2" -> 2)
-        try {
-            String numericPart = termsCode.replaceAll("[^0-9]", "");
-            if (!numericPart.isEmpty()) {
-                return Integer.parseInt(numericPart);
-            }
-        } catch (NumberFormatException e) {
-            // Ignore parsing errors
-        }
-        return null;
-    }
 
     /**
      * Get hours from SAEHours table
