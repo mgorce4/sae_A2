@@ -8,11 +8,11 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static iut.unilim.fr.back.controllerBack.LogController.writeInPdfLog;
+import static iut.unilim.fr.back.controllerBack.LogController.writeInLog;
 
 public class HeaderAndFooter extends PdfPageEventHelper {
-    private static final BaseColor COL_RED_BAR = new BaseColor(176, 32, 40);
-    private static final BaseColor COL_SEPARATOR_LINE = BaseColor.GRAY;
+    private static final BaseColor COL_ROUGE_BARRE = new BaseColor(176, 32, 40);
+    private static final BaseColor COL_LIGNE_SEPARATRICE = BaseColor.GRAY;
 
     private static final String baseFont = "src/main/resources/font/trade-gothic-lt-std-58a78e64434a9.otf";
     private static Font whiteFont;
@@ -26,31 +26,19 @@ public class HeaderAndFooter extends PdfPageEventHelper {
     private String ue;
     private String resource;
 
-    private final int initialPadding = 0;
-    private final int initialMargin = 0;
-
-    private final float[] footerWidth = new float[]{4, 1};
-
-    private final float[] headerWidth = new float[]{4, 1, 2};
-    private final float[] headerSubWidth = new float[]{1.5f, 0.1f, 3f};
-
     public HeaderAndFooter(String reference, String department, String ue, String resource) {
         try {
-            int fontSize = 11;
-            int imageWidth = 100;
-            int imageHeight = 50;
-            
-            blackFont = FontFactory.getFont(baseFont, fontSize, BaseColor.BLACK);
-            whiteFont = FontFactory.getFont(baseFont, fontSize, BaseColor.WHITE);
+            blackFont = FontFactory.getFont(baseFont, 11, BaseColor.BLACK);
+            whiteFont = FontFactory.getFont(baseFont, 11, BaseColor.WHITE);
 
             this.image = Image.getInstance(imagePath.toAbsolutePath().toString());
-            this.image.scaleToFit(imageWidth, imageHeight);
+            this.image.scaleToFit(100, 50);
             this.reference = reference;
             this.resource = resource;
             this.department = department;
             this.ue = ue;
         } catch (Exception e) {
-            writeInPdfLog(e.getMessage());
+            writeInLog(e.getMessage());
         }
     }
 
@@ -72,16 +60,10 @@ public class HeaderAndFooter extends PdfPageEventHelper {
     }
 
     private void createFooter(PdfWriter writer, Document document) throws DocumentException {
-        int footerNbColumns = 2;
-        int footerInitialOffset = 0;
-        int footerInitialPosition = 0;
-        int footerYPosDif = 10;
-        int footerXFinalPosition = -1;
-
-        PdfPTable footerTable = new PdfPTable(footerNbColumns);
+        PdfPTable footerTable = new PdfPTable(2);
         footerTable.setTotalWidth(document.getPageSize().getWidth());
         footerTable.setLockedWidth(true);
-        footerTable.setWidths(footerWidth);
+        footerTable.setWidths(new float[]{4, 1});
 
         PdfPCell cellNomUE = new PdfPCell(new Phrase("  " + ue + " - " + resource, whiteFont));
         styleCelluleRouge(cellNomUE);
@@ -95,57 +77,47 @@ public class HeaderAndFooter extends PdfPageEventHelper {
         cellPage.setHorizontalAlignment(Element.ALIGN_RIGHT);
 
         Paragraph p = new Paragraph(textPage, whiteFont);
-        p.add(new Chunk(Image.getInstance(totalPagesTemplate), footerInitialOffset, footerInitialOffset));
+        p.add(new Chunk(Image.getInstance(totalPagesTemplate), 0, 0));
         p.setAlignment(Element.ALIGN_RIGHT);
 
         cellPage.addElement(p);
         footerTable.addCell(cellPage);
 
-        footerTable.writeSelectedRows(footerInitialPosition, footerXFinalPosition, footerInitialPosition, document.bottom() - footerYPosDif, writer.getDirectContent());
+        footerTable.writeSelectedRows(0, -1, 0, document.bottom() - 10, writer.getDirectContent());
     }
 
     private void createHeader(PdfWriter writer, Document document) throws DocumentException {
-        int headerSubDivYDiff = 70;
-        int headerInitialPosition = 0;
-        int headerXFinalPosition = -1;
-        int headerYDiff = 15;
-        int redHeaderNumColumns = 2;
-        int headerPaddingTop = 10;
-        int headerNbColumns = 3;
-        float standardBorderWidth = 2f;
-        float headerSubHeight = 30f;
-
-        PdfPTable headerTable = new PdfPTable(headerNbColumns);
+        PdfPTable headerTable = new PdfPTable(3);
         headerTable.setTotalWidth(document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin());
         headerTable.setLockedWidth(true);
-        headerTable.setWidths(headerWidth);
+        headerTable.setWidths(new float[]{4, 1, 2});
 
         PdfPCell cellLogoTitre = new PdfPCell();
         cellLogoTitre.setBorder(Rectangle.NO_BORDER);
         cellLogoTitre.setVerticalAlignment(Element.ALIGN_MIDDLE);
 
-        PdfPTable subTable = new PdfPTable(headerNbColumns);
-        subTable.setWidths(headerSubWidth);
+        PdfPTable subTable = new PdfPTable(3);
+        subTable.setWidths(new float[]{1.5f, 0.1f, 3f});
 
         PdfPCell unilimLogo = new PdfPCell(image);
         unilimLogo.setBorder(Rectangle.NO_BORDER);
         unilimLogo.setVerticalAlignment(Element.ALIGN_MIDDLE);
 
         unilimLogo.setHorizontalAlignment(Element.ALIGN_LEFT);
-        unilimLogo.setPaddingLeft(initialPadding);
+        unilimLogo.setPaddingLeft(0);
         subTable.addCell(unilimLogo);
 
         PdfPCell cBar = new PdfPCell();
         cBar.setBorder(Rectangle.NO_BORDER);
-        cBar.setBorderWidthLeft(standardBorderWidth);
-        cBar.setBorderColorLeft(COL_SEPARATOR_LINE);
-        cBar.setFixedHeight(headerSubHeight);
+        cBar.setBorderWidthLeft(2f);
+        cBar.setBorderColorLeft(COL_LIGNE_SEPARATRICE);
+        cBar.setFixedHeight(30f);
         subTable.addCell(cBar);
 
-        PdfPCell resourceSheet = new PdfPCell(new Phrase(" Fiche Ressource", blackFont));
-        resourceSheet.setBorder(Rectangle.NO_BORDER);
-        resourceSheet.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        subTable.addCell(resourceSheet);
+        PdfPCell ressourceSheet = new PdfPCell(new Phrase(" Fiche Ressource", blackFont));
+        ressourceSheet.setBorder(Rectangle.NO_BORDER);
+        ressourceSheet.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        subTable.addCell(ressourceSheet);
 
         cellLogoTitre.addElement(subTable);
         headerTable.addCell(cellLogoTitre);
@@ -158,15 +130,15 @@ public class HeaderAndFooter extends PdfPageEventHelper {
         departmentCell.setBorder(Rectangle.NO_BORDER);
         departmentCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
         departmentCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        departmentCell.setPaddingTop(headerPaddingTop);
+        departmentCell.setPaddingTop(10);
         headerTable.addCell(departmentCell);
 
         float pageTop = document.getPageSize().getHeight();
 
-        headerTable.writeSelectedRows(headerInitialPosition, headerXFinalPosition, document.left(), pageTop - headerYDiff, writer.getDirectContent());
+        headerTable.writeSelectedRows(0, -1, document.left(), pageTop - 15 , writer.getDirectContent());
 
 
-        PdfPTable redHeaderTable = new PdfPTable(redHeaderNumColumns);
+        PdfPTable redHeaderTable = new PdfPTable(2);
         redHeaderTable.setTotalWidth(document.getPageSize().getWidth());
         redHeaderTable.setLockedWidth(true);
 
@@ -185,25 +157,20 @@ public class HeaderAndFooter extends PdfPageEventHelper {
         cellDate.setHorizontalAlignment(Element.ALIGN_RIGHT);
         redHeaderTable.addCell(cellDate);
 
-        redHeaderTable.writeSelectedRows(headerInitialPosition, headerXFinalPosition, headerInitialPosition, pageTop - headerSubDivYDiff, writer.getDirectContent());
+        redHeaderTable.writeSelectedRows(0, -1, 0, pageTop - 70, writer.getDirectContent());
     }
 
     private void styleCelluleRouge(PdfPCell cell) {
-        int cellPadding = 8;
-        
-        cell.setBackgroundColor(COL_RED_BAR);
+        cell.setBackgroundColor(COL_ROUGE_BARRE);
         cell.setBorder(Rectangle.NO_BORDER);
-        cell.setPadding(cellPadding);
+        cell.setPadding(8);
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
     }
 
     @Override
     public void onCloseDocument(PdfWriter writer, Document document) {
-        int pageNumberPosition = 2;
-        int pageNumberRotation = 0;
-        
         ColumnText.showTextAligned(totalPagesTemplate, Element.ALIGN_LEFT,
                 new Phrase(String.valueOf(writer.getPageNumber()), whiteFont),
-                pageNumberPosition, pageNumberPosition, pageNumberRotation);
+                2, 2, 0);
     }
 }
