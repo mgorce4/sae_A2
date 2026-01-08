@@ -33,7 +33,7 @@ onMounted(async () => {
 
 function getResourcesForSemester(semester) {
   return resource_sheets.value.filter((sheet) => sheet.semester === semester)
-                              .filter((sheet) => sheet.location === localStorage.institutionLocation)
+                              .filter((sheet) => sheet.institutionId == localStorage.idInstitution)
 }
 
 </script>

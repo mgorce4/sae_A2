@@ -9,6 +9,8 @@ let display_more_area = ref(false)
 
 const resource_sheets = ref([])
 
+const UEs = ref([])
+
 const resource_name = ref('')
 
 /* constant for the form */
@@ -31,13 +33,9 @@ const total_work_study = ref(0)
 const teacher = ref('')
 const coefficient = ref()
 
-const total_pn_work_study = ref(0)
-
 /* list of lesson to use for the v-for */
 
 const list_of_lesson = ['CM', 'TD', 'TP', 'Projet']
-
-const UEs = ref([])
 
 function areTotalNaN() {
   return isNaN(total_initial_formation.value) && isNaN(total_work_study.value)
@@ -57,6 +55,9 @@ onMounted(async () => {
     axios
       .get('http://localhost:8080/api/v2/resource-sheets')
       .then((reponse) => (resource_sheets.value = reponse.data)),
+    axios
+      .get('http://localhost:8080/api/v2/mccc/ues')
+      .then((response) => (UEs.value = response.data))
   ])
 
   await nextTick()
@@ -89,9 +90,13 @@ onMounted(async () => {
 
 })
 
+function getUEsForInstitution() {
+  return UEs.value.filter((ue) => ue.institutionId == localStorage.idInstitution)
+}
+
 function getResourcesForSemester() {
   return resource_sheets.value.filter((sheet) => sheet.semester == getQueryParam('id'))
-    .filter((sheet) => sheet.location === localStorage.institutionLocation)
+    .filter((sheet) => sheet.institutionId == localStorage.idInstitution)
 }
 
 </script>
@@ -119,42 +124,47 @@ function getResourcesForSemester() {
         <form class="panel_resource">
           <div id="left">
             <div>
-              <label>Intitule de la ressource : </label>
-              <input type="text" class="input" v-model="resource_label" required />
+              <label for="resource_label">Intitule de la ressource : </label>
+              <input id="resource_label" type="text" class="input" v-model="resource_label" required />
             </div>
 
             <div>
-              <label>Nom de la ressource : </label>
-              <input type="text" class="input" v-model="resource_name" required />
+              <label for="resource_name">Nom de la ressource : </label>
+              <input id="resource_name" type="text" class="input" v-model="resource_name" required />
             </div>
 
             <div>
-              <label>Code apogée : </label>
-              <input type="text" class="input" v-model="apogee_code" required />
+              <label for="apogee_code">Code apogée : </label>
+              <input id="apogee_code" type="text" class="input" v-model="apogee_code" required />
             </div>
 
             <div>
               <p>Nombres d'heures (formation initial) :</p>
-              <tr>
-                <th v-for="lesson in list_of_lesson" :key="lesson">
-                  {{ lesson }}
-                </th>
-              </tr>
-
-              <tr>
-                <th>
-                  <input type="text" class="input" v-model="CM_initial_formation" required />
-                </th>
-                <th>
-                  <input type="text" class="input" v-model="TD_initial_formation" required />
-                </th>
-                <th>
-                  <input type="text" class="input" v-model="TP_initial_formation" required />
-                </th>
-                <th>
-                  <input type="text" class="input" v-model="Project_initial_formation" required />
-                </th>
-              </tr>
+              <table class="hours_table">
+                <thead>
+                  <tr>
+                    <th v-for="lesson in list_of_lesson" :key="lesson">
+                      {{ lesson }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <input type="text" class="input" v-model="CM_initial_formation" required />
+                    </td>
+                    <td>
+                      <input type="text" class="input" v-model="TD_initial_formation" required />
+                    </td>
+                    <td>
+                      <input type="text" class="input" v-model="TP_initial_formation" required />
+                    </td>
+                    <td>
+                      <input type="text" class="input" v-model="Project_initial_formation" required />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
 
               <p>
                 Nombre d'heures total : {{ total_initial_formation }}
@@ -179,28 +189,33 @@ function getResourcesForSemester() {
               </div>
 
               <div id="work_study_hours">
-                <tr>
-                  <th v-for="lesson in list_of_lesson" :key="lesson">
-                    {{ lesson }}
-                  </th>
-                </tr>
+                <table class="hours_table">
+                  <thead>
+                    <tr>
+                      <th v-for="lesson in list_of_lesson" :key="lesson">
+                        {{ lesson }}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <input type="text" class="input" v-model="CM_work_study" required />
+                      </td>
+                      <td>
+                        <input type="text" class="input" v-model="TD_work_study" required />
+                      </td>
+                      <td>
+                        <input type="text" class="input" v-model="TP_work_study" required />
+                      </td>
+                      <td>
+                        <input type="text" class="input" v-model="Project_work_study" required />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
 
-                <tr>
-                  <th>
-                    <input type="text" class="input" v-model="CM_work_study" required />
-                  </th>
-                  <th>
-                    <input type="text" class="input" v-model="TD_work_study" required />
-                  </th>
-                  <th>
-                    <input type="text" class="input" v-model="TP_work_study" required />
-                  </th>
-                  <th>
-                    <input type="text" class="input" v-model="Project_work_study" required />
-                  </th>
-                </tr>
-
-                <p>Nombre d'heures total : {{ total_work_study }} / {{ total_pn_work_study }}</p>
+                <p>Nombre d'heures total : {{ total_work_study }}</p>
               </div>
             </div>
 
@@ -216,29 +231,39 @@ function getResourcesForSemester() {
                 </div>
 
                 <div class="component">
-                  <label>UE affectées : </label>
+                  <label for="ue_select">UE affectées : </label>
 
-                  <select class="input">
-                    <option v-for="ue in getResourcesForSemester().ueReferences" :key="ue.ueNumber" :value="ue.label">
-                      {{ ue.label }}
-                    </option>
-                  </select>
+                  <p v-if="getUEsForInstitution().length == 0">Aucune UE créée</p>
 
-                  <!-- button to add UE -->
-                  <button id="button_more">+</button>
+                  <div v-else>
+                    <select id="ue_select" class="input">
+                      <option v-for="ue in getUEsForInstitution()" :key="ue.ueNumber">
+                        {{ ue.label }}
+                      </option>
+                    </select>
+
+                    <!-- button to add UE -->
+                    <button id="button_more">+</button>
+                  </div>
+
                 </div>
 
                 <div class="component">
-                  <label>Coefficient : </label>
-                  <input type="text" class="input" v-model="coefficient" required />
+                  <label for="coefficient">Coefficient : </label>
+
+                  <p v-if="getUEsForInstitution().length == 0">Aucune UE créée</p>
+
+                  <div v-else>
+                    <input id="coefficient" type="text" class="input" v-model="coefficient" required />
+
+                    <label for="teacher">Professeur(s) associé(s) : </label>
+                    <input id="teacher" type="text" class="input" v-model="teacher" required />
+
+                    <button id="button_more">+</button>
+                  </div>
+
                 </div>
 
-                <div class="component">
-                  <label>Professeur(s) associé(s) : </label>
-                  <input type="text" class="input" v-model="teacher" required />
-
-                  <button id="button_more">+</button>
-                </div>
               </div>
             </div>
           </div>
