@@ -175,7 +175,9 @@ public class ResourceGetterService {
             modalities.clear();
             modalities.add(terms.getCode());
 
-            if (resourceSheetDTO.getHoursTeacherAlternance().getHasAlternance()) {
+            HoursDTO hoursDTOTeacherInternship = resourceSheetDTO.getHoursTeacherAlternance();
+
+            if (hoursDTOTeacherInternship != null && hoursDTOTeacherInternship.getHasAlternance()) {
                 HoursDTO hoursDTOInternship = resourceSheetDTO.getHoursTeacherAlternance();
                 setHoursDTO(hoursDTOInternship, hoursStudentInternship);
                 HoursDTO hoursDTOPNInternship = resourceSheetDTO.getHoursPNAlternance();
@@ -217,6 +219,11 @@ public class ResourceGetterService {
             studentFeedback = resourceTracking.getStudentFeedback();
             pedagoTeamFeedback = resourceTracking.getPedagogicalFeedback();
             improvements = resourceTracking.getImprovementSuggestions();
+            String internshipContent = "";
+            if (isAlternance) {
+                internshipContent = "   - hoursPnInternship( " + hoursPNInternship + ")\n" +
+                                    "   - hoursStudentInternship( " + hoursStudentInternship + ")\n";
+            }
 
             writeInPdfLog("Get from database :\n" +
                     "   - Resource (" + labelResource + "; " + qualityReference + "; " + refUE + "; " + profRef + ";" + ")\n" +
@@ -228,8 +235,9 @@ public class ResourceGetterService {
                     "   - keywords(" + keywords + ")\n" +
                     "   - hoursStudent(" + hoursStudent +")\n" +
                     "   - hoursNP(" + hoursPN + ")\n" +
+                    internshipContent +
                     "   - pedagoContent( DS: " + pedagoContentDs + "; CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
-                    "   - feedBack(Student: " + studentFeedback + "; Pedagogical team: " + pedagoTeamFeedback + "; Improvements: " + improvements + ")\nalternance :" + resourceSheetDTO.getHoursTeacherAlternance().getHasAlternance());
+                    "   - feedBack(Student: " + studentFeedback + "; Pedagogical team: " + pedagoTeamFeedback + "; Improvements: " + improvements + ")\n");
         } else {
             writeInPdfLog("Attempt to get from database with resource name: " + resourceName +
                     "\n-> " + resourceName + " not found in resources tables");
