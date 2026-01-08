@@ -10,7 +10,7 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 
 import static com.itextpdf.text.List.UNORDERED;
-import static iut.unilim.fr.back.controllerBack.LogController.writeInLog;
+import static iut.unilim.fr.back.controllerBack.LogController.writeInPdfLog;
 
 public class PdfController {
     private final BaseColor COL_BLEU_FOND = new BaseColor(59, 66, 117);
@@ -166,12 +166,12 @@ public class PdfController {
                 document.add(suiviRessourcesTable);
                 document.close();
 
-                writeInLog("{user} Create a pdf for resource sheet: " + fileName + "_resource_sheet.pdf");
+                writeInPdfLog("{user} Create a pdf for resource sheet: " + fileName + "_resource_sheet.pdf");
             } catch (Exception e) {
-                writeInLog(e.getMessage());
+                writeInPdfLog(e.getMessage());
             }
         } else {
-            writeInLog("{user} attempt to generate a resource sheet pdf, but no matches found for the resource name");
+            writeInPdfLog("{user} attempt to generate a resource sheet pdf, but no matches found for the resource name");
         }
     }
 
