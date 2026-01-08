@@ -52,6 +52,7 @@ const ueLabels = computed(() => {
 })
 
 const institutionName = computed(() => resourceSheetDTO.value?.department || '###')
+const institutionId = computed(() => resourceSheetDTO.value?.institutionId || null)
 const resourceName = computed(() => resourceSheetDTO.value?.resourceName || 'Nom de la ressource')
 const resourceLabel = computed(() => resourceSheetDTO.value?.resourceLabel || '###')
 
@@ -290,13 +291,21 @@ onMounted(async () => {
   /* Fetch complete resource sheet using DTO API - ONE REQUEST FOR ALL DATA! */
   if (resourceSheetId.value) {
     try {
+      console.log(`🔍 Fetching resource sheet DTO with ID: ${resourceSheetId.value}`)
       const response = await axios.get(`http://localhost:8080/api/v2/resource-sheets/${resourceSheetId.value}`)
       resourceSheetDTO.value = response.data
 
+      console.log('✅ Resource sheet DTO loaded:', resourceSheetDTO.value)
+
       // Vérifier immédiatement si le DTO contient des données
       if (!resourceSheetDTO.value) {
+        console.error('❌ No data in resource sheet DTO')
         return
       }
+
+      console.log(`📊 Resource: ${resourceSheetDTO.value.resourceName} (${resourceSheetDTO.value.resourceLabel})`)
+      console.log(`🏫 Department: ${resourceSheetDTO.value.department}`)
+      console.log(`📅 Semester: ${resourceSheetDTO.value.semester}`)
 
       // Initialize local states from DTO
 
@@ -360,62 +369,31 @@ onMounted(async () => {
         }
       }
 
-      // SAEs list - the DTO contains ALL SAEs from the same semester via SAELinkResource
+      // SAEs list - Use linkedSaes directly from ResourceSheet DTO
+      // The DTO already contains ALL SAEs from the same semester with isLinked flag correctly set
       if (resourceSheetDTO.value.linkedSaes && resourceSheetDTO.value.linkedSaes.length > 0) {
-        saeList.value = resourceSheetDTO.value.linkedSaes
+        // Use the SAEs from ResourceSheet DTO directly - they already have the correct isLinked flag
+        saeList.value = resourceSheetDTO.value.linkedSaes.map(sae => ({
+          id: sae.id,
+          label: sae.label,
+          apogeeCode: sae.apogeeCode,
+          isLinked: sae.isLinked  // Use the isLinked value from backend - it's already correct!
+        }))
+
+        console.log(`📚 Loaded ${saeList.value.length} SAEs from ResourceSheet DTO`)
+        console.log(`✅ Linked SAEs:`, saeList.value.filter(s => s.isLinked).map(s => s.label))
+        console.log(`❌ Not linked SAEs:`, saeList.value.filter(s => !s.isLinked).map(s => s.label))
       } else {
-        // Fallback: Load SAEs manually if DTO doesn't contain them
-        if (resourceSheetDTO.value.semester && resourceSheetDTO.value.resourceId) {
-          try {
-
-            // Get all SAEs
-            const allSaeResponse = await axios.get('http://localhost:8080/api/saes')
-
-            // Get all resources to filter SAEs by semester
-            const allResourcesResponse = await axios.get('http://localhost:8080/api/resources')
-            const allResources = allResourcesResponse.data
-
-            // Filter resources by same semester
-            const sameSemesterResources = allResources.filter(r => r.semester === resourceSheetDTO.value.semester)
-
-            // Get SAE links for resources in the same semester
-            const saeLinkPromises = sameSemesterResources.map(r =>
-              axios.get(`http://localhost:8080/api/sae-link-resources/resource/${r.idResource}`)
-                .catch(() => ({ data: [] }))
-            )
-            const saeLinkResponses = await Promise.all(saeLinkPromises)
-            const allSaeLinks = saeLinkResponses.flatMap(response => response.data)
-
-            // Get unique SAE IDs from same semester resources
-            const sameSemesterSaeIds = [...new Set(allSaeLinks.map(link => link.idSAE))]
-
-            // Filter SAEs to only include those from the same semester
-            const sameSemesterSaes = allSaeResponse.data.filter(sae =>
-              sameSemesterSaeIds.includes(sae.idSAE)
-            )
-
-            // Get linked SAE IDs for THIS resource specifically
-            const thisResourceLinksResponse = await axios.get(`http://localhost:8080/api/sae-link-resources/resource/${resourceSheetDTO.value.resourceId}`)
-            const thisResourceLinkedSaeIds = new Set(thisResourceLinksResponse.data.map(link => link.idSAE))
-
-            // Create the SAE list with isLinked properly set
-            saeList.value = sameSemesterSaes.map(sae => ({
-              id: sae.idSAE,
-              label: sae.label,
-              apogeeCode: sae.apogeeCode,
-              isLinked: thisResourceLinkedSaeIds.has(sae.idSAE)
-            }))
-          } catch {
-            saeList.value = []
-          }
-        } else {
-          saeList.value = []
-        }
+        console.warn('⚠️ No linkedSaes found in ResourceSheet DTO')
+        saeList.value = []
       }
 
-    } catch {
-      // Error loading resource sheet
+    } catch (error) {
+      console.error('❌ Error loading resource sheet:', error)
+      console.error('Error details:', error.response?.data || error.message)
     }
+  } else {
+    console.warn('⚠️ No resource sheet ID provided')
   }
 
   // Wait for DOM to be fully rendered
@@ -743,7 +721,11 @@ onMounted(async () => {
           ></textarea>
         </div>
       </div>
-        <button>Sauvegarder</button>
+
+      <!-- Save button container -->
+      <div class="save-button-container">
+        <button id="button_save">Sauvegarder</button>
+      </div>
     </div>
   </div>
 </template>
@@ -1547,6 +1529,39 @@ input:checked + .slider::before {
   font-weight: bold;
   color: white;
   font-size: 1.3vw;
+}
+
+/* Save button container - centers the button with spacing */
+.save-button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 3vw;
+  margin-bottom: 3vw;
+  padding: 2vw 0;
+}
+
+#button_save {
+  background-color: #3C3E50;
+  color: white;
+  font-size: 1.2vw;
+  font-weight: 500;
+  padding: 1.2vw 4vw;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+#button_save:hover {
+  background-color: #4a4d61;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+#button_save:active {
+  background-color: #2d2f3d;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 </style>
 

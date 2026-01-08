@@ -20,6 +20,9 @@ public class MCCCUEMapper {
     @Autowired
     private UeCoefficientSAERepository ueCoefficientSAERepository;
 
+    @Autowired
+    private MainTeacherForResourceRepository mainTeacherForResourceRepository;
+
     /**
      * Convert a UE entity to MCCCUEDTO
      */
@@ -34,6 +37,9 @@ public class MCCCUEMapper {
         dto.setCompetenceLevel(ue.getCompetenceLevel());
         dto.setSemester(ue.getSemester());
 
+        // Institution ID from a resource linked to this UE
+        dto.setInstitutionId(getInstitutionId(ue.getUeNumber()));
+
         // Path information
         if (ue.getPath() != null) {
             dto.setPathNumber(ue.getPath().getNumber());
@@ -47,6 +53,31 @@ public class MCCCUEMapper {
         dto.setSaeCoefficients(getSaeCoefficients(ue.getUeNumber()));
 
         return dto;
+    }
+
+    /**
+     * Get institution ID from a resource linked to this UE
+     */
+    private Long getInstitutionId(Long ueNumber) {
+        // Get resources linked to this UE
+        List<UeCoefficient> coefficients = ueCoefficientRepository.findByUe_UeNumber(ueNumber);
+
+        for (UeCoefficient coef : coefficients) {
+            if (coef.getResource() != null) {
+                // Find main teacher for this resource
+                List<MainTeacherForResource> mainTeachers =
+                    mainTeacherForResourceRepository.findByIdResource(coef.getResource().getIdResource());
+
+                if (!mainTeachers.isEmpty()) {
+                    MainTeacherForResource mainTeacher = mainTeachers.get(0);
+                    if (mainTeacher.getUser() != null && mainTeacher.getUser().getInstitution() != null) {
+                        return mainTeacher.getUser().getInstitution().getIdInstitution();
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
