@@ -42,8 +42,11 @@ public class ResourceSheetDTO {
     // Implementation modalities
     private List<String> modalities;
 
-    // PN hours (National Program)
+    // PN hours (National Program - formation initiale)
     private HoursDTO hoursPN;
+
+    // PN hours (National Program - alternance)
+    private HoursDTO hoursPNAlternance;
 
     // Teacher hours (formation initiale)
     private HoursDTO hoursTeacher;
@@ -220,6 +223,14 @@ public class ResourceSheetDTO {
 
     public void setHoursPN(HoursDTO hoursPN) {
         this.hoursPN = hoursPN;
+    }
+
+    public HoursDTO getHoursPNAlternance() {
+        return hoursPNAlternance;
+    }
+
+    public void setHoursPNAlternance(HoursDTO hoursPNAlternance) {
+        this.hoursPNAlternance = hoursPNAlternance;
     }
 
     public HoursDTO getHoursTeacher() {

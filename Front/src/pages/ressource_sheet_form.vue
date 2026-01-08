@@ -28,8 +28,8 @@ const localObjectiveContent = ref('')
 const localSkills = ref([])
 const localKeywords = ref([])
 const localModalities = ref([])
-const localHours = ref({ cm: 0, td: 0, tp: 0 })
-const localHoursAlternance = ref({ cm: 0, td: 0, tp: 0 })
+const localHours = ref({ cm: '', td: '', tp: '' })
+const localHoursAlternance = ref({ cm: '', td: '', tp: '' })
 const localSaeChanges = ref({})
 const localPedagogicalContent = ref({
   cm: [],
@@ -57,23 +57,36 @@ const resourceName = computed(() => resourceSheetDTO.value?.resourceName || 'Nom
 const resourceLabel = computed(() => resourceSheetDTO.value?.resourceLabel || '###')
 
 const hoursPerStudent = computed(() => resourceSheetDTO.value?.hoursPN || null)
+const hoursPerStudentAlternance = computed(() => resourceSheetDTO.value?.hoursPNAlternance || null)
 
 const hasAlternanceHours = computed(() => {
   return resourceSheetDTO.value?.hoursTeacherAlternance != null ||
+         resourceSheetDTO.value?.hoursPNAlternance != null ||
          (localHoursAlternance.value.cm > 0 || localHoursAlternance.value.td > 0 || localHoursAlternance.value.tp > 0)
 })
 
 const localHoursTotal = computed(() => {
-  return (localHours.value.cm || 0) + (localHours.value.td || 0) + (localHours.value.tp || 0)
+  const cm = typeof localHours.value.cm === 'number' ? localHours.value.cm : (parseFloat(localHours.value.cm) || 0)
+  const td = typeof localHours.value.td === 'number' ? localHours.value.td : (parseFloat(localHours.value.td) || 0)
+  const tp = typeof localHours.value.tp === 'number' ? localHours.value.tp : (parseFloat(localHours.value.tp) || 0)
+  return cm + td + tp
 })
 
 const localHoursAlternanceTotal = computed(() => {
-  return (localHoursAlternance.value.cm || 0) + (localHoursAlternance.value.td || 0) + (localHoursAlternance.value.tp || 0)
+  const cm = typeof localHoursAlternance.value.cm === 'number' ? localHoursAlternance.value.cm : (parseFloat(localHoursAlternance.value.cm) || 0)
+  const td = typeof localHoursAlternance.value.td === 'number' ? localHoursAlternance.value.td : (parseFloat(localHoursAlternance.value.td) || 0)
+  const tp = typeof localHoursAlternance.value.tp === 'number' ? localHoursAlternance.value.tp : (parseFloat(localHoursAlternance.value.tp) || 0)
+  return cm + td + tp
 })
 
 const dbHoursTotal = computed(() => {
   if (!hoursPerStudent.value) return 0
   return (hoursPerStudent.value.cm || 0) + (hoursPerStudent.value.td || 0) + (hoursPerStudent.value.tp || 0)
+})
+
+const dbHoursTotalAlternance = computed(() => {
+  if (!hoursPerStudentAlternance.value) return 0
+  return (hoursPerStudentAlternance.value.cm || 0) + (hoursPerStudentAlternance.value.td || 0) + (hoursPerStudentAlternance.value.tp || 0)
 })
 
 // Function to check if SAE is linked
@@ -406,35 +419,29 @@ onMounted(async () => {
       }
 
       // Hours - prioritize teacher hours, but if empty show PN hours in placeholder
-      if (resourceSheetDTO.value.hoursTeacher &&
-          (resourceSheetDTO.value.hoursTeacher.cm ||
-           resourceSheetDTO.value.hoursTeacher.td ||
-           resourceSheetDTO.value.hoursTeacher.tp)) {
-        // Teacher hours exist - use them
+      if (resourceSheetDTO.value.hoursTeacher) {
+        // Teacher hours exist - use them (including 0 values if explicitly set)
         localHours.value = {
-          cm: resourceSheetDTO.value.hoursTeacher.cm || 0,
-          td: resourceSheetDTO.value.hoursTeacher.td || 0,
-          tp: resourceSheetDTO.value.hoursTeacher.tp || 0
+          cm: resourceSheetDTO.value.hoursTeacher.cm ?? '',
+          td: resourceSheetDTO.value.hoursTeacher.td ?? '',
+          tp: resourceSheetDTO.value.hoursTeacher.tp ?? ''
         }
       } else {
         // No teacher hours - leave empty (will show PN hours in placeholder)
-        localHours.value = { cm: 0, td: 0, tp: 0 }
+        localHours.value = { cm: '', td: '', tp: '' }
       }
 
       // Hours Alternance
-      if (resourceSheetDTO.value.hoursTeacherAlternance &&
-          (resourceSheetDTO.value.hoursTeacherAlternance.cm ||
-           resourceSheetDTO.value.hoursTeacherAlternance.td ||
-           resourceSheetDTO.value.hoursTeacherAlternance.tp)) {
+      if (resourceSheetDTO.value.hoursTeacherAlternance) {
         // Teacher hours alternance exist - use them
         localHoursAlternance.value = {
-          cm: resourceSheetDTO.value.hoursTeacherAlternance.cm || 0,
-          td: resourceSheetDTO.value.hoursTeacherAlternance.td || 0,
-          tp: resourceSheetDTO.value.hoursTeacherAlternance.tp || 0
+          cm: resourceSheetDTO.value.hoursTeacherAlternance.cm ?? '',
+          td: resourceSheetDTO.value.hoursTeacherAlternance.td ?? '',
+          tp: resourceSheetDTO.value.hoursTeacherAlternance.tp ?? ''
         }
       } else {
         // No teacher hours alternance
-        localHoursAlternance.value = { cm: 0, td: 0, tp: 0 }
+        localHoursAlternance.value = { cm: '', td: '', tp: '' }
       }
 
       // Pedagogical content
@@ -652,7 +659,7 @@ onMounted(async () => {
               <div class="hours_box">
                 <input
                   type="number"
-                  v-model.number="localHours.cm"
+                  v-model="localHours.cm"
                   class="hours_display"
                   min="0"
                   step="0.5"
@@ -665,7 +672,7 @@ onMounted(async () => {
               <div class="hours_box">
                 <input
                   type="number"
-                  v-model.number="localHours.td"
+                  v-model="localHours.td"
                   class="hours_display"
                   min="0"
                   step="0.5"
@@ -678,7 +685,7 @@ onMounted(async () => {
               <div class="hours_box">
                 <input
                   type="number"
-                  v-model.number="localHours.tp"
+                  v-model="localHours.tp"
                   class="hours_display"
                   min="0"
                   step="0.5"
@@ -693,7 +700,7 @@ onMounted(async () => {
         </div>
 
         <!-- Alternance Hours (only if exists or has data) -->
-        <template v-if="hasAlternanceHours || hoursPerStudent?.hasAlternance">
+        <template v-if="hasAlternanceHours">
           <p class="subsection_title" style="color: white; margin-top: 1.5vw; margin-bottom: 0.5vw;">Alternance</p>
           <div class="hours_container">
             <div class="hours_row">
@@ -702,11 +709,11 @@ onMounted(async () => {
                 <div class="hours_box">
                   <input
                     type="number"
-                    v-model.number="localHoursAlternance.cm"
+                    v-model="localHoursAlternance.cm"
                     class="hours_display"
                     min="0"
                     step="0.5"
-                    :placeholder="hoursPerStudent?.cm || 0"
+                    :placeholder="hoursPerStudentAlternance?.cm || 0"
                   />
                 </div>
               </div>
@@ -715,11 +722,11 @@ onMounted(async () => {
                 <div class="hours_box">
                   <input
                     type="number"
-                    v-model.number="localHoursAlternance.td"
+                    v-model="localHoursAlternance.td"
                     class="hours_display"
                     min="0"
                     step="0.5"
-                    :placeholder="hoursPerStudent?.td || 0"
+                    :placeholder="hoursPerStudentAlternance?.td || 0"
                   />
                 </div>
               </div>
@@ -728,16 +735,16 @@ onMounted(async () => {
                 <div class="hours_box">
                   <input
                     type="number"
-                    v-model.number="localHoursAlternance.tp"
+                    v-model="localHoursAlternance.tp"
                     class="hours_display"
                     min="0"
                     step="0.5"
-                    :placeholder="hoursPerStudent?.tp || 0"
+                    :placeholder="hoursPerStudentAlternance?.tp || 0"
                   />
                 </div>
               </div>
               <div class="hours_total_display">
-                <p class="hours_total_text">Nombre d'heures total : <span class="hours_total_value">{{ localHoursAlternanceTotal }}</span> / <span class="hours_total_value">{{ dbHoursTotal }}</span></p>
+                <p class="hours_total_text">Nombre d'heures total : <span class="hours_total_value">{{ localHoursAlternanceTotal }}</span> / <span class="hours_total_value">{{ dbHoursTotalAlternance }}</span></p>
               </div>
             </div>
           </div>

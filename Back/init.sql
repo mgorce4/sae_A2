@@ -46,6 +46,7 @@ CREATE TABLE UE(
     label TEXT NOT NULL,
     name TEXT NOT NULL,
     competenceLevel INT NOT NULL,
+    semester INT NOT NULL,
     id_Path INT REFERENCES PATH(id_Path)
 );
 
@@ -58,6 +59,7 @@ CREATE TABLE SAE(
     id_SAE SERIAL PRIMARY KEY,
     label TEXT NOT NULL,
     apogeeCode TEXT,
+    semester INT NOT NULL,
     id_terms INT REFERENCES TERMS(id_Terms)
 );
 
@@ -251,11 +253,15 @@ INSERT INTO SAE_LINK_RESOURCE(id_SAE, id_resource) VALUES
 (3, 3),
 (4, 4);
 
-INSERT INTO HOURS_PER_STUDENT (has_alternance,cm, td, tp,id_ressource) VALUES
+INSERT INTO HOURS_PER_STUDENT (has_alternance,cm, td, tp,id_resource) VALUES
+(TRUE, 8, 12, 20, 1),
 (FALSE,6, 10, 20, 1),
 (FALSE, 4, 10, 16, 2),
 (FALSE, 10, 8, 10, 3),
 (FALSE, 5, 5, 5, 4);
+
+INSERT INTO TEACHER_HOURS (isalternance,cm, td, tp,id_resourcesheet) VALUES
+(TRUE, 8, 12, 20, 1);
 
 INSERT INTO SAE_HOURS(hours, id_SAE) VALUES
 (36, 1),

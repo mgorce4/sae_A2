@@ -109,8 +109,11 @@ public class ResourceSheetMapper {
         // Modalities
         dto.setModalities(getModalities(resourceSheet.getIdResourceSheet()));
 
-        // PN hours
-        dto.setHoursPN(getHoursPN(resource.getIdResource()));
+        // PN hours (formation initiale)
+        dto.setHoursPN(getHoursPN(resource.getIdResource(), false));
+
+        // PN hours (alternance)
+        dto.setHoursPNAlternance(getHoursPN(resource.getIdResource(), true));
 
         // Teacher hours (formation initiale)
         dto.setHoursTeacher(getHoursTeacher(resourceSheet.getIdResourceSheet()));
@@ -257,18 +260,26 @@ public class ResourceSheetMapper {
             .collect(Collectors.toList());
     }
 
-    private HoursDTO getHoursPN(Long resourceId) {
+    private HoursDTO getHoursPN(Long resourceId, boolean isAlternance) {
         List<HoursPerStudent> hoursList = hoursPerStudentRepository.findByResource_IdResource(resourceId);
-        if (!hoursList.isEmpty()) {
-            HoursPerStudent hours = hoursList.get(0);
+
+        // Filter by has_alternance field
+        HoursPerStudent hours = hoursList.stream()
+            .filter(h -> h.getHasAlternance() != null && h.getHasAlternance() == isAlternance)
+            .findFirst()
+            .orElse(null);
+
+        if (hours != null) {
             return new HoursDTO(
-                hours.getCm(),
-                hours.getTd(),
-                hours.getTp(),
+                hours.getCm() != null ? hours.getCm() : 0,
+                hours.getTd() != null ? hours.getTd() : 0,
+                hours.getTp() != null ? hours.getTp() : 0,
                 hours.getHasAlternance()
             );
         }
-        return new HoursDTO(0, 0, 0, false);
+
+        // Return DTO with 0 values instead of null (so frontend can use it in placeholders)
+        return new HoursDTO(0, 0, 0, isAlternance);
     }
 
     private HoursDTO getHoursTeacher(Long resourceSheetId) {
@@ -282,13 +293,13 @@ public class ResourceSheetMapper {
 
         if (nonAlternanceHours != null) {
             return new HoursDTO(
-                nonAlternanceHours.getCm(),
-                nonAlternanceHours.getTd(),
-                nonAlternanceHours.getTp(),
+                nonAlternanceHours.getCm() != null ? nonAlternanceHours.getCm() : 0,
+                nonAlternanceHours.getTd() != null ? nonAlternanceHours.getTd() : 0,
+                nonAlternanceHours.getTp() != null ? nonAlternanceHours.getTp() : 0,
                 false
             );
         }
-        return null;
+        return null; // Return null to indicate no teacher hours exist
     }
 
     private HoursDTO getHoursTeacherAlternance(Long resourceSheetId) {
@@ -302,13 +313,13 @@ public class ResourceSheetMapper {
 
         if (alternanceHours != null) {
             return new HoursDTO(
-                alternanceHours.getCm(),
-                alternanceHours.getTd(),
-                alternanceHours.getTp(),
+                alternanceHours.getCm() != null ? alternanceHours.getCm() : 0,
+                alternanceHours.getTd() != null ? alternanceHours.getTd() : 0,
+                alternanceHours.getTp() != null ? alternanceHours.getTp() : 0,
                 true
             );
         }
-        return null;
+        return null; // Return null to indicate no teacher alternance hours exist
     }
 
     private PedagogicalContentDTO getPedagogicalContent(Long resourceSheetId) {
