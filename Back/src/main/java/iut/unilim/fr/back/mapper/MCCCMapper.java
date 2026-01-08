@@ -45,6 +45,9 @@ public class MCCCMapper {
         dto.setApogeeCode(resource.getApogeeCode());
         dto.setSemester(resource.getSemester());
 
+        // Institution ID from main teacher
+        dto.setInstitutionId(getInstitutionId(resource.getIdResource()));
+
         // PN hours (National Program)
         setPNHours(dto, resource.getIdResource());
 
@@ -145,6 +148,20 @@ public class MCCCMapper {
             dto.setAlternanceProject(0);
             dto.setAlternanceTotal(0);
         }
+    }
+
+    /**
+     * Get institution ID from main teacher
+     */
+    private Long getInstitutionId(Long resourceId) {
+        List<MainTeacherForResource> mainTeachers = mainTeacherForResourceRepository.findByIdResource(resourceId);
+        if (!mainTeachers.isEmpty() && mainTeachers.get(0).getUser() != null) {
+            UserSyncadia user = mainTeachers.get(0).getUser();
+            if (user.getInstitution() != null) {
+                return user.getInstitution().getIdInstitution();
+            }
+        }
+        return null;
     }
 
     /**

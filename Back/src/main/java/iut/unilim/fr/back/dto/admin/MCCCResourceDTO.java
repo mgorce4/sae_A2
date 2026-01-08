@@ -9,6 +9,7 @@ public class MCCCResourceDTO {
     private String name;               // e.g., "Python"
     private String apogeeCode;         // e.g., "R101"
     private Integer semester;
+    private Long institutionId;        // Institution ID
 
     // PN hours (National Program)
     private Integer pnCm;
@@ -82,6 +83,14 @@ public class MCCCResourceDTO {
 
     public void setSemester(Integer semester) {
         this.semester = semester;
+    }
+
+    public Long getInstitutionId() {
+        return institutionId;
+    }
+
+    public void setInstitutionId(Long institutionId) {
+        this.institutionId = institutionId;
     }
 
     public Integer getPnCm() {

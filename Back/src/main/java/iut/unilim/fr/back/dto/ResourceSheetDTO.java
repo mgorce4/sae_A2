@@ -20,7 +20,7 @@ public class ResourceSheetDTO {
 
     // Department
     private String department;          // e.g., "GEA"
-    private String location;            // e.g., "Limoges" - Institution location
+    private Long institutionId;         // Institution ID
 
     // Main teacher and teachers
     private String mainTeacher;         // e.g., "Jean Dupont"
@@ -139,12 +139,12 @@ public class ResourceSheetDTO {
         this.department = department;
     }
 
-    public String getLocation() {
-        return location;
+    public Long getInstitutionId() {
+        return institutionId;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setInstitutionId(Long institutionId) {
+        this.institutionId = institutionId;
     }
 
     public String getMainTeacher() {

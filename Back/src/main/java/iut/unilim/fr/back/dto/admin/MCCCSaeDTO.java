@@ -8,6 +8,7 @@ public class MCCCSaeDTO {
     private String label;              // e.g., "SAE 1.01"
     private String apogeeCode;         // e.g., "SAE101"
     private Integer semester;
+    private Long institutionId;        // Institution ID
 
     // Hours
     private Integer hours;
@@ -52,6 +53,14 @@ public class MCCCSaeDTO {
 
     public void setSemester(Integer semester) {
         this.semester = semester;
+    }
+
+    public Long getInstitutionId() {
+        return institutionId;
+    }
+
+    public void setInstitutionId(Long institutionId) {
+        this.institutionId = institutionId;
     }
 
     public Integer getHours() {
