@@ -67,7 +67,8 @@ public class ResourceSheetUpdateService {
         updateSaeLinks(resourceSheet, updateDTO.getLinkedSaeIds());
 
         // 6. Update Teacher Hours (special: goes to TeacherHours table)
-        updateTeacherHours(resourceSheet, updateDTO.getTeacherHours());
+        updateTeacherHours(resourceSheet, updateDTO.getTeacherHours(), false);
+        updateTeacherHours(resourceSheet, updateDTO.getTeacherHoursAlternance(), true);
 
         // 7. Update Pedagogical Content
         updatePedagogicalContent(resourceSheet, updateDTO.getPedagogicalContent());
@@ -193,25 +194,26 @@ public class ResourceSheetUpdateService {
         }
     }
 
-    private void updateTeacherHours(RessourceSheet resourceSheet, ResourceSheetUpdateDTO.HoursUpdateDTO hours) {
+    private void updateTeacherHours(RessourceSheet resourceSheet, ResourceSheetUpdateDTO.HoursUpdateDTO hours, boolean isAlternance) {
         if (hours == null) return;
 
-        // Find existing teacher hours for this resource sheet
+        // Find existing teacher hours for this resource sheet and alternance type
         List<TeacherHours> existingHours =
             teacherHoursRepository.findByResourceSheet_IdResourceSheet(resourceSheet.getIdResourceSheet());
 
         TeacherHours teacherHours;
-        if (existingHours.isEmpty()) {
-            // Create new (non-alternance hours)
+
+        // Find existing hours for this alternance type
+        teacherHours = existingHours.stream()
+            .filter(h -> h.getIsAlternance() != null && h.getIsAlternance() == isAlternance)
+            .findFirst()
+            .orElse(null);
+
+        if (teacherHours == null) {
+            // Create new
             teacherHours = new TeacherHours();
             teacherHours.setResourceSheet(resourceSheet);
-            teacherHours.setIsAlternance(false);
-        } else {
-            // Update existing (take first non-alternance)
-            teacherHours = existingHours.stream()
-                .filter(h -> !h.getIsAlternance())
-                .findFirst()
-                .orElse(existingHours.get(0));
+            teacherHours.setIsAlternance(isAlternance);
         }
 
         teacherHours.setCm(hours.getCm() != null ? hours.getCm() : 0);

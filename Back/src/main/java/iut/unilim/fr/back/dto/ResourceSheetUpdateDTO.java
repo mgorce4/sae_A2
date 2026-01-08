@@ -14,6 +14,7 @@ public class ResourceSheetUpdateDTO {
     private List<String> modalities;
     private List<Long> linkedSaeIds;
     private HoursUpdateDTO teacherHours;
+    private HoursUpdateDTO teacherHoursAlternance;
     private PedagogicalContentUpdateDTO pedagogicalContent;
     private ResourceTrackingUpdateDTO tracking;
 
@@ -67,6 +68,14 @@ public class ResourceSheetUpdateDTO {
 
     public void setTeacherHours(HoursUpdateDTO teacherHours) {
         this.teacherHours = teacherHours;
+    }
+
+    public HoursUpdateDTO getTeacherHoursAlternance() {
+        return teacherHoursAlternance;
+    }
+
+    public void setTeacherHoursAlternance(HoursUpdateDTO teacherHoursAlternance) {
+        this.teacherHoursAlternance = teacherHoursAlternance;
     }
 
     public PedagogicalContentUpdateDTO getPedagogicalContent() {

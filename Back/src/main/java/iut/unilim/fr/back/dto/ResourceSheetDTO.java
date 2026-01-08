@@ -45,8 +45,11 @@ public class ResourceSheetDTO {
     // PN hours (National Program)
     private HoursDTO hoursPN;
 
-    // Teacher hours
+    // Teacher hours (formation initiale)
     private HoursDTO hoursTeacher;
+
+    // Teacher hours (alternance)
+    private HoursDTO hoursTeacherAlternance;
 
     // Pedagogical content
     private PedagogicalContentDTO pedagogicalContent;
@@ -225,6 +228,14 @@ public class ResourceSheetDTO {
 
     public void setHoursTeacher(HoursDTO hoursTeacher) {
         this.hoursTeacher = hoursTeacher;
+    }
+
+    public HoursDTO getHoursTeacherAlternance() {
+        return hoursTeacherAlternance;
+    }
+
+    public void setHoursTeacherAlternance(HoursDTO hoursTeacherAlternance) {
+        this.hoursTeacherAlternance = hoursTeacherAlternance;
     }
 
     public PedagogicalContentDTO getPedagogicalContent() {

@@ -49,7 +49,7 @@
                     id="sheets"
                     @click="goToRessourceSheet(sheet.id)"
                 >
-                    {{ sheet.resourceLabel }}
+                    <p>{{ sheet.resourceLabel }}</p>
                 </button>
             </div>
         </div>

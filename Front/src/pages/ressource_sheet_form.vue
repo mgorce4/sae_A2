@@ -29,6 +29,7 @@ const localSkills = ref([])
 const localKeywords = ref([])
 const localModalities = ref([])
 const localHours = ref({ cm: 0, td: 0, tp: 0 })
+const localHoursAlternance = ref({ cm: 0, td: 0, tp: 0 })
 const localSaeChanges = ref({})
 const localPedagogicalContent = ref({
   cm: [],
@@ -52,14 +53,22 @@ const ueLabels = computed(() => {
 })
 
 const institutionName = computed(() => resourceSheetDTO.value?.department || '###')
-const institutionId = computed(() => resourceSheetDTO.value?.institutionId || null)
 const resourceName = computed(() => resourceSheetDTO.value?.resourceName || 'Nom de la ressource')
 const resourceLabel = computed(() => resourceSheetDTO.value?.resourceLabel || '###')
 
 const hoursPerStudent = computed(() => resourceSheetDTO.value?.hoursPN || null)
 
+const hasAlternanceHours = computed(() => {
+  return resourceSheetDTO.value?.hoursTeacherAlternance != null ||
+         (localHoursAlternance.value.cm > 0 || localHoursAlternance.value.td > 0 || localHoursAlternance.value.tp > 0)
+})
+
 const localHoursTotal = computed(() => {
   return (localHours.value.cm || 0) + (localHours.value.td || 0) + (localHours.value.tp || 0)
+})
+
+const localHoursAlternanceTotal = computed(() => {
+  return (localHoursAlternance.value.cm || 0) + (localHoursAlternance.value.td || 0) + (localHoursAlternance.value.tp || 0)
 })
 
 const dbHoursTotal = computed(() => {
@@ -295,8 +304,6 @@ const saveResourceSheet = async () => {
   }
 
   try {
-    console.log('💾 Saving resource sheet...')
-
     // Prepare the update DTO
     const updateDTO = {
       objective: localObjectiveContent.value,
@@ -308,7 +315,7 @@ const saveResourceSheet = async () => {
       keywords: localKeywords.value.map(kw => kw.keyword).filter(k => k && k.trim()),
       modalities: localModalities.value.map(m => m.modality).filter(m => m && m.trim()),
       linkedSaeIds: Object.entries(localSaeChanges.value)
-        .filter(([id, isLinked]) => isLinked)
+        .filter(([, isLinked]) => isLinked)
         .map(([id]) => parseInt(id))
         .concat(
           // Add SAEs that were already linked and not changed
@@ -321,6 +328,11 @@ const saveResourceSheet = async () => {
         td: localHours.value.td || 0,
         tp: localHours.value.tp || 0
       },
+      teacherHoursAlternance: hasAlternanceHours.value ? {
+        cm: localHoursAlternance.value.cm || 0,
+        td: localHoursAlternance.value.td || 0,
+        tp: localHoursAlternance.value.tp || 0
+      } : null,
       pedagogicalContent: {
         cm: localPedagogicalContent.value.cm.map(item => ({ order: item.number, content: item.content })),
         td: localPedagogicalContent.value.td.map(item => ({ order: item.number, content: item.content })),
@@ -334,16 +346,12 @@ const saveResourceSheet = async () => {
       }
     }
 
-    console.log('📤 Update DTO:', updateDTO)
-
     // Send PUT request
-    const response = await axios.put(
+    await axios.put(
       `http://localhost:8080/api/v2/resource-sheets/${resourceSheetId.value}`,
       updateDTO
     )
 
-    console.log('✅ Resource sheet saved successfully!')
-    console.log('📥 Response:', response.data)
 
     // Reload the data to show updated values
     location.reload()
@@ -358,21 +366,14 @@ onMounted(async () => {
   /* Fetch complete resource sheet using DTO API - ONE REQUEST FOR ALL DATA! */
   if (resourceSheetId.value) {
     try {
-      console.log(`🔍 Fetching resource sheet DTO with ID: ${resourceSheetId.value}`)
       const response = await axios.get(`http://localhost:8080/api/v2/resource-sheets/${resourceSheetId.value}`)
       resourceSheetDTO.value = response.data
-
-      console.log('✅ Resource sheet DTO loaded:', resourceSheetDTO.value)
 
       // Vérifier immédiatement si le DTO contient des données
       if (!resourceSheetDTO.value) {
         console.error('❌ No data in resource sheet DTO')
         return
       }
-
-      console.log(`📊 Resource: ${resourceSheetDTO.value.resourceName} (${resourceSheetDTO.value.resourceLabel})`)
-      console.log(`🏫 Department: ${resourceSheetDTO.value.department}`)
-      console.log(`📅 Semester: ${resourceSheetDTO.value.semester}`)
 
       // Initialize local states from DTO
 
@@ -415,11 +416,25 @@ onMounted(async () => {
           td: resourceSheetDTO.value.hoursTeacher.td || 0,
           tp: resourceSheetDTO.value.hoursTeacher.tp || 0
         }
-        console.log('📊 Using teacher hours:', localHours.value)
       } else {
         // No teacher hours - leave empty (will show PN hours in placeholder)
         localHours.value = { cm: 0, td: 0, tp: 0 }
-        console.log('📊 No teacher hours, using empty values (PN hours will show in placeholder)')
+      }
+
+      // Hours Alternance
+      if (resourceSheetDTO.value.hoursTeacherAlternance &&
+          (resourceSheetDTO.value.hoursTeacherAlternance.cm ||
+           resourceSheetDTO.value.hoursTeacherAlternance.td ||
+           resourceSheetDTO.value.hoursTeacherAlternance.tp)) {
+        // Teacher hours alternance exist - use them
+        localHoursAlternance.value = {
+          cm: resourceSheetDTO.value.hoursTeacherAlternance.cm || 0,
+          td: resourceSheetDTO.value.hoursTeacherAlternance.td || 0,
+          tp: resourceSheetDTO.value.hoursTeacherAlternance.tp || 0
+        }
+      } else {
+        // No teacher hours alternance
+        localHoursAlternance.value = { cm: 0, td: 0, tp: 0 }
       }
 
       // Pedagogical content
@@ -456,11 +471,7 @@ onMounted(async () => {
           isLinked: sae.isLinked  // Use the isLinked value from backend - it's already correct!
         }))
 
-        console.log(`📚 Loaded ${saeList.value.length} SAEs from ResourceSheet DTO`)
-        console.log(`✅ Linked SAEs:`, saeList.value.filter(s => s.isLinked).map(s => s.label))
-        console.log(`❌ Not linked SAEs:`, saeList.value.filter(s => !s.isLinked).map(s => s.label))
       } else {
-        console.warn('⚠️ No linkedSaes found in ResourceSheet DTO')
         saeList.value = []
       }
 
@@ -468,8 +479,6 @@ onMounted(async () => {
       console.error('❌ Error loading resource sheet:', error)
       console.error('Error details:', error.response?.data || error.message)
     }
-  } else {
-    console.warn('⚠️ No resource sheet ID provided')
   }
 
   // Wait for DOM to be fully rendered
@@ -632,7 +641,10 @@ onMounted(async () => {
         </div>
       </div>
       <div id="hours_section">
-        <p class="section_title">Répartition de heures ( volume étudiant ) * : </p>
+        <p class="section_title">Répartition des heures (volume étudiant) * :</p>
+
+        <!-- Formation Initiale Hours -->
+        <p class="subsection_title" style="color: white; margin-top: 1.5vw; margin-bottom: 0.5vw;">Formation Initiale</p>
         <div class="hours_container">
           <div class="hours_row">
             <div class="hours_item">
@@ -679,6 +691,57 @@ onMounted(async () => {
             </div>
           </div>
         </div>
+
+        <!-- Alternance Hours (only if exists or has data) -->
+        <template v-if="hasAlternanceHours || hoursPerStudent?.hasAlternance">
+          <p class="subsection_title" style="color: white; margin-top: 1.5vw; margin-bottom: 0.5vw;">Alternance</p>
+          <div class="hours_container">
+            <div class="hours_row">
+              <div class="hours_item">
+                <label class="hours_label">CM</label>
+                <div class="hours_box">
+                  <input
+                    type="number"
+                    v-model.number="localHoursAlternance.cm"
+                    class="hours_display"
+                    min="0"
+                    step="0.5"
+                    :placeholder="hoursPerStudent?.cm || 0"
+                  />
+                </div>
+              </div>
+              <div class="hours_item">
+                <label class="hours_label">TD</label>
+                <div class="hours_box">
+                  <input
+                    type="number"
+                    v-model.number="localHoursAlternance.td"
+                    class="hours_display"
+                    min="0"
+                    step="0.5"
+                    :placeholder="hoursPerStudent?.td || 0"
+                  />
+                </div>
+              </div>
+              <div class="hours_item">
+                <label class="hours_label">TP</label>
+                <div class="hours_box">
+                  <input
+                    type="number"
+                    v-model.number="localHoursAlternance.tp"
+                    class="hours_display"
+                    min="0"
+                    step="0.5"
+                    :placeholder="hoursPerStudent?.tp || 0"
+                  />
+                </div>
+              </div>
+              <div class="hours_total_display">
+                <p class="hours_total_text">Nombre d'heures total : <span class="hours_total_value">{{ localHoursAlternanceTotal }}</span> / <span class="hours_total_value">{{ dbHoursTotal }}</span></p>
+              </div>
+            </div>
+          </div>
+        </template>
       </div>
       <div>
         <p class="section_title">Contenu pédagogique *</p>
