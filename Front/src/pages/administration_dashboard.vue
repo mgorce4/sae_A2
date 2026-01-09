@@ -183,14 +183,14 @@ function getResourcesForSemester(semester) {
 #return_sheets_div::-webkit-scrollbar-track {
   margin: 1em;
   background: var(--main-theme-secondary-background-color);
-  box-shadow: inset 0 0 5px rgb(24, 26, 50);
+  box-shadow: inset 0 0 5px var(--sub-scrollbar-color);
   border-radius: 10px;
 }
 
 #return_sheets_div::-webkit-scrollbar-thumb {
   background: var(--main-theme-secondary-color);
   border-radius: 10px;
-  border: 3px black solid;
+  border: 3px var(--main-theme-terciary-color) solid;
 }
 
 .ressource {

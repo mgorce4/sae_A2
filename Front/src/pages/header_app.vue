@@ -109,7 +109,7 @@
 #user_status {
     font-size: 1.5vw;
     color: var(--main-theme-secondary-color);
-    text-shadow: 0 0 5px black;
+    text-shadow: 0 0 5px var(--main-theme-terciary-color);
     padding-top: 0;
     justify-content: center;
 }

@@ -2,17 +2,17 @@
     import { status } from '../main'
     import { onMounted, ref} from 'vue'
     import axios from 'axios'
-    
+
     status.value = "Administration"
 
     let display_more_area = ref(false)
-    
+
     //the input fields for the function
     const nb_UE = ref('')
     const apogee_code = ref('')
     const name_comp = ref('')
     const comp_level = ref('')
-    
+
     const ueList = ref([])
 
     const attachAccordionListeners = () => {
@@ -20,7 +20,7 @@
             for (let i = 0; i < acc.length; i++) {
                 const newElement = acc[i].cloneNode(true);
                 acc[i].parentNode.replaceChild(newElement, acc[i]);
-                
+
                 newElement.addEventListener("click", function() {
                     this.classList.toggle("active");
                     const panel = this.nextElementSibling;
@@ -34,7 +34,7 @@
                 });
             }
     }
-    
+
     onMounted(async () => {
         await axios.get('http://localhost:8080/api/ues').then(response => (ueList.value = response.data));
         attachAccordionListeners();
@@ -57,10 +57,10 @@
                 competenceLevel: parseInt(comp_level.value),
                 semester: parseInt(getQueryParam('id'))
             });
-            
-            [nb_UE, apogee_code, name_comp, comp_level].forEach(f => f.value = ''); 
+
+            [nb_UE, apogee_code, name_comp, comp_level].forEach(f => f.value = '');
             display_more_area.value = false;
-            
+
             await axios.get('http://localhost:8080/api/ues').then(response => (ueList.value = response.data));
             attachAccordionListeners();
         }
@@ -76,7 +76,7 @@
         try{
             await axios.delete(`http://localhost:8080/api/ues/${id}`);
             await axios.get('http://localhost:8080/api/ues').then(response => (ueList.value = response.data));
-        
+
             attachAccordionListeners();
         }
         catch (error){
@@ -265,7 +265,7 @@
 }
 
 #button_more:hover {
-  background-color: rgb(50,50,50);
+  background-color: var(--clickable-background-color);
   transform: scale(1.1);
 }
 
