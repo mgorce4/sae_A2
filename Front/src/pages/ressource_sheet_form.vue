@@ -1028,7 +1028,30 @@ onMounted(async () => {
   display: flex;
   gap: 1vw;
   padding: 1vw;
-  justify-content: space-evenly;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header_Form > p:first-child,
+.header_Form > p:nth-child(2) {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.header_Form > p.title {
+  flex: 1;
+  text-align: center;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  max-width: 50%;
+  margin: 0 auto;
+}
+
+.header_Form > p:nth-child(4),
+.header_Form > p:nth-child(5) {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .ref_Section {
