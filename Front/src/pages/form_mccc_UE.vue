@@ -2,17 +2,17 @@
     import { status } from '../main'
     import { computed, onMounted, ref, nextTick, watch} from 'vue'
     import axios from 'axios'
-    
+
     status.value = "Administration"
 
     let display_more_area = ref(false)
-    
+
     //the input fields for the function
     const nb_UE = ref('')
     const apogee_code = ref('')
     const name_comp = ref('')
     const comp_level = ref('')
-    
+
     const ueList = ref([])
 
     const attachAccordionListeners = () => {
@@ -21,7 +21,7 @@
             for (let i = 0; i < acc.length; i++) {
                 const newElement = acc[i].cloneNode(true);
                 acc[i].parentNode.replaceChild(newElement, acc[i]);
-                    
+
                 newElement.addEventListener("click", function() {
                     this.classList.toggle("active");
                     const panel = this.nextElementSibling;
@@ -36,7 +36,7 @@
             }
         });
     }
-    
+
     const getQueryParam = (param) => {
         const hash = window.location.hash
         const queryString = hash.split('?')[1]
@@ -46,7 +46,7 @@
     }
 
     const getUEForSemester = computed(() => {
-        return ueList.value.filter((ue) => { 
+        return ueList.value.filter((ue) => {
             return ue.semester == getQueryParam('id')
         })
     })
@@ -70,12 +70,12 @@
                 name: name_comp.value,
                 competenceLevel: parseInt(comp_level.value),
                 semester: parseInt(getQueryParam('id')),
-                institutionId: parseInt(localStorage.idInstitution)
+                userId: parseInt(localStorage.idUser)
             });
-            
-            [nb_UE, apogee_code, name_comp, comp_level].forEach(f => f.value = ''); 
+
+            [nb_UE, apogee_code, name_comp, comp_level].forEach(f => f.value = '');
             display_more_area.value = false;
-            
+
             await axios.get(`http://localhost:8080/api/v2/mccc/ues/institution/${localStorage.idInstitution}`).then(response => (ueList.value = response.data));
             attachAccordionListeners();
         }
@@ -91,7 +91,7 @@
         try{
             await axios.delete(`http://localhost:8080/api/ues/${id}`);
             await axios.get(`http://localhost:8080/api/v2/mccc/ues/institution/${localStorage.idInstitution}`).then(response => (ueList.value = response.data));
-        
+
             attachAccordionListeners();
         }
         catch (error){

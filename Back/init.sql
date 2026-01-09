@@ -37,7 +37,8 @@ CREATE TABLE ACCESSRIGHT(
 CREATE TABLE PATH(
     id_Path SERIAL PRIMARY KEY,
     number INT NOT NULL,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    id_institution INT REFERENCES INSTITUTION(id_institution)
 );
 
 CREATE TABLE UE(
@@ -163,18 +164,13 @@ CREATE TABLE KEYWORD(
     id_ResourceSheet INT REFERENCES RESOURCE_SHEET(id_ResourceSheet)
 );
 
-CREATE TABLE NATIONAL_PROGRAM_OBJECTIVE(
-    content TEXT NOT NULL,
-    id_RessourceSheet INT REFERENCES RESSOURCE_SHEET(id_RessourceSheet)
-);
-
 CREATE TABLE TEACHER_HOURS(
     id_TeacherHours SERIAL PRIMARY KEY,
     cm TEXT,
     td TEXT,
     tp TEXT,
     isalternance BOOLEAN,
-    id_RessourceSheet INT REFERENCES RESSOURCE_SHEET(id_RessourceSheet)
+    id_ResourceSheet INT REFERENCES RESOURCE_SHEET(id_ResourceSheet)
 );
 
 INSERT INTO INSTITUTION (name, location) VALUES
@@ -209,14 +205,14 @@ INSERT INTO ACCESSRIGHT ( id_User,accessRight) VALUES
 (6, 2);
 
 
-INSERT INTO PATH(number, name) VALUES
-(1, 'BUT INFORMATIQUE parcours réalisation d''applications : conception, développement, validation'),
-(2, 'parcours de test');
+INSERT INTO PATH(number, name, id_institution) VALUES
+(1, 'BUT INFORMATIQUE parcours réalisation d''applications : conception, développement, validation', 1),
+(2, 'parcours de test', 4);
 
-INSERT INTO UE(EuApogeeCode, label, name, competenceLevel, id_Path) VALUES
-('TIN0101U', 'UE1.1','Réaliser',1, 1),
-('TIN0102U', 'UE1.2','Optimiser',1, 1),
-('TIN0103U', 'UE1.3','Administrer',1, 1);
+INSERT INTO UE(EuApogeeCode, label, name, competenceLevel, semester, id_Path) VALUES
+('TIN0101U', 'UE1.1','Réaliser',1, 1, 1),
+('TIN0102U', 'UE1.2','Optimiser',1, 1, 1),
+('TIN0103U', 'UE1.3','Administrer',1, 1, 1);
 
 INSERT INTO TERMS(code) VALUES
 ('NGCC'),
@@ -231,13 +227,13 @@ INSERT INTO TERMS(code) VALUES
 ('NGCC'),
 ('NGCC');
 
-INSERT INTO SAE(label, id_terms) VALUES
-('SAE 1', 5),
-('SAE 2', 6),
-('SAE 3', 7),
-('SAE 4', 8),
-('SAE 5', 9),
-('SAE 6', 10);
+INSERT INTO SAE(label, apogeeCode, semester, id_terms) VALUES
+('SAE 1', 'SAE101', 1, 5),
+('SAE 2', 'SAE102', 1, 6),
+('SAE 3', 'SAE103', 1, 7),
+('SAE 4', 'SAE201', 2, 8),
+('SAE 5', 'SAE202', 2, 9),
+('SAE 6', 'SAE203', 2, 10);
 
 
 INSERT INTO RESOURCE(apogeeCode, label,name, diffMultiCompetences, semester, id_terms) VALUES

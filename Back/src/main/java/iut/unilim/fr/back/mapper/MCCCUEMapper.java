@@ -37,8 +37,8 @@ public class MCCCUEMapper {
         dto.setCompetenceLevel(ue.getCompetenceLevel());
         dto.setSemester(ue.getSemester());
 
-        // Institution ID from a resource linked to this UE
-        dto.setInstitutionId(getInstitutionId(ue.getUeNumber()));
+        // Institution ID from Path or from a resource linked to this UE
+        dto.setInstitutionId(getInstitutionId(ue));
 
         // Path information
         if (ue.getPath() != null) {
@@ -56,11 +56,16 @@ public class MCCCUEMapper {
     }
 
     /**
-     * Get institution ID from a resource linked to this UE
+     * Get institution ID from Path first, then from a resource linked to this UE as fallback
      */
-    private Long getInstitutionId(Long ueNumber) {
-        // Get resources linked to this UE
-        List<UeCoefficient> coefficients = ueCoefficientRepository.findByUe_UeNumber(ueNumber);
+    private Long getInstitutionId(UE ue) {
+        // First, try to get institution from the Path
+        if (ue.getPath() != null && ue.getPath().getInstitution() != null) {
+            return ue.getPath().getInstitution().getIdInstitution();
+        }
+
+        // Fallback: Get resources linked to this UE
+        List<UeCoefficient> coefficients = ueCoefficientRepository.findByUe_UeNumber(ue.getUeNumber());
 
         for (UeCoefficient coef : coefficients) {
             if (coef.getResource() != null) {
