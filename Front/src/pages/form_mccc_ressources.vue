@@ -13,8 +13,13 @@ const UEs = ref([])
 
 const resource_name = ref('')
 
+const teachers = ref([])
+
+const access_rights = ref([])
+
 const num_ue_select = ref(1)
 const num_coefficient_select = ref(1)
+const num_teacher_select = ref(1)
 
 /* constant for the form */
 
@@ -60,7 +65,12 @@ onMounted(async () => {
     axios
       .get('http://localhost:8080/api/v2/mccc/ues')
       .then((response) => (UEs.value = response.data)),
+    axios
+      .get('http://localhost:8080/api/users')
+      .then((response) => (teachers.value = response.data)),
   ])
+
+  teachers.value = teachers.value.map((teacher) => {})
 
   await nextTick()
 
@@ -77,16 +87,8 @@ onMounted(async () => {
   })
 
   document.getElementById('save').addEventListener('click', () => {
-    total_initial_formation.value =
-      parseInt(CM_initial_formation.value) +
-      parseInt(TD_initial_formation.value) +
-      parseInt(TP_initial_formation.value) +
-      parseInt(Project_initial_formation.value)
-    total_work_study.value =
-      parseInt(CM_work_study.value) +
-      parseInt(TD_work_study.value) +
-      parseInt(TP_work_study.value) +
-      parseInt(Project_work_study.value)
+    total_initial_formation.value = parseInt(CM_initial_formation.value) + parseInt(TD_initial_formation.value) + parseInt(TP_initial_formation.value) + parseInt(Project_initial_formation.value)
+    total_work_study.value = parseInt(CM_work_study.value) + parseInt(TD_work_study.value) + parseInt(TP_work_study.value) + parseInt(Project_work_study.value)
 
     /* if the forms are empty or filled with non-numeric values set totals to 0 */
 
@@ -104,30 +106,28 @@ onMounted(async () => {
 
     inputs.forEach((input) => {
       if (checkbox.checked) {
-        input.disabled = true
-      } else {
         input.disabled = false
+      } else {
+        input.disabled = true
       }
     })
   })
 
-  document.querySelector('#button_ue_plus').addEventListener('click', () => {
-    /* limit the number of UE select to the number of UEs available */
-    if (getUEsForInstitution().length > num_ue_select.value) {
-      num_ue_select.value += 1
-      num_coefficient_select.value += 1
-    }
-  })
+  console.log(num_teacher_select.value)
 
   document.addEventListener('click', (event) => {
     if (event.target.id === 'button_ue_minus' && num_ue_select.value > 1) {
-      const divToRemove = event.target.parentElement
-      divToRemove.remove()
-
+      event.target.parentElement.remove()
       num_ue_select.value -= 1
+    } else if (event.target.id === 'button_ue_plus' && getUEsForInstitution().length > num_ue_select.value) {
+      num_ue_select.value += 1
+      num_coefficient_select.value += 1
+    } else if (event.target.id === 'button_teacher_plus') {
+      num_teacher_select.value += 1
+    } else if (event.target.id === 'button_teacher_cross' && num_teacher_select.value > 1) {
+      event.target.parentElement.remove()
     }
   })
-
 })
 
 function getUEsForInstitution() {
@@ -159,38 +159,18 @@ function getResourcesForSemester() {
           <button id="button_more" v-on:click="display_more_area = true">+</button>
         </div>
 
-        <a
-          class="accordion"
-          id="dark_bar"
-          style="width: 97%"
-          v-show="display_more_area"
-          method="post"
-          v-on:submit.prevent=""
-          >Ajout d'une ressource :</a
-        >
+        <a class="accordion" id="dark_bar" style="width: 97%" v-show="display_more_area" method="post" v-on:submit.prevent="">Ajout d'une ressource :</a>
 
-        <div   class="panel_resource">
+        <div class="panel_resource">
           <div id="left">
             <div>
               <label for="resource_label">Intitule de la ressource : </label>
-              <input
-                id="resource_label"
-                type="text"
-                class="input"
-                v-model="resource_label"
-                required
-              />
+              <input id="resource_label" type="text" class="input" v-model="resource_label" required />
             </div>
 
             <div>
               <label for="resource_name">Nom de la ressource : </label>
-              <input
-                id="resource_name"
-                type="text"
-                class="input"
-                v-model="resource_name"
-                required
-              />
+              <input id="resource_name" type="text" class="input" v-model="resource_name" required />
             </div>
 
             <div>
@@ -255,13 +235,13 @@ function getResourcesForSemester() {
                   <tbody>
                     <tr>
                       <td>
-                        <input type="text" class="input input_work_study" v-model="CM_work_study" required />
+                        <input type="text" class="input input_work_study" v-model="CM_work_study" required disabled/>
                       </td>
                       <td>
-                        <input type="text" class="input input_work_study" v-model="TD_work_study" required />
+                        <input type="text" class="input input_work_study" v-model="TD_work_study" required disabled/>
                       </td>
                       <td>
-                        <input type="text" class="input input_work_study" v-model="TP_work_study" required />
+                        <input type="text" class="input input_work_study" v-model="TP_work_study" required disabled/>
                       </td>
                     </tr>
                   </tbody>
@@ -293,7 +273,12 @@ function getResourcesForSemester() {
                     <p v-if="getUEsForInstitution().length == 0">Aucune UE créée</p>
 
                     <div v-else>
-                      <div v-for="n in num_ue_select" :key="n" class="component" style="margin-bottom: 23px">
+                      <div
+                        v-for="n in num_ue_select"
+                        :key="n"
+                        class="component"
+                        style="margin-bottom: 23px"
+                      >
                         <select id="ue_select" class="input">
                           <option v-for="ue in getUEsForInstitution()" :key="ue.ueNumber">
                             {{ ue.label }}
@@ -301,26 +286,32 @@ function getResourcesForSemester() {
                         </select>
                       </div>
                     </div>
-
                   </div>
 
                   <div style="width: 50%">
-                    <label for="coefficient" class="component" style="margin-top: 7px">Coefficient : </label>
+                    <label for="coefficient" class="component" style="margin-top: 7px"
+                      >Coefficient :
+                    </label>
 
                     <p v-if="getUEsForInstitution().length == 0">Aucune UE créée</p>
 
                     <div v-else v-for="n in num_coefficient_select" :key="n" class="spb component" style="width: 80%">
-                      <input id="coefficient" type="text" class="input" v-model="coefficient" style="margin-top: 4px" required/>
+                      <input id="coefficient" type="text" class="input" v-model="coefficient" style="margin-top: 4px" required />
                       <button class="button_more" id="button_ue_minus">x</button>
                     </div>
                   </div>
                 </div>
 
-                <div class="component" style="margin-top: 5px">
-                  <label for="teacher">Professeur(s) associé(s) : </label>
-                  <input id="teacher" type="text" class="input" v-model="teacher" required />
+                <div style="margin-top: 5px; margin-left: 25%">
+                  <div class="component">
+                    <label for="teacher">Professeur(s) associé(s) : </label>
+                    <button class="button_more" id="button_teacher_plus">+</button>
+                  </div>
 
-                  <button id="button_more">+</button>
+                  <div v-for="n in num_teacher_select" :key="n" class="component">
+                    <input id="teacher" type="text" class="input" v-model="teacher" required />
+                    <button class="button_more" id="button_teacher_cross">x</button>
+                  </div>
                 </div>
               </div>
             </div>
