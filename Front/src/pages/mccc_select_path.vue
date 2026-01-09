@@ -70,12 +70,22 @@
   });
 
   onMounted(async () => {
-    const response = await axios.get(`http://localhost:8080/api/paths`)
-    // Filtrer les paths par institution
-    coursList.value = response.data.filter(path => 
-      path.institution && path.institution.idInstitution === parseInt(localStorage.idInstitution)
-    )
-    attachAccordionListeners();
+    try {
+      const response = await axios.get(`http://localhost:8080/api/paths`)
+      // Filtrer les paths par institution et ajouter la propriété show
+      coursList.value = response.data
+        .filter(path => 
+          path.institution && path.institution.idInstitution === parseInt(localStorage.idInstitution)
+        )
+        .map(path => ({
+          ...path,
+          show: false
+        }))
+      attachAccordionListeners();
+    } catch (error) {
+      console.error('Erreur lors du chargement des parcours:', error);
+      coursList.value = [];
+    }
   })
 
   const save = async () => {
@@ -121,9 +131,14 @@
 
       // Recharger et filtrer les paths par institution
       const allPaths = await axios.get(`http://localhost:8080/api/paths`);
-      coursList.value = allPaths.data.filter(path => 
-        path.institution && path.institution.idInstitution === parseInt(localStorage.idInstitution)
-      );
+      coursList.value = allPaths.data
+        .filter(path => 
+          path.institution && path.institution.idInstitution === parseInt(localStorage.idInstitution)
+        )
+        .map(path => ({
+          ...path,
+          show: false
+        }));
       attachAccordionListeners();
     }catch(error){
       console.error('Erreur de sauvegarde', error);
@@ -156,7 +171,7 @@
               <span v-if="errors.coursName" class="error-message">Merci de remplir ce champ</span>
             </div>
             <div>
-              <label>Nombre associé au parcours : <span class="required">*</span></label>
+              <label>Nombre associé au parcours : <span class="required">* </span></label>
               <input type="number" step="1" class="input" v-model="coursNb" @keydown="preventInvalidChars" />
               <span v-if="errors.coursNb" class="error-message">Merci de remplir ce champ</span>
             </div>
@@ -166,9 +181,16 @@
             </div>
           </div>
         </form>
-        
-        <div v-for="cours in getCourses" :key="cours.idPath">
-          <button class="btn_form_acces"  @click="goToRessourceSheet('#/mccc-select-form')">{{ cours.name }}</button>
+        <div>
+            <button class="btn_form_acces" @click="goToRessourceSheet('#/mccc-select-form')">Accéder aux semestres</button>
+        </div>
+        <div v-for="cours in getCourses" :key="cours.idPath" class="button_path" >
+          <div class="btn_form_acces" v-on:mouseover="cours.show = true" v-on:mouseout="cours.show = false">
+            <p>{{ cours.name }}</p>
+            <div class="container-fluid spe" v-show="cours.show">
+              <button class="btn_form_acces" @click="Modify">Modifier</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -233,4 +255,5 @@ input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
 }
+
 </style>
