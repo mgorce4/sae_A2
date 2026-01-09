@@ -54,7 +54,7 @@ public class HoursDTO {
     }
 
     public Boolean getHasAlternance() {
-        return hasAlternance;
+        return hasAlternance != null ? hasAlternance: false;
     }
 
     public void setHasAlternance(Boolean hasAlternance) {

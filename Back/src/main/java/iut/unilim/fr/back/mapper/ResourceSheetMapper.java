@@ -277,8 +277,6 @@ public class ResourceSheetMapper {
                 hours.getHasAlternance()
             );
         }
-
-        // Return DTO with 0 values instead of null (so frontend can use it in placeholders)
         return new HoursDTO(0, 0, 0, isAlternance);
     }
 
@@ -299,7 +297,7 @@ public class ResourceSheetMapper {
                 false
             );
         }
-        return null; // Return null to indicate no teacher hours exist
+        return null;
     }
 
     private HoursDTO getHoursTeacherAlternance(Long resourceSheetId) {
@@ -319,7 +317,7 @@ public class ResourceSheetMapper {
                 true
             );
         }
-        return null; // Return null to indicate no teacher alternance hours exist
+        return null;
     }
 
     private PedagogicalContentDTO getPedagogicalContent(Long resourceSheetId) {
