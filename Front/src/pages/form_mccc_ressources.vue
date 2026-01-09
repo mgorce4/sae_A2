@@ -1,6 +1,6 @@
 <script setup>
 import { status } from '../main'
-import { onMounted, ref, nextTick} from 'vue'
+import { onMounted, ref, nextTick } from 'vue'
 import axios from 'axios'
 
 status.value = 'Administration'
@@ -50,14 +50,13 @@ const getQueryParam = (param) => {
 }
 
 onMounted(async () => {
-
   await Promise.all([
     axios
       .get('http://localhost:8080/api/v2/resource-sheets')
       .then((reponse) => (resource_sheets.value = reponse.data)),
     axios
       .get('http://localhost:8080/api/v2/mccc/ues')
-      .then((response) => (UEs.value = response.data))
+      .then((response) => (UEs.value = response.data)),
   ])
 
   await nextTick()
@@ -75,8 +74,16 @@ onMounted(async () => {
   })
 
   document.getElementById('save').addEventListener('click', () => {
-    total_initial_formation.value = parseInt(CM_initial_formation.value) + parseInt(TD_initial_formation.value) + parseInt(TP_initial_formation.value) + parseInt(Project_initial_formation.value)
-    total_work_study.value = parseInt(CM_work_study.value) + parseInt(TD_work_study.value) + parseInt(TP_work_study.value) + parseInt(Project_work_study.value)
+    total_initial_formation.value =
+      parseInt(CM_initial_formation.value) +
+      parseInt(TD_initial_formation.value) +
+      parseInt(TP_initial_formation.value) +
+      parseInt(Project_initial_formation.value)
+    total_work_study.value =
+      parseInt(CM_work_study.value) +
+      parseInt(TD_work_study.value) +
+      parseInt(TP_work_study.value) +
+      parseInt(Project_work_study.value)
 
     /* if the forms are empty or filled with non-numeric values set totals to 0 */
 
@@ -107,10 +114,10 @@ function getUEsForInstitution() {
 }
 
 function getResourcesForSemester() {
-  return resource_sheets.value.filter((sheet) => sheet.semester == getQueryParam('id'))
+  return resource_sheets.value
+    .filter((sheet) => sheet.semester == getQueryParam('id'))
     .filter((sheet) => sheet.institutionId == localStorage.idInstitution)
 }
-
 </script>
 
 <template>
@@ -131,18 +138,38 @@ function getResourcesForSemester() {
           <button id="button_more" v-on:click="display_more_area = true">+</button>
         </div>
 
-        <a class="accordion" id="dark_bar" style="width: 97%" v-show="display_more_area" method="post" v-on:submit.prevent="">Ajout d'une ressource :</a>
+        <a
+          class="accordion"
+          id="dark_bar"
+          style="width: 97%"
+          v-show="display_more_area"
+          method="post"
+          v-on:submit.prevent=""
+          >Ajout d'une ressource :</a
+        >
 
         <form class="panel_resource">
           <div id="left">
             <div>
               <label for="resource_label">Intitule de la ressource : </label>
-              <input id="resource_label" type="text" class="input" v-model="resource_label" required />
+              <input
+                id="resource_label"
+                type="text"
+                class="input"
+                v-model="resource_label"
+                required
+              />
             </div>
 
             <div>
               <label for="resource_name">Nom de la ressource : </label>
-              <input id="resource_name" type="text" class="input" v-model="resource_name" required />
+              <input
+                id="resource_name"
+                type="text"
+                class="input"
+                v-model="resource_name"
+                required
+              />
             </div>
 
             <div>
@@ -172,15 +199,18 @@ function getResourcesForSemester() {
                       <input type="text" class="input" v-model="TP_initial_formation" required />
                     </td>
                     <td>
-                      <input type="text" class="input" v-model="Project_initial_formation" required />
+                      <input
+                        type="text"
+                        class="input"
+                        v-model="Project_initial_formation"
+                        required
+                      />
                     </td>
                   </tr>
                 </tbody>
               </table>
 
-              <p>
-                Nombre d'heures total : {{ total_initial_formation }}
-              </p>
+              <p>Nombre d'heures total : {{ total_initial_formation }}</p>
             </div>
 
             <div id="btn">
@@ -257,7 +287,6 @@ function getResourcesForSemester() {
                     <!-- button to add UE -->
                     <button id="button_more">+</button>
                   </div>
-
                 </div>
 
                 <div class="component">
@@ -284,7 +313,9 @@ function getResourcesForSemester() {
         <p v-else>Aucune ressource n'a été crée</p>
 
         <div v-for="resource in getResourcesForSemester()" :key="resource.resourceId">
-          <a class="accordion" id="dark_bar" style="width: 97%">{{ resource.resourceLabel }} {{ resource.resourceName}}</a>
+          <a class="accordion" id="dark_bar" style="width: 97%"
+            >{{ resource.resourceLabel }} {{ resource.resourceName }}</a
+          >
 
           <div class="panel_resource">
             <div id="left_resource">
@@ -327,30 +358,30 @@ function getResourcesForSemester() {
               <div class="container-fluid">
                 <p>UE(s) affectée(s) :</p>
                 <div v-for="ue in resource.ueReferences" :key="ue.ueNumber">
-                  <input type="text" class="input" :value="ue.label">
+                  <input type="text" class="input" :value="ue.label" />
                 </div>
               </div>
 
               <div class="container-fluid">
                 <p>Coefficient(s) :</p>
                 <div v-for="ue in resource.ueReferences" :key="ue.ueNumber">
-                  <input type="text" class="input" :value="ue.coefficient">
+                  <input type="text" class="input" :value="ue.coefficient" />
                 </div>
               </div>
 
               <div class="container-fluid">
                 <p>Professeur(s) associé(s) :</p>
                 <div v-for="teacher in resource.teachers" :key="teacher">
-                  <input type="text" class="input" :value="teacher">
+                  <input type="text" class="input" :value="teacher" />
                 </div>
               </div>
 
               <br />
               <br />
 
-              <div style="display: flex; gap: 10px;">
+              <div style="display: flex; gap: 10px">
                 <input class="btn1" type="button" value="Supprimer" />
-                <br>
+                <br />
                 <input class="btn1" type="button" value="Modifier" />
               </div>
             </div>
@@ -417,7 +448,7 @@ function getResourcesForSemester() {
 #form::-webkit-scrollbar-track {
   margin: 1em;
   background: var(--main-theme-secondary-background-color);
-  box-shadow: inset 0 0 5px rgb(24, 26, 50);
+  box-shadow: inset 0 0 5px var(--sub-scrollbar-color);
   border-radius: 10px;
 }
 
@@ -531,7 +562,7 @@ function getResourcesForSemester() {
 }
 
 .vertical-line {
-  border-left: 3px solid #242222;
+  border-left: 3px solid var(--clickable-background-color);
   display: inline-block;
   height: 330px;
   margin-top: 20px;

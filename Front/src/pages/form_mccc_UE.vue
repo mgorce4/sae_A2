@@ -279,7 +279,7 @@
 }
 
 #button_more:hover {
-  background-color: rgb(50,50,50);
+  background-color: var(--clickable-background-color);
   transform: scale(1.1);
 }
 

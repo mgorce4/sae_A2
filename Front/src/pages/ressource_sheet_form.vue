@@ -967,7 +967,7 @@ onMounted(async () => {
   width: 100%;
   min-height: 3em;
   border-radius: 15px;
-  background-color: rgb(117, 117, 117);
+  background-color: var(--div-rect-background-color);
   color: var(--main-theme-secondary-color);
   border: none;
   box-sizing: border-box;
@@ -1076,7 +1076,7 @@ onMounted(async () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
+  background-color: rgb(204, 204, 204);
   transition: 0.4s;
   border-radius: 26px;
 }
@@ -1124,7 +1124,7 @@ input:checked + .slider::before {
 
 .sae_label {
   font-size: 1.1vw;
-  color: white;
+  color: var(--main-theme-secondary-color);
 }
 
 .no_sae_message {
@@ -1167,8 +1167,8 @@ input:checked + .slider::before {
 }
 
 .skill-input {
-  background-color: rgb(117, 117, 117);
-  color: white;
+  background-color: var(--div-rect-background-color);
+  color: var(--main-theme-secondary-color);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   padding: 0.8vw;
@@ -1194,8 +1194,8 @@ input:checked + .slider::before {
 
 .btn-remove-skill {
   background-color: transparent;
-  color: #d9534f;
-  border: 1px solid #d9534f;
+  color: var(--error-color);
+  border: 1px solid var(--error-color);
   border-radius: 5px;
   padding: 0.4vw 1vw;
   cursor: pointer;
@@ -1208,20 +1208,20 @@ input:checked + .slider::before {
 }
 
 .btn-remove-skill:hover:not(:disabled) {
-  background-color: #d9534f;
-  color: white;
+  background-color: var(--error-color);
+  color: var(--error-color);
 }
 
 .btn-remove-skill:disabled {
-  color: #6c757d;
-  border-color: #6c757d;
+  color: var(--div-rect-background-color);
+  border-color: var(--div-rect-background-color);
   cursor: not-allowed;
   opacity: 0.5;
 }
 
 .btn-add-skill {
-  background-color: #6c757d;
-  color: white;
+  background-color: var(--div-rect-background-color);
+  color: var(--main-theme-secondary-color);
   border: none;
   border-radius: 8px;
   padding: 0.8vw 1.5vw;
@@ -1233,7 +1233,7 @@ input:checked + .slider::before {
 }
 
 .btn-add-skill:hover {
-  background-color: #2C2C3B;
+  background-color: var(--sub-section-background-color);
 }
 
 #align_items_inline_center{
@@ -1269,8 +1269,8 @@ input:checked + .slider::before {
 
 .keyword-input {
   flex: 1;
-  background-color: rgb(117, 117, 117);
-  color: white;
+  background-color: var(--div-rect-background-color);
+  color: var(--main-theme-secondary-color);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   padding: 0.6vw 3vw 0.6vw 1vw;
@@ -1290,7 +1290,7 @@ input:checked + .slider::before {
   top: 50%;
   transform: translateY(-50%);
   background-color: transparent;
-  color: white;
+  color: var(--main-theme-secondary-color);
   border: none;
   width: 1.5vw;
   height: 1.5vw;
@@ -1306,13 +1306,13 @@ input:checked + .slider::before {
 }
 
 .btn-remove-keyword:hover {
-  color: #ff6b6b;
+  color: var(--error-color);
 }
 
 
 .btn-add-keyword {
-  background-color: #6c757d;
-  color: white;
+  background-color: var(--div-rect-background-color);
+  color: var(--main-theme-secondary-color);
   border: none;
   border-radius: 8px;
   padding: 0.6vw 1.2vw;
@@ -1324,7 +1324,7 @@ input:checked + .slider::before {
 }
 
 .btn-add-keyword:hover {
-  background-color: #2C2C3B;
+  background-color: var(--sub-section-background-color);
 }
 
 /* Modalities styles */
@@ -1343,8 +1343,8 @@ input:checked + .slider::before {
 
 .modality-textarea {
   flex: 1;
-  background-color: rgb(117, 117, 117);
-  color: white;
+  background-color: var(--div-rect-background-color);
+  color: var(--main-theme-secondary-color);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   padding: 0.8vw 3vw 0.8vw 0.8vw;
@@ -1365,7 +1365,7 @@ input:checked + .slider::before {
   right: 0.5vw;
   top: 0.8vw;
   background-color: transparent;
-  color: white;
+  color: var(--main-theme-secondary-color);
   border: none;
   width: 1.5vw;
   height: 1.5vw;
@@ -1381,13 +1381,13 @@ input:checked + .slider::before {
 }
 
 .btn-remove-modality:hover {
-  color: #ff6b6b;
+  color: var(--error-color);
 }
 
 
 .btn-add-modality {
-  background-color: #6c757d;
-  color: white;
+  background-color: var(--div-rect-background-color);
+  color: var(--main-theme-secondary-color);
   border: none;
   border-radius: 8px;
   padding: 0.6vw 1.2vw;
@@ -1399,7 +1399,7 @@ input:checked + .slider::before {
 }
 
 .btn-add-modality:hover {
-  background-color: #2C2C3B;
+  background-color: var(--sub-section-background-color);
 }
 
 /* Pedagogical content styles */
@@ -1438,7 +1438,7 @@ input:checked + .slider::before {
   font-size: 1.3vw;
   font-weight: bold;
   margin: 0;
-  color: white;
+  color: var(--main-theme-secondary-color);
 }
 
 .pedagogical-subtitle {
@@ -1497,8 +1497,8 @@ input:checked + .slider::before {
 }
 
 .pedagogical-number {
-  background-color: #2C2C3B;
-  color: white;
+  background-color: var(--sub-section-background-color);
+  color: var(--main-theme-secondary-color);
   border-radius: 50%;
   width: 1.8vw;
   height: 1.8vw;
@@ -1513,7 +1513,7 @@ input:checked + .slider::before {
 .pedagogical-input {
   flex: 1;
   background-color: transparent;
-  color: white;
+  color: var(--main-theme-secondary-color);
   border: none;
   padding: 0.4vw 2.5vw 0.4vw 0.5vw;
   font-family: inherit;
@@ -1543,7 +1543,7 @@ input:checked + .slider::before {
   right: 0.5vw;
   top: 0.6vw;
   background-color: transparent;
-  color: white;
+  color: var(--main-theme-secondary-color);
   border: none;
   width: 1.5vw;
   height: 1.5vw;
@@ -1559,7 +1559,7 @@ input:checked + .slider::before {
 }
 
 .btn-remove-pedagogical:hover {
-  color: #ff6b6b;
+  color: var(--error-color);
 }
 
 .pedagogical-footer {
@@ -1573,7 +1573,7 @@ input:checked + .slider::before {
 
 .btn-add-pedagogical {
   background-color: rgba(108, 117, 125, 0.8);
-  color: white;
+  color: var(--main-theme-secondary-color);
   border: none;
   border-radius: 8px;
   padding: 0.6vw 1.2vw;
@@ -1681,14 +1681,14 @@ input:checked + .slider::before {
 
 .hours_total_text {
   font-size: 1.1vw;
-  color: white;
+  color: var(--main-theme-secondary-color);
   margin: 0;
   white-space: nowrap;
 }
 
 .hours_total_value {
   font-weight: bold;
-  color: white;
+  color: var(--main-theme-secondary-color);
   font-size: 1.3vw;
 }
 
@@ -1703,8 +1703,8 @@ input:checked + .slider::before {
 }
 
 #button_save {
-  background-color: #3C3E50;
-  color: white;
+  background-color: var(--sub-section-background-color);
+  color: var(--main-theme-secondary-color);
   font-size: 1.2vw;
   font-weight: 500;
   padding: 1.2vw 4vw;
@@ -1716,12 +1716,12 @@ input:checked + .slider::before {
 }
 
 #button_save:hover {
-  background-color: #4a4d61;
+  background-color: var(--div-rect-background-color);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 #button_save:active {
-  background-color: #2d2f3d;
+  background-color: var(--sub-section-background-color);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 </style>

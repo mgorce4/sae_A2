@@ -26,13 +26,13 @@
 
 #establishment_name {
     color: var(--main-theme-secondary-color);
-    text-shadow: 0 0 5px black;
+    text-shadow: 0 0 5px var(--main-theme-terciary-color);
     font-size: 1.5vw;
 }
 
 #edit_year {
     font-size: 1.5vw;
     color: var(--main-theme-secondary-color);
-    text-shadow: 0 0 5px black;
+    text-shadow: 0 0 5px var(--main-theme-terciary-color);
 }
 </style>
