@@ -38,7 +38,7 @@ const coefficient = ref()
 
 /* list of lesson to use for the v-for */
 
-const list_of_lesson = ['CM', 'TD', 'TP', 'Projet']
+const list_of_lesson = ['CM', 'TD', 'TP']
 
 function areTotalNaN() {
   return isNaN(total_initial_formation.value) && isNaN(total_work_study.value)
@@ -119,12 +119,15 @@ onMounted(async () => {
     }
   })
 
-  document.querySelector('#button_ue_minus').addEventListener('click', () => {
-    if (num_ue_select.value > 1) {
+  document.addEventListener('click', (event) => {
+    if (event.target.id === 'button_ue_minus' && num_ue_select.value > 1) {
+      const divToRemove = event.target.parentElement
+      divToRemove.remove()
+
       num_ue_select.value -= 1
-      num_coefficient_select.value -= 1
     }
   })
+
 })
 
 function getUEsForInstitution() {
@@ -214,9 +217,7 @@ function getResourcesForSemester() {
                       <input type="text" class="input" v-model="TD_initial_formation" required />
                     </td>
                     <td>
-                    </td>
-                    <td>
-                      <input type="text" class="input" v-model="Project_initial_formation" />
+                      <input type="text" class="input" v-model="TP_initial_formation" required />
                     </td>
                   </tr>
                 </tbody>
@@ -261,9 +262,6 @@ function getResourcesForSemester() {
                       </td>
                       <td>
                         <input type="text" class="input input_work_study" v-model="TP_work_study" required />
-                      </td>
-                      <td>
-                        <input type="text" class="input input_work_study" v-model="Project_work_study" required />
                       </td>
                     </tr>
                   </tbody>
@@ -360,11 +358,6 @@ function getResourcesForSemester() {
               <div class="container-fluid">
                 <p>TP :</p>
                 <input type="text" class="input" :value="resource.hoursTeacher.tp" />
-              </div>
-
-              <div class="container-fluid">
-                <p>SAE :</p>
-                <input type="text" class="input" />
               </div>
 
               <div class="container-fluid">
