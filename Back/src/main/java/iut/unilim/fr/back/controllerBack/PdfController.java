@@ -5,21 +5,36 @@ import com.itextpdf.text.pdf.*;
 import iut.unilim.fr.back.Ressource.HeaderAndFooter;
 import iut.unilim.fr.back.Ressource.HeaderEvent;
 import iut.unilim.fr.back.service.ResourceGetterService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 
 import static com.itextpdf.text.List.UNORDERED;
 import static iut.unilim.fr.back.controllerBack.LogController.writeInPdfLog;
 
+@RestController
+@RequestMapping("/api/pdf")
 public class PdfController {
+    @Autowired
+    private ResourceGetterService res;
+
     private final BaseColor COL_BLEU_FOND = new BaseColor(59, 66, 117);
     private final BaseColor COL_NOIR_HEADER = new BaseColor(34, 34, 34);
     private final BaseColor COL_GRIS_CORPS = new BaseColor(128, 128, 128);
     private final BaseColor COL_CONTENT_TEXT = BaseColor.WHITE;
     private final BaseColor COL_TEXT = BaseColor.BLACK;
     private final String baseFont = "src/main/resources/font/trade-gothic-lt-std-58a78e64434a9.otf";
-    private String absolutePath;
 
     private final int NONE = 0;
     private final int listIndent = 12;
@@ -28,14 +43,11 @@ public class PdfController {
     private final int subPadding = 10;
     private final int specialTableNbRow = 1;
 
+    @GetMapping("/generate")
+    public ResponseEntity<Resource> generatePdf(@RequestParam String resourceName) {
+        res.setValuesFromResource(resourceName);
 
-
-    public boolean generatePdf(ResourceGetterService res, String path) {
-        if (path.trim().isEmpty()) {
-            absolutePath = "./";
-        }else {
-            absolutePath = path;
-        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         int documentMargin = 36;
         int documentMarginTop = 110;
@@ -48,20 +60,18 @@ public class PdfController {
         float[] pedagoTableWidth = {1f, 6f};
         String pedagoContentSplitDelimitator = ",";
 
-        boolean resultValue;
-
 
         String fileName = res.getFileName();
+        String pdfFileName = fileName + "_ressource_sheet.pdf";
         if (!fileName.isEmpty()) {
             try {
                 Document document = new Document(PageSize.A4, documentMargin, documentMargin, documentMarginTop, documentMarginBottom);
-                PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(absolutePath + fileName + "_ressource_sheet.pdf"));
+                PdfWriter writer = PdfWriter.getInstance(document, out);
 
                 HeaderAndFooter event = new HeaderAndFooter(res.qualityReference(), res.getDepartment(), res.getRefUE(), res.getLabelResource());
                 writer.setPageEvent(event);
 
                 document.open();
-
 
                 Font font = FontFactory.getFont(baseFont, documentStandardFontSize, COL_TEXT);
                 Font contentFont = FontFactory.getFont(baseFont, documentStandardFontSize, COL_CONTENT_TEXT);
@@ -139,18 +149,7 @@ public class PdfController {
 
                     ArrayList<Chunk> programmeContent = completeInternshipProgramContent(res, contentFont);
 
-                    for (Chunk chunk : programmeContent) {
-                        PdfPCell cell = new PdfPCell(new Phrase(chunk.getContent(), contentFont));
-
-                        greyCellStyle(cell);
-                        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-
-                        internshipProgramTable.addCell(cell);
-                    }
-
-                    PdfPTable repartitionContent = createContentDiv(internshipRepartition, internshipProgramTable);
-                    hours.add(repartitionContent);
+                    applyGreyStyleOnCell(programmeContent, contentFont, internshipProgramTable, internshipRepartition, hours);
 
                 }
                 
@@ -159,18 +158,7 @@ public class PdfController {
 
                 ArrayList<Chunk> programmeContent = completeProgramContent(res, contentFont);
 
-                for (Chunk chunk : programmeContent) {
-                    PdfPCell cell = new PdfPCell(new Phrase(chunk.getContent(), contentFont));
-
-                    greyCellStyle(cell);
-                    cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                    cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-
-                    repartitionProgrammeTable.addCell(cell);
-                }
-
-                PdfPTable repartitionContent = createContentDiv(hoursRepartition, repartitionProgrammeTable);
-                hours.add(repartitionContent);
+                PdfPTable repartitionContent = applyGreyStyleOnCell(programmeContent, contentFont, repartitionProgrammeTable, hoursRepartition, hours);
                 repartitionContent.setPaddingTop(standardPadding);
 
                 contents.addAll(hours);
@@ -229,17 +217,39 @@ public class PdfController {
                 document.add(resourceTrackingTable);
                 document.close();
 
-                writeInPdfLog("{user} Create a pdf for resource sheet: " + fileName + "_resource_sheet.pdf at " + absolutePath);
-                resultValue = true;
+                writeInPdfLog("{user} Create a pdf for resource sheet: " + pdfFileName);
             } catch (Exception e) {
                 writeInPdfLog(e.getMessage());
-                resultValue = false;
+                return ResponseEntity.internalServerError().build();
             }
+            byte[] pdfBytes = out.toByteArray();
+            ByteArrayResource resource = new ByteArrayResource(pdfBytes);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + pdfFileName + ".pdf\"")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .contentLength(pdfBytes.length)
+                    .body(resource);
         } else {
             writeInPdfLog("{user} attempt to generate a resource sheet pdf, but no matches found for the resource name");
-            resultValue = false;
+            return ResponseEntity.internalServerError().build();
         }
-        return resultValue;
+    }
+
+    private PdfPTable applyGreyStyleOnCell(ArrayList<Chunk> programmeContent, Font contentFont, PdfPTable repartitionProgrammeTable, Chunk hoursRepartition, ArrayList<PdfPTable> hours) {
+        for (Chunk chunk : programmeContent) {
+            PdfPCell cell = new PdfPCell(new Phrase(chunk.getContent(), contentFont));
+
+            greyCellStyle(cell);
+            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+            repartitionProgrammeTable.addCell(cell);
+        }
+
+        PdfPTable repartitionContent = createContentDiv(hoursRepartition, repartitionProgrammeTable);
+        hours.add(repartitionContent);
+        return repartitionContent;
     }
 
     private ArrayList<Chunk> completeInternshipProgramContent(ResourceGetterService res, Font contentFont) {
@@ -257,18 +267,7 @@ public class PdfController {
     }
 
     private ArrayList<Chunk> completeInternshipNationalProgram(ResourceGetterService res, Font contentFont) {
-        Chunk resource = new Chunk("Ressource", contentFont);
-        Chunk cm = new Chunk("CM", contentFont);
-        Chunk td = new Chunk("TD", contentFont);
-        Chunk tp = new Chunk("TP", contentFont);
-        Chunk total = new Chunk("Total", contentFont);
-
-        ArrayList<Chunk> programmeContent = new ArrayList<>();
-        programmeContent.add(resource);
-        programmeContent.add(cm);
-        programmeContent.add(td);
-        programmeContent.add(tp);
-        programmeContent.add(total);
+        ArrayList<Chunk> programmeContent = initializeProgramContent(contentFont);
 
         Chunk pn = new Chunk("Programme Nationnal - Alternance", contentFont);
         programmeContent.add(pn);
@@ -281,19 +280,24 @@ public class PdfController {
         return programmeContent;
     }
 
-    private static ArrayList<Chunk> completeNationalProgram(ResourceGetterService res, Font contentFont) {
+    private static ArrayList<Chunk> initializeProgramContent(Font contentFont) {
         Chunk resource = new Chunk("Ressource", contentFont);
         Chunk cm = new Chunk("CM", contentFont);
         Chunk td = new Chunk("TD", contentFont);
         Chunk tp = new Chunk("TP", contentFont);
         Chunk total = new Chunk("Total", contentFont);
 
-        ArrayList<Chunk> programmeContent = new ArrayList<>();
-        programmeContent.add(resource);
-        programmeContent.add(cm);
-        programmeContent.add(td);
-        programmeContent.add(tp);
-        programmeContent.add(total);
+        ArrayList<Chunk> programContent = new ArrayList<>();
+        programContent.add(resource);
+        programContent.add(cm);
+        programContent.add(td);
+        programContent.add(tp);
+        programContent.add(total);
+        return programContent;
+    }
+
+    private static ArrayList<Chunk> completeNationalProgram(ResourceGetterService res, Font contentFont) {
+        ArrayList<Chunk> programmeContent = initializeProgramContent(contentFont);
 
         Chunk pn = new Chunk("Programme Nationnal", contentFont);
         programmeContent.add(pn);
