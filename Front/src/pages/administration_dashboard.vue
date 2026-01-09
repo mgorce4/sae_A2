@@ -43,7 +43,7 @@ function getResourcesForSemester(semester) {
     <div id="sub_div_for_MCCC_and_calender">
       <div id="MCCC_div">
         <!-- link into MCCC page -->
-        <button type="button" id="MCCC_button" onclick="document.location.href='#/mccc-select-form'">MCCC</button>
+        <button type="button" id="MCCC_button" onclick="document.location.href='#/mccc-select-path'">MCCC</button>
       </div>
 
       <div id="calender_div">

@@ -15,8 +15,8 @@ const goToRessourceSheet = (url, semester) => {
 <template>
     <div id="form_select_page">
         <div style="display: flex; align-items: center; height: 1vw;">
-            <button class="back_arrow" onclick="document.location.href='#/dashboard-administration'">←</button>
-            <p class="back" >Retour à l'accueil</p>
+            <button class="back_arrow" onclick="document.location.href='#/mccc-select-path'">←</button>
+            <p class="back" >Retour</p>
         </div>
 
         <div v-for="(year, index) in afficherBoutons" v-bind:key="index" class="blue_rect">
