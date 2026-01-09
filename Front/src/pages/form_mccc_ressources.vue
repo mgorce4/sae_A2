@@ -13,13 +13,14 @@ const UEs = ref([])
 
 const resource_name = ref('')
 
-const teachers = ref([])
-
 const access_rights = ref([])
 
 const num_ue_select = ref(1)
 const num_coefficient_select = ref(1)
 const num_teacher_select = ref(1)
+
+const access_right_teacher = 1
+const show_teacher = ref(false)
 
 /* constant for the form */
 
@@ -29,13 +30,11 @@ const apogee_code = ref('')
 const CM_initial_formation = ref()
 const TD_initial_formation = ref()
 const TP_initial_formation = ref()
-const Project_initial_formation = ref()
 const total_initial_formation = ref(0)
 
 const CM_work_study = ref()
 const TD_work_study = ref()
 const TP_work_study = ref()
-const Project_work_study = ref()
 const total_work_study = ref(0)
 
 const teacher = ref('')
@@ -57,6 +56,14 @@ const getQueryParam = (param) => {
   return params.get(param)
 }
 
+function getTotalInitialFormation() {
+  return parseInt(CM_initial_formation.value) + parseInt(TD_initial_formation.value) + parseInt(TP_initial_formation.value)
+}
+
+function getTotalWorkStudyFormation() {
+  return parseInt(CM_work_study.value) + parseInt(TD_work_study.value) + parseInt(TP_work_study.value)
+}
+
 onMounted(async () => {
   await Promise.all([
     axios
@@ -66,13 +73,13 @@ onMounted(async () => {
       .get('http://localhost:8080/api/v2/mccc/ues')
       .then((response) => (UEs.value = response.data)),
     axios
-      .get('http://localhost:8080/api/users')
-      .then((response) => (teachers.value = response.data)),
+      .get('http://localhost:8080/api/access-rights')
+      .then((response) => (access_rights.value = response.data)),
   ])
 
-  teachers.value = teachers.value.map((teacher) => {})
-
   await nextTick()
+
+  access_rights.value = access_rights.value.filter((ar) => ar.user.institution.idInstitution == localStorage.idInstitution).filter((ar) => ar.accessRight == access_right_teacher)
 
   document.querySelectorAll('.accordion').forEach((acc) => {
     acc.addEventListener('click', function () {
@@ -87,8 +94,8 @@ onMounted(async () => {
   })
 
   document.getElementById('save').addEventListener('click', () => {
-    total_initial_formation.value = parseInt(CM_initial_formation.value) + parseInt(TD_initial_formation.value) + parseInt(TP_initial_formation.value) + parseInt(Project_initial_formation.value)
-    total_work_study.value = parseInt(CM_work_study.value) + parseInt(TD_work_study.value) + parseInt(TP_work_study.value) + parseInt(Project_work_study.value)
+    total_initial_formation.value = getTotalInitialFormation()
+    total_work_study.value = getTotalWorkStudyFormation()
 
     /* if the forms are empty or filled with non-numeric values set totals to 0 */
 
@@ -113,8 +120,6 @@ onMounted(async () => {
     })
   })
 
-  console.log(num_teacher_select.value)
-
   document.addEventListener('click', (event) => {
     if (event.target.id === 'button_ue_minus' && num_ue_select.value > 1) {
       event.target.parentElement.remove()
@@ -122,12 +127,23 @@ onMounted(async () => {
     } else if (event.target.id === 'button_ue_plus' && getUEsForInstitution().length > num_ue_select.value) {
       num_ue_select.value += 1
       num_coefficient_select.value += 1
-    } else if (event.target.id === 'button_teacher_plus') {
+    } else if (event.target.id === 'button_teacher_plus' && access_rights.value.length > num_teacher_select.value) {
       num_teacher_select.value += 1
     } else if (event.target.id === 'button_teacher_cross' && num_teacher_select.value > 1) {
-      event.target.parentElement.remove()
+      num_teacher_select.value -= 1
     }
   })
+
+  document.getElementById("teacher").addEventListener("focus", () => {
+    show_teacher.value = true
+  })
+
+  document.getElementById("teacher").addEventListener("blur", () => {
+    show_teacher.value = false
+  })
+
+  console.log(document.getElementById('teacher_name').innerHTML)
+
 })
 
 function getUEsForInstitution() {
@@ -273,12 +289,7 @@ function getResourcesForSemester() {
                     <p v-if="getUEsForInstitution().length == 0">Aucune UE créée</p>
 
                     <div v-else>
-                      <div
-                        v-for="n in num_ue_select"
-                        :key="n"
-                        class="component"
-                        style="margin-bottom: 23px"
-                      >
+                      <div v-for="n in num_ue_select" :key="n" class="component" style="margin-bottom: 23px">
                         <select id="ue_select" class="input">
                           <option v-for="ue in getUEsForInstitution()" :key="ue.ueNumber">
                             {{ ue.label }}
@@ -312,6 +323,9 @@ function getResourcesForSemester() {
                     <input id="teacher" type="text" class="input" v-model="teacher" required />
                     <button class="button_more" id="button_teacher_cross">x</button>
                   </div>
+                  <div id="show_teacher" v-show="show_teacher">
+                    <div id="teacher_name" v-for="acr in access_rights" :key="acr">{{acr.user.firstname}} {{acr.user.lastname}}</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -323,9 +337,7 @@ function getResourcesForSemester() {
         <p v-else>Aucune ressource n'a été crée</p>
 
         <div v-for="resource in getResourcesForSemester()" :key="resource.resourceId">
-          <a class="accordion" id="dark_bar" style="width: 97%"
-            >{{ resource.resourceLabel }} {{ resource.resourceName }}</a
-          >
+          <a class="accordion" id="dark_bar" style="width: 97%">{{ resource.resourceLabel }} {{ resource.resourceName }}</a>
 
           <div class="panel_resource">
             <div id="left_resource">
@@ -352,8 +364,7 @@ function getResourcesForSemester() {
               </div>
 
               <div class="container-fluid">
-                <p>Total :</p>
-                <input type="text" class="input" :value="resource.hoursTeacher.total" />
+                <p>Total : {{resource.hoursTeacher.total}}</p>
               </div>
             </div>
 
@@ -552,14 +563,6 @@ function getResourcesForSemester() {
   width: 50%;
 }
 
-#resources_list {
-  background-color: var(--main-theme-background-color);
-  border-radius: 15px;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-}
-
 #left_resource > div {
   display: flex;
   justify-content: center;
@@ -587,5 +590,19 @@ function getResourcesForSemester() {
   font-size: 1.5vw;
   align-items: center;
   justify-content: center;
+}
+
+#show_teacher {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.35);
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  max-height: 150px;
+  overflow-y: auto;
+  padding: 0.2vw;
+}
+
+#teacher_name {
+  cursor : pointer;
 }
 </style>
