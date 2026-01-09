@@ -1,7 +1,10 @@
 <script setup>
+    import { onMounted } from 'vue';
     import { institutionLocation } from '../main';
 
-    institutionLocation.value = localStorage.institutionLocation
+    onMounted(async () => {
+        institutionLocation.value = localStorage.institutionLocation;
+    });
 </script>
 
 <template>

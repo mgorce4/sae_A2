@@ -8,6 +8,19 @@ export const status = ref("")
 export const userName = ref("")
 export const institutionLocation = ref("")
 
+export function removeUser() {
+    localStorage.removeItem('access_rights')
+    localStorage.removeItem('firstname')
+    localStorage.removeItem('idUser')
+    localStorage.removeItem('institutionLocation')
+    localStorage.removeItem('institutionName')
+    localStorage.removeItem('lastname')
+    localStorage.removeItem('password')
+    localStorage.removeItem('username')
+    localStorage.removeItem('status')
+    localStorage.removeItem('idInstitution')
+}
+
 import { Calendar, DatePicker } from 'v-calendar'
 import 'v-calendar/style.css'
 

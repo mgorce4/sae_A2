@@ -1,5 +1,5 @@
 <script setup>
-    import { status, userName, institutionLocation } from '../main.js'
+    import { status, userName, institutionLocation, removeUser } from '../main.js'
     import { computed, ref, onMounted } from 'vue'
     import axios from 'axios'
 
@@ -12,6 +12,8 @@
     const user_access_rights = ref([])
 
     onMounted(async () => {
+        removeUser()
+
         axios.get('http://localhost:8080/api/users').then(response => (users.value = response.data))
         axios.get('http://localhost:8080/api/access-rights').then(response => (access_rights.value = response.data))
 
@@ -76,9 +78,7 @@
         } else {
             console.log("Utilisateur non trouvé")
             loginError.value = true
-            localStorage.removeItem('username')
-            localStorage.removeItem('password')
-            localStorage.removeItem('access_rights')
+            removeUser()
         }
     }
 

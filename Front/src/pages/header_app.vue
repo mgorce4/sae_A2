@@ -1,17 +1,5 @@
 <script setup>
-    import { status, userName } from '../main'
-
-    function removeUser() {
-        localStorage.removeItem('access_rights')
-        localStorage.removeItem('firstname')
-        localStorage.removeItem('idUser')
-        localStorage.removeItem('institutionLocation')
-        localStorage.removeItem('institutionName')
-        localStorage.removeItem('lastname')
-        localStorage.removeItem('password')
-        localStorage.removeItem('username')
-        localStorage.removeItem('status')
-    }
+    import { status, userName, removeUser } from '../main'
 
     status.value = localStorage.status
     userName.value = localStorage.lastname + " " + localStorage.firstname
