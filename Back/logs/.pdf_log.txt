@@ -1,0 +1,5 @@
+[09:01:2026 14:20:01:251] Create log file
+[09:01:2026 14:20:01:250] Could not get the resource sheet from the database because there is no resource with id = ""
+[09:01:2026 14:20:01:252] Attempt to get from database with resource name: ""
+-> "" not found in resources tables
+[09:01:2026 14:20:01:259] {user} attempt to generate a resource sheet pdf, but no matches found for the resource name
