@@ -146,9 +146,6 @@
                 semester: semester,
                 userId: parseInt(localStorage.idUser)
             };
-
-            console.log('📤 Sending UE data:', payload);
-
             await axios.post('http://localhost:8080/api/ues', payload);
 
             [nb_UE, apogee_code, name_comp, comp_level].forEach(f => f.value = '');
@@ -158,9 +155,7 @@
             attachAccordionListeners();
         }
         catch (error){
-            console.error('❌ Erreur lors de la sauvegarde:', error);
-            console.error('❌ Error response:', error.response?.data);
-            console.error('❌ Error status:', error.response?.status);
+            console.error(' Erreur lors de la sauvegarde:', error);
         }
     }
 
