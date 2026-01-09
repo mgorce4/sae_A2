@@ -6,6 +6,7 @@
   const coursName = ref('');
   const coursNb = ref('');
   const coursList = ref([]);
+  const click = ref(false);
 
   const errors = ref({
     coursName: false,
@@ -17,7 +18,7 @@
   };
 
   const goToRessourceSheet = (url, semester) => {
-      window.location.hash = `${url}?id=${semester}`
+    window.location.hash = `${url}?id=${semester}`
   }
 
   const attachAccordionListeners = () => {
@@ -144,6 +145,36 @@
       console.error('Erreur de sauvegarde', error);
     }
   }
+
+  const updateCourse = async (cours) => {
+    try {
+      const response = {
+        name: cours.name,
+        number: parseInt(cours.number),
+        institution: {
+          idInstitution: parseInt(localStorage.idInstitution)
+        }
+      };
+      
+      await axios.put(`http://localhost:8080/api/paths/${cours.idPath}`, response);
+      click.value = false;
+      cours.show = false;
+      
+      // Recharger la liste
+      const allPaths = await axios.get(`http://localhost:8080/api/paths`);
+      coursList.value = allPaths.data
+        .filter(path => 
+          path.institution && path.institution.idInstitution === parseInt(localStorage.idInstitution)
+        )
+        .map(path => ({
+          ...path,
+          show: false
+        }));
+    } catch (error) {
+      console.error('Erreur lors de la modification:', error);
+    }
+  }
+
 </script>
 
 <template>
@@ -184,11 +215,25 @@
         <div>
             <button class="btn_form_acces" @click="goToRessourceSheet('#/mccc-select-form')">Accéder aux semestres</button>
         </div>
-        <div v-for="cours in getCourses" :key="cours.idPath" class="button_path" >
-          <div class="btn_form_acces" v-on:mouseover="cours.show = true" v-on:mouseout="cours.show = false">
+        <div v-for="cours in getCourses" :key="cours.idPath" class="button_path">
+          <div class="btn_form_acces" v-on:mouseover="cours.show = true" v-on:mouseout="cours.show = false" @click="goToRessourceSheet('#/mccc-select-form', cours.number)">
             <p>{{ cours.name }}</p>
-            <div class="container-fluid spe" v-show="cours.show">
-              <button class="btn_form_acces" @click="Modify">Modifier</button>
+            <div class="container-fluid spe" v-show="cours.show" @click.stop>
+              <button v-if="!click" @click="click = !click">Modifier</button>
+              <div v-if="click">
+                <div>
+                  <label>Nom du parcours : <span class="required">*</span></label>
+                  <input type="text" class="input" v-model="cours.name" />
+                </div>
+                <div>
+                  <label>Nombre associé au parcours : <span class="required">*</span></label>
+                  <input type="number" step="1" class="input" v-model="cours.number" @keydown="preventInvalidChars" />
+                </div>
+                <div>
+                  <input id="btn_cancel_UE" class="btn1" type="button" value="Annuler" @click="click = false">
+                  <input id="btn_save_UE" class="btn1" type="submit" value="Sauvegarder" @click="updateCourse(cours)">
+                </div>
+              </div>
             </div>
           </div>
         </div>
