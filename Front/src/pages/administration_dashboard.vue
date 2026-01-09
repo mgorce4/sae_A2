@@ -24,11 +24,13 @@ let selected_semester_sheets = ref(list_semesters[0])
 const resource_sheets = ref([])
 
 onMounted(async () => {
-
-    axios
-      .get('http://localhost:8080/api/v2/resource-sheets')
-      .then((reponse) => (resource_sheets.value = reponse.data))
-
+    try {
+        const response = await axios.get('http://localhost:8080/api/v2/resource-sheets')
+        resource_sheets.value = response.data
+    } catch (error) {
+        console.error('Error loading resource sheets:', error)
+        resource_sheets.value = []
+    }
 })
 
 function getResourcesForSemester(semester) {
@@ -88,10 +90,18 @@ function getResourcesForSemester(semester) {
 <style>
 /* -- main --*/
 
+#top{
+  margin-bottom: 1vw;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 #main_div {
   display: flex;
   align-items: center;
-  height: 450px;
+  height: 100%;
+  align-self: center;
   width: 100%;
   justify-content: center;
   gap: 100px;
@@ -99,12 +109,12 @@ function getResourcesForSemester(semester) {
 }
 
 #main_div > div {
-  border-radius: 10px;
+  border-radius: 15px;
 }
 
 #main_div > div > div {
   /* -- for MCCC-div and calender-div -- */
-  border-radius: 10px;
+  border-radius: 15px;
 }
 
 /* -- sub dic for MCCC and calender --*/
@@ -126,7 +136,7 @@ function getResourcesForSemester(semester) {
   color: var(--main-theme-secondary-color);
   font-size: 50px;
   background-color: var(--sub-section-background-color);
-  border-radius: 10px;
+  border-radius: 15px;
   width: 100%;
   height: 120%;
 }
@@ -144,11 +154,11 @@ function getResourcesForSemester(semester) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-bottom: 5px;
+  padding-bottom: 1vw;
 }
 
 #calendar {
-  margin-top: 5px;
+  margin-top: 1vw;
   display: flex;
   justify-content: center;
 }
@@ -158,17 +168,22 @@ function getResourcesForSemester(semester) {
 #return_sheets_div {
   background-color: var(--main-theme-background-color);
   color: var(--main-theme-secondary-color);
-  height: 100%;
+  height: 70vh; /* Hauteur fixe */
+  max-height: 70vh; /* Hauteur maximale fixe */
   width: 35%;
-  padding: 0 5px 5px 5px;
-  overflow-y: scroll;
-  font-size: 20px;
+  padding: 0 1vw 1vw 1vw;
+  overflow-y: auto; /* Scrollbar uniquement si nécessaire */
+  font-size: 2vw;
+  display: flex;
+  flex-direction: column;
 }
 
 #return_sheets_div_header {
   position: sticky;
   top: 0;
   background-color: var(--main-theme-background-color);
+  z-index: 10;
+  padding-bottom: 1vw;
 }
 
 #top {
@@ -176,43 +191,54 @@ function getResourcesForSemester(semester) {
   justify-content: space-between;
 }
 
-#return_sheets_div::-webkit-scrollbar {
-  width: 12px;
+#list-of-ressources {
+  flex: 1;
+  overflow-y: auto; /* Scrollbar uniquement sur le contenu */
+  padding-right: 1vw; /* Espace à droite de la scrollbar */
 }
 
-#return_sheets_div::-webkit-scrollbar-track {
-  margin: 1em;
+#list-of-ressources::-webkit-scrollbar {
+  width: 0.8vw;
+}
+
+#list-of-ressources::-webkit-scrollbar-track {
+  margin: 1vw 0.5vw 1vw 0; /* Marge à droite */
   background: var(--main-theme-secondary-background-color);
-  box-shadow: inset 0 0 5px var(--sub-scrollbar-color);
-  border-radius: 10px;
+  box-shadow: inset 0 0 1vw var(--sub-scrollbar-color);
+  border-radius: 15px;
 }
 
-#return_sheets_div::-webkit-scrollbar-thumb {
+#list-of-ressources::-webkit-scrollbar-thumb {
   background: var(--main-theme-secondary-color);
-  border-radius: 10px;
-  border: 3px var(--main-theme-terciary-color) solid;
+  border-radius: 15px;
+  border: 0.2vw var(--main-theme-terciary-color) solid;
+}
+
+/* Remove scrollbar from parent div */
+#return_sheets_div::-webkit-scrollbar {
+  display: none;
 }
 
 .ressource {
   background-color: var(--sub-div-background-color);
-  margin: 15px;
+  margin: 1vw;
   padding: 5px;
-  font-size: 25px;
-  border-radius: 10px;
+  font-size: 2vw;
+  border-radius: 15px;
   justify-content: space-between;
   display: flex;
-  height: 60px;
+  height: 4vw;
   align-items: center;
 }
 
 .semesters {
   background-color: var(--sub-div-background-color);
   width: 100%;
-  height: 30px;
+  height: 3vw;
   text-align: center;
   color: var(--main-theme-secondary-color);
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
   font-size: 15px;
 }
 </style>
