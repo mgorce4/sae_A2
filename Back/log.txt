@@ -1,0 +1,69 @@
+[08:01:2026 10:37:43:633] Create log file
+[08:01:2026 10:37:43:633] Get ressource 
+     - id : 1
+     - label : R1.01
+
+[08:01:2026 10:37:43:739] Get from database :
+- Ressource (R1.01:  Initiation au développement; IU EN FOR 001; UE1.1; Anais Poursat;)
+   - objectives(Comprendre les bases de la programmation)
+   - skills([Être capable de coder en Python])
+   - saes([SAE 1])
+   - terms([NGCC])
+   - keywords([programmation, python])
+   - hoursStudent([6, 9, 14, 36])
+   - hoursPN([6, 10, 20, 36])
+   - pedagoContent( CM: ; TD: ; TP: )
+   - feedBack(Student: Trop facile; Pedagogical team: Besoin de plus d'exemples; Improvements: Ajouter des exercices)
+
+[08:01:2026 10:37:44:136] {user} Create a pdf for resource sheet: R1.01_resource_sheet.pdf
+[08:01:2026 11:26:45:428] Get ressource 
+     - id : 1
+     - label : R1.01
+
+[08:01:2026 11:26:45:519] Get from database :
+- Ressource (R1.01:  Initiation au développement; IU EN FOR 001; UE1.1; Anais Poursat;)
+   - objectives(Comprendre les bases de la programmation)
+   - skills([Être capable de coder en Python])
+   - saes([SAE 1])
+   - terms([NGCC])
+   - keywords([programmation, python])
+   - hoursStudent([6, 9, 14, 36])
+   - hoursPN([6, 10, 20, 36])
+   - pedagoContent( CM: ; TD: ; TP: )
+   - feedBack(Student: Trop facile; Pedagogical team: Besoin de plus d'exemples; Improvements: Ajouter des exercices)
+
+[08:01:2026 11:26:45:844] {user} Create a pdf for resource sheet: R1.01_resource_sheet.pdf
+[09:01:2026 08:03:28:296] Get ressource 
+     - id : 1
+     - label : R1.01
+
+[09:01:2026 08:03:28:528] Get from database :
+- Ressource (R1.01:  Initiation au développement; IU EN FOR 001; UE1.1; Anais Poursat;)
+   - objectives(Comprendre les bases de la programmation)
+   - skills([Être capable de coder en Python])
+   - saes([SAE 1])
+   - terms([NGCC])
+   - keywords([programmation, python])
+   - hoursStudent([6, 9, 14, 36])
+   - hoursPN([6, 10, 20, 36])
+   - pedagoContent( CM: ; TD: ; TP: )
+   - feedBack(Student: Trop facile; Pedagogical team: Besoin de plus d'exemples; Improvements: Ajouter des exercices)
+
+[09:01:2026 08:03:29:67] {user} Create a pdf for resource sheet: R1.01_resource_sheet.pdf
+[09:01:2026 08:54:08:432] Get ressource 
+     - id : 1
+     - label : R1.01
+
+[09:01:2026 08:54:08:575] Get from database :
+- Ressource (R1.01:  Initiation au développement; IU EN FOR 001; UE1.1; Anais Poursat;)
+   - objectives(Comprendre les bases de la programmation)
+   - skills([Être capable de coder en Python])
+   - saes([SAE 1])
+   - terms([NGCC])
+   - keywords([programmation, python])
+   - hoursStudent([6, 9, 14, 36])
+   - hoursPN([6, 10, 20, 36])
+   - pedagoContent( CM: ; TD: ; TP: )
+   - feedBack(Student: Trop facile; Pedagogical team: Besoin de plus d'exemples; Improvements: Ajouter des exercices)
+
+[09:01:2026 08:54:08:878] {user} Create a pdf for resource sheet: R1.01_resource_sheet.pdf

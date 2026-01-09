@@ -13,6 +13,9 @@ const UEs = ref([])
 
 const resource_name = ref('')
 
+const num_ue_select = ref(1)
+const num_coefficient_select = ref(1)
+
 /* constant for the form */
 
 const resource_label = ref('')
@@ -107,6 +110,21 @@ onMounted(async () => {
       }
     })
   })
+
+  document.querySelector('#button_ue_plus').addEventListener('click', () => {
+    /* limit the number of UE select to the number of UEs available */
+    if (getUEsForInstitution().length > num_ue_select.value) {
+      num_ue_select.value += 1
+      num_coefficient_select.value += 1
+    }
+  })
+
+  document.querySelector('#button_ue_minus').addEventListener('click', () => {
+    if (num_ue_select.value > 1) {
+      num_ue_select.value -= 1
+      num_coefficient_select.value -= 1
+    }
+  })
 })
 
 function getUEsForInstitution() {
@@ -148,7 +166,7 @@ function getResourcesForSemester() {
           >Ajout d'une ressource :</a
         >
 
-        <form class="panel_resource">
+        <div   class="panel_resource">
           <div id="left">
             <div>
               <label for="resource_label">Intitule de la ressource : </label>
@@ -196,15 +214,9 @@ function getResourcesForSemester() {
                       <input type="text" class="input" v-model="TD_initial_formation" required />
                     </td>
                     <td>
-                      <input type="text" class="input" v-model="TP_initial_formation" required />
                     </td>
                     <td>
-                      <input
-                        type="text"
-                        class="input"
-                        v-model="Project_initial_formation"
-                        required
-                      />
+                      <input type="text" class="input" v-model="Project_initial_formation" />
                     </td>
                   </tr>
                 </tbody>
@@ -272,32 +284,41 @@ function getResourcesForSemester() {
                   <p>Epeurve différente si multi-compétences</p>
                 </div>
 
-                <div class="component">
-                  <label for="ue_select">UE affectées : </label>
+                <div style="display: flex">
+                  <div style="width: 50%">
+                    <div class="component spb" style="width: 80%">
+                      <label for="ue_select">UE affectées : </label>
 
-                  <p v-if="getUEsForInstitution().length == 0">Aucune UE créée</p>
+                      <button class="button_more" id="button_ue_plus">+</button>
+                    </div>
 
-                  <div v-else class="component">
-                    <select id="ue_select" class="input">
-                      <option v-for="ue in getUEsForInstitution()" :key="ue.ueNumber">
-                        {{ ue.label }}
-                      </option>
-                    </select>
+                    <p v-if="getUEsForInstitution().length == 0">Aucune UE créée</p>
 
-                    <!-- button to add UE -->
-                    <button id="button_more">+</button>
+                    <div v-else>
+                      <div v-for="n in num_ue_select" :key="n" class="component" style="margin-bottom: 23px">
+                        <select id="ue_select" class="input">
+                          <option v-for="ue in getUEsForInstitution()" :key="ue.ueNumber">
+                            {{ ue.label }}
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <div style="width: 50%">
+                    <label for="coefficient" class="component" style="margin-top: 7px">Coefficient : </label>
+
+                    <p v-if="getUEsForInstitution().length == 0">Aucune UE créée</p>
+
+                    <div v-else v-for="n in num_coefficient_select" :key="n" class="spb component" style="width: 80%">
+                      <input id="coefficient" type="text" class="input" v-model="coefficient" style="margin-top: 4px" required/>
+                      <button class="button_more" id="button_ue_minus">x</button>
+                    </div>
                   </div>
                 </div>
 
-                <div class="component">
-                  <label for="coefficient">Coefficient : </label>
-
-                  <p v-if="getUEsForInstitution().length == 0">Aucune UE créée</p>
-
-                  <input v-else id="coefficient" type="text" class="input" v-model="coefficient" required />
-                </div>
-
-                <div class="component">
+                <div class="component" style="margin-top: 5px">
                   <label for="teacher">Professeur(s) associé(s) : </label>
                   <input id="teacher" type="text" class="input" v-model="teacher" required />
 
@@ -306,7 +327,7 @@ function getResourcesForSemester() {
               </div>
             </div>
           </div>
-        </form>
+        </div>
       </div>
       <div id="form_resources">
         <p v-if="getResourcesForSemester().length > 0">Ressources créées :</p>
