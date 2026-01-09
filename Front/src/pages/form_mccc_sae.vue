@@ -6,6 +6,12 @@
     status.value = "Administration"
 
     let display_more_area = ref(false)
+    let display_modify_area = ref(false)
+
+    let modifySaeLabel = ref('')
+    let modifySaeApogeeCode = ref('')
+    let modifySaeHours = ref('')
+    let ueCoefficients = ref([])
 
     const saeTableV2 = ref([])
 
@@ -31,10 +37,17 @@
         const response = await axios.get(`http://localhost:8080/api/v2/mccc/saes/institution/${localStorage.idInstitution}`)
         saeTableV2.value = response.data
     })
+
+    function modifySae(sae) {
+        modifySaeLabel.value = sae.label
+        modifySaeApogeeCode.value = sae.apogeeCode
+        modifySaeHours.value = sae.hours
+        ueCoefficients.value = sae.ueCoefficients
+        display_modify_area.value = true
+    }
 </script>
 
 <template>
-    <p>{{ saeTableV2 }}</p>
     <div id="form_mccc_sae"> 
         <div class="return_arrow">
             <button class="back_arrow" onclick="document.location.href='#/mccc-select-form'">←</button>
@@ -42,42 +55,104 @@
         </div>
         <div class="background_form_mccc">
             <div class="form">
+
                 <div class="header_form_mccc">
                     <p class="title">Situation d'Apprentissage Évaluée</p>
                 </div>
+
                 <div class="dark_bar">
                     <p>Ajouter une SAÉ</p>
                     <button class="button_more" v-on:click="display_more_area = true">+</button>
                 </div>
+
                 <form v-show="display_more_area" method="post" v-on:submit.prevent="">
-                    <div>Div ajout SAÉ</div>
+                    <div class="dark_bar"><p>Ajout d'une nouvelle SAÉ</p></div>
+                    <div class="panel_form_mccc container-fluid spa">
+                        <div class="left_side">
+                            <label for="label_sae">Nom de la SAÉ :</label>
+                            <input id="label_sae" type="text" v-model="newSaeLabel" required>
+
+                            <label for="apogee_code_sae">Code Apogée :</label>
+                            <input id="apogee_code_sae" type="text" v-model="newSaeApogeeCode" required>
+
+                            <label for="hours_sae">Nombre d'heures (formation initiale) :</label>
+                            <input id="hours_sae" type="number" v-model="newSaeHours" required>
+                        </div>
+                        <div class="right_side">
+                            <input class="btn1" type="reset" value="Annuler" @click="display_more_area = false">
+                            <input class="btn1" type="submit" value="Sauvegarder" @click="saveNewSae">
+                        </div>
+                    </div>
                 </form>
+
+                <form v-show="display_modify_area" method="post" v-on:submit.prevent="">
+                    <div class="dark_bar"><p>Modification d'une SAÉ</p></div>
+                    <div class="panel_form_mccc container-fluid spa">
+                        <div class="left_side">
+                            <label for="label_sae_modify">Nom de la SAÉ :</label>
+                            <input id="label_sae_modify" type="text" v-model="modifySaeLabel" required>
+
+                            <label for="apogee_code_sae_modify">Code Apogée :</label>
+                            <input id="apogee_code_sae_modify" type="text" v-model="modifySaeApogeeCode" required>
+
+                            <label for="hours_sae_modify">Nombre d'heures (formation initiale) :</label>
+                            <input id="hours_sae_modify" type="number" v-model="modifySaeHours" required>
+                        </div>
+                        <div class="right_side">
+                            <table class="ueCoefficient">
+                                <tr>
+                                    <td>U.E. affectée(s) : </td>
+                                    <th class="display_coef_label" v-for="(labelUe, index2) in ueCoefficients" v-bind:key="index2">{{ labelUe.ueLabel }}</th>
+                                </tr>
+                                <tr>
+                                    <td>Coefficient : </td>
+                                    <td class="display_coef_ue" v-for="(coefUe, index3) in ueCoefficients" v-bind:key="index3">{{ coefUe.coefficient }}</td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td class="button_more del_ue" v-for="(index4) in ueCoefficients" v-bind:key="index4" style="margin: 0 15%;">X</td>
+                                </tr>
+                            </table>
+                            <input class="btn1" type="reset" value="Annuler" @click="display_modify_area = false">
+                            <input class="btn1" type="submit" value="Sauvegarder" @click="saveModifiedSae">
+                        </div>
+                    </div>
+                </form>
+
                 <div v-for="(value, index) in filteredSaeTableV2" v-bind:key="index" class="added_content_mccc">
                     <div class="dark_bar">
                         <p>{{ value.label }}</p>
                     </div>
-                    <div class="panel_form_mccc container-fluid spa">
-                        <div class="left_side">
-                            <p>Code apogee : {{ value.apogeeCode }}</p>
-                            <p>Nombre d'heures (formation initiale) : {{ value.hours }}</p>
-                            <div class="container-fluid">
-                            <input id="btn_cancel_UE" class="btn1" type="reset" value="Supprimer" @click="del(ue.ueNumber)">
-                            <input id="btn_save_UE" class="btn1" type="submit" value="Modifier" @click="modify">
+                    <div class="panel_form_mccc container-fluid">
+                        <div class="left_side container-fluid cfh spa">
+                            <div class="container-fluid spb">
+                                <label>Code apogee : </label>
+                                <p class="mccc_input">{{ value.apogeeCode }}</p>
+                            </div>
+                            <div class="container-fluid spb">
+                                <label>Nombre d'heures (formation initiale) : </label>
+                                <p class="mccc_input">{{ value.hours }}</p>
+                            </div>
+                            <div class="container-fluid spb">
+                                <input id="btn_cancel_UE" class="btn1" type="reset" value="Supprimer">
+                                <input id="btn_save_UE" class="btn1" type="button" value="Modifier" @click="modifySae(value)">
                             </div>
                         </div>
                         <div  class="right_side">
-                            <p>Coefficients UE : </p>
-                            <table>
+                            <table class="ueCoefficient">
                                 <tr>
-                                    <th v-for="(labelUe, index2) in value.ueCoefficients" v-bind:key="index2">{{ labelUe.ueLabel }}</th>
+                                    <td>U.E. affectée(s) : </td>
+                                    <th class="display_coef_label" v-for="(labelUe, index2) in value.ueCoefficients" v-bind:key="index2">{{ labelUe.ueLabel }}</th>
                                 </tr>
                                 <tr>
-                                    <td v-for="(coefUe, index3) in value.ueCoefficients" v-bind:key="index3">{{ coefUe.coefficient }}</td>
+                                    <td>Coefficient : </td>
+                                    <td class="display_coef_ue" v-for="(coefUe, index3) in value.ueCoefficients" v-bind:key="index3">{{ coefUe.coefficient }}</td>
                                 </tr>
                             </table>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -87,5 +162,52 @@
 #form_mccc_sae{
   margin: 3vw 14vw;
   justify-content: center;
+}
+
+.left_side {
+    width: 45%;
+    margin: 1vw 10vw 1vw 5vw;
+}
+
+.mccc_input {
+    border: 0.1vw solid var(--main-theme-terciary-color);
+    background-color: var(--div-rect-background-color);
+    border-radius: 0.5vw;
+    padding: 0.5vw;
+    width: fit-content;
+    min-width: 10vw;
+    text-align: center;
+    color: var(--main-theme-secondary-color);
+}
+
+.ueCoefficient {
+    border-collapse: separate;
+    border-spacing: 0.6vw;
+    width: 100%;
+    margin-top: 1vw;
+    text-align: center;
+    align-items: center;
+}
+
+.display_coef_label {
+    border: 0.1vw solid var(--main-theme-terciary-color);
+    background-color: var(--div-rect-background-color);
+    border-top-left-radius: 0.8vw;
+    border-top-right-radius: 0.8vw;
+    padding: 0.5vw;
+}
+
+.display_coef_ue {
+    border: 0.1vw solid var(--main-theme-terciary-color);
+    background-color: var(--div-rect-background-color);
+    border-bottom-left-radius: 0.8vw;
+    border-bottom-right-radius: 0.8vw;
+    padding: 0.5vw;
+}
+
+.del_ue {
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
 }
 </style>

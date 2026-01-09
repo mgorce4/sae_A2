@@ -48,6 +48,11 @@ main {
     gap: 5px;
 }
 
+.cfh {
+    /* container-fluid align Horizontaly */
+    flex-direction: column;
+}
+
 .spb {
     justify-content: space-between;
 }
