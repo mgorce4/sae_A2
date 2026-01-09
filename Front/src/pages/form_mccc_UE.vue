@@ -1,6 +1,6 @@
 <script setup>
     import { status } from '../main'
-    import { onMounted, ref} from 'vue'
+    import { computed, onMounted, ref, nextTick, watch} from 'vue'
     import axios from 'axios'
     
     status.value = "Administration"
@@ -16,11 +16,12 @@
     const ueList = ref([])
 
     const attachAccordionListeners = () => {
+        nextTick(() => {
             const acc = document.getElementsByClassName("accordion_UE");
             for (let i = 0; i < acc.length; i++) {
                 const newElement = acc[i].cloneNode(true);
                 acc[i].parentNode.replaceChild(newElement, acc[i]);
-                
+                    
                 newElement.addEventListener("click", function() {
                     this.classList.toggle("active");
                     const panel = this.nextElementSibling;
@@ -33,13 +34,9 @@
                     }
                 });
             }
+        });
     }
     
-    onMounted(async () => {
-        await axios.get('http://localhost:8080/api/ues').then(response => (ueList.value = response.data));
-        attachAccordionListeners();
-    })
-
     const getQueryParam = (param) => {
         const hash = window.location.hash
         const queryString = hash.split('?')[1]
@@ -48,6 +45,23 @@
         return params.get(param)
     }
 
+    const getUEForSemester = computed(() => {
+        return ueList.value.filter((ue) => { 
+            return ue.semester == getQueryParam('id')
+        })
+    })
+
+    // Watch for changes to reattach accordion listeners
+    watch([ueList, display_more_area], () => {
+        attachAccordionListeners();
+    })
+
+    onMounted(async () => {
+        const response = await axios.get(`http://localhost:8080/api/v2/mccc/ues/institution/${localStorage.idInstitution}`)
+        ueList.value = response.data
+        attachAccordionListeners();
+    })
+
     const save = async () => {
         try{
             await axios.post('http://localhost:8080/api/ues', {
@@ -55,13 +69,14 @@
                 label: nb_UE.value,
                 name: name_comp.value,
                 competenceLevel: parseInt(comp_level.value),
-                semester: parseInt(getQueryParam('id'))
+                semester: parseInt(getQueryParam('id')),
+                institutionId: parseInt(localStorage.idInstitution)
             });
             
             [nb_UE, apogee_code, name_comp, comp_level].forEach(f => f.value = ''); 
             display_more_area.value = false;
             
-            await axios.get('http://localhost:8080/api/ues').then(response => (ueList.value = response.data));
+            await axios.get(`http://localhost:8080/api/v2/mccc/ues/institution/${localStorage.idInstitution}`).then(response => (ueList.value = response.data));
             attachAccordionListeners();
         }
         catch (error){
@@ -75,18 +90,13 @@
         }
         try{
             await axios.delete(`http://localhost:8080/api/ues/${id}`);
-            await axios.get('http://localhost:8080/api/ues').then(response => (ueList.value = response.data));
+            await axios.get(`http://localhost:8080/api/v2/mccc/ues/institution/${localStorage.idInstitution}`).then(response => (ueList.value = response.data));
         
             attachAccordionListeners();
         }
         catch (error){
             console.error('Erreur lors de la suppression', error);
         }
-    }
-
-    function getUEForSemester(){
-        // Utilise 'id' comme dans form_mccc_ressources.vue
-        return ueList.value.filter(ue => ue.semester == getQueryParam('id'));
     }
 </script>
 
@@ -135,27 +145,31 @@
                     </div>
                 </form>
 
-                <div v-for="ueACord in getUEForSemester()" :key="ueACord.ueNumber">
+                <div v-for="ueACord in getUEForSemester" :key="ueACord.ueNumber">
                     <a class="accordion_UE" id="dark_bar">{{ueACord.label}} {{ueACord.name}}</a>
                     <div class="panel_UE">
                         <div id="left">
                             <div>
-                                <label>Numéro de l'UE : {{ueACord.label}}</label>
+                                <p>Numéro de l'UE : </p>
+                                <input type="text" class="input" :value="ueACord.label" />
                             </div>
                             <div>
-                                <label>Code apogee : {{ueACord.euApogeeCode}}</label>
+                                <p>Code apogee : </p>
+                                <input type="text" class="input" :value="ueACord.euApogeeCode" />
                             </div>
                             <div>
-                                <label>Intitulé de la compétence : {{ueACord.name}}</label>
+                                <p>Intitulé de la compétence : </p>
+                                <input type="text" class="input" :value="ueACord.name" />
                             </div>
                             <div>
-                                <label>Niveau de la compétence : {{ueACord.competenceLevel}}</label>
+                                <p>Niveau de la compétence : </p>
+                                <input type="text" class="input" :value="ueACord.competenceLevel" />
                             </div>
                         </div>
 
                         <div id="right">
                             <input id="btn_cancel_UE" class="btn1" type="reset" value="Supprimer" @click="del(ueACord.ueNumber)">
-                            <input id="btn_save_UE" class="btn1" type="submit" value="Modifier">
+                            <input id="btn_save_UE" class="btn1" type="submit" value="Modifier" @click="save">
                         </div>
                     </div>
                 </div>
