@@ -105,6 +105,7 @@ public class ResourceGetterService {
 
     @Transactional
     public void setValuesFromResource(String resourceName) {
+        this.fileName = "";
         int multi_skill_limit = 1;
 
         Optional<RessourceSheet> resultResourceSheet = Optional.empty();
