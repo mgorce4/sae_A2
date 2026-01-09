@@ -9,17 +9,19 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class LogController {
-    public static void writeInLog(String message) {
-        String fileName = "log.txt";
+    public static void writeInPdfLog(String message) {
+        String fileName = "logs/.pdf_log.txt";
+        String openSymbol = "[";
+        String closeSymbol = "] ";
         Path path = Paths.get(fileName);
         
         String format = "dd:MM:yyyy HH:mm:ss:SS";
         SimpleDateFormat logDate = new SimpleDateFormat(format);
-        String logMessage = "[" + logDate.format(new Date()) + "] " + message + "\n";
+        String logMessage = openSymbol + logDate.format(new Date()) + closeSymbol + message + "\n";
 
         try {
             if (!Files.exists(path)) {
-                logMessage = "[" + logDate.format(new Date()) + "] Create log file\n" + logMessage;
+                logMessage = openSymbol + logDate.format(new Date()) + closeSymbol + "Create log file\n" + logMessage;
             }
             Files.writeString(
                     path,
@@ -29,7 +31,7 @@ public class LogController {
             );
         }
         catch (IOException e) {
-            logMessage = "[" + logDate.format(new Date()) + "] " + e.getMessage() + "\n";
+            logMessage = openSymbol + logDate.format(new Date()) + closeSymbol + e.getMessage() + "\n";
         }
 
         System.out.println(logMessage);
