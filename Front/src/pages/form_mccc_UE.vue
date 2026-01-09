@@ -13,6 +13,14 @@
     const name_comp = ref('')
     const comp_level = ref('')
 
+    // Error states for validation
+    const errors = ref({
+        nb_UE: false,
+        apogee_code: false,
+        name_comp: false,
+        comp_level: false
+    })
+
     const ueList = ref([])
 
     const attachAccordionListeners = () => {
@@ -29,6 +37,7 @@
                         panel.style.maxHeight = null;
                         panel.style.padding = "0 18px";
                     } else {
+                        // Calculate the actual height including error messages
                         panel.style.maxHeight = panel.scrollHeight + "px";
                         panel.style.padding = "3px 18px 15px";
                     }
@@ -37,12 +46,32 @@
         });
     }
 
+    // Watch for error changes to update panel height
+    watch(errors, () => {
+        nextTick(() => {
+            const panels = document.querySelectorAll('.panel_UE');
+            panels.forEach(panel => {
+                if (panel.style.maxHeight && panel.style.maxHeight !== '0px') {
+                    panel.style.maxHeight = panel.scrollHeight + "px";
+                }
+            });
+        });
+    }, { deep: true });
+
     const getQueryParam = (param) => {
         const hash = window.location.hash
         const queryString = hash.split('?')[1]
         if (!queryString) return null
             const params = new URLSearchParams(queryString)
         return params.get(param)
+    }
+
+    // Prevent typing invalid characters in number inputs
+    const preventInvalidChars = (event) => {
+        const invalidChars = ['e', 'E', '+', '-', '.', ',']
+        if (invalidChars.includes(event.key)) {
+            event.preventDefault()
+        }
     }
 
     const getUEForSemester = computed(() => {
@@ -63,15 +92,64 @@
     })
 
     const save = async () => {
+        // Reset all errors
+        errors.value = {
+            nb_UE: false,
+            apogee_code: false,
+            name_comp: false,
+            comp_level: false
+        }
+
+        // Validation des champs
+        let hasErrors = false
+
+        if (!nb_UE.value || String(nb_UE.value).trim() === '') {
+            errors.value.nb_UE = true
+            hasErrors = true
+        }
+
+        if (!apogee_code.value || apogee_code.value.trim() === '') {
+            errors.value.apogee_code = true
+            hasErrors = true
+        }
+
+        if (!name_comp.value || name_comp.value.trim() === '') {
+            errors.value.name_comp = true
+            hasErrors = true
+        }
+
+        if (!comp_level.value || String(comp_level.value).trim() === '') {
+            errors.value.comp_level = true
+            hasErrors = true
+        }
+
+        // Si des champs sont manquants, ne pas continuer
+        if (hasErrors) {
+            return
+        }
+
+        // Validation du niveau de compétence (doit être un nombre)
+        const competenceLevelNum = parseInt(comp_level.value)
+        if (isNaN(competenceLevelNum)) {
+            errors.value.comp_level = true
+            return
+        }
+
         try{
-            await axios.post('http://localhost:8080/api/ues', {
+            const semester = parseInt(getQueryParam('id'));
+
+            const payload = {
                 euApogeeCode: apogee_code.value,
-                label: nb_UE.value,
-                name: name_comp.value,
-                competenceLevel: parseInt(comp_level.value),
-                semester: parseInt(getQueryParam('id')),
+                label: `UE${semester}.${nb_UE.value}`,  // label généré automatiquement : UE{semester}.{UENumber}
+                name: name_comp.value,                   // name = intitulé de la compétence
+                competenceLevel: competenceLevelNum,
+                semester: semester,
                 userId: parseInt(localStorage.idUser)
-            });
+            };
+
+            console.log('📤 Sending UE data:', payload);
+
+            await axios.post('http://localhost:8080/api/ues', payload);
 
             [nb_UE, apogee_code, name_comp, comp_level].forEach(f => f.value = '');
             display_more_area.value = false;
@@ -80,7 +158,9 @@
             attachAccordionListeners();
         }
         catch (error){
-            console.error('Erreur lors de la sauvegarde', error);
+            console.error('❌ Erreur lors de la sauvegarde:', error);
+            console.error('❌ Error response:', error.response?.data);
+            console.error('❌ Error status:', error.response?.status);
         }
     }
 
@@ -121,20 +201,24 @@
                     <div class="panel_UE">
                         <div id="left">
                             <div>
-                                <label>Numéro de l'UE :</label>
-                                <input type="text" class="input" v-model="nb_UE" required/>
+                                <label>Numéro de l'UE : <span class="required">*</span></label>
+                                <input type="number" step="1" class="input" v-model="nb_UE" @keydown="preventInvalidChars" />
+                                <span v-if="errors.nb_UE" class="error-message">Merci de remplir ce champ</span>
                             </div>
                             <div>
-                                <label>Code apogee :</label>
-                                <input type="text" class="input" v-model="apogee_code" required/>
+                                <label>Code apogee : <span class="required">*</span></label>
+                                <input type="text" class="input" v-model="apogee_code" />
+                                <span v-if="errors.apogee_code" class="error-message">Merci de remplir ce champ</span>
                             </div>
                             <div>
-                                <label>Intitulé de la compétence :</label>
-                                <input type="text" class="input" v-model="name_comp" required/>
+                                <label>Intitulé de la compétence : <span class="required">*</span></label>
+                                <input type="text" class="input" v-model="name_comp" />
+                                <span v-if="errors.name_comp" class="error-message">Merci de remplir ce champ</span>
                             </div>
                             <div>
-                                <label>Niveau de la compétence :</label>
-                                <input type="text" class="input" v-model="comp_level" required/>
+                                <label>Niveau de la compétence : <span class="required">*</span></label>
+                                <input type="number" step="1" class="input" v-model="comp_level" @keydown="preventInvalidChars" />
+                                <span v-if="errors.comp_level" class="error-message">Merci de remplir ce champ</span>
                             </div>
                         </div>
 
@@ -300,6 +384,30 @@
 .panel_UE > p {
   margin-top: 0;
   padding-top: 1vw;
+}
+
+.required {
+  color: white;
+  font-weight: bold;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.8vw;
+  margin-top: 0.2vw;
+  display: block;
+}
+
+/* Remove number input spinners/arrows */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 </style>

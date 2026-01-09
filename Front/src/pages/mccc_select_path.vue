@@ -23,8 +23,6 @@ const navigateToDashboard = () => {
           <button id="button_more" v-on:click="display_more_area = true">+</button>
         </div>
         <div class="panel_UE">
-          <div></div>
-          <p>Contenu du formulaire d'ajout de parcours</p>
         </div>
       </div>
     </div>

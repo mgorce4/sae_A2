@@ -49,7 +49,12 @@ public class UEController {
         try {
             // Extract values from payload
             String euApogeeCode = (String) payload.get("euApogeeCode");
-            String label = (String) payload.get("label");
+
+            // Handle label - can be String or Number from frontend
+            Object labelObj = payload.get("label");
+            String label = labelObj instanceof Number ?
+                String.valueOf(labelObj) : (String) labelObj;
+
             String name = (String) payload.get("name");
             Integer competenceLevel = (Integer) payload.get("competenceLevel");
             Integer semester = (Integer) payload.get("semester");
@@ -59,18 +64,26 @@ public class UEController {
                 ((Number) payload.get("userId")).longValue() : null;
 
             if (userId == null) {
+                System.err.println("❌ userId is null");
                 return ResponseEntity.badRequest().build();
             }
 
             // Retrieve user and their institution
             Optional<UserSyncadia> userOpt = userSyncadiaService.getUserById(userId);
-            if (userOpt.isEmpty() || userOpt.get().getInstitution() == null) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .build();
+            if (userOpt.isEmpty()) {
+                System.err.println("❌ User not found with id: " + userId);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            if (userOpt.get().getInstitution() == null) {
+                System.err.println("❌ User has no institution: " + userId);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
             UserSyncadia user = userOpt.get();
             Long institutionId = user.getInstitution().getIdInstitution();
+
+            System.out.println("✅ Creating UE for institution: " + institutionId);
 
             // Find or create a path for this institution
             Path path = pathRepository.findAll().stream()
@@ -78,6 +91,7 @@ public class UEController {
                             p.getInstitution().getIdInstitution().equals(institutionId))
                 .findFirst()
                 .orElseGet(() -> {
+                    System.out.println("📝 Creating new path for institution: " + institutionId);
                     Path newPath = new Path();
                     newPath.setNumber(1);
                     newPath.setName("Default Path - " + user.getInstitution().getName());
@@ -94,9 +108,12 @@ public class UEController {
             ue.setSemester(semester);
             ue.setPath(path);
 
+            System.out.println("✅ Saving UE: " + label + " - " + name);
             UE savedUE = ueService.createUE(ue);
             return ResponseEntity.ok(savedUE);
         } catch (Exception e) {
+            System.err.println("❌ Error creating UE: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

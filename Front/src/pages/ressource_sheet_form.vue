@@ -46,6 +46,13 @@ const localResourceTracking = ref({
 // SAE list - needs to be a ref to be populated after loading
 const saeList = ref([])
 
+// Validation errors for required fields
+const validationErrors = ref({
+  objective: false,
+  skills: false,
+  pedagogicalContent: false
+})
+
 // Computed properties from DTO
 const ueLabels = computed(() => {
   if (!resourceSheetDTO.value?.ueReferences) return []
@@ -331,6 +338,73 @@ const saveResourceSheet = async () => {
     return
   }
 
+  // Reset validation errors
+  validationErrors.value = {
+    objective: false,
+    skills: false,
+    pedagogicalContent: false
+  }
+
+  // Validate required fields
+  let hasErrors = false
+
+  // Check objective field
+  if (!localObjectiveContent.value || localObjectiveContent.value.trim() === '') {
+    validationErrors.value.objective = true
+    hasErrors = true
+  }
+
+  // Check skills field - at least one skill with both label and description
+  const validSkills = localSkills.value.filter(skill =>
+    skill.label && skill.label.trim() !== '' &&
+    skill.description && skill.description.trim() !== ''
+  )
+
+  if (validSkills.length === 0) {
+    validationErrors.value.skills = true
+    hasErrors = true
+  }
+
+  // Check pedagogical content - at least one item with content in at least one column
+  console.log('🔍 Checking pedagogical content:', localPedagogicalContent.value)
+  const hasValidPedagogicalContent =
+    localPedagogicalContent.value.cm.some(item => item.content && item.content.trim() !== '') ||
+    localPedagogicalContent.value.td.some(item => item.content && item.content.trim() !== '') ||
+    localPedagogicalContent.value.tp.some(item => item.content && item.content.trim() !== '') ||
+    localPedagogicalContent.value.ds.some(item => item.content && item.content.trim() !== '')
+
+  console.log('✅ Has valid pedagogical content:', hasValidPedagogicalContent)
+
+  if (!hasValidPedagogicalContent) {
+    validationErrors.value.pedagogicalContent = true
+    hasErrors = true
+    console.log('❌ Pedagogical content validation failed')
+  }
+
+  // If there are validation errors, stop here and scroll to first error
+  if (hasErrors) {
+    // Scroll to first error
+    nextTick(() => {
+      if (validationErrors.value.objective) {
+        const objectiveSection = document.querySelector('#form')
+        if (objectiveSection) {
+          objectiveSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      } else if (validationErrors.value.skills) {
+        const skillsSection = document.querySelectorAll('#form')[1]
+        if (skillsSection) {
+          skillsSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      } else if (validationErrors.value.pedagogicalContent) {
+        const pedagogicalSection = document.querySelector('#pedagogical_content_section')
+        if (pedagogicalSection) {
+          pedagogicalSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }
+    })
+    return
+  }
+
   try {
     // Prepare the update DTO
     const updateDTO = {
@@ -604,6 +678,7 @@ onMounted(async () => {
         <button class="accordion" id="dark_Bar">Objectif de la ressource *</button>
         <div class="panel">
           <textarea id="text_area_styled" v-model="localObjectiveContent" placeholder="Saisissez les objectifs de la ressource..."></textarea>
+          <span v-if="validationErrors.objective" class="error-message">Merci de remplir ce champ</span>
         </div>
       </div>
       <div id="form">
@@ -623,6 +698,7 @@ onMounted(async () => {
             </div>
             <button @click="addSkillRow" class="btn-add-skill">+ Ajouter une compétence</button>
           </div>
+          <span v-if="validationErrors.skills" class="error-message">Merci de remplir au moins une compétence avec un label et une description</span>
         </div>
       </div>
       <div id="sae_alignement">
@@ -765,7 +841,7 @@ onMounted(async () => {
           </div>
         </template>
       </div>
-      <div>
+      <div id="pedagogical_content_section">
         <p class="section_title">Contenu pédagogique *</p>
         <div class="pedagogical-content">
           <!-- CM Section -->
@@ -855,6 +931,7 @@ onMounted(async () => {
               </div>
             </div>
           </div>
+          <span v-if="validationErrors.pedagogicalContent" class="error-message">Merci de remplir au moins un contenu dans une des colonnes (CM, TD, TP ou DS)</span>
       </div>
       <div id="form">
         <p class="section_title">Suivi de la ressource / module</p>
@@ -1426,6 +1503,11 @@ input:checked + .slider::before {
 }
 
 /* Pedagogical content styles */
+#pedagogical_content_section {
+  padding: 0 1vw;
+  margin-top: 1.5vw;
+}
+
 .pedagogical-content {
   width: 100%;
   display: grid;
@@ -1715,6 +1797,16 @@ input:checked + .slider::before {
   font-size: 1.3vw;
 }
 
+/* Validation error messages */
+.error-message {
+  color: red;
+  font-size: 0.9vw;
+  margin-top: 0.5vw;
+  display: block;
+  font-weight: normal;
+  padding-left: 2vw;
+}
+
 /* Save button container - centers the button with spacing */
 .save-button-container {
   display: flex;
@@ -1748,11 +1840,6 @@ input:checked + .slider::before {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 </style>
-
-
-
-
-
 
 
 
