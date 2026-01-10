@@ -9,12 +9,13 @@
     let display_modify_area = ref(false)
     let display_add_ue = ref(false)
 
-    let saeLabel = ref('')
-    let saeApogeeCode = ref('')
-    let saeHours = ref('')
-    let addUeLabel = ref(null)
-    let addUeCoefficient = ref(0)
-    let ueCoefficients = ref([])
+    const idSaeModified = ref(null)
+    const saeLabel = ref('')
+    const saeApogeeCode = ref('')
+    const saeHours = ref('')
+    const addUeLabel = ref(null)
+    const addUeCoefficient = ref(null)
+    const ueCoef = ref([])
 
     const errors = ref({
         saeLabel: false,
@@ -55,15 +56,15 @@
 
     function add_ue() {
         // Logic to add a new UE with its coefficient
-        ueCoefficients.value.push({ ueLabel: addUeLabel.value.label, ueName: addUeLabel.value.name, coefficient: addUeCoefficient.value })
+        ueCoef.value.push({ ueLabel: addUeLabel.value.label, ueName: addUeLabel.value.name, coefficient: addUeCoefficient.value })
         display_add_ue.value = false
         addUeLabel.value = null
-        addUeCoefficient.value = 0
+        addUeCoefficient.value = null
     }
 
     function remove_ue(index) {
         // Logic to remove a UE from the list
-        ueCoefficients.value.splice(index, 1)
+        ueCoef.value.splice(index, 1)
     }
 
     function saveSae() {
@@ -94,7 +95,7 @@
             errors.value.saeHours = true
             hasErrors = true
         }
-        if (ueCoefficients.value.length === 0) {
+        if (ueCoef.value.length === 0) {
             errors.value.ueCoefficients = true
             hasErrors = true
         }
@@ -105,8 +106,8 @@
         }
 
         // ueCoefficients must contain a number for coefficient
-        for (let index = 0; index < ueCoefficients.value.length; index++) {
-            if (isNaN(ueCoefficients.value[index].coefficient) || ueCoefficients.value[index].coefficient <= 0) {
+        for (let index = 0; index < ueCoef.value.length; index++) {
+            if (isNaN(ueCoef.value[index].coefficient) || ueCoef.value[index].coefficient <= 0) {
                 errors.value.ueCoefficients = true
                 return
             }
@@ -119,7 +120,7 @@
                 semester: semesterNumber.value,
                 idInstitution: localStorage.idInstitution,
                 hours: saeHours.value,
-                ueCoefficients: ueCoefficients.value,
+                ueCoefficients: ueCoef.value,
             }
             console.log('payload completed')
             console.log('Payload SAE to save:', payload)
@@ -142,28 +143,40 @@
         saeLabel.value = ''
         saeApogeeCode.value = ''
         saeHours.value = ''
-        ueCoefficients.value = []
+        ueCoef.value = []
         
     }
 
     function saveModifiedSae() {
-        // Logic to save the modified SAE
         display_more_area.value = false
         display_modify_area.value = false
         display_add_ue.value = false
 
-        // Clear input fields after saving
+
+
         saeLabel.value = ''
         saeApogeeCode.value = ''
         saeHours.value = ''
-        ueCoefficients.value = []        
+        ueCoef.value = []        
+    }
+
+    function addSae() {
+        saeLabel.value = ''
+        saeApogeeCode.value = ''
+        saeHours.value = ''
+        ueCoef.value = []
+        display_more_area.value = true
+        display_modify_area.value = false
+        display_add_ue.value = false
     }
 
     function modifySae(sae) {
+        idSaeModified.value = sae.saeId
         saeLabel.value = sae.label
         saeApogeeCode.value = sae.apogeeCode
         saeHours.value = sae.hours
-        ueCoefficients.value = sae.ueCoefficients
+        // prend une copie de sae.ueCoefficients
+        ueCoef.value = sae.ueCoefficients.map(ue => ({ ueLabel: ue.ueLabel, coefficient: ue.coefficient }))
         display_modify_area.value = true
         display_add_ue.value = false
         display_more_area.value = false
@@ -171,9 +184,9 @@
 </script>
 
 <template>
-    <p>{{ saeTableV2 }}</p>
+    <p>{{ filteredSaeTableV2 }}</p>
     <p>{{ ueTableV2 }}</p>
-    <p>addUE : {{ ueCoefficients }}</p>
+    <p>addUE : {{ ueCoef }}</p>
     <div id="form_mccc_sae"> 
         <div class="return_arrow">
             <button class="back_arrow" onclick="document.location.href='#/mccc-select-form'">←</button>
@@ -188,7 +201,7 @@
 
                 <div class="dark_bar">
                     <p>Ajouter une SAÉ</p>
-                    <button class="button_more" v-on:click="display_more_area = true; display_add_ue = false; display_modify_area = false; ueCoefficients = []">+</button>
+                    <button class="button_more" v-on:click="addSae()">+</button>
                 </div>
 
                 <form v-show="display_more_area" method="post" v-on:submit.prevent="">
@@ -216,7 +229,7 @@
                         <table class="ueCoefficient">
                             <tr>
                                 <td>U.E. affectée(s) : </td>
-                                <th class="display_coef_label" v-for="(labelUe, indexLabelUe) in ueCoefficients" v-bind:key="indexLabelUe">{{ labelUe.ueLabel }}</th>
+                                <th class="display_coef_label" v-for="(labelUe, indexLabelUe) in ueCoef" v-bind:key="indexLabelUe">{{ labelUe.ueLabel }}</th>
                                 <td v-show="display_more_area && !display_add_ue">
                                     <p class="button_more button_ue" @click="display_add_ue = true">+</p>
                                 </td>
@@ -228,14 +241,14 @@
                             </tr>
                             <tr>
                                 <td>Coefficient : </td>
-                                <td class="display_coef_ue" v-for="(coefUe, indexCoefUe) in ueCoefficients" v-bind:key="indexCoefUe">{{ coefUe.coefficient }}</td>
+                                <td class="display_coef_ue" v-for="(coefUe, indexCoefUe) in ueCoef" v-bind:key="indexCoefUe">{{ coefUe.coefficient }}</td>
                                 <td v-show="display_more_area && display_add_ue">
-                                    <input class="display_coef_ue" type="number" placeholder="..." v-model="addUeCoefficient">
+                                    <input class="display_coef_ue" type="number" :placeholder="'...'" v-model="addUeCoefficient">
                                 </td>
                             </tr>
                             <tr>
                                 <td></td>
-                                <td v-for="(coefUe, index4) in ueCoefficients" v-bind:key="index4">
+                                <td v-for="(coefUe, index4) in ueCoef" v-bind:key="index4">
                                     <p class="button_more button_ue" @click="remove_ue(index4)">X</p>
                                 </td>
                                 <td v-show="display_more_area && display_add_ue">
@@ -271,24 +284,30 @@
                         <table class="ueCoefficient">
                             <tr>
                                 <td>U.E. affectée(s) : </td>
-                                <th class="display_coef_label" v-for="(labelUe, index2) in ueCoefficients" v-bind:key="index2">{{ labelUe.ueLabel }}</th>
-                                <td v-show="display_modify_area && !display_add_ue" @click="display_add_ue = true">
-                                    <p class="button_more button_ue">+</p>
+                                <th class="display_coef_label" v-for="(labelUe, index2) in ueCoef" v-bind:key="index2">{{ labelUe.ueLabel }}</th>
+                                <td v-show="display_modify_area && !display_add_ue">
+                                    <p class="button_more button_ue" @click="display_add_ue = true">+</p>
                                 </td>
-                                <th class="display_coef_label" v-show="display_modify_area && display_add_ue">...</th>
+                                <th v-show="display_modify_area && display_add_ue">
+                                    <select class="select_ue" v-model="addUeLabel">
+                                        <option v-for="(ue, index) in ueTableV2" v-bind:key="index" :value="ue">{{ ue.label }}</option>
+                                    </select>
+                                </th>
                             </tr>
                             <tr>
                                 <td>Coefficient : </td>
-                                <td class="display_coef_ue" v-for="(coefUe, index3) in ueCoefficients" v-bind:key="index3">{{ coefUe.coefficient }}</td>
-                                <td class="display_coef_ue" v-show="display_modify_area && display_add_ue">...</td>
+                                <td class="display_coef_ue" v-for="(coefUe, index3) in ueCoef" v-bind:key="index3">{{ coefUe.coefficient }}</td>
+                                <td v-show="display_modify_area && display_add_ue">
+                                    <input class="display_coef_ue" type="number" :placeholder="'...'" v-model="addUeCoefficient">
+                                </td>
                             </tr>
                             <tr>
                                 <td></td>
-                                <td v-for="(index4) in ueCoefficients" v-bind:key="index4">
-                                    <p class="button_more button_ue">X</p>
+                                <td v-for="(coefUe, index4) in ueCoef" v-bind:key="index4">
+                                    <p class="button_more button_ue" @click="remove_ue(index4)">X</p>
                                 </td>
                                 <td v-show="display_modify_area && display_add_ue" @click="display_add_ue = false">
-                                    <p class="button_more button_ue">✓</p>
+                                    <p class="button_more button_ue" @click="add_ue()">✓</p>
                                 </td>
                             </tr>
                         </table>
@@ -357,9 +376,9 @@
     color: var(--main-theme-secondary-color);
 }
 
-.mccc_input::placeholder {
+.mccc_input::placeholder, .display_coef_ue::placeholder {
     color: var(--main-theme-secondary-color);
-    opacity: 0.6;
+    opacity: 0.7;
 }
 
 .ueCoefficient {
