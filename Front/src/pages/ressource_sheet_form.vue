@@ -975,30 +975,6 @@ onMounted(async () => {
   justify-content: center;
 }
 
-.accordion {
-  cursor: pointer;
-  position: relative;
-  padding-right: 2.5vw;
-  border: none;
-  outline: none;
-  text-align: left;
-  width: 100%;
-  font-family: inherit;
-  font-size: inherit;
-}
-
-.accordion::after {
-  content: '^';
-  position: absolute;
-  right: 1vw;
-  transition: transform 0.3s ease;
-  font-size: 0.9vw;
-}
-
-.accordion.active::after {
-  transform: rotate(180deg);
-}
-
 .panel {
   width: 90%;
   justify-self: center;

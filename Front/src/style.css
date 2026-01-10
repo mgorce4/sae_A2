@@ -204,12 +204,12 @@ main {
     justify-self: center;
     padding: 0 18px;
     background-color: rgba(0, 0, 0, 0.35);
+    max-height: 0;
     overflow: hidden;
     border-bottom-left-radius: 15px;
     border-bottom-right-radius: 15px;
     color: var(--main-theme-secondary-color);
     margin-top: 0;
-    padding-top: 0.1vw;
 }
 
 .panel_form_mccc>p {
@@ -218,7 +218,11 @@ main {
 }
 
 .accordion {
-    margin: 0vw;
+    padding-right: 2.5vw;
+    border: none;
+    outline: none;
+    text-align: left;
+    font-family: inherit;
     font-weight: lighter;
     font-size: 1.05vw;
     cursor: pointer;

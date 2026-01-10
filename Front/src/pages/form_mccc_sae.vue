@@ -1,5 +1,5 @@
 <script setup>
-    import { onMounted, ref, computed } from 'vue'
+    import { onMounted, ref, computed, nextTick } from 'vue'
     import axios from 'axios'
     import { status } from '../main'
     
@@ -47,11 +47,35 @@
             return sae.semester == semesterNumber.value
         })
     })
+
+    const attachAccordionListeners = () => {
+        nextTick(() => {
+            const acc = document.getElementsByClassName("accordion");
+            for (let i = 0; i < acc.length; i++) {
+                const newElement = acc[i].cloneNode(true);
+                acc[i].parentNode.replaceChild(newElement, acc[i]);
+
+                newElement.addEventListener("click", function() {
+                    this.classList.toggle("active");
+                    const panel = this.nextElementSibling;
+                    if (panel.style.maxHeight) {
+                        panel.style.maxHeight = null;
+                    } else {
+                        // Calculate the actual height including error messages
+                        panel.style.maxHeight = panel.scrollHeight + "vw";
+                        panel.style.padding = "0vw 0vw 0vw";
+                    }
+                });
+            }
+        });
+    }
+
     onMounted(async () => {
         const response = await axios.get(`http://localhost:8080/api/v2/mccc/saes/institution/${localStorage.idInstitution}`)
         saeTableV2.value = response.data
         const responseUe = await axios.get(`http://localhost:8080/api/v2/mccc/ues/institution/${localStorage.idInstitution}`)
         ueTableV2.value = responseUe.data.sort((a, b) => a.label.localeCompare(b.label)) // Sort UEs in ascending order
+        attachAccordionListeners()
     })
 
     function add_ue() {
@@ -168,6 +192,19 @@
         display_more_area.value = true
         display_modify_area.value = false
         display_add_ue.value = false
+        
+        // Ouvrir l'accordéon après le rendu
+        nextTick(() => {
+            const accordions = document.querySelectorAll('[data-accordion="add-sae"]')
+            accordions.forEach(accordion => {
+                accordion.classList.add('active')
+                const panel = accordion.nextElementSibling
+                if (panel) {
+                    panel.style.maxHeight = panel.scrollHeight + "vw"
+                    panel.style.padding = "0vw 0vw 0vw"
+                }
+            })
+        })
     }
 
     function modifySae(sae) {
@@ -180,6 +217,19 @@
         display_modify_area.value = true
         display_add_ue.value = false
         display_more_area.value = false
+        
+        // Ouvrir l'accordéon après le rendu
+        nextTick(() => {
+            const accordions = document.querySelectorAll('[data-accordion="modify-sae"]')
+            accordions.forEach(accordion => {
+                accordion.classList.add('active')
+                const panel = accordion.nextElementSibling
+                if (panel) {
+                    panel.style.maxHeight = panel.scrollHeight + "vw"
+                    panel.style.padding = "0vw 0vw 0vw"
+                }
+            })
+        })
     }
 </script>
 
@@ -205,7 +255,7 @@
                 </div>
 
                 <form v-show="display_more_area" method="post" v-on:submit.prevent="">
-                    <div class="dark_bar"><p>Ajout d'une nouvelle SAÉ</p></div>
+                    <div class="dark_bar accordion" data-accordion="add-sae"><p>Ajout d'une nouvelle SAÉ</p></div>
                     <div class="panel_form_mccc container-fluid">
                         <div class="left_side container-fluid cfh spa">
                             <div class="container-fluid spb">
@@ -260,7 +310,7 @@
                 </form>
 
                 <form v-show="display_modify_area" method="post" v-on:submit.prevent="">
-                    <div class="dark_bar"><p>Modification d'une SAÉ</p></div>
+                    <div class="dark_bar accordion" data-accordion="modify-sae"><p>Modification d'une SAÉ</p></div>
                     <div class="panel_form_mccc container-fluid">
                         <div class="left_side container-fluid cfh spa">
                             <div class="container-fluid spb">
@@ -315,9 +365,7 @@
                 </form>
 
                 <div v-for="(value, index) in filteredSaeTableV2" v-bind:key="index" class="added_content_mccc">
-                    <div class="dark_bar">
-                        <p>{{ value.label }}</p>
-                    </div>
+                    <a class="dark_bar accordion">{{ value.label }}</a>
                     <div class="panel_form_mccc container-fluid">
                         <div class="left_side container-fluid cfh spa">
                             <div class="container-fluid spb">
