@@ -77,9 +77,9 @@ onMounted(async () => {
       .then((response) => (access_rights.value = response.data)),
   ])
 
-  await nextTick()
-
   access_rights.value = access_rights.value.filter((ar) => ar.user.institution.idInstitution == localStorage.idInstitution).filter((ar) => ar.accessRight == access_right_teacher)
+
+  await nextTick()
 
   document.querySelectorAll('.accordion').forEach((acc) => {
     acc.addEventListener('click', function () {
@@ -134,15 +134,25 @@ onMounted(async () => {
     }
   })
 
-  document.getElementById("teacher").addEventListener("focus", () => {
+  const teacher_input = document.getElementById('teacher')
+  const teacher_list = document.getElementById('show_teacher')
+
+  teacher_input.addEventListener('focus', () => {
     show_teacher.value = true
   })
 
-  document.getElementById("teacher").addEventListener("blur", () => {
-    show_teacher.value = false
+  teacher_list.addEventListener('mouseover', (event) => {
+    if (event.target.classList && event.target.classList.contains('teacher_name')) {
+      teacher.value = event.target.innerText
+    }
   })
 
-  console.log(document.getElementById('teacher_name').innerHTML)
+  teacher_list.addEventListener('click', (event) => {
+    if (event.target.classList && event.target.classList.contains('teacher_name')) {
+      teacher.value = event.target.innerText
+      show_teacher.value = false
+    }
+  })
 
 })
 
@@ -324,7 +334,8 @@ function getResourcesForSemester() {
                     <button class="button_more" id="button_teacher_cross">x</button>
                   </div>
                   <div id="show_teacher" v-show="show_teacher">
-                    <div id="teacher_name" v-for="acr in access_rights" :key="acr">{{acr.user.firstname}} {{acr.user.lastname}}</div>
+                    <hr>
+                    <div class="teacher_name" v-for="acr in access_rights" :key="acr">{{acr.user.firstname}} {{acr.user.lastname}}</div>
                   </div>
                 </div>
               </div>
@@ -595,6 +606,9 @@ function getResourcesForSemester() {
 #show_teacher {
   position: absolute;
   background-color: rgba(0, 0, 0, 0.35);
+  border-left: white 1px solid;
+  border-right: white 1px solid;
+  border-bottom: white 1px solid;
   border-bottom-left-radius: 5px;
   border-bottom-right-radius: 5px;
   max-height: 150px;
@@ -602,7 +616,7 @@ function getResourcesForSemester() {
   padding: 0.2vw;
 }
 
-#teacher_name {
+.teacher_name {
   cursor : pointer;
 }
 </style>
