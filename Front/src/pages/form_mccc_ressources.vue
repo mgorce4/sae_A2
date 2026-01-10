@@ -20,7 +20,15 @@ const num_coefficient_select = ref(1)
 const num_teacher_select = ref(1)
 
 const access_right_teacher = 1
-const show_teacher = ref(false)
+
+/*
+* to show or hide the list of teachers
+* use an array to manage multiple inputs
+* to display
+* ex : if the page has 3 teacher inputs
+* we use an index to see if the list is to be shown or not
+*/
+const show_teacher_list = ref([false])
 
 /* constant for the form */
 
@@ -37,7 +45,6 @@ const TD_work_study = ref()
 const TP_work_study = ref()
 const total_work_study = ref(0)
 
-const teacher = ref('')
 const coefficient = ref()
 
 /* list of lesson to use for the v-for */
@@ -64,6 +71,35 @@ function getTotalWorkStudyFormation() {
   return parseInt(CM_work_study.value) + parseInt(TD_work_study.value) + parseInt(TP_work_study.value)
 }
 
+/* allows to put event on each div selected */
+function addTeacherEvents(div, index) {
+
+  /* get the input and the list */
+  const input = div.querySelector('.teacher')
+  const list = div.querySelector('.show_teacher')
+
+  input.addEventListener('focus', () => {
+    show_teacher_list.value[index] = true
+  })
+
+  input.addEventListener('blur', () => {
+      show_teacher_list.value[index] = false
+  })
+
+  list.addEventListener('mouseover', (event) => {
+    if (event.target.classList && event.target.classList.contains('teacher_name')) {
+      input.value = event.target.innerText
+    }
+  })
+
+  list.addEventListener('click', (event) => {
+    if (event.target.classList && event.target.classList.contains('teacher_name')) {
+      input.value = event.target.innerText
+      show_teacher_list.value[index] = false
+    }
+  })
+}
+
 onMounted(async () => {
   await Promise.all([
     axios
@@ -79,6 +115,9 @@ onMounted(async () => {
 
   access_rights.value = access_rights.value.filter((ar) => ar.user.institution.idInstitution == localStorage.idInstitution).filter((ar) => ar.accessRight == access_right_teacher)
 
+  access_rights.value.push({user: {firstname: localStorage.firstname, lastname: localStorage.lastname}})
+  access_rights.value.push({user: {firstname: 'Jean', lastname: 'Dupont'}})
+  access_rights.value.push({user: {firstname: 'Marie', lastname: 'Curie'}})
   await nextTick()
 
   document.querySelectorAll('.accordion').forEach((acc) => {
@@ -129,29 +168,27 @@ onMounted(async () => {
       num_coefficient_select.value += 1
     } else if (event.target.id === 'button_teacher_plus' && access_rights.value.length > num_teacher_select.value) {
       num_teacher_select.value += 1
+      show_teacher_list.value.push(false)
+
+      nextTick(() => {
+        const containers = document.querySelectorAll('.teacher_select_container')
+        /* get the last container added */
+        const new_container = containers[containers.length - 1]
+        addTeacherEvents(new_container, containers.length - 1)
+      })
     } else if (event.target.id === 'button_teacher_cross' && num_teacher_select.value > 1) {
       num_teacher_select.value -= 1
+      show_teacher_list.value.pop()
     }
   })
 
-  const teacher_input = document.getElementById('teacher')
-  const teacher_list = document.getElementById('show_teacher')
+  /* wait for the update of the DOM */
+  await nextTick()
 
-  teacher_input.addEventListener('focus', () => {
-    show_teacher.value = true
-  })
-
-  teacher_list.addEventListener('mouseover', (event) => {
-    if (event.target.classList && event.target.classList.contains('teacher_name')) {
-      teacher.value = event.target.innerText
-    }
-  })
-
-  teacher_list.addEventListener('click', (event) => {
-    if (event.target.classList && event.target.classList.contains('teacher_name')) {
-      teacher.value = event.target.innerText
-      show_teacher.value = false
-    }
+  const div_teacher_container = document.querySelectorAll('.teacher_select_container')
+  div_teacher_container.forEach((div, index) => {
+    /* add event to the new div */
+    addTeacherEvents(div, index)
   })
 
 })
@@ -310,9 +347,7 @@ function getResourcesForSemester() {
                   </div>
 
                   <div style="width: 50%">
-                    <label for="coefficient" class="component" style="margin-top: 7px"
-                      >Coefficient :
-                    </label>
+                    <label for="coefficient" class="component" style="margin-top: 7px">Coefficient :</label>
 
                     <p v-if="getUEsForInstitution().length == 0">Aucune UE créée</p>
 
@@ -330,12 +365,20 @@ function getResourcesForSemester() {
                   </div>
 
                   <div v-for="n in num_teacher_select" :key="n" class="component">
-                    <input id="teacher" type="text" class="input" v-model="teacher" required />
+                    <div class="teacher_select_container">
+                      <input type="text" class="input teacher" required />
+
+                      <div class="show_teacher" v-show="show_teacher_list[n - 1]">
+                        <div v-if="access_rights.length > 0">
+                          <div class="teacher_name" v-for="acr in access_rights" :key="acr">
+                            {{acr.user.firstname}} {{acr.user.lastname}}
+                          </div>
+                        </div>
+                        <p v-else >Aucun professeur ne peut être sélectionné</p>
+                      </div>
+                    </div>
+
                     <button class="button_more" id="button_teacher_cross">x</button>
-                  </div>
-                  <div id="show_teacher" v-show="show_teacher">
-                    <hr>
-                    <div class="teacher_name" v-for="acr in access_rights" :key="acr">{{acr.user.firstname}} {{acr.user.lastname}}</div>
                   </div>
                 </div>
               </div>
@@ -508,7 +551,7 @@ function getResourcesForSemester() {
   border-radius: 5px;
   background-color: rgba(117, 117, 117, 100);
   color: var(--main-theme-secondary-color);
-  width: 100px;
+  width: 8vw;
   text-align: center;
 }
 
@@ -603,20 +646,41 @@ function getResourcesForSemester() {
   justify-content: center;
 }
 
-#show_teacher {
-  position: absolute;
+.show_teacher {
   background-color: rgba(0, 0, 0, 0.35);
   border-left: white 1px solid;
-  border-right: white 1px solid;
   border-bottom: white 1px solid;
+  border-right: white 1px solid;
   border-bottom-left-radius: 5px;
   border-bottom-right-radius: 5px;
-  max-height: 150px;
+  max-height: 8vw;
+  max-width: 8vw;
   overflow-y: auto;
   padding: 0.2vw;
 }
 
+
+.show_teacher::-webkit-scrollbar {
+  width: 12px;
+}
+
+.show_teacher::-webkit-scrollbar-track {
+  margin: 1em;
+  background: var(--main-theme-secondary-background-color);
+  box-shadow: inset 0 0 5px var(--sub-scrollbar-color);
+  border-radius: 10px;
+}
+
+.show_teacher::-webkit-scrollbar-thumb {
+  background: var(--main-theme-secondary-color);
+  border-radius: 10px;
+}
+
 .teacher_name {
   cursor : pointer;
+  background-color: rgba(117, 117, 117, 100);
+  border-radius: 2px;
+  padding: 0.3vw;
+  margin: 0.3vw;
 }
 </style>
