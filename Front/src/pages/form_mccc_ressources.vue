@@ -15,8 +15,7 @@ const resource_name = ref('')
 
 const access_rights = ref([])
 
-const num_ue_select = ref(1)
-const num_coefficient_select = ref(1)
+const ue_list = ref([{ id: 1, ue: '', coefficient: '' }])
 const num_teacher_select = ref(1)
 
 const access_right_teacher = 1
@@ -44,8 +43,6 @@ const CM_work_study = ref()
 const TD_work_study = ref()
 const TP_work_study = ref()
 const total_work_study = ref(0)
-
-const coefficient = ref()
 
 /* list of lesson to use for the v-for */
 
@@ -115,9 +112,6 @@ onMounted(async () => {
 
   access_rights.value = access_rights.value.filter((ar) => ar.user.institution.idInstitution == localStorage.idInstitution).filter((ar) => ar.accessRight == access_right_teacher)
 
-  access_rights.value.push({user: {firstname: localStorage.firstname, lastname: localStorage.lastname}})
-  access_rights.value.push({user: {firstname: 'Jean', lastname: 'Dupont'}})
-  access_rights.value.push({user: {firstname: 'Marie', lastname: 'Curie'}})
   await nextTick()
 
   document.querySelectorAll('.accordion').forEach((acc) => {
@@ -160,12 +154,39 @@ onMounted(async () => {
   })
 
   document.addEventListener('click', (event) => {
-    if (event.target.id === 'button_ue_minus' && num_ue_select.value > 1) {
-      event.target.parentElement.remove()
-      num_ue_select.value -= 1
-    } else if (event.target.id === 'button_ue_plus' && getUEsForInstitution().length > num_ue_select.value) {
-      num_ue_select.value += 1
-      num_coefficient_select.value += 1
+
+    if (event.target.id === 'button_ue_minus') {
+      if (ue_list.value.length > 1) {
+        /* find all UE divs */
+        const ues = document.querySelectorAll('.ue_div')
+
+        /* find which div contains the clicked button */
+        let index_to_remove = -1
+        ues.forEach((div, index) => {
+          /* if the actual div is the target of the event the index is the index to remove */
+          if (div.contains(event.target)) {
+            index_to_remove = index
+          }
+        })
+
+        /* remove the ue from the array at the good index */
+        if (index_to_remove !== -1) {
+          ue_list.value = ue_list.value.filter((_, index) => index !== index_to_remove)
+        }
+      }
+
+    } else if (event.target.id === 'button_ue_plus' && getUEsForInstitution().length > ue_list.value.length) {
+        /* generate new unique id */
+        let id
+        if (ue_list.value.length > 0) {
+          /* get the max id and add 1 */
+          id = Math.max(...ue_list.value.map(u => u.id)) + 1
+        } else {
+          /* else it's the first id */
+          id = 1
+        }
+        ue_list.value.push({ id: id, ue: '', coefficient: '' })
+
     } else if (event.target.id === 'button_teacher_plus' && access_rights.value.length > num_teacher_select.value) {
       num_teacher_select.value += 1
       show_teacher_list.value.push(false)
@@ -177,7 +198,7 @@ onMounted(async () => {
         addTeacherEvents(new_container, containers.length - 1)
       })
     } else if (event.target.id === 'button_teacher_cross' && num_teacher_select.value > 1) {
-      num_teacher_select.value -= 1
+      event.target.parentElement.remove()
       show_teacher_list.value.pop()
     }
   })
@@ -325,46 +346,37 @@ function getResourcesForSemester() {
                   <p>Epeurve différente si multi-compétences</p>
                 </div>
 
-                <div style="display: flex">
-                  <div style="width: 50%">
-                    <div class="component spb" style="width: 80%">
-                      <label for="ue_select">UE affectées : </label>
+                <div>
+                  <div class="component" style="justify-content: center;">
+                    <label for="ue_select">UE affectées : </label>
 
-                      <button class="button_more" id="button_ue_plus">+</button>
-                    </div>
+                    <button class="button_more" id="button_ue_plus">+</button>
 
-                    <p v-if="getUEsForInstitution().length == 0">Aucune UE créée</p>
-
-                    <div v-else>
-                      <div v-for="n in num_ue_select" :key="n" class="component" style="margin-bottom: 23px">
-                        <select id="ue_select" class="input">
-                          <option v-for="ue in getUEsForInstitution()" :key="ue.ueNumber">
-                            {{ ue.label }}
-                          </option>
-                        </select>
-                      </div>
-                    </div>
+                    <label for="coefficient" class="component" style="margin-top: 7px">Coefficient :</label>
                   </div>
 
-                  <div style="width: 50%">
-                    <label for="coefficient" class="component" style="margin-top: 7px">Coefficient :</label>
+                  <p v-if="getUEsForInstitution().length == 0">Aucune UE créée</p>
 
-                    <p v-if="getUEsForInstitution().length == 0">Aucune UE créée</p>
-
-                    <div v-else v-for="n in num_coefficient_select" :key="n" class="spb component" style="width: 80%">
-                      <input id="coefficient" type="text" class="input" v-model="coefficient" style="margin-top: 4px" required />
+                  <div v-else>
+                    <div v-for="ue in ue_list" :key="ue.id" class="component ue_div" style="margin-bottom: 1vw; margin-left: 5.9vw;">
+                      <select id="ue_select" class="input">
+                        <option v-for="ue in getUEsForInstitution()" :key="ue.ueNumber">
+                          {{ ue.label }}
+                        </option>
+                      </select>
                       <button class="button_more" id="button_ue_minus">x</button>
+                      <input id="coefficient" type="text" class="input" style="margin-top: 4px" v-model="ue.coefficient" required />
                     </div>
                   </div>
                 </div>
 
-                <div style="margin-top: 5px; margin-left: 25%">
-                  <div class="component">
+                <div style="margin-top: 5px">
+                  <div class="component" style="justify-content: center">
                     <label for="teacher">Professeur(s) associé(s) : </label>
                     <button class="button_more" id="button_teacher_plus">+</button>
                   </div>
 
-                  <div v-for="n in num_teacher_select" :key="n" class="component">
+                  <div v-for="n in num_teacher_select" :key="n" class="component" style="justify-content: center">
                     <div class="teacher_select_container">
                       <input type="text" class="input teacher" required />
 
