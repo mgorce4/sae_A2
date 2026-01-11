@@ -197,8 +197,8 @@
           <a class="accordion_UE" id="dark_bar">Ajout d'un parcours :</a>
           <div class="panel_UE">
              <div>
-              <label>Nom du parcours : <span class="required">*</span></label>
-              <input type="text" class="input" v-model="coursName" />
+              <label>Nom du parcours : <span class="required">* </span></label>
+              <input type="text" class="input" v-model="coursName"/>
               <span v-if="errors.coursName" class="error-message">Merci de remplir ce champ</span>
             </div>
             <div>
@@ -212,26 +212,24 @@
             </div>
           </div>
         </form>
-        <div>
-            <button class="btn_form_acces" @click="goToRessourceSheet('#/mccc-select-form')">Accéder aux semestres</button>
-        </div>
-        <div v-for="cours in getCourses" :key="cours.idPath" class="button_path">
-          <div class="btn_form_acces" v-on:mouseover="cours.show = true" v-on:mouseout="cours.show = false" @click="goToRessourceSheet('#/mccc-select-form', cours.number)">
+        
+        <div v-for="cours in getCourses" :key="cours.idPath">
+          <div class="path" v-on:mouseover="cours.show = true" v-on:mouseout="cours.show = false" @click="goToRessourceSheet('#/mccc-select-form', cours.number)">
             <p>{{ cours.name }}</p>
-            <div class="container-fluid spe" v-show="cours.show" @click.stop>
-              <button v-if="!click" @click="click = !click">Modifier</button>
-              <div v-if="click">
+            <div v-show="cours.show" @click.stop>
+              <button v-if="!click" @click="click = !click" class="btn_modify">Modifier</button>
+              <div v-if="click" >
                 <div>
-                  <label>Nom du parcours : <span class="required">*</span></label>
+                  <label>Nom du parcours : <span class="required">* </span></label>
                   <input type="text" class="input" v-model="cours.name" />
                 </div>
                 <div>
-                  <label>Nombre associé au parcours : <span class="required">*</span></label>
+                  <label>Nombre associé au parcours : <span class="required">* </span></label>
                   <input type="number" step="1" class="input" v-model="cours.number" @keydown="preventInvalidChars" />
                 </div>
-                <div>
-                  <input id="btn_cancel_UE" class="btn1" type="button" value="Annuler" @click="click = false">
-                  <input id="btn_save_UE" class="btn1" type="submit" value="Sauvegarder" @click="updateCourse(cours)">
+                <div style="display: flex;">
+                  <button class="btn_path" type="button" @click="click = false">Annuler</button>
+                  <button class="btn_path" type="submit" @click="updateCourse(cours)">Sauvegarder</button>
                 </div>
               </div>
             </div>
@@ -301,4 +299,47 @@ input[type="number"] {
   appearance: textfield;
 }
 
+.path {
+  height: 2.5vw;
+  background-color: var(--sub-scrollbar-color);
+  border-radius: 0.5vw;
+  margin: 2% 0 0 0;
+  padding: 2% 5%;
+  color: var(--main-theme-secondary-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.path p {
+  font-size: 1.5vw;
+}
+
+.btn_path{
+  cursor: pointer;
+  background-color: var(--clickable-background-color)/*#242222*/;
+  border-color: var(--main-theme-terciary-color);
+  height: 2vw;
+  color: white;
+  font-size: 0.8vw;
+  border-radius: 0.5vw;
+  padding: 0 1vw;
+  display: flex;
+  align-items: center;
+  margin-right: 0.5vw;
+}
+
+.btn_modify{
+  cursor: pointer;
+  background-color: var(--clickable-background-color)/*#242222*/;
+  border-color: var(--main-theme-terciary-color);
+  height: 3vw;
+  color: white;
+  font-size: 0.8vw;
+  border-radius: 0.5vw;
+  padding: 0 1vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 </style>
