@@ -24,7 +24,8 @@ CREATE TABLE TASK(
 CREATE TABLE FINAL_DELIVERY_DATES(
     id_FinalDelivery SERIAL PRIMARY KEY,
     firstDelivery DATE,
-    secondDelivery DATE
+    secondDelivery DATE,
+    id_institution INT REFERENCES INSTITUTION(id_institution)
 );
 
 CREATE TABLE ACCESSRIGHT(

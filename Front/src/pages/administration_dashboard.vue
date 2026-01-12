@@ -33,18 +33,22 @@ onMounted(async () => {
         resource_sheets.value = []
     }
 
-    // Load delivery dates
+    // Load delivery dates for the current institution
     try {
-        const datesResponse = await axios.get('http://localhost:8080/api/final-delivery-dates')
-        if (datesResponse.data && datesResponse.data.length > 0) {
-            // Get the first (or most recent) delivery dates entry
-            const dates = datesResponse.data[0]
-            deliveryDatesId.value = dates.idFinalDelivery
-            firstDeliveryDate.value = dates.firstDelivery || ''
-            secondDeliveryDate.value = dates.secondDelivery || ''
+        const institutionId = localStorage.idInstitution
+        if (institutionId) {
+            const datesResponse = await axios.get(`http://localhost:8080/api/final-delivery-dates/institution/${institutionId}`)
+            if (datesResponse.data) {
+                deliveryDatesId.value = datesResponse.data.idFinalDelivery
+                firstDeliveryDate.value = datesResponse.data.firstDelivery || ''
+                secondDeliveryDate.value = datesResponse.data.secondDelivery || ''
+            }
         }
     } catch (error) {
-        console.error('Error loading delivery dates:', error)
+        // 404 is normal if no dates exist yet for this institution
+        if (error.response?.status !== 404) {
+            console.error('Error loading delivery dates:', error)
+        }
     }
 })
 
@@ -55,24 +59,28 @@ function getResourcesForSemester(semester) {
 
 async function saveDeliveryDates() {
   try {
+    const institutionId = localStorage.idInstitution
+    if (!institutionId) {
+      console.error('Institution non trouvée')
+      return
+    }
+
     const deliveryDatesData = {
       firstDelivery: firstDeliveryDate.value,
-      secondDelivery: secondDeliveryDate.value
+      secondDelivery: secondDeliveryDate.value,
+      institution: {
+        idInstitution: parseInt(institutionId)
+      }
     }
 
-    if (deliveryDatesId.value) {
-      // Update existing dates
-      await axios.put(`http://localhost:8080/api/final-delivery-dates/${deliveryDatesId.value}`, deliveryDatesData)
-    } else {
-      // Create new dates entry
-      const response = await axios.post('http://localhost:8080/api/final-delivery-dates', deliveryDatesData)
-      deliveryDatesId.value = response.data.idFinalDelivery
-    }
+    // Use the save-by-institution endpoint which automatically handles create or update
+    const response = await axios.post('http://localhost:8080/api/final-delivery-dates/save-by-institution', deliveryDatesData)
+    deliveryDatesId.value = response.data.idFinalDelivery
 
-    alert('Dates de rendu sauvegardées avec succès !')
+    // Reload the page to show the updated dates
+    window.location.reload()
   } catch (error) {
     console.error('Error saving delivery dates:', error)
-    alert('Erreur lors de la sauvegarde des dates')
   }
 }
 
