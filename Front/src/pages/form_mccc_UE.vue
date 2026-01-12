@@ -270,6 +270,10 @@
                                 <p>Niveau de la compétence : </p>
                                 <input type="text" class="input" :value="ueACord.competenceLevel" />
                             </div>
+                            <div>
+                                <p>Modalité : </p>
+                                <input type="text" class="input" :value="ueACord.termsCode" />
+                            </div>
                         </div>
 
                         <div id="right">

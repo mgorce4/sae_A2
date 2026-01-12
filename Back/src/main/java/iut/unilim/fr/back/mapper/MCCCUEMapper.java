@@ -37,6 +37,11 @@ public class MCCCUEMapper {
         dto.setCompetenceLevel(ue.getCompetenceLevel());
         dto.setSemester(ue.getSemester());
 
+        // Terms code
+        if (ue.getTerms() != null) {
+            dto.setTermsCode(ue.getTerms().getCode());
+        }
+
         // Institution ID from Path or from a resource linked to this UE
         dto.setInstitutionId(getInstitutionId(ue));
 

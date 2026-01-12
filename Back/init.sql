@@ -187,7 +187,12 @@ INSERT INTO USERSYNCADIA ( firstname, lastname, username, password, id_instituti
 ('Thomas', 'Hugel', 'thugel', 'FanDeTux:)', 2),
 ('Max', 'Gorce', 'mgorce', 'SlayKing', 3),
 ('prof','test','ptest','test123',4),
-('administration','test','atest','test123',4);
+('administration','test','atest','test123',4),
+('Nath', 'nathyouistiti', 'nn', '123', 1),
+('julie', 'ju', 'jCty', '456', 1),
+('edith', 'didith', 'BigED', '789', 1),
+('martin', 'matin', 'mm', '101112', 1),
+('noé', 'NO WAY', 'njacquet', '131415', 1);
 
 INSERT INTO TASK (name, description, delivery , id_User) VALUES
 ('remplir fiche ressource', 'vous devez remplir la fiche ressource pour chaque ressource pédagogique que vous créez', '2026-01-30',  1),
@@ -203,7 +208,12 @@ INSERT INTO ACCESSRIGHT ( id_User,accessRight) VALUES
 (3, 1),
 (4, 3),
 (5, 1),
-(6, 2);
+(6, 2),
+(7, 2),
+(8, 1),
+(9, 1),
+(10, 1),
+(11, 2);
 
 
 INSERT INTO PATH(number, name, id_institution) VALUES
