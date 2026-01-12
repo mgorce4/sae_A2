@@ -365,7 +365,7 @@
 #return_arrow > p{
     font-size: 1.5vw;
     font-weight: bold;
-    color: var(--main-theme-terciary-color);
+    color: var(--main-theme-tertiary-color);
     margin-left: 1.5vw;
 }
 
@@ -396,11 +396,9 @@
     padding-bottom: 0.5vw;
     font-weight: lighter;
     font-size: 2.1vw;
-    margin: 0;
 }
 
 .accordion_UE, #dark_bar >p{
-    margin: 0vw;
     font-weight: lighter;
     font-size: 1.05vw;
 }
@@ -447,7 +445,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
     transition: all 0.3s ease;
 }
 
@@ -466,12 +463,10 @@
   border-bottom-left-radius: 15px;
   border-bottom-right-radius: 15px;
   color: var(--main-theme-secondary-color);
-  margin-top: 0;
   display: flex;
 }
 
 .panel_UE > p {
-  margin-top: 0;
   padding-top: 1vw;
 }
 

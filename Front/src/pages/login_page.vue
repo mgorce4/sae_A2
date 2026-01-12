@@ -155,7 +155,6 @@
 
 .label_login {
     padding: 10% 0 5% 0;
-    margin: 0;
     font-size: 1.5vw;
     color: var(--main-theme-secondary-color);
 }

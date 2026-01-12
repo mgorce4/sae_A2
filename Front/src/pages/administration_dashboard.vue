@@ -331,6 +331,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 #return_sheets_div_header {
   position: sticky;
   top: 0;
+
   background-color: var(--main-theme-background-color);
   z-index: 10;
   padding-bottom: 1vw;
