@@ -15,7 +15,7 @@ const resource_name = ref('')
 
 const access_rights = ref([])
 
-const ue_list = ref([{ id: 1, ue: '', coefficient: '' }])
+const ue_list = ref([{id : 1, ue: '', coefficient: ''}])
 const num_teacher_select = ref(1)
 
 const access_right_teacher = 1
@@ -33,6 +33,7 @@ const show_teacher_list = ref([false])
 
 const resource_label = ref('')
 const apogee_code = ref('')
+const terms = ref('')
 
 const CM_initial_formation = ref()
 const TD_initial_formation = ref()
@@ -138,6 +139,24 @@ onMounted(async () => {
     }
 
     display_more_area.value = false
+
+    let ues = document.querySelectorAll('#ue_select')
+    let coefs = document.querySelectorAll('#coefficient')
+
+    for (let i = 0; i < ue_list.value.length; i++) {
+      ue_list.value[i].ue = ues[i].value
+      ue_list.value[i].coefficient = coefs[i].value
+    }
+
+    if (ue_list.value.length > 1) {
+      let first_ue = ue_list.value[0].ue
+
+      for (let i = 0; i < ue_list.value.length; i++) {
+        if (first_ue === ue_list.value[i].ue && i != 0) {
+          document.getElementById("error_ue").innerHTML = "Une resource ne peut pas être affectée plusieurs fois à la même UE."
+        }
+      }
+    }
   })
 
   document.getElementById('work_study_slider').addEventListener('click', () => {
@@ -176,16 +195,16 @@ onMounted(async () => {
       }
 
     } else if (event.target.id === 'button_ue_plus' && getUEsByInstitution().length > ue_list.value.length) {
-        /* generate new unique id */
-        let id
-        if (ue_list.value.length > 0) {
-          /* get the max id and add 1 */
-          id = Math.max(...ue_list.value.map(u => u.id)) + 1
-        } else {
-          /* else it's the first id */
-          id = 1
-        }
-        ue_list.value.push({ id: id, ue: '', coefficient: '' })
+      /* generate new unique id */
+      let id
+      if (ue_list.value.length > 0) {
+        /* get the max id and add 1 */
+        id = Math.max(...ue_list.value.map(u => u.id)) + 1
+      } else {
+        /* else it's the first id */
+        id = 1
+      }
+      ue_list.value.push({ id: id, ue: '', coefficient: '' })
 
     } else if (event.target.id === 'button_teacher_plus' && access_rights.value.length > num_teacher_select.value) {
       num_teacher_select.value += 1
@@ -260,6 +279,11 @@ function getResourcesBySemesterAndInstitution() {
             <div>
               <label for="apogee_code">Code apogée : </label>
               <input id="apogee_code" type="text" class="input" v-model="apogee_code" required />
+            </div>
+
+            <div>
+              <label>Modalités : </label>
+              <input type="text" class="input" v-model="terms" required />
             </div>
 
             <div>
@@ -367,6 +391,9 @@ function getResourcesBySemesterAndInstitution() {
                       <button class="button_more" id="button_ue_minus">x</button>
                       <input id="coefficient" type="text" class="input" style="margin-top: 4px" v-model="ue.coefficient" required />
                     </div>
+
+                    <p id="error_ue"></p>
+
                   </div>
                 </div>
 
@@ -410,6 +437,11 @@ function getResourcesBySemesterAndInstitution() {
               <div class="container-fluid">
                 <p>Code Apogee :</p>
                 <input type="text" class="input" :value="resource.resourceApogeeCode" />
+              </div>
+
+              <div class="container-fluid">
+                <p>Modalités :</p>
+                <input type="text" class="input" :value="resource.terms" />
               </div>
 
               <p>Nombre d'heures (formation initiale) :</p>
@@ -714,5 +746,12 @@ function getResourcesBySemesterAndInstitution() {
   border-radius: 2px;
   padding: 0.3vw;
   margin: 0.3vw;
+}
+
+#error_ue {
+  color: var(--error-color);
+  width: 80%;
+  text-align: center;
+  margin-left: 3.5vw;
 }
 </style>
