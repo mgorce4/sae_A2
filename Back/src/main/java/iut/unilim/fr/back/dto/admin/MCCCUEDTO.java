@@ -11,6 +11,7 @@ public class MCCCUEDTO {
     private Integer competenceLevel;   // Competence level
     private Integer semester;          // Semester
     private Long institutionId;        // Institution ID
+    private Long userId;               // User ID (for creation)
     private String termsCode;          // Terms code (e.g., "NGCC")
 
     // Path information
@@ -81,6 +82,14 @@ public class MCCCUEDTO {
 
     public void setInstitutionId(Long institutionId) {
         this.institutionId = institutionId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public Integer getPathNumber() {

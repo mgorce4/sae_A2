@@ -158,16 +158,16 @@
                 userId: parseInt(localStorage.idUser),
                 termsCode: terms.value
             };
-            
+
             console.log('Envoi du payload:', payload);
-            await axios.post('http://localhost:8080/api/ues', payload);
+            await axios.post('http://localhost:8080/api/v2/mccc/ues', payload);
 
             [nb_UE, apogee_code, name_comp, comp_level, terms].forEach(f => f.value = '');
             display_more_area.value = false;
 
             await axios.get(`http://localhost:8080/api/v2/mccc/ues/institution/${localStorage.idInstitution}`).then(response => (ueList.value = response.data));
             attachAccordionListeners();
-            
+
             console.log('UE sauvegardée avec succès');
         }
         catch (error){

@@ -31,10 +31,14 @@ public class UE {
     @JoinColumn(name = "id_Path")
     private Path path;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_terms")
+    private Terms terms;
+
     public UE() {
     }
 
-    public UE(Long ueNumber, String euApogeeCode, String label, String name, Integer competenceLevel, Integer semester, Path path) {
+    public UE(Long ueNumber, String euApogeeCode, String label, String name, Integer competenceLevel, Integer semester, Path path, Terms terms) {
         this.ueNumber = ueNumber;
         this.euApogeeCode = euApogeeCode;
         this.label = label;
@@ -42,6 +46,7 @@ public class UE {
         this.competenceLevel = competenceLevel;
         this.semester = semester;
         this.path = path;
+        this.terms = terms;
     }
 
     public Long getUeNumber() {
@@ -98,5 +103,13 @@ public class UE {
 
     public void setPath(Path path) {
         this.path = path;
+    }
+
+    public Terms getTerms() {
+        return terms;
+    }
+
+    public void setTerms(Terms terms) {
+        this.terms = terms;
     }
 }
