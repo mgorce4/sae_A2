@@ -29,6 +29,10 @@ const hasResourceInSemester = (semester) => {
     return resourceTable.value.some(resource => resource.semester === semester)
 }
 
+const hasUEInSemester = (semester) => {
+    return ueTable.value.some(ue => ue.semester === semester)
+}
+
 const getStatusForSemester = (semester) => {
     const hasResource = hasResourceInSemester(semester)
     const hasSAE = hasSAEInSemester(semester)
@@ -60,8 +64,8 @@ const goToRessourceSheet = (url, semester) => {
                     <p class="status_display" v-show="!btn">{{ getStatusForSemester(2 * index + index2 + 1) }}</p>
                     <div v-show="btn" class="container-fluid spe">
                         <button v-show="btn" class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-UE', (2*index+index2+1))">UE</button>
-                        <button v-show="hasResourceInSemester(2*index+index2+1)" class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-ressources', (2*index+index2+1))">Ressource</button>
-                        <button v-show="hasSAEInSemester(2*index+index2+1)" class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-sae', (2*index+index2+1))">SAÉ</button>
+                        <button v-show="hasResourceInSemester(2*index+index2+1) || hasUEInSemester(2*index+index2+1)" class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-ressources', (2*index+index2+1))">Ressource</button>
+                        <button v-show="hasSAEInSemester(2*index+index2+1) || hasUEInSemester(2*index+index2+1)" class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-sae', (2*index+index2+1))">SAÉ</button>
                     </div>
                 </div>
             </div>
