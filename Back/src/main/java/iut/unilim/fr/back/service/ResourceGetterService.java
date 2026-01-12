@@ -55,6 +55,8 @@ public class ResourceGetterService {
     private String studentFeedback;
     private String improvements;
 
+    private final String PLACEHOLDER = "Aucun contenue pour cette catégorie";
+
     public ResourceGetterService() {
         skills = new ArrayList<>();
         saes = new ArrayList<>();
@@ -70,7 +72,6 @@ public class ResourceGetterService {
     }
 
     private void initializePlaceHolderValues() {
-        String PLACEHOLDER = "Aucun contenue pour cette catégorie";
         String PLACEHOLDER_TITLE = "Aucun";
         int PLACEHOLDER_HOURS = -1;
         int NB_ELEMENTS_HOURS = 4;
@@ -106,6 +107,7 @@ public class ResourceGetterService {
     @Transactional
     public void setValuesFromResource(String resourceName) {
         this.fileName = "";
+        initializePlaceHolderValues();
         int multi_skill_limit = 1;
 
         Optional<RessourceSheet> resultResourceSheet = Optional.empty();
@@ -172,9 +174,8 @@ public class ResourceGetterService {
             keywords.addAll(keyWordsList);
 
 
-            Terms terms = resource.getTerms();
             modalities.clear();
-            modalities.add(terms.getCode());
+            modalities.addAll(resourceSheetDTO.getModalities());
 
             HoursDTO hoursDTOTeacherInternship = resourceSheetDTO.getHoursTeacherAlternance();
 
@@ -195,34 +196,26 @@ public class ResourceGetterService {
             PedagogicalContentDTO pedagogicalContent = resourceSheetDTO.getPedagogicalContent();
             StringBuilder pedagoContentBuilder;
 
-            
-            if (!pedagogicalContent.getCm().isEmpty()) {
-                pedagoContentBuilder = createPedagoContent(pedagogicalContent.getCm());
-                pedagoContentCm = pedagoContentBuilder.toString();
-            }
 
-            if (!pedagogicalContent.getTd().isEmpty()) {
-                pedagoContentBuilder = createPedagoContent(pedagogicalContent.getTd());
-                pedagoContentTd = pedagoContentBuilder.toString();
-            }
+            pedagoContentBuilder = createPedagoContent(pedagogicalContent.getCm());
+            pedagoContentCm = pedagoContentBuilder.toString();
 
-            if (!pedagogicalContent.getTd().isEmpty()) {
-                pedagoContentBuilder = createPedagoContent(pedagogicalContent.getTp());
-                pedagoContentTp = pedagoContentBuilder.toString();
-            }
+            pedagoContentBuilder = createPedagoContent(pedagogicalContent.getTd());
+            pedagoContentTd = pedagoContentBuilder.toString();
 
-            if (!pedagogicalContent.getDs().isEmpty()) {
-                pedagoContentBuilder = createPedagoContent(pedagogicalContent.getDs());
-                pedagoContentDs = pedagoContentBuilder.toString();
-            }
+            pedagoContentBuilder = createPedagoContent(pedagogicalContent.getTp());
+            pedagoContentTp = pedagoContentBuilder.toString();
+
+            pedagoContentBuilder = createPedagoContent(pedagogicalContent.getDs());
+            pedagoContentDs = pedagoContentBuilder.toString();
 
             ResourceTrackingDTO resourceTracking = resourceSheetDTO.getTracking();
             studentFeedback = resourceTracking.getStudentFeedback();
             pedagoTeamFeedback = resourceTracking.getPedagogicalFeedback();
             improvements = resourceTracking.getImprovementSuggestions();
-            String internshipContent = "";
+            String internshipLogContent = "";
             if (isAlternance) {
-                internshipContent = "   - hoursPnInternship( " + hoursPNInternship + ")\n" +
+                internshipLogContent = "   - hoursPnInternship( " + hoursPNInternship + ")\n" +
                                     "   - hoursStudentInternship( " + hoursStudentInternship + ")\n";
             }
 
@@ -236,7 +229,7 @@ public class ResourceGetterService {
                     "   - keywords(" + keywords + ")\n" +
                     "   - hoursStudent(" + hoursStudent +")\n" +
                     "   - hoursNP(" + hoursPN + ")\n" +
-                    internshipContent +
+                    internshipLogContent +
                     "   - pedagoContent( DS: " + pedagoContentDs + "; CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
                     "   - feedBack(Student: " + studentFeedback + "; Pedagogical team: " + pedagoTeamFeedback + "; Improvements: " + improvements + ")\n");
         } else {
@@ -256,8 +249,13 @@ public class ResourceGetterService {
 
     private StringBuilder createPedagoContent(List<PedagogicalContentDTO.ContentItemDTO> pedagogicalContent) {
         StringBuilder pedagoContentBuilder = new StringBuilder();
-        for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent) {
-            pedagoContentBuilder.append(contentItemDTO.getOrder()).append(". ").append(contentItemDTO.getContent()).append("\n");
+        if (!pedagogicalContent.isEmpty()) {
+            for (PedagogicalContentDTO.ContentItemDTO contentItemDTO : pedagogicalContent) {
+                pedagoContentBuilder.append(contentItemDTO.getOrder()).append(". ").append(contentItemDTO.getContent()).append("\n");
+            }
+        }
+        else {
+            pedagoContentBuilder.append(PLACEHOLDER);
         }
         return pedagoContentBuilder;
     }

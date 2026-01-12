@@ -3,7 +3,6 @@ package iut.unilim.fr.back.controllerBack;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import iut.unilim.fr.back.Ressource.HeaderAndFooter;
-import iut.unilim.fr.back.Ressource.HeaderEvent;
 import iut.unilim.fr.back.service.ResourceGetterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 
 import static com.itextpdf.text.List.UNORDERED;
@@ -36,7 +34,7 @@ public class PdfController {
     private final BaseColor COL_TEXT = BaseColor.BLACK;
     private final String baseFont = "src/main/resources/font/trade-gothic-lt-std-58a78e64434a9.otf";
 
-    private final int NONE = 0;
+    private static final int NONE = 0;
     private final int listIndent = 12;
     private final int widthPercentage = 100;
     private final int standardPadding = 15;
@@ -44,7 +42,7 @@ public class PdfController {
     private final int specialTableNbRow = 1;
 
     @GetMapping("/generate")
-    public ResponseEntity<Resource> generatePdf(@RequestParam String resourceName) {
+    public ResponseEntity<Resource> generatePdf(@RequestParam String resourceName, @RequestParam String userName) {
         res.setValuesFromResource(resourceName);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -217,7 +215,7 @@ public class PdfController {
                 document.add(resourceTrackingTable);
                 document.close();
 
-                writeInPdfLog("{user} Create a pdf for resource sheet: " + pdfFileName);
+                writeInPdfLog(userName + " create a pdf for resource sheet: " + pdfFileName);
             } catch (Exception e) {
                 writeInPdfLog(e.getMessage());
                 return ResponseEntity.internalServerError().build();
@@ -231,7 +229,7 @@ public class PdfController {
                     .contentLength(pdfBytes.length)
                     .body(resource);
         } else {
-            writeInPdfLog("{user} attempt to generate a resource sheet pdf, but no matches found for the resource name");
+            writeInPdfLog( userName + " attempt to generate a resource sheet pdf, but no matches found for the resource name");
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -393,14 +391,13 @@ public class PdfController {
         PdfPCell cell = new PdfPCell();
         cell.setBorder(Rectangle.NO_BORDER);
 
-        cell.setBackgroundColor(COL_GRIS_CORPS);
 
         cell.setPaddingTop(cellPaddingTop);
         cell.setPaddingLeft(standardPadding);
         cell.setPaddingRight(standardPadding);
         cell.setPaddingBottom(standardPadding);
 
-        cell.setCellEvent(new HeaderEvent(titreHeader.getContent(), FONT_HEADER_BLOCK, COL_NOIR_HEADER));
+        cell.setCellEvent(new GreyHeaderEvent(titreHeader.getContent(), FONT_HEADER_BLOCK, COL_NOIR_HEADER, COL_CONTENT_TEXT, COL_GRIS_CORPS));
 
         cell.addElement(elementBody);
 
@@ -547,4 +544,51 @@ public class PdfController {
             cb.restoreState();
         }
     }
-}
+
+
+    private record GreyHeaderEvent(String title, Font font, BaseColor headerColor, BaseColor textColor, BaseColor bodyColor) implements PdfPCellEvent {
+        @Override
+        public void cellLayout(PdfPCell cell, Rectangle position, PdfContentByte[] canvases) {
+            PdfContentByte canvas = canvases[PdfPTable.LINECANVAS];
+
+            float headerHeight = 40f;
+            float radius = 10f;
+            float paddingLeft = 10f;
+            int policeValue = 3;
+            int textPositionDivisionValue = 2;
+
+            float x = position.getLeft();
+            float width = position.getWidth();
+            float yMiddle = position.getTop() - headerHeight;
+            float yBottom = position.getBottom();
+            float textY = yMiddle + (headerHeight / textPositionDivisionValue) - policeValue;
+
+            canvas.saveState();
+            canvas.setColorFill(bodyColor);
+
+            float bodyHeight = yMiddle - yBottom;
+            if (bodyHeight > NONE) {
+                canvas.roundRectangle(x, yBottom, width, bodyHeight, radius);
+
+                canvas.rectangle(x, yMiddle - radius, width, radius);
+
+                canvas.fill();
+            }
+
+            canvas.restoreState();
+            canvas.saveState();
+            canvas.setColorFill(headerColor);
+            canvas.roundRectangle(x, yMiddle, width, headerHeight, radius);
+            canvas.rectangle(x, yMiddle, width, radius);
+
+            canvas.fill();
+            canvas.restoreState();
+            ColumnText.showTextAligned(canvas,
+                    Element.ALIGN_LEFT,
+                    new Phrase(title, font),
+                    x + paddingLeft,
+                    textY,
+                    NONE);
+            }
+        }
+    }
