@@ -50,7 +50,7 @@ CREATE TABLE UE(
     competenceLevel INT NOT NULL,
     semester INT NOT NULL,
     id_Path INT REFERENCES PATH(id_Path)
-    id_terms INT REFERENCES TERMS(id_Terms
+    id_terms INT REFERENCES TERMS(id_Terms)
 );
 
 CREATE TABLE TERMS(
@@ -193,8 +193,7 @@ INSERT INTO TASK (name, description, delivery , id_User) VALUES
 ('remplir fiche ressource', 'vous devez remplir la fiche ressource pour chaque ressource pédagogique que vous créez', '2026-01-30',  1),
 ('mettre à jour fiche ressource', 'vous devez mettre à jour la fiche ressource pour chaque ressource pédagogique que vous modifiez', '2026-01-30', 3);
 
-INSERT INTO FINAL_DELIVERY_DATES ( firstDelivery, secondDelivery) VALUES
-('2026-01-30', '2026-07-15');
+
 
 INSERT INTO ACCESSRIGHT ( id_User,accessRight) VALUES
 (1, 1),

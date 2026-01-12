@@ -1843,11 +1843,3 @@ input:checked + .slider::before {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 </style>
-
-
-
-
-
-
-
-

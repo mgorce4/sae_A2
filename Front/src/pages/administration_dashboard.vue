@@ -23,6 +23,7 @@ const resource_sheets = ref([])
 const firstDeliveryDate = ref('')
 const secondDeliveryDate = ref('')
 const deliveryDatesId = ref(null)
+const selectedSheets = ref([]) // Pour stocker les IDs des fiches sélectionnées
 
 onMounted(async () => {
     try {
@@ -84,6 +85,57 @@ async function saveDeliveryDates() {
   }
 }
 
+function toggleSheetSelection(sheetId) {
+  const index = selectedSheets.value.indexOf(sheetId)
+  if (index > -1) {
+    selectedSheets.value.splice(index, 1)
+  } else {
+    selectedSheets.value.push(sheetId)
+  }
+}
+
+function isSheetSelected(sheetId) {
+  return selectedSheets.value.includes(sheetId)
+}
+
+async function downloadSheets() {
+  if (selectedSheets.value.length === 0) {
+    console.log('Aucune fiche sélectionnée')
+    return
+  }
+
+  const userName = localStorage.username || 'user'
+
+  try {
+    // Download each selected sheet
+    for (const sheetId of selectedSheets.value) {
+      const sheet = resource_sheets.value.find(s => s.id === sheetId)
+      if (sheet && sheet.resourceLabel) {
+        // Call the PDF generation endpoint
+        const response = await axios.get('http://localhost:8080/api/pdf/generate', {
+          params: {
+            resourceName: sheet.resourceLabel,
+            userName: userName
+          },
+          responseType: 'blob'
+        })
+
+        // Create a download link
+        const url = window.URL.createObjectURL(new Blob([response.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', `${sheet.resourceLabel}_ressource_sheet.pdf`)
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+        window.URL.revokeObjectURL(url)
+      }
+    }
+  } catch (error) {
+    console.error('Error downloading PDFs:', error)
+  }
+}
+
 </script>
 
 <template>
@@ -112,7 +164,7 @@ async function saveDeliveryDates() {
       <div id="return_sheets_div_header">
         <div id="top">
           <p>Rendu des fiches</p>
-          <img id="download" src="../../media/download.png" width="35" height="35" alt="download" />
+          <img id="download" src="../../media/download.webp" width="35" height="35" alt="download" @click="downloadSheets"/>
         </div>
 
         <div id="semesters_div">
@@ -132,7 +184,11 @@ async function saveDeliveryDates() {
 
         <div v-else class="ressource" v-for="sheet in getResourcesForSemester(selected_semester_sheets)" :key="sheet.id">
           <p>{{ sheet.resourceLabel }}</p>
-          <input type="checkbox" />
+          <input
+            type="checkbox"
+            :checked="isSheetSelected(sheet.id)"
+            @change="toggleSheetSelection(sheet.id)"
+          />
         </div>
 
       </div>
@@ -148,6 +204,15 @@ async function saveDeliveryDates() {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+#download {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+#download:hover {
+  transform: scale(1.1);
 }
 
 #title_font{
