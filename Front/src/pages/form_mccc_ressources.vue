@@ -175,7 +175,7 @@ onMounted(async () => {
         }
       }
 
-    } else if (event.target.id === 'button_ue_plus' && getUEsForInstitution().length > ue_list.value.length) {
+    } else if (event.target.id === 'button_ue_plus' && getUEsByInstitution().length > ue_list.value.length) {
         /* generate new unique id */
         let id
         if (ue_list.value.length > 0) {
@@ -214,11 +214,11 @@ onMounted(async () => {
 
 })
 
-function getUEsForInstitution() {
+function getUEsByInstitution() {
   return UEs.value.filter((ue) => ue.institutionId == localStorage.idInstitution)
 }
 
-function getResourcesForSemester() {
+function getResourcesBySemesterAndInstitution() {
   return resource_sheets.value
     .filter((sheet) => sheet.semester == getQueryParam('id'))
     .filter((sheet) => sheet.institutionId == localStorage.idInstitution)
@@ -248,7 +248,7 @@ function getResourcesForSemester() {
         <div class="panel_resource">
           <div id="left">
             <div>
-              <label for="resource_label">Intitule de la ressource : </label>
+              <label for="resource_label">Intitulé de la ressource : </label>
               <input id="resource_label" type="text" class="input" v-model="resource_label" required />
             </div>
 
@@ -263,7 +263,7 @@ function getResourcesForSemester() {
             </div>
 
             <div>
-              <p>Nombres d'heures (formation initial) :</p>
+              <p>Nombre d'heures (formation initiale) :</p>
               <table class="hours_table">
                 <thead>
                   <tr>
@@ -287,7 +287,7 @@ function getResourcesForSemester() {
                 </tbody>
               </table>
 
-              <p>Nombre d'heures total : {{ total_initial_formation }}</p>
+              <p>Nombre d'heures totales : {{ total_initial_formation }}</p>
             </div>
 
             <div id="btn">
@@ -304,7 +304,7 @@ function getResourcesForSemester() {
                   <span class="slider"></span>
                 </label>
 
-                <p>Nombres d'heures (alternance) :</p>
+                <p>Nombre d'heures (alternance) :</p>
               </div>
 
               <div id="work_study_hours">
@@ -331,7 +331,7 @@ function getResourcesForSemester() {
                   </tbody>
                 </table>
 
-                <p>Nombre d'heures total : {{ total_work_study }}</p>
+                <p>Nombre d'heures totales : {{ total_work_study }}</p>
               </div>
             </div>
 
@@ -343,7 +343,7 @@ function getResourcesForSemester() {
                     <span class="slider"></span>
                   </label>
 
-                  <p>Epeurve différente si multi-compétences</p>
+                  <p>Épreuve différente si multi‑compétences</p>
                 </div>
 
                 <div>
@@ -355,12 +355,12 @@ function getResourcesForSemester() {
                     <label for="coefficient" class="component" style="margin-top: 7px">Coefficient :</label>
                   </div>
 
-                  <p v-if="getUEsForInstitution().length == 0">Aucune UE créée</p>
+                  <p v-if="getUEsByInstitution().length == 0">Aucune UE créée</p>
 
                   <div v-else>
                     <div v-for="ue in ue_list" :key="ue.id" class="component ue_div" style="margin-bottom: 1vw; margin-left: 5.9vw;">
                       <select id="ue_select" class="input">
-                        <option v-for="ue in getUEsForInstitution()" :key="ue.ueNumber">
+                        <option v-for="ue in getUEsByInstitution()" :key="ue.ueNumber">
                           {{ ue.label }}
                         </option>
                       </select>
@@ -399,10 +399,10 @@ function getResourcesForSemester() {
         </div>
       </div>
       <div id="form_resources">
-        <p v-if="getResourcesForSemester().length > 0">Ressources créées :</p>
-        <p v-else>Aucune ressource n'a été crée</p>
+        <p v-if="getResourcesBySemesterAndInstitution().length > 0">Ressources créées :</p>
+        <p v-else>Aucune ressource n'a été créée</p>
 
-        <div v-for="resource in getResourcesForSemester()" :key="resource.resourceId">
+        <div v-for="resource in getResourcesBySemesterAndInstitution()" :key="resource.resourceId">
           <a class="accordion" id="dark_bar" style="width: 97%">{{ resource.resourceLabel }} {{ resource.resourceName }}</a>
 
           <div class="panel_resource">
@@ -412,7 +412,7 @@ function getResourcesForSemester() {
                 <input type="text" class="input" :value="resource.resourceApogeeCode" />
               </div>
 
-              <p>Nombre d'heure (formation initial) :</p>
+              <p>Nombre d'heures (formation initiale) :</p>
 
               <div class="container-fluid">
                 <p>CM :</p>
@@ -432,9 +432,35 @@ function getResourcesForSemester() {
               <div class="container-fluid">
                 <p>Total : {{resource.hoursTeacher.total}}</p>
               </div>
-            </div>
 
-            <div class="vertical-line"></div>
+              <p>Nombre d'heures (alternance) : </p>
+
+              <div v-if="resource.hoursTeacherAltenrance == undefined">
+                <p>Cette ressource n'a pas d'alternance</p>
+              </div>
+
+              <div v-else>
+                <div class="container-fluid">
+                  <p>CM :</p>
+                  <input type="text" class="input" :value="resource.hoursTeacherAltenrance.cm" />
+                </div>
+
+                <div class="container-fluid">
+                  <p>TD :</p>
+                  <input type="text" class="input" :value="resource.hoursTeacherAltenrance.td" />
+                </div>
+
+                <div class="container-fluid">
+                  <p>TP :</p>
+                  <input type="text" class="input" :value="resource.hoursTeacherAltenrance.tp" />
+                </div>
+
+                <div class="container-fluid">
+                  <p>Total : {{resource.hoursTeacher.total}}</p>
+                </div>
+              </div>
+
+            </div>
 
             <div id="right_resource">
               <div class="container-fluid">
@@ -461,7 +487,7 @@ function getResourcesForSemester() {
               <br />
               <br />
 
-              <div style="display: flex; gap: 10px">
+              <div style="display: flex; gap: 10px; justify-content: center">
                 <input class="btn1" type="button" value="Supprimer" />
                 <br />
                 <input class="btn1" type="button" value="Modifier" />
@@ -635,13 +661,6 @@ function getResourcesForSemester() {
   align-items: center;
 }
 
-.vertical-line {
-  border-left: 3px solid var(--clickable-background-color);
-  display: inline-block;
-  height: 330px;
-  margin-top: 20px;
-}
-
 #right_resource {
   display: flex;
   flex-direction: column;
@@ -649,6 +668,7 @@ function getResourcesForSemester() {
   padding: 10px;
   margin-bottom: 10px;
   font-size: 20px;
+  border-left: var(--clickable-background-color) 3px solid;
 }
 
 #resources_list > p {
