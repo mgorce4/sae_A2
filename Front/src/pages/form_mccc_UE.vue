@@ -23,6 +23,13 @@
         terms: false
     })
 
+    const errorMessages = ref({
+        nb_UE: 'Merci de remplir ce champ',
+        nb_UE_duplicate: 'Une UE avec ce numéro existe déjà dans ce semestre'
+    })
+
+    const isDuplicateUE = ref(false)
+
     const ueList = ref([])
 
     const attachAccordionListeners = () => {
@@ -103,6 +110,8 @@
             terms: false
         }
 
+        isDuplicateUE.value = false
+
         let hasErrors = false
 
         if (!nb_UE.value || String(nb_UE.value).trim() === '') {
@@ -137,12 +146,24 @@
 
         if (!terms.value || String(terms.value).trim() === '') {
             errors.value.terms = true
-            hasErrors = true
+            return
+        }
+
+        const semester = parseInt(getQueryParam('id'));
+        const ueLabel = `UE${semester}.${nb_UE.value}`;
+
+        // Vérifier si une UE avec le même numéro existe déjà dans ce semestre
+        const existingUE = ueList.value.find(ue =>
+            ue.semester === semester && ue.label === ueLabel
+        );
+
+        if (existingUE) {
+            errors.value.nb_UE = true;
+            isDuplicateUE.value = true;
+            return;
         }
 
         try{
-            const semester = parseInt(getQueryParam('id'));
-
             // Vérifier que l'utilisateur est connecté
             if (!localStorage.idUser) {
                 alert('Erreur : Veuillez vous reconnecter.');
@@ -151,7 +172,7 @@
 
             const payload = {
                 euApogeeCode: apogee_code.value,
-                label: `UE${semester}.${nb_UE.value}`,
+                label: ueLabel,
                 name: name_comp.value,
                 competenceLevel: competenceLevelNum,
                 semester: semester,
@@ -261,7 +282,8 @@
                             <div>
                                 <label>Numéro de l'UE : <span class="required">*</span></label>
                                 <input type="number" step="1" class="input" v-model="nb_UE" @keydown="preventInvalidChars" />
-                                <span v-if="errors.nb_UE" class="error-message">Merci de remplir ce champ</span>
+                                <span v-if="errors.nb_UE && isDuplicateUE" class="error-message">{{ errorMessages.nb_UE_duplicate }}</span>
+                                <span v-else-if="errors.nb_UE" class="error-message">{{ errorMessages.nb_UE }}</span>
                             </div>
                             <div>
                                 <label>Code apogee : <span class="required">*</span></label>
