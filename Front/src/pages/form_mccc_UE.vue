@@ -180,6 +180,48 @@
         }
     }
 
+    const updateUE = async (ue) => {
+        try {
+            // Validation basique
+            if (!ue.label || !ue.euApogeeCode || !ue.name || !ue.competenceLevel) {
+                alert('Tous les champs obligatoires doivent être remplis');
+                return;
+            }
+
+            // Préparer les données pour la mise à jour via l'API MCCC
+            const payload = {
+                ueNumber: ue.ueNumber,
+                euApogeeCode: ue.euApogeeCode,
+                label: ue.label,
+                name: ue.name,
+                competenceLevel: parseInt(ue.competenceLevel),
+                semester: ue.semester,
+                userId: parseInt(localStorage.idUser),
+                termsCode: ue.termsCode || null
+            };
+
+            console.log('Mise à jour de l\'UE:', payload);
+
+            // Utiliser l'endpoint PUT du MCCC Controller
+            await axios.put(`http://localhost:8080/api/v2/mccc/ues/${ue.ueNumber}`, payload);
+
+            // Recharger les UEs
+            const response = await axios.get(`http://localhost:8080/api/v2/mccc/ues/institution/${localStorage.idInstitution}`);
+            ueList.value = response.data;
+
+            attachAccordionListeners();
+            console.log('UE modifiée avec succès');
+
+        } catch (error) {
+            console.error('Erreur lors de la modification:', error);
+            if (error.response) {
+                console.error('Détails de l\'erreur:', error.response.data);
+                console.error('Status:', error.response.status);
+            }
+            alert('Erreur lors de la modification. Consultez la console pour plus de détails.');
+        }
+    }
+
     const del = async (id) =>{
         if (!confirm('Cette action est irréversible (pour le moment), continuer à vos risques et périls.')) {
             return;
@@ -256,29 +298,29 @@
                         <div id="left">
                             <div>
                                 <p>Numéro de l'UE : </p>
-                                <input type="text" class="input" :value="ueACord.label" />
+                                <input type="text" class="input" v-model="ueACord.label" />
                             </div>
                             <div>
                                 <p>Code apogee : </p>
-                                <input type="text" class="input" :value="ueACord.euApogeeCode" />
+                                <input type="text" class="input" v-model="ueACord.euApogeeCode" />
                             </div>
                             <div>
                                 <p>Intitulé de la compétence : </p>
-                                <input type="text" class="input" :value="ueACord.name" />
+                                <input type="text" class="input" v-model="ueACord.name" />
                             </div>
                             <div>
                                 <p>Niveau de la compétence : </p>
-                                <input type="text" class="input" :value="ueACord.competenceLevel" />
+                                <input type="number" step="1" class="input" v-model="ueACord.competenceLevel" @keydown="preventInvalidChars" />
                             </div>
                             <div>
                                 <p>Modalité : </p>
-                                <input type="text" class="input" :value="ueACord.termsCode" />
+                                <input type="text" class="input" v-model="ueACord.termsCode" />
                             </div>
                         </div>
 
                         <div id="right">
                             <input id="btn_cancel_UE" class="btn1" type="reset" value="Supprimer" @click="del(ueACord.ueNumber)">
-                            <input id="btn_save_UE" class="btn1" type="submit" value="Modifier" @click="save">
+                            <input id="btn_save_UE" class="btn1" type="submit" value="Modifier" @click="updateUE(ueACord)">
                         </div>
                     </div>
                 </div>

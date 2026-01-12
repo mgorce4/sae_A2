@@ -302,7 +302,7 @@ public class MCCCController {
             // Find or create Terms
             Terms terms = null;
             if (dto.getTermsCode() != null && !dto.getTermsCode().trim().isEmpty()) {
-                terms = termsRepository.findByCode(dto.getTermsCode())
+                terms = termsRepository.findFirstByCode(dto.getTermsCode())
                     .orElseGet(() -> {
                         Terms newTerms = new Terms();
                         newTerms.setCode(dto.getTermsCode());
@@ -330,6 +330,62 @@ public class MCCCController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Error creating UE: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Update an existing UE with Terms support
+     * PUT /api/v2/mccc/ues/{id}
+     */
+    @PutMapping("/ues/{id}")
+    public ResponseEntity<?> updateMCCCUE(@PathVariable Long id, @RequestBody MCCCUEDTO dto) {
+        try {
+            // Find existing UE
+            UE existingUE = ueRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("UE not found with id: " + id));
+
+            // Update basic fields
+            existingUE.setEuApogeeCode(dto.getEuApogeeCode());
+            existingUE.setLabel(dto.getLabel());
+            existingUE.setName(dto.getName());
+            existingUE.setCompetenceLevel(dto.getCompetenceLevel());
+            existingUE.setSemester(dto.getSemester());
+
+            // Update Terms - Only if termsCode changed
+            // On vérifie si le code a changé pour éviter de chercher inutilement
+            String currentTermsCode = existingUE.getTerms() != null ? existingUE.getTerms().getCode() : null;
+            String newTermsCode = dto.getTermsCode();
+
+            // Si le code a changé ou si on passe de null à une valeur ou vice-versa
+            if ((currentTermsCode == null && newTermsCode != null && !newTermsCode.trim().isEmpty()) ||
+                (currentTermsCode != null && newTermsCode == null) ||
+                (currentTermsCode != null && newTermsCode != null && !currentTermsCode.equals(newTermsCode))) {
+
+                if (newTermsCode != null && !newTermsCode.trim().isEmpty()) {
+                    // Chercher le premier Terms avec ce code
+                    Terms terms = termsRepository.findFirstByCode(newTermsCode)
+                        .orElseGet(() -> {
+                            Terms newTerms = new Terms();
+                            newTerms.setCode(newTermsCode);
+                            return termsRepository.save(newTerms);
+                        });
+                    existingUE.setTerms(terms);
+                } else {
+                    existingUE.setTerms(null);
+                }
+            }
+            // Sinon, on garde le Terms actuel (même objet, même ID)
+
+            UE updatedUE = ueRepository.save(existingUE);
+
+            // Convert to DTO and return
+            MCCCUEDTO resultDto = mcccUEMapper.toDTO(updatedUE);
+            return ResponseEntity.ok(resultDto);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error updating UE: " + e.getMessage());
         }
     }
 }
