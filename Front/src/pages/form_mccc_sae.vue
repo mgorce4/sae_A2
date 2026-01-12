@@ -16,6 +16,7 @@
     const addUeLabel = ref(null)
     const addUeCoefficient = ref(null)
     const ueCoef = ref([])
+    const saeModalite = ref('')
 
     const errors = ref({
         saeLabel: false,
@@ -68,6 +69,14 @@
                 });
             }
         });
+    }
+
+    // Prevent typing invalid characters in number inputs
+    const preventInvalidChars = (event) => {
+        const invalidChars = ['e', 'E', '+', '-', '.', ',']
+        if (invalidChars.includes(event.key)) {
+            event.preventDefault()
+        }
     }
 
     onMounted(async () => {
@@ -145,29 +154,43 @@
                 idInstitution: localStorage.idInstitution,
                 hours: saeHours.value,
                 ueCoefficients: ueCoef.value,
+                modalite: saeModalite.value,
+                userId: parseInt(localStorage.idUser)
             }
-            console.log('payload completed')
             console.log('Payload SAE to save:', payload)
-            /*
             axios.post('http://localhost:8080/api/saes', payload)
-                .then(response => {
-                    console.log('SAE saved successfully:', response.data)
-                    // Optionally, refresh the SAE list or provide user feedback here
+                .then(async response => {
+                    console.log('✅ SAE saved successfully:', response.data)
+                    
+                    // Clear input fields after saving
+                    saeLabel.value = ''
+                    saeApogeeCode.value = ''
+                    saeHours.value = ''
+                    ueCoef.value = []
+                    
+                    // Close the form
+                    display_more_area.value = false
+                    display_modify_area.value = false
+                    display_add_ue.value = false
+                    
+                    // Refresh the SAE list from the database
+                    const refreshResponse = await axios.get(`http://localhost:8080/api/v2/mccc/saes/institution/${localStorage.idInstitution}`)
+                    saeTableV2.value = refreshResponse.data
+                    
+                    // Reattach listeners to the updated accordion elements
+                    attachAccordionListeners()
+                    
+                    alert('SAE créée avec succès !')
                 })
                 .catch(error => {
-                    console.error('Error saving SAE:', error)
+                    console.error('❌ Error saving SAE:', error)
+                    alert('Erreur lors de la sauvegarde de la SAE : ' + (error.response?.data?.message || error.message))
                 })
-            console.log('SAE saved successfully')*/
         }
         catch (error) {
-            console.error('Erreur lors de la sauvegarde de la SAÉ :', error);
+            console.error('❌ Erreur lors de la sauvegarde de la SAÉ :', error);
+            alert('Une erreur est survenue lors de la sauvegarde')
         }
-
-        // Clear input fields after saving
-        saeLabel.value = ''
-        saeApogeeCode.value = ''
-        saeHours.value = ''
-        ueCoef.value = []
         
     }
 
@@ -268,7 +291,11 @@
                             </div>
                             <div class="container-fluid spb">
                                 <label for="hours_sae_modify">Nombre d'heures (formation initiale) :</label>
-                                <input class="mccc_input" id="hours_sae_modify" type="number" v-model="saeHours" :placeholder="'...'" required>
+                                <input class="mccc_input" id="hours_sae_modify" type="number" v-model="saeHours" :placeholder="'...'" @keydown="preventInvalidChars" required>
+                            </div>
+                            <div class="container-fluid spb">
+                                <label for="modalite_sae_modify">Modalité :</label>
+                                <input class="mccc_input" id="modalite_sae_modify" type="text" v-model="saeModalite" :placeholder="'...'" required>
                             </div>
 
                             <div class="container-fluid spa">
@@ -293,7 +320,7 @@
                                 <td>Coefficient : </td>
                                 <td class="display_coef_ue" v-for="(coefUe, indexCoefUe) in ueCoef" v-bind:key="indexCoefUe">{{ coefUe.coefficient }}</td>
                                 <td v-show="display_more_area && display_add_ue">
-                                    <input class="display_coef_ue" type="number" :placeholder="'...'" v-model="addUeCoefficient">
+                                    <input class="display_coef_ue" type="number" :placeholder="'...'" v-model="addUeCoefficient" @keydown="preventInvalidChars">
                                 </td>
                             </tr>
                             <tr>
@@ -323,7 +350,7 @@
                             </div>
                             <div class="container-fluid spb">
                                 <label for="hours_sae_modify">Nombre d'heures (formation initiale) :</label>
-                                <input class="mccc_input" id="hours_sae_modify" type="number" v-model="saeHours" required>
+                                <input class="mccc_input" id="hours_sae_modify" type="number" v-model="saeHours" @keydown="preventInvalidChars" required>
                             </div>
 
                             <div class="container-fluid spa">
@@ -348,7 +375,7 @@
                                 <td>Coefficient : </td>
                                 <td class="display_coef_ue" v-for="(coefUe, index3) in ueCoef" v-bind:key="index3">{{ coefUe.coefficient }}</td>
                                 <td v-show="display_modify_area && display_add_ue">
-                                    <input class="display_coef_ue" type="number" :placeholder="'...'" v-model="addUeCoefficient">
+                                    <input class="display_coef_ue" type="number" :placeholder="'...'" v-model="addUeCoefficient" @keydown="preventInvalidChars">
                                 </td>
                             </tr>
                             <tr>
