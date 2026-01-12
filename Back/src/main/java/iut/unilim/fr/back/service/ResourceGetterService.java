@@ -164,13 +164,15 @@ public class ResourceGetterService {
             profRef = resourceSheetDTO.getMainTeacher();
             labelResource = resource.getLabel() + ": " + resource.getName();
 
-            if (!saes.isEmpty()) {
-                saes.clear();
-                for (SaeInfoDTO saeLinkResource : SAELinkResources) {
-                    if (saeLinkResource.getIsLinked()) {
-                        saes.add(saeLinkResource.getLabel());
-                    }
+
+            saes.clear();
+            for (SaeInfoDTO saeLinkResource : SAELinkResources) {
+                if (saeLinkResource.getIsLinked()) {
+                    saes.add(saeLinkResource.getLabel());
                 }
+            }
+            if (saes.isEmpty()) {
+                saes.add(PLACEHOLDER);
             }
 
             List<String> keyWordsList = resourceSheetDTO.getKeywords();
@@ -190,6 +192,7 @@ public class ResourceGetterService {
 
             if (hoursDTOTeacherInternship != null && hoursDTOTeacherInternship.getHasAlternance()) {
                 HoursDTO hoursDTOInternship = resourceSheetDTO.getHoursTeacherAlternance();
+                setHoursDTO(hoursDTOInternship, hoursStudentInternship);
                 setHoursDTO(hoursDTOInternship, hoursStudentInternship);
                 HoursDTO hoursDTOPNInternship = resourceSheetDTO.getHoursPNAlternance();
                 System.out.println(hoursDTOPNInternship);
