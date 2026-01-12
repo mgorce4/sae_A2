@@ -157,6 +157,23 @@ onMounted(async () => {
         }
       }
     }
+
+    let teachers = document.querySelectorAll('.teacher')
+
+    if (teachers.length > 0) {
+      let teacher_names = []
+      teachers.forEach((teacher) => {
+        teacher_names.push(teacher.value)
+      })
+
+      for (let i = 0; i < teachers.length; i++) {
+        for (let j = 0; j < teachers.length; j++) {
+          if (i != j && teachers[i].value === teachers[j].value) {
+            document.getElementById("error_teacher").innerHTML = "Un professeur ne peut pas être sélectionné plusieurs fois pour la même ressource."
+          }
+        }
+      }
+    }
   })
 
   document.getElementById('work_study_slider').addEventListener('click', () => {
@@ -242,6 +259,27 @@ function getResourcesBySemesterAndInstitution() {
     .filter((sheet) => sheet.semester == getQueryParam('id'))
     .filter((sheet) => sheet.institutionId == localStorage.idInstitution)
 }
+
+function getUEFromResource(resource) {
+  let ues = []
+
+  resource.ueReferences.map((ue) => {
+    ues.push(ue.label)
+  })
+
+  return ues
+}
+
+function getCoefFromResource(resource) {
+  let coefs = []
+
+  resource.ueReferences.map((ue) => {
+    coefs.push(ue.coefficient)
+  })
+
+  return coefs
+}
+
 </script>
 
 <template>
@@ -420,6 +458,7 @@ function getResourcesBySemesterAndInstitution() {
                     <button class="button_more" id="button_teacher_cross">x</button>
                   </div>
                 </div>
+                <p id="error_teacher"></p>
               </div>
             </div>
           </div>
@@ -495,29 +534,26 @@ function getResourcesBySemesterAndInstitution() {
             </div>
 
             <div id="right_resource">
-              <div class="container-fluid">
-                <p>UE(s) affectée(s) :</p>
-                <div v-for="ue in resource.ueReferences" :key="ue.ueNumber">
-                  <input type="text" class="input" :value="ue.label" />
-                </div>
+
+              <div id="UE_table">
+                <table class="ueCoefficient">
+                  <tr>
+                    <td>U.E. affectée(s) : </td>
+                    <td class="display_coef_label" v-for="Ue in getUEFromResource(resource)" :key="Ue">{{ Ue }}</td>
+                  </tr>
+                  <tr>
+                    <td>Coefficient : </td>
+                    <td class="display_coef_ue" v-for="coef in getCoefFromResource(resource)" :key="coef">{{ coef }}</td>
+                  </tr>
+                </table>
               </div>
 
-              <div class="container-fluid">
-                <p>Coefficient(s) :</p>
-                <div v-for="ue in resource.ueReferences" :key="ue.ueNumber">
-                  <input type="text" class="input" :value="ue.coefficient" />
-                </div>
-              </div>
-
-              <div class="container-fluid">
+              <div id="teacher_div">
                 <p>Professeur(s) associé(s) :</p>
                 <div v-for="teacher in resource.teachers" :key="teacher">
                   <input type="text" class="input" :value="teacher" />
                 </div>
               </div>
-
-              <br />
-              <br />
 
               <div style="display: flex; gap: 10px; justify-content: center">
                 <input class="btn1" type="button" value="Supprimer" />
@@ -753,5 +789,20 @@ function getResourcesBySemesterAndInstitution() {
   width: 80%;
   text-align: center;
   margin-left: 3.5vw;
+}
+
+#error_teacher {
+  color: var(--error-color);
+  width: 80%;
+  text-align: center;
+  margin-left: 3.5vw;
+}
+
+#teacher_div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4vw;
+  padding-bottom: 4vw;
 }
 </style>
