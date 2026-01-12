@@ -1,11 +1,43 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import axios from 'axios'
 
 const afficherBoutons = ref([
-    [{ show: false, status: 'Rempli' }, { show: false, status: 'Vierge' }],
-    [{ show: false, status: 'Vierge' }, { show: false, status: 'Brouillon' }],
-    [{ show: false, status: 'Brouillon' }, { show: false, status: 'Vierge' }]
+    [false, false],
+    [false, false],
+    [false, false]
 ])
+
+const saeTable = ref([])
+const ueTable = ref([])
+const resourceTable = ref([])
+
+onMounted(async () => {
+    const saes = await axios.get(`http://localhost:8080/api/v2/mccc/saes/institution/${localStorage.idInstitution}`)
+    saeTable.value = saes.data
+    const ues = await axios.get(`http://localhost:8080/api/v2/mccc/ues/institution/${localStorage.idInstitution}`)
+    ueTable.value = ues.data
+    const resources = await axios.get(`http://localhost:8080/api/v2/mccc/resources/institution/${localStorage.idInstitution}`)
+    resourceTable.value = resources.data
+})
+
+const hasSAEInSemester = (semester) => {
+    return saeTable.value.some(sae => sae.semester === semester)
+}
+
+const hasResourceInSemester = (semester) => {
+    return resourceTable.value.some(resource => resource.semester === semester)
+}
+
+const getStatusForSemester = (semester) => {
+    const hasResource = hasResourceInSemester(semester)
+    const hasSAE = hasSAEInSemester(semester)
+    
+    if (hasResource || hasSAE) {
+        return 'Rempli'
+    }
+    return 'Vierge'
+}
 
 const goToRessourceSheet = (url, semester) => {
     window.location.hash = `${url}?id=${semester}`
@@ -23,13 +55,13 @@ const goToRessourceSheet = (url, semester) => {
             <p class="semester_display">Année {{ index + 1 }} :</p>
 
             <div class="container-fluid spe" style="align-items: normal;">
-                <div class="semester_rect" v-for="(btn, index2) in year" v-bind:key="index2" v-on:mouseover="btn.show = true" v-on:mouseout="btn.show = false">
+                <div class="semester_rect" v-for="(btn, index2) in year" v-bind:key="index2" v-on:mouseover="afficherBoutons[index][index2] = true" v-on:mouseout="afficherBoutons[index][index2] = false">
                     <p class="semester_display">Semestre {{ 2 * index + index2 + 1 }}</p>
-                    <p class="status_display" v-show="!btn.show">{{ btn.status }}</p>
-                    <div v-show="btn.show" class="container-fluid spe">
-                        <button class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-UE', (2*index+index2+1))">UE</button>
-                        <button class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-ressources', (2*index+index2+1))">Ressource</button>
-                        <button class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-sae', (2*index+index2+1))">SAÉ</button>
+                    <p class="status_display" v-show="!btn">{{ getStatusForSemester(2 * index + index2 + 1) }}</p>
+                    <div v-show="btn" class="container-fluid spe">
+                        <button v-show="btn" class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-UE', (2*index+index2+1))">UE</button>
+                        <button v-show="hasResourceInSemester(2*index+index2+1)" class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-ressources', (2*index+index2+1))">Ressource</button>
+                        <button v-show="hasSAEInSemester(2*index+index2+1)" class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-sae', (2*index+index2+1))">SAÉ</button>
                     </div>
                 </div>
             </div>

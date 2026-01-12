@@ -107,6 +107,27 @@ public class MCCCController {
         }
     }
 
+    /**
+     * Get MCCC resources by institution ID
+     * GET /api/v2/mccc/resources/institution/{institutionId}
+     */
+    @GetMapping("/resources/institution/{institutionId}")
+    public ResponseEntity<List<MCCCResourceDTO>> getMCCCResourcesByInstitution(@PathVariable Long institutionId) {
+        try {
+            List<Ressource> resources = ressourceRepository.findAll();
+            List<MCCCResourceDTO> dtos = mcccMapper.toDTOList(resources);
+
+            // Filter by institution ID
+            List<MCCCResourceDTO> filteredDtos = dtos.stream()
+                .filter(dto -> dto.getInstitutionId() != null && dto.getInstitutionId().equals(institutionId))
+                .toList();
+
+            return ResponseEntity.ok(filteredDtos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     // ==================== SAE ENDPOINTS ====================
 
     /**
