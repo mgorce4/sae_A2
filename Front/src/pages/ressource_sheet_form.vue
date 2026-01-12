@@ -975,6 +975,20 @@ onMounted(async () => {
   justify-content: center;
 }
 
+.accordion {
+  cursor: pointer;
+  position: relative;
+  padding-right: 2.5vw;
+  border: none;
+  outline: none;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+
+
 .panel {
   width: 90%;
   justify-self: center;
@@ -1156,6 +1170,7 @@ onMounted(async () => {
   transition: 0.4s;
   border-radius: 26px;
 }
+
 
 .slider::before {
   position: absolute;
