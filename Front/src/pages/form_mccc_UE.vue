@@ -218,7 +218,7 @@
                         </div>
 
                         <div id="right">
-                            <input id="btn_cancel_UE" class="btn1" type="reset" value="Annuler">
+                            <input id="btn_cancel_UE" class="btn1" type="button" value="Annuler" @click="display_more_area = false">
                             <input id="btn_save_UE" class="btn1" type="submit" value="Sauvegarder" @click="save">
                         </div>
                     </div>
