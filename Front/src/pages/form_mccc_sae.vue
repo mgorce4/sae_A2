@@ -257,9 +257,6 @@
 </script>
 
 <template>
-    <p>{{ filteredSaeTableV2 }}</p>
-    <p>{{ ueTableV2 }}</p>
-    <p>addUE : {{ ueCoef }}</p>
     <div id="form_mccc_sae"> 
         <div class="return_arrow">
             <button class="back_arrow" onclick="document.location.href='#/mccc-select-form'">←</button>
@@ -303,36 +300,53 @@
                                 <input class="btn1" type="submit" value="Sauvegarder" @click="saveSae">
                             </div>
                         </div>
-                        <table class="ueCoefficient">
-                            <tr>
-                                <td>U.E. affectée(s) : </td>
-                                <th class="display_coef_label" v-for="(labelUe, indexLabelUe) in ueCoef" v-bind:key="indexLabelUe">{{ labelUe.ueLabel }}</th>
-                                <td v-show="display_more_area && !display_add_ue">
-                                    <p class="button_more button_ue" @click="display_add_ue = true">+</p>
-                                </td>
-                                <th v-show="display_more_area && display_add_ue">
-                                    <select class="select_ue" v-model="addUeLabel">
-                                        <option v-for="(ue, index) in ueTableV2" v-bind:key="index" :value="ue">{{ ue.label }}</option>
-                                    </select>
-                                </th>
-                            </tr>
-                            <tr>
-                                <td>Coefficient : </td>
-                                <td class="display_coef_ue" v-for="(coefUe, indexCoefUe) in ueCoef" v-bind:key="indexCoefUe">{{ coefUe.coefficient }}</td>
-                                <td v-show="display_more_area && display_add_ue">
-                                    <input class="display_coef_ue" type="number" :placeholder="'...'" v-model="addUeCoefficient" @keydown="preventInvalidChars">
-                                </td>
-                            </tr>
-                            <tr>
-                                <td></td>
-                                <td v-for="(coefUe, index4) in ueCoef" v-bind:key="index4">
-                                    <p class="button_more button_ue" @click="remove_ue(index4)">X</p>
-                                </td>
-                                <td v-show="display_more_area && display_add_ue">
-                                    <p class="button_more button_ue" @click="add_ue()">✓</p>
-                                </td>
-                            </tr>
-                        </table>
+                        <div id="right" style="flex-wrap: wrap; margin-right: 1vw;">
+                            <div id="work_study">
+                                <div class="component">
+                                    <label class="switch" id="work_study_slider">
+                                        <input type="checkbox"/>
+                                        <span class="slider"></span>
+                                    </label>
+                                    <p>Alternance</p>
+                                </div>
+                                <div id="work_study_hours" style="display: flex;">
+                                    <p>Nombre d'heures (alternance) : </p>
+                                    <input type="text" class="input input_work_study" v-model="total_hours" required/> 
+                                </div>
+                                <!--V2: put comparator with the programme national hour and total alternance -->
+                            </div>
+                        
+                            <table class="ueCoefficient">
+                                <tr>
+                                    <td>U.E. affectée(s) : </td>
+                                    <th class="display_coef_label" v-for="(labelUe, indexLabelUe) in ueCoef" v-bind:key="indexLabelUe">{{ labelUe.ueLabel }}</th>
+                                    <td v-show="display_more_area && !display_add_ue">
+                                        <p class="button_more button_ue" @click="display_add_ue = true">+</p>
+                                    </td>
+                                    <th v-show="display_more_area && display_add_ue">
+                                        <select class="select_ue" v-model="addUeLabel">
+                                            <option v-for="(ue, index) in ueTableV2" v-bind:key="index" :value="ue">{{ ue.label }}</option>
+                                        </select>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td>Coefficient : </td>
+                                    <td class="display_coef_ue" v-for="(coefUe, indexCoefUe) in ueCoef" v-bind:key="indexCoefUe">{{ coefUe.coefficient }}</td>
+                                    <td v-show="display_more_area && display_add_ue">
+                                        <input class="display_coef_ue" type="number" :placeholder="'...'" v-model="addUeCoefficient" @keydown="preventInvalidChars">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td v-for="(coefUe, index4) in ueCoef" v-bind:key="index4">
+                                        <p class="button_more button_ue" @click="remove_ue(index4)">X</p>
+                                    </td>
+                                    <td v-show="display_more_area && display_add_ue">
+                                        <p class="button_more button_ue" @click="add_ue()">✓</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
                     </div>
                 </form>
 

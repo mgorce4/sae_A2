@@ -254,8 +254,10 @@
           <div class="path" v-on:mouseover="cours.show = true" v-on:mouseout="cours.show = false" @click="goToRessourceSheet('#/mccc-select-form', cours.idPath)">
             <p>{{ cours.name }}</p>
             <div v-show="cours.show" @click.stop>
-              <button v-if="!click" @click="click = !click" class="btn_modify">Modifier</button>
-              <button v-if="!click" class="btn_modify" @click="del(cours.idPath)">Supprimer</button>
+              <div style="display: flex; margin : 0.5vw 1vw; justify-content: center; width: 100%;">
+                <button v-if="!click" @click="click = !click" class="btn_modify">Modifier</button>
+                <button v-if="!click" class="btn_modify" @click="del(cours.idPath)">Supprimer</button>
+              </div>
               <div v-if="click" >
                 <div>
                   <label>Nom du parcours : <span class="required">* </span></label>
