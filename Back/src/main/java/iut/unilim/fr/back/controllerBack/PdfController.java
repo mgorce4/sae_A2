@@ -42,7 +42,7 @@ public class PdfController {
     private final int specialTableNbRow = 1;
 
     @GetMapping("/generate")
-    public ResponseEntity<Resource> generatePdf(@RequestParam String resourceName) {
+    public ResponseEntity<Resource> generatePdf(@RequestParam String resourceName, @RequestParam String userName) {
         res.setValuesFromResource(resourceName);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -215,7 +215,7 @@ public class PdfController {
                 document.add(resourceTrackingTable);
                 document.close();
 
-                writeInPdfLog("{user} Create a pdf for resource sheet: " + pdfFileName);
+                writeInPdfLog(userName + " create a pdf for resource sheet: " + pdfFileName);
             } catch (Exception e) {
                 writeInPdfLog(e.getMessage());
                 return ResponseEntity.internalServerError().build();
@@ -229,7 +229,7 @@ public class PdfController {
                     .contentLength(pdfBytes.length)
                     .body(resource);
         } else {
-            writeInPdfLog("{user} attempt to generate a resource sheet pdf, but no matches found for the resource name");
+            writeInPdfLog( userName + " attempt to generate a resource sheet pdf, but no matches found for the resource name");
             return ResponseEntity.internalServerError().build();
         }
     }
