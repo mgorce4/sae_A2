@@ -1,18 +1,19 @@
 :root {
-  --main-theme-background-color:#3D4375;
-  --main-theme-secondary-background-color:#2C3158FF;
-  --sub-scrollbar-color:#181A32FF;
-  --main-theme-terciary-color:#000000FF;
-  --main-theme-secondary-color:#fff;
-  --sub-div-background-color:#8b8ea7;
-  --header-footer-color:#B51621;
-  --clickable-background-color:#202020FF;
-  --header-color:#4B575F;
-  --div-rect-background-color:#757575FF;
-  --error-color:#ff6b6b;
-  --sub-section-background-color:#2C2C3B;
+    --main-theme-background-color: #3D4375;
+    --main-theme-secondary-background-color: #2C3158FF;
+    --sub-scrollbar-color: #181A32FF;
+    --main-theme-terciary-color: #000000FF;
+    --main-theme-secondary-color: #fff;
+    --sub-div-background-color: #8b8ea7;
+    --header-footer-color: #B51621;
+    --clickable-background-color: #202020FF;
+    --header-color: #4B575F;
+    --div-rect-background-color: #757575FF;
+    --error-color: #ff6b6b;
+    --sub-section-background-color: #2C2C3B;
 
 }
+
 html {
     height: 100%;
 }
@@ -217,7 +218,7 @@ main {
     padding-top: 1vw;
 }
 
-.accordion {
+.accordion_mccc {
     padding-right: 2.5vw;
     border: none;
     outline: none;
@@ -229,8 +230,7 @@ main {
     position: relative;
 }
 
-
-.accordion::after {
+.accordion_mccc::after {
     content: '^';
     position: absolute;
     right: 1vw;
@@ -238,6 +238,6 @@ main {
     font-size: 0.9vw;
 }
 
-.accordion.active::after {
+.accordion_mccc.active::after {
     transform: rotate(180deg);
 }

@@ -50,7 +50,7 @@
 
     const attachAccordionListeners = () => {
         nextTick(() => {
-            const acc = document.getElementsByClassName("accordion");
+            const acc = document.getElementsByClassName("accordion_mccc");
             for (let i = 0; i < acc.length; i++) {
                 const newElement = acc[i].cloneNode(true);
                 acc[i].parentNode.replaceChild(newElement, acc[i]);
@@ -255,7 +255,7 @@
                 </div>
 
                 <form v-show="display_more_area" method="post" v-on:submit.prevent="">
-                    <div class="dark_bar accordion" data-accordion="add-sae"><p>Ajout d'une nouvelle SAÉ</p></div>
+                    <div class="dark_bar accordion_mccc" data-accordion="add-sae"><p>Ajout d'une nouvelle SAÉ</p></div>
                     <div class="panel_form_mccc container-fluid">
                         <div class="left_side container-fluid cfh spa">
                             <div class="container-fluid spb">
@@ -310,7 +310,7 @@
                 </form>
 
                 <form v-show="display_modify_area" method="post" v-on:submit.prevent="">
-                    <div class="dark_bar accordion" data-accordion="modify-sae"><p>Modification d'une SAÉ</p></div>
+                    <div class="dark_bar accordion_mccc" data-accordion="modify-sae"><p>Modification d'une SAÉ</p></div>
                     <div class="panel_form_mccc container-fluid">
                         <div class="left_side container-fluid cfh spa">
                             <div class="container-fluid spb">
@@ -365,7 +365,7 @@
                 </form>
 
                 <div v-for="(value, index) in filteredSaeTableV2" v-bind:key="index" class="added_content_mccc">
-                    <a class="dark_bar accordion">{{ value.label }}</a>
+                    <a class="dark_bar accordion_mccc">{{ value.label }}</a>
                     <div class="panel_form_mccc container-fluid">
                         <div class="left_side container-fluid cfh spa">
                             <div class="container-fluid spb">

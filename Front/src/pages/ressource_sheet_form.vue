@@ -987,6 +987,18 @@ onMounted(async () => {
   font-size: inherit;
 }
 
+.accordion::after {
+    content: '^';
+    position: absolute;
+    right: 1vw;
+    transition: transform 0.3s ease;
+    font-size: 0.9vw;
+}
+
+.accordion.active::after {
+    transform: rotate(180deg);
+}
+
 
 
 .panel {
