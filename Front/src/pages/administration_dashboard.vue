@@ -168,6 +168,7 @@ function getResourcesForSemester(semester) {
 #return_sheets_div_header {
   position: sticky;
   top: 0;
+
   background-color: var(--main-theme-background-color);
 }
 
@@ -190,7 +191,7 @@ function getResourcesForSemester(semester) {
 #return_sheets_div::-webkit-scrollbar-thumb {
   background: var(--main-theme-secondary-color);
   border-radius: 10px;
-  border: 3px var(--main-theme-terciary-color) solid;
+  border: 3px var(--main-theme-tertiary-color) solid;
 }
 
 .ressource {

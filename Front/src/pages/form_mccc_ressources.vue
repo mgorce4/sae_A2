@@ -406,7 +406,7 @@ function getResourcesForSemester() {
 #return_arrow > p {
   font-size: 1.5vw;
   font-weight: bold;
-  color: var(--main-theme-terciary-color);
+  color: var(--main-theme-tertiary-color);
   margin-left: 1.5vw;
 }
 
@@ -468,7 +468,6 @@ function getResourcesForSemester() {
   border-bottom-left-radius: 15px;
   border-bottom-right-radius: 15px;
   color: var(--main-theme-secondary-color);
-  margin-top: 0;
   display: flex;
 }
 
@@ -529,7 +528,7 @@ function getResourcesForSemester() {
 }
 
 #btn > input {
-  margin: 0px 35px 0px 35px;
+  margin: 0 35px 0 35px;
 }
 
 #form_resources {

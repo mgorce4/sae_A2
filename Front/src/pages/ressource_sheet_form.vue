@@ -951,7 +951,7 @@ onMounted(async () => {
 #return_Arrow > p{
   font-size: 1.5vw;
   font-weight: bold;
-  color: var(--main-theme-terciary-color);
+  color: var(--main-theme-tertiary-color);
   margin-left: 1.5vw;
 }
 
@@ -959,7 +959,7 @@ onMounted(async () => {
   font-size: 2vw;
   border: none;
   background-color: var(--main-theme-secondary-color);
-  color: var(--main-theme-terciary-color);
+  color: var(--main-theme-tertiary-color);
   font-weight: bold;
 }
 
@@ -1099,7 +1099,7 @@ onMounted(async () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgb(204, 204, 204);
+  background-color: var(--sub-div-background-color);
   transition: 0.4s;
   border-radius: 26px;
 }
@@ -1118,7 +1118,7 @@ onMounted(async () => {
 
 /* ON state */
 input:checked + .slider {
-  background-color: var(--sub-section-background-color);
+  background-color: var(--clickable-background-color);
 }
 
 input:checked + .slider::before {

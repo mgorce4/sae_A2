@@ -192,7 +192,7 @@
 #return_arrow > p{
     font-size: 1.5vw;
     font-weight: bold;
-    color: var(--main-theme-terciary-color);
+    color: var(--main-theme-tertiary-color);
     margin-left: 1.5vw;
 }
 
@@ -227,7 +227,7 @@
 }
 
 .accordion_UE, #dark_bar >p{
-    margin: 0vw;
+    margin: 0;
     font-weight: lighter;
     font-size: 1.05vw;
 }
