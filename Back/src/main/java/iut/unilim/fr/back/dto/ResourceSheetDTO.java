@@ -16,6 +16,7 @@ public class ResourceSheetDTO {
     private String resourceApogeeCode;  // e.g., "R101"
     private String qualityReference;    // e.g., "IU EN FOR 001"
     private Integer semester;
+    private String terms;                // Terms/Periods
     private Boolean diffMultiCompetences;
 
     // Department
@@ -127,6 +128,14 @@ public class ResourceSheetDTO {
 
     public void setSemester(Integer semester) {
         this.semester = semester;
+    }
+
+    public String getTerms() {
+        return terms;
+    }
+
+    public void setTerms(String terms) {
+        this.terms = terms;
     }
 
     public Boolean getDiffMultiCompetences() {

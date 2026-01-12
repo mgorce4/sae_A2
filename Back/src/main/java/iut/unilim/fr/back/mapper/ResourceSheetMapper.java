@@ -81,6 +81,7 @@ public class ResourceSheetMapper {
         dto.setResourceApogeeCode(resource.getApogeeCode());
         dto.setQualityReference("IU EN FOR 001"); // Fixed value
         dto.setSemester(resource.getSemester());
+        dto.setTerms(resource.getTerms() != null ? resource.getTerms().getCode() : null);
         dto.setDiffMultiCompetences(resource.getDiffMultiCompetences());
 
         // Department (via main teacher's institution)
