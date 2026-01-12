@@ -173,9 +173,8 @@ public class ResourceGetterService {
             keywords.addAll(keyWordsList);
 
 
-            Terms terms = resource.getTerms();
             modalities.clear();
-            modalities.add(terms.getCode());
+            modalities.addAll(resourceSheetDTO.getModalities());
 
             HoursDTO hoursDTOTeacherInternship = resourceSheetDTO.getHoursTeacherAlternance();
 
