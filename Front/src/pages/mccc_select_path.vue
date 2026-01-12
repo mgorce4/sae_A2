@@ -63,6 +63,5 @@ const navigateToDashboard = () => {
   padding-bottom: 0.5vw;
   font-weight: lighter;
   font-size: 2.1vw;
-  margin: 0;
 }
 </style>

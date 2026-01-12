@@ -938,7 +938,6 @@ onMounted(async () => {
 }
 
 .panel p {
-  margin-top: 0;
   padding-top: 1vw;
 }
 
@@ -1001,7 +1000,6 @@ onMounted(async () => {
 .title{
   text-align: center;
   padding-top: 1vw;
-  margin: 0;
   font-weight: lighter;
   font-size: 2.5vw;
 }
@@ -1045,7 +1043,7 @@ onMounted(async () => {
   overflow-wrap: break-word;
   white-space: normal;
   max-width: 50%;
-  margin: 0 auto;
+  margin: auto;
 }
 
 .header_Form > p:nth-child(4),
@@ -1084,12 +1082,6 @@ onMounted(async () => {
   display: inline-block;
   width: 50px;
   height: 26px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
 }
 
 .slider {
@@ -1324,8 +1316,6 @@ input:checked + .slider::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  padding: 0;
 }
 
 .btn-remove-keyword:hover {
@@ -1399,8 +1389,6 @@ input:checked + .slider::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  padding: 0;
 }
 
 .btn-remove-modality:hover {
@@ -1432,10 +1420,10 @@ input:checked + .slider::before {
   grid-template-columns: repeat(4, 1fr);
   gap: 1.2vw;
   margin: 1vw 0;
-  padding: 0 2vw; /* Espaces à gauche et à droite */
+  padding: 0 2vw;
   box-sizing: border-box;
   overflow: visible;
-  align-items: start; /* Permet à chaque section de garder sa propre hauteur */
+  align-items: start;
 }
 
 .pedagogical-section {
@@ -1444,7 +1432,6 @@ input:checked + .slider::before {
   padding: 1.5vw;
   display: flex;
   flex-direction: column;
-  height: auto; /* Hauteur automatique basée sur le contenu */
   max-width: 100%;
   box-sizing: border-box;
   overflow: hidden;
@@ -1472,10 +1459,10 @@ input:checked + .slider::before {
 }
 
 .pedagogical-items-container {
-  flex: 0 1 auto; /* Ne pas forcer l'expansion, s'adapter au contenu */
-  overflow-y: visible; /* Permettre au contenu de déborder naturellement */
+  flex: 0 1 auto;
+  overflow-y: visible;
   margin-bottom: 1vw;
-  min-height: 5vw; /* Hauteur minimale pour les sections vides */
+  min-height: 5vw;
 }
 
 .pedagogical-item {
@@ -1505,7 +1492,7 @@ input:checked + .slider::before {
   cursor: grabbing;
 }
 
-/* Style visuel pendant le drag */
+
 .pedagogical-item.dragging {
   opacity: 0.5;
   transform: scale(0.95);
@@ -1530,7 +1517,6 @@ input:checked + .slider::before {
   justify-content: center;
   font-weight: bold;
   font-size: 0.9vw;
-  flex-shrink: 0;
 }
 
 .pedagogical-input {
@@ -1547,10 +1533,10 @@ input:checked + .slider::before {
   min-height: 1.5vw;
   line-height: 1.4;
   width: 100%;
-  word-wrap: break-word; /* Retour à la ligne pour les mots longs */
-  word-break: break-word; /* Force le retour à la ligne même pour les mots très longs */
-  overflow-wrap: break-word; /* Compatibilité moderne */
-  white-space: pre-wrap; /* Préserve les espaces et permet le retour à la ligne */
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .pedagogical-input::placeholder {
@@ -1577,8 +1563,6 @@ input:checked + .slider::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  padding: 0;
 }
 
 .btn-remove-pedagogical:hover {
@@ -1672,7 +1656,6 @@ input:checked + .slider::before {
   font-weight: bold;
   text-align: center;
   width: 100%;
-  padding: 0;
   outline: none;
 }
 
@@ -1685,7 +1668,6 @@ input:checked + .slider::before {
 .hours_display::-webkit-inner-spin-button,
 .hours_display::-webkit-outer-spin-button {
   -webkit-appearance: none;
-  margin: 0;
 }
 
 .hours_display[type="number"] {
@@ -1705,7 +1687,6 @@ input:checked + .slider::before {
 .hours_total_text {
   font-size: 1.1vw;
   color: var(--main-theme-secondary-color);
-  margin: 0;
   white-space: nowrap;
 }
 
@@ -1748,16 +1729,3 @@ input:checked + .slider::before {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 </style>
-
-
-
-
-
-
-
-
-
-
-
-
-

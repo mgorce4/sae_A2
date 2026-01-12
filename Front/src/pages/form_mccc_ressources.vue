@@ -472,7 +472,6 @@ function getResourcesForSemester() {
 }
 
 .panel_resource > p {
-  margin-top: 0;
   padding-top: 1vw;
 }
 
