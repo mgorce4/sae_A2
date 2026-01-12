@@ -1,16 +1,16 @@
 :root {
-    --main-theme-background-color: #3D4375;
-    --main-theme-secondary-background-color: #2C3158FF;
-    --sub-scrollbar-color: #181A32FF;
-    --main-theme-terciary-color: #000000FF;
-    --main-theme-secondary-color: #fff;
-    --sub-div-background-color: #8b8ea7;
-    --header-footer-color: #B51621;
-    --clickable-background-color: #202020FF;
-    --header-color: #4B575F;
-    --div-rect-background-color: #757575FF;
-    --error-color: #ff6b6b;
-    --sub-section-background-color: #2C2C3B;
+  --main-theme-background-color:#3D4375;
+  --main-theme-secondary-background-color:#2C3158FF;
+  --sub-scrollbar-color:#181A32FF;
+  --main-theme-tertiary-color:#000000FF;
+  --main-theme-secondary-color: #ffffff;
+  --sub-div-background-color:#8b8ea7;
+  --header-footer-color:#B51621;
+  --clickable-background-color:#202020FF;
+  --header-color:#4B575F;
+  --div-rect-background-color:#757575FF;
+  --error-color:#ff6b6b;
+  --sub-section-background-color:#2C2C3B;
 
 }
 
@@ -44,8 +44,6 @@ main {
     align-items: center;
     height: 100%;
     width: 100%;
-    margin: 0;
-    padding: 0;
     gap: 5px;
 }
 
@@ -71,7 +69,6 @@ main {
     height: fit-content;
     border-radius: 1vw;
     border-width: 0.2vw;
-    margin: 0 0;
     padding: 0.4vw 0;
     cursor: pointer;
     font-size: 1vw;
@@ -83,7 +80,7 @@ main {
 
 .btn1:active {
     background-color: var(--sub-div-background-color);
-    color: var(--main-theme-terciary-color);
+    color: var(--main-theme-tertiary-color);
 }
 
 .return_arrow {
@@ -94,7 +91,7 @@ main {
 .return_arrow>p {
     font-size: 1.5vw;
     font-weight: bold;
-    color: var(--main-theme-terciary-color);
+    color: var(--main-theme-tertiary-color);
     margin-left: 1.5vw;
     cursor: pointer;
 }
@@ -103,7 +100,7 @@ main {
     font-size: 2vw;
     border: none;
     background-color: var(--main-theme-secondary-color);
-    color: var(--main-theme-terciary-color);
+    color: var(--main-theme-tertiary-color);
     font-weight: bold;
     cursor: pointer;
 }
@@ -157,7 +154,6 @@ main {
     padding-bottom: 0.5vw;
     font-weight: lighter;
     font-size: 2.1vw;
-    margin: 0;
 }
 
 .dark_bar {
@@ -173,7 +169,7 @@ main {
 }
 
 .dark_bar>p {
-    margin: 0vw;
+    margin: 0;
     font-weight: lighter;
     font-size: 1.05vw;
 }
@@ -191,7 +187,6 @@ main {
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
     transition: all 0.3s ease;
 }
 

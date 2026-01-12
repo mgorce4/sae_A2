@@ -34,8 +34,6 @@
 #header_div {
     width: 100%;
     height: 8vw;
-    margin: 0;
-    padding: 0;
 }
 
 #header_top {
@@ -84,7 +82,6 @@
     border-radius: 3vw;
     height: 60%;
     width: calc(height);
-    margin: 0;
 }
 
 #red_rect {
@@ -97,8 +94,7 @@
 #user_status {
     font-size: 1.5vw;
     color: var(--main-theme-secondary-color);
-    text-shadow: 0 0 5px var(--main-theme-terciary-color);
-    padding-top: 0;
+    text-shadow: 0 0 5px var(--main-theme-tertiary-color);
     justify-content: center;
 }
 

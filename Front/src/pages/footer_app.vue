@@ -21,18 +21,18 @@
     height: 3.5vw;
     padding: 0 3%;
     background-color: var(--header-footer-color);
-    margin: 0;
+
 }
 
 #establishment_name {
     color: var(--main-theme-secondary-color);
-    text-shadow: 0 0 5px var(--main-theme-terciary-color);
+    text-shadow: 0 0 5px var(--main-theme-tertiary-color);
     font-size: 1.5vw;
 }
 
 #edit_year {
     font-size: 1.5vw;
     color: var(--main-theme-secondary-color);
-    text-shadow: 0 0 5px var(--main-theme-terciary-color);
+    text-shadow: 0 0 5px var(--main-theme-tertiary-color);
 }
 </style>

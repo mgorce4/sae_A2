@@ -77,7 +77,6 @@
 #div_sheets{
     display: flex;
     flex-wrap: wrap;
-    padding: 0;
 }
 
 #sheets{
