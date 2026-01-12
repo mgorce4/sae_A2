@@ -28,6 +28,7 @@ const access_right_teacher = 1
 * we use an index to see if the list is to be shown or not
 */
 const show_teacher_list = ref([false])
+const show_teacher = ref(false)
 
 /* constant for the form */
 
@@ -140,6 +141,8 @@ onMounted(async () => {
 
     display_more_area.value = false
 
+    /* display errors messages if the UEs or teachers are already */
+
     let ues = document.querySelectorAll('#ue_select')
     let coefs = document.querySelectorAll('#coefficient')
 
@@ -162,13 +165,17 @@ onMounted(async () => {
 
     if (teachers.length > 0) {
       let teacher_names = []
+
+      teacher_names.push(document.getElementById('main_teacher').value)
+
       teachers.forEach((teacher) => {
         teacher_names.push(teacher.value)
       })
 
-      for (let i = 0; i < teachers.length; i++) {
-        for (let j = 0; j < teachers.length; j++) {
-          if (i != j && teachers[i].value === teachers[j].value) {
+      for (let i = 0; i < teacher_names.length; i++) {
+        for (let j = 0; j < teacher_names.length; j++) {
+          console.log(teacher_names[i], teacher_names[j],teacher_names[i].value === teacher_names[j].value)
+          if (i !== j && teacher_names[i].value === teacher_names[j].value) {
             document.getElementById("error_teacher").innerHTML = "Un professeur ne peut pas être sélectionné plusieurs fois pour la même ressource."
           }
         }
@@ -248,6 +255,31 @@ onMounted(async () => {
     addTeacherEvents(div, index)
   })
 
+  /* main teacher input */
+
+  const main_teacher_input = document.getElementById('main_teacher')
+  const list = document.querySelector('.show_teacher')
+
+  main_teacher_input.addEventListener('focus', () => {
+    show_teacher.value = true
+  })
+
+  main_teacher_input.addEventListener('blur', () => {
+    show_teacher.value = false
+  })
+
+  list.addEventListener('mouseover', (event) => {
+    if (event.target.classList && event.target.classList.contains('teacher_name')) {
+      main_teacher_input.value = event.target.innerText
+    }
+  })
+
+  list.addEventListener('click', (event) => {
+    if (event.target.classList && event.target.classList.contains('teacher_name')) {
+      main_teacher_input.value = event.target.innerText
+      show_teacher.value = false
+    }
+  })
 })
 
 function getUEsByInstitution() {
@@ -436,6 +468,25 @@ function getCoefFromResource(resource) {
                 </div>
 
                 <div style="margin-top: 5px">
+
+                  <div class="component" style="justify-content: center; flex-direction: column">
+                    <label>Professeur principal de la ressource : </label>
+
+                    <div>
+                      <input type="text" class="input" id="main_teacher" required />
+
+                      <div class="show_teacher" v-show="show_teacher">
+                        <div v-if="access_rights.length > 0">
+                          <div class="teacher_name" v-for="acr in access_rights" :key="acr">
+                            {{acr.user.firstname}} {{acr.user.lastname}}
+                          </div>
+                        </div>
+                        <p v-else >Aucun professeur ne peut être sélectionné</p>
+                      </div>
+                    </div>
+
+                  </div>
+
                   <div class="component" style="justify-content: center">
                     <label for="teacher">Professeur(s) associé(s) : </label>
                     <button class="button_more" id="button_teacher_plus">+</button>
