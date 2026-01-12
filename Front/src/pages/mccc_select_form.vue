@@ -4,6 +4,8 @@ import axios from 'axios'
 
 const afficherBoutons = ref([
     [false, false],
+    [false, false],
+    [false, false]
 ])
 
 const saeTable = ref([])
@@ -54,12 +56,12 @@ const goToRessourceSheet = (url, semester) => {
         </div>
 
     <div v-for="(year, index) in afficherBoutons" v-bind:key="index" class="blue_rect">
-      <p class="semester_display">Année {{ index + 1 }} :</p>
+      <p class="semester_display">Année {{ index+1 }} :</p>
 
             <div class="container-fluid spe" style="align-items: normal;">
                 <div class="semester_rect" v-for="(btn, index2) in year" v-bind:key="index2" v-on:mouseover="afficherBoutons[index][index2] = true" v-on:mouseout="afficherBoutons[index][index2] = false">
-                    <p class="semester_display">Semestre {{ 2 * index + index2 + 1 }}</p>
-                    <p class="status_display" v-show="!btn">{{ getStatusForSemester(2 * index + index2 + 1) }}</p>
+                    <p class="semester_display">Semestre {{ 2*index+index2+1 }}</p>
+                    <p class="status_display" v-show="!btn">{{ getStatusForSemester(2*index+index2+1) }}</p>
                     <div v-show="btn" class="container-fluid spe">
                         <button v-show="btn" class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-UE', (2*index+index2+1))">UE</button>
                         <button v-show="hasResourceInSemester(2*index+index2+1) || hasUEInSemester(2*index+index2+1)" class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-ressources', (2*index+index2+1))">Ressource</button>
@@ -69,9 +71,7 @@ const goToRessourceSheet = (url, semester) => {
             </div>
 
         </div>
-      </div>
     </div>
-  </div>
 </template>
 
 <style>

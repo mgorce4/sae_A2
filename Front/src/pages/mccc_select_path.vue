@@ -357,7 +357,7 @@ input[type="number"] {
 .btn_path{
   cursor: pointer;
   background-color: var(--clickable-background-color)/*#242222*/;
-  border-color: var(--main-theme-terciary-color);
+  border-color: var(--main-theme-tertiary-color);
   height: 2vw;
   color: white;
   font-size: 0.8vw;
@@ -371,7 +371,7 @@ input[type="number"] {
 .btn_modify{
   cursor: pointer;
   background-color: var(--clickable-background-color)/*#242222*/;
-  border-color: var(--main-theme-terciary-color);
+  border-color: var(--main-theme-tertiary-color);
   height: 3vw;
   color: white;
   font-size: 0.8vw;
