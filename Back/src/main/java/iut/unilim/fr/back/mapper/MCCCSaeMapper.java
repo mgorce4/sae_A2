@@ -40,6 +40,11 @@ public class MCCCSaeMapper {
         // Semester (directly from SAE entity)
         dto.setSemester(sae.getSemester());
 
+        // Terms code
+        if (sae.getTerms() != null) {
+            dto.setTermsCode(sae.getTerms().getCode());
+        }
+
         // Hours from SAEHours table
         dto.setHours(getHours(sae.getIdSAE()));
 

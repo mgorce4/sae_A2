@@ -11,6 +11,7 @@ public class MCCCUEDTO {
     private Integer competenceLevel;   // Competence level
     private Integer semester;          // Semester
     private Long institutionId;        // Institution ID
+    private String termsCode;          // Terms code (e.g., "NGCC")
 
     // Path information
     private Integer pathNumber;
@@ -96,6 +97,14 @@ public class MCCCUEDTO {
 
     public void setPathName(String pathName) {
         this.pathName = pathName;
+    }
+
+    public String getTermsCode() {
+        return termsCode;
+    }
+
+    public void setTermsCode(String termsCode) {
+        this.termsCode = termsCode;
     }
 
     public List<ResourceCoefficientDTO> getResourceCoefficients() {

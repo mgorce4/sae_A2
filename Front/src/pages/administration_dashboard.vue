@@ -2,7 +2,6 @@
 /* import */
 import { ref } from 'vue'
 import { status, institutionLocation } from '../main'
-import { DatePicker } from 'v-calendar'
 import { onMounted } from 'vue'
 import axios from 'axios'
 
@@ -11,8 +10,7 @@ import axios from 'axios'
 status.value = 'Administration'
 institutionLocation.value = localStorage.institutionLocation
 
-/* get the date of the day*/
-const date = new Date()
+
 
 const list_semesters = [1, 2, 3, 4, 5, 6]
 
@@ -22,6 +20,9 @@ let selected_semester_sheets = ref(list_semesters[0])
 /* link with the API */
 
 const resource_sheets = ref([])
+const firstDeliveryDate = ref('')
+const secondDeliveryDate = ref('')
+const deliveryDatesId = ref(null)
 
 onMounted(async () => {
     try {
@@ -31,11 +32,48 @@ onMounted(async () => {
         console.error('Error loading resource sheets:', error)
         resource_sheets.value = []
     }
+
+    // Load delivery dates
+    try {
+        const datesResponse = await axios.get('http://localhost:8080/api/final-delivery-dates')
+        if (datesResponse.data && datesResponse.data.length > 0) {
+            // Get the first (or most recent) delivery dates entry
+            const dates = datesResponse.data[0]
+            deliveryDatesId.value = dates.idFinalDelivery
+            firstDeliveryDate.value = dates.firstDelivery || ''
+            secondDeliveryDate.value = dates.secondDelivery || ''
+        }
+    } catch (error) {
+        console.error('Error loading delivery dates:', error)
+    }
 })
 
 function getResourcesForSemester(semester) {
   return resource_sheets.value.filter((sheet) => sheet.semester === semester)
                               .filter((sheet) => sheet.institutionId == localStorage.idInstitution)
+}
+
+async function saveDeliveryDates() {
+  try {
+    const deliveryDatesData = {
+      firstDelivery: firstDeliveryDate.value,
+      secondDelivery: secondDeliveryDate.value
+    }
+
+    if (deliveryDatesId.value) {
+      // Update existing dates
+      await axios.put(`http://localhost:8080/api/final-delivery-dates/${deliveryDatesId.value}`, deliveryDatesData)
+    } else {
+      // Create new dates entry
+      const response = await axios.post('http://localhost:8080/api/final-delivery-dates', deliveryDatesData)
+      deliveryDatesId.value = response.data.idFinalDelivery
+    }
+
+    alert('Dates de rendu sauvegardées avec succès !')
+  } catch (error) {
+    console.error('Error saving delivery dates:', error)
+    alert('Erreur lors de la sauvegarde des dates')
+  }
 }
 
 </script>
@@ -47,12 +85,19 @@ function getResourcesForSemester(semester) {
         <!-- link into MCCC page -->
         <button type="button" id="MCCC_button" onclick="document.location.href='#/mccc-select-path'">MCCC</button>
       </div>
-
-      <div id="calender_div">
-        <!-- for the calender -->
-
-        <DatePicker id="calendar" v-model="date"></DatePicker>
+      <div id="date_selector_div">
+        <p id="title_font">Dates de rendu des fiches ressources</p>
+        <div id="inline">
+          <p>Date de rendu du 1er semestre</p>
+          <input type="date" v-model="firstDeliveryDate" name="first-delivery" :min="new Date().toISOString().split('T')[0]" />
+        </div>
+        <div id="inline">
+          <p>Date de rendu du 2ème semestre</p>
+          <input type="date" v-model="secondDeliveryDate" name="second-delivery" :min="new Date().toISOString().split('T')[0]" />
+        </div>
+        <button class="btn1" @click="saveDeliveryDates">Valider</button>
       </div>
+
     </div>
 
     <div id="return_sheets_div">
@@ -95,6 +140,10 @@ function getResourcesForSemester(semester) {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+#title_font{
+  font-size: 1.5vw;
 }
 
 #main_div {
@@ -145,9 +194,9 @@ function getResourcesForSemester(semester) {
   cursor: pointer;
 }
 
-/* -- calender -- */
+/* -- calendar -- */
 
-#calender_div {
+#date_selector_div {
   background-color: var(--main-theme-background-color);
   color: var(--main-theme-secondary-color);
   width: 100%;
@@ -155,12 +204,40 @@ function getResourcesForSemester(semester) {
   flex-direction: column;
   align-items: center;
   padding-bottom: 1vw;
+  text-align: center;
 }
 
-#calendar {
-  margin-top: 1vw;
-  display: flex;
+#inline{
+  display: inline-flex;
+  gap: 1vw;
+  align-items: center;
+  margin-bottom: 1vw;
   justify-content: center;
+}
+
+#inline p {
+  text-align: center;
+}
+
+input[type="date"] {
+  border-radius: 15px;
+  background-color: var(--div-rect-background-color);
+  color: var(--main-theme-secondary-color);
+  border: none;
+  padding: 0.5vw 1vw;
+  font-size: 1vw;
+  min-height: 2em;
+  box-sizing: border-box;
+}
+
+input[type="date"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
 }
 
 /* -- return sheets div -- */

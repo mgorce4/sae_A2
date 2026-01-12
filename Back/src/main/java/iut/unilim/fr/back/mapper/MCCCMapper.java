@@ -45,6 +45,11 @@ public class MCCCMapper {
         dto.setApogeeCode(resource.getApogeeCode());
         dto.setSemester(resource.getSemester());
 
+        // Terms code
+        if (resource.getTerms() != null) {
+            dto.setTermsCode(resource.getTerms().getCode());
+        }
+
         // Institution ID from main teacher
         dto.setInstitutionId(getInstitutionId(resource.getIdResource()));
 

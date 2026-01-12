@@ -49,6 +49,7 @@ CREATE TABLE UE(
     competenceLevel INT NOT NULL,
     semester INT NOT NULL,
     id_Path INT REFERENCES PATH(id_Path)
+    id_terms INT REFERENCES TERMS(id_Terms
 );
 
 CREATE TABLE TERMS(

@@ -9,6 +9,7 @@ public class MCCCSaeDTO {
     private String apogeeCode;         // e.g., "SAE101"
     private Integer semester;
     private Long institutionId;        // Institution ID
+    private String termsCode;          // Terms code (e.g., "NGCC")
 
     // Hours
     private Integer hours;
@@ -61,6 +62,14 @@ public class MCCCSaeDTO {
 
     public void setInstitutionId(Long institutionId) {
         this.institutionId = institutionId;
+    }
+
+    public String getTermsCode() {
+        return termsCode;
+    }
+
+    public void setTermsCode(String termsCode) {
+        this.termsCode = termsCode;
     }
 
     public Integer getHours() {
