@@ -195,26 +195,26 @@
 
         <form v-show="display_more_area" method="post" v-on:submit.prevent="">
           <a class="accordion_UE" id="dark_bar">Ajout d'un parcours :</a>
-          <div class="panel_UE">
-             <div>
-              <label>Nom du parcours : <span class="required">* </span></label>
+          <div class="panel_UE" style="padding-top: 0.6vw; flex-wrap: wrap;">
+            <div style="margin-right: 0.5vw;">
+              <label>Nom du parcours : <span class="required">*</span></label>
               <input type="text" class="input" v-model="coursName"/>
               <span v-if="errors.coursName" class="error-message">Merci de remplir ce champ</span>
             </div>
-            <div>
-              <label>Nombre associé au parcours : <span class="required">* </span></label>
+            <div style="margin-right: 0.5vw;">
+              <label>Nombre associé au parcours : <span class="required">*</span></label>
               <input type="number" step="1" class="input" v-model="coursNb" @keydown="preventInvalidChars" />
               <span v-if="errors.coursNb" class="error-message">Merci de remplir ce champ</span>
             </div>
-            <div>
-              <input id="btn_cancel_UE" class="btn1" type="reset" value="Annuler">
-              <input id="btn_save_UE" class="btn1" type="submit" value="Sauvegarder" @click="save">
+            <div style="display: flex; margin : 0.5vw 1vw; justify-content: center; width: 100%;"> 
+              <input class="btn1" type="button" value="Annuler" @click="display_more_area = false" style="margin-right: 1vw;">
+              <input class="btn1" type="submit" value="Sauvegarder" @click="save">
             </div>
           </div>
         </form>
         
         <div v-for="cours in getCourses" :key="cours.idPath">
-          <div class="path" v-on:mouseover="cours.show = true" v-on:mouseout="cours.show = false" @click="goToRessourceSheet('#/mccc-select-form', cours.number)">
+          <div class="path" v-on:mouseover="cours.show = true" v-on:mouseout="cours.show = false" @click="goToRessourceSheet('#/mccc-select-form', cours.idPath)">
             <p>{{ cours.name }}</p>
             <div v-show="cours.show" @click.stop>
               <button v-if="!click" @click="click = !click" class="btn_modify">Modifier</button>
