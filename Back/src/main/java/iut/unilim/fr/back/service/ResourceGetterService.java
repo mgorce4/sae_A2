@@ -150,7 +150,9 @@ public class ResourceGetterService {
 
             List<SkillDTO> npSkill = resourceSheetDTO.getSkills();
 
-            skills.clear();
+            if (!npSkill.isEmpty()) {
+                skills.clear();
+            }
             if (npSkill.size() > multi_skill_limit) {
                 for (SkillDTO programSkill : npSkill) {
                     skills.add(programSkill.getDescription());
@@ -162,20 +164,27 @@ public class ResourceGetterService {
             profRef = resourceSheetDTO.getMainTeacher();
             labelResource = resource.getLabel() + ": " + resource.getName();
 
-            saes.clear();
-            for (SaeInfoDTO saeLinkResource : SAELinkResources) {
-                if (saeLinkResource.getIsLinked()) {
-                    saes.add(saeLinkResource.getLabel());
+            if (!saes.isEmpty()) {
+                saes.clear();
+                for (SaeInfoDTO saeLinkResource : SAELinkResources) {
+                    if (saeLinkResource.getIsLinked()) {
+                        saes.add(saeLinkResource.getLabel());
+                    }
                 }
             }
 
             List<String> keyWordsList = resourceSheetDTO.getKeywords();
-            keywords.clear();
+            if (!keyWordsList.isEmpty()) {
+                keywords.clear();
+            }
             keywords.addAll(keyWordsList);
 
 
-            modalities.clear();
-            modalities.addAll(resourceSheetDTO.getModalities());
+            List<String> modalitiesDTO = resourceSheetDTO.getModalities();
+            if (!modalitiesDTO.isEmpty()) {
+                modalities.clear();
+            }
+            modalities.addAll(modalitiesDTO);
 
             HoursDTO hoursDTOTeacherInternship = resourceSheetDTO.getHoursTeacherAlternance();
 
