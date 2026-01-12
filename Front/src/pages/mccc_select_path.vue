@@ -116,6 +116,13 @@
       return
     }
 
+    // Vérifier que l'institution est définie
+    if (!localStorage.idInstitution) {
+      console.error('Institution non définie. Veuillez vous reconnecter.');
+      alert('Erreur : Institution non définie. Veuillez vous reconnecter.');
+      return;
+    }
+
     try{      
       const response =  {
         name: coursName.value,
@@ -124,10 +131,13 @@
           idInstitution: parseInt(localStorage.idInstitution)
         }
       }
-      console.log('sending UE data:', response);
+      console.log('Envoi des données du parcours:', response);
 
-      await axios.post ('http://localhost:8080/api/paths', response);
-      [coursName, coursNb].forEach(refVar => refVar.value = '');
+      await axios.post('http://localhost:8080/api/paths', response);
+      
+      // Réinitialiser les champs
+      coursName.value = '';
+      coursNb.value = '';
       display_more_area.value = false;
 
       // Recharger et filtrer les paths par institution
@@ -141,8 +151,12 @@
           show: false
         }));
       attachAccordionListeners();
+      
+      console.log('Parcours sauvegardé avec succès');
     }catch(error){
-      console.error('Erreur de sauvegarde', error);
+      console.error('Erreur de sauvegarde:', error);
+      console.error('Détails:', error.response?.data);
+      alert('Erreur lors de la sauvegarde : ' + (error.response?.data?.message || error.message));
     }
   }
 
@@ -172,6 +186,29 @@
         }));
     } catch (error) {
       console.error('Erreur lors de la modification:', error);
+    }
+  }
+
+  const del = async (id) =>{
+    if (!confirm('Cette action est irréversible (pour le moment), continuer à vos risques et périls.')) {
+      return;
+    }
+    try{
+      await axios.delete(`http://localhost:8080/api/paths/${id}`);
+      
+      // Recharger la liste après suppression
+      const allPaths = await axios.get(`http://localhost:8080/api/paths`);
+      coursList.value = allPaths.data
+        .filter(path => 
+          path.institution && path.institution.idInstitution === parseInt(localStorage.idInstitution)
+        )
+        .map(path => ({
+          ...path,
+          show: false
+        }));
+    }
+    catch (error){
+      console.error('Erreur lors de la suppression', error);
     }
   }
 
@@ -218,6 +255,7 @@
             <p>{{ cours.name }}</p>
             <div v-show="cours.show" @click.stop>
               <button v-if="!click" @click="click = !click" class="btn_modify">Modifier</button>
+              <button v-if="!click" class="btn_modify" @click="del(cours.idPath)">Supprimer</button>
               <div v-if="click" >
                 <div>
                   <label>Nom du parcours : <span class="required">* </span></label>

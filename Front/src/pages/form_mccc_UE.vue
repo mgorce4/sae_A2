@@ -12,13 +12,15 @@
     const apogee_code = ref('')
     const name_comp = ref('')
     const comp_level = ref('')
+    const terms = ref('')
 
     // Error states for validation
     const errors = ref({
         nb_UE: false,
         apogee_code: false,
         name_comp: false,
-        comp_level: false
+        comp_level: false,
+        terms: false
     })
 
     const ueList = ref([])
@@ -97,10 +99,10 @@
             nb_UE: false,
             apogee_code: false,
             name_comp: false,
-            comp_level: false
+            comp_level: false,
+            terms: false
         }
 
-        // Validation des champs
         let hasErrors = false
 
         if (!nb_UE.value || String(nb_UE.value).trim() === '') {
@@ -123,39 +125,58 @@
             hasErrors = true
         }
 
-        // Si des champs sont manquants, ne pas continuer
         if (hasErrors) {
             return
         }
 
-        // Validation du niveau de compétence (doit être un nombre)
         const competenceLevelNum = parseInt(comp_level.value)
         if (isNaN(competenceLevelNum)) {
             errors.value.comp_level = true
             return
         }
 
+        if (!terms.value || String(terms.value).trim() === '') {
+            errors.value.terms = true
+            hasErrors = true
+        }
+
         try{
             const semester = parseInt(getQueryParam('id'));
 
+            // Vérifier que l'utilisateur est connecté
+            if (!localStorage.idUser) {
+                alert('Erreur : Veuillez vous reconnecter.');
+                return;
+            }
+
             const payload = {
                 euApogeeCode: apogee_code.value,
-                label: `UE${semester}.${nb_UE.value}`,  // label généré automatiquement : UE{semester}.{UENumber}
-                name: name_comp.value,                   // name = intitulé de la compétence
+                label: `UE${semester}.${nb_UE.value}`,
+                name: name_comp.value,
                 competenceLevel: competenceLevelNum,
                 semester: semester,
-                userId: parseInt(localStorage.idUser)
+                userId: parseInt(localStorage.idUser),
+                termsCode: terms.value
             };
+            
+            console.log('Envoi du payload:', payload);
             await axios.post('http://localhost:8080/api/ues', payload);
 
-            [nb_UE, apogee_code, name_comp, comp_level].forEach(f => f.value = '');
+            [nb_UE, apogee_code, name_comp, comp_level, terms].forEach(f => f.value = '');
             display_more_area.value = false;
 
             await axios.get(`http://localhost:8080/api/v2/mccc/ues/institution/${localStorage.idInstitution}`).then(response => (ueList.value = response.data));
             attachAccordionListeners();
+            
+            console.log('UE sauvegardée avec succès');
         }
         catch (error){
-            console.error(' Erreur lors de la sauvegarde:', error);
+            console.error('Erreur lors de la sauvegarde:', error);
+            if (error.response) {
+                console.error('Détails de l\'erreur:', error.response.data);
+                console.error('Status:', error.response.status);
+            }
+            alert('Erreur lors de la sauvegarde. Consultez la console pour plus de détails.');
         }
     }
 
@@ -214,6 +235,11 @@
                                 <label>Niveau de la compétence : <span class="required">*</span></label>
                                 <input type="number" step="1" class="input" v-model="comp_level" @keydown="preventInvalidChars" />
                                 <span v-if="errors.comp_level" class="error-message">Merci de remplir ce champ</span>
+                            </div>
+                            <div>
+                                <label>Modalité : <span class="required">*</span></label>
+                                <input type="text" class="input" v-model="terms"/>
+                                <span v-if="errors.terms" class="error-message">Merci de remplir ce champ</span>
                             </div>
                         </div>
 

@@ -45,8 +45,10 @@ public class UEController {
     }
 
     @PostMapping
-    public ResponseEntity<UE> createUE(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<?> createUE(@RequestBody Map<String, Object> payload) {
         try {
+            System.out.println("Received payload: " + payload);
+            
             // Extract values from payload
             String euApogeeCode = (String) payload.get("euApogeeCode");
 
@@ -64,26 +66,26 @@ public class UEController {
                 ((Number) payload.get("userId")).longValue() : null;
 
             if (userId == null) {
-                System.err.println("❌ userId is null");
-                return ResponseEntity.badRequest().build();
+                System.err.println("userId is null");
+                return ResponseEntity.badRequest().body("userId is required");
             }
 
             // Retrieve user and their institution
             Optional<UserSyncadia> userOpt = userSyncadiaService.getUserById(userId);
             if (userOpt.isEmpty()) {
-                System.err.println("❌ User not found with id: " + userId);
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                System.err.println("User not found with id: " + userId);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User not found with id: " + userId);
             }
 
             if (userOpt.get().getInstitution() == null) {
-                System.err.println("❌ User has no institution: " + userId);
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                System.err.println("User has no institution: " + userId);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User has no institution");
             }
 
             UserSyncadia user = userOpt.get();
             Long institutionId = user.getInstitution().getIdInstitution();
 
-            System.out.println("✅ Creating UE for institution: " + institutionId);
+            System.out.println("Creating UE for institution: " + institutionId);
 
             // Find or create a path for this institution
             Path path = pathRepository.findAll().stream()
@@ -91,7 +93,7 @@ public class UEController {
                             p.getInstitution().getIdInstitution().equals(institutionId))
                 .findFirst()
                 .orElseGet(() -> {
-                    System.out.println("📝 Creating new path for institution: " + institutionId);
+                    System.out.println("Creating new path for institution: " + institutionId);
                     Path newPath = new Path();
                     newPath.setNumber(1);
                     newPath.setName("Default Path - " + user.getInstitution().getName());
@@ -108,13 +110,15 @@ public class UEController {
             ue.setSemester(semester);
             ue.setPath(path);
 
-            System.out.println("✅ Saving UE: " + label + " - " + name);
+            System.out.println("Saving UE: " + label + " - " + name);
             UE savedUE = ueService.createUE(ue);
+            System.out.println("UE saved successfully with ID: " + savedUE.getUeNumber());
             return ResponseEntity.ok(savedUE);
         } catch (Exception e) {
-            System.err.println("❌ Error creating UE: " + e.getMessage());
+            String errorMessage = "Error creating UE: " + e.getMessage();
+            System.err.println(errorMessage);
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMessage);
         }
     }
 
@@ -129,4 +133,3 @@ public class UEController {
         return ResponseEntity.noContent().build();
     }
 }
-
