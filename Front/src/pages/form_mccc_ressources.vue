@@ -440,12 +440,20 @@ function getPath() {
   return path.value.filter((p) => p.idPath == getQueryParam('pathId'))
 }
 
+const goBack = () => {
+  const pathId = parseInt(getQueryParam('pathId'));
+  if (pathId && !isNaN(pathId)) {
+    window.location.hash = `#/mccc-select-form?pathId=${pathId}`;
+  } else {
+    window.location.hash = '#/mccc-select-form';
+  }
+}
 </script>
 
 <template>
   <div id="ressource">
     <div id="return_arrow">
-      <button id="back_arrow" onclick="document.location.href='#/mccc-select-form'">←</button>
+      <button id="back_arrow"  @click="goBack">←</button>
       <p>Retour</p>
     </div>
 

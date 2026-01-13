@@ -306,13 +306,22 @@
         
         initAddModifyArea()
     }
+
+    const goBack = () => {
+        const pathId = parseInt(getQueryParam('pathId'));
+        if (pathId && !isNaN(pathId)) {
+            window.location.hash = `#/mccc-select-form?pathId=${pathId}`;
+        } else {
+            window.location.hash = '#/mccc-select-form';
+        }
+    }
 </script>
 
 <template>
     <p>{{ filteredUeTableV2 }}</p>
     <div id="form_mccc_sae"> 
         <div class="return_arrow">
-            <button class="back_arrow" onclick="document.location.href='#/mccc-select-form'">←</button>
+            <button class="back_arrow" @click="goBack">←</button>
             <p>Retour</p>
         </div>
         <div class="background_form_mccc">

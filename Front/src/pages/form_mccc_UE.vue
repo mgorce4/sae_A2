@@ -14,6 +14,8 @@
     const comp_level = ref('')
     const terms = ref('')
 
+    const path = ref([])
+
     // Error states for validation
     const errors = ref({
         nb_UE: false,
@@ -83,30 +85,19 @@
         }
     }
 
-    const getUEForSemester = computed(() => { 
-        const semester = parseInt(getQueryParam('id')) 
-        const pathId = parseInt(getQueryParam('pathId')) 
+    function getUESemesterInstitution(){
+        const pathId = parseInt(getQueryParam('pathId'))
         
-        console.log('getUEForSemester - Semester:', semester, 'PathId:', pathId)
-        console.log('getUEForSemester - Total UEs:', ueList.value.length)
-        
-        let filtered = ueList.value
-        
-        // Filtrer par semestre si un semestre est spécifié
-        if (semester && !isNaN(semester)) {
-            filtered = filtered.filter(ue => ue.semester === semester)
-            console.log('Après filtre semester:', filtered.length)
-        }
-        
-        // Filtrer par pathId si un pathId est spécifié
-        if (pathId && !isNaN(pathId)) {
-            filtered = filtered.filter(ue => ue.path && ue.path.pathNumber === pathId)
-            console.log('Après filtre pathId:', filtered.length)
-        }
-        
-        console.log('UEs finales affichées:', filtered)
-        return filtered.sort((a, b) => a.label.localeCompare(b.label)) 
-    })
+        return ueList.value
+            .filter((ue) => ue.semester == getQueryParam('id'))
+            .filter((ue) => ue.institutionId == localStorage.idInstitution)
+            .filter((ue) => {
+                if (pathId && !isNaN(pathId)) {
+                    return ue.path && ue.path.pathNumber === pathId
+                }
+                return true
+            })
+    }
 
     // Watch for changes to reattach accordion listeners
     watch([ueList, display_more_area], () => {
@@ -138,7 +129,6 @@
         isDuplicateUE.value = false
 
         let hasErrors = false
-
         if (!nb_UE.value || String(nb_UE.value).trim() === '') {
             errors.value.nb_UE = true
             hasErrors = true
@@ -347,10 +337,10 @@
                     </div>
                 </form>
                 <div id="form_resources">
-                    <p v-if="getUEForSemester.length > 0">UE créées :</p>
+                    <p v-if="getUESemesterInstitution().length > 0">UE créées :</p>
                     <p v-else>Aucune UE n'a été créée</p>
 
-                    <div v-for="ueACord in getUEForSemester" :key="ueACord.ueNumber">
+                    <div v-for="ueACord in getUESemesterInstitution()" :key="ueACord.ueNumber">
                         <a class="accordion_UE" id="dark_bar">{{ueACord.label}} {{ueACord.name}}</a>
                         <div class="panel_UE">
                             <div id="left">
