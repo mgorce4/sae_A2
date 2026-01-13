@@ -16,7 +16,8 @@ const resource_name = ref('')
 const access_rights = ref([])
 
 const ue_list = ref([{id : 1, ue: '', coefficient: ''}])
-const num_teacher_select = ref(1)
+/* value link with the v-model */
+const teachers_list = ref([{ id: 1, value: '' }])
 
 const access_right_teacher = 1
 
@@ -51,30 +52,50 @@ const total_work_study = ref(0)
 const list_of_lesson = ['CM', 'TD', 'TP']
 
 /* allows to put event on each div selected */
-function addTeacherEvents(div, index) {
+function addTeacherEvents(div) {
 
   /* get the input and the list */
   const input = div.querySelector('.teacher')
   const list = div.querySelector('.show_teacher')
 
+  /* get the index of the div */
+  const get_index = () => Array.from(document.querySelectorAll('.teacher_select_container')).indexOf(div)
+
   input.addEventListener('focus', () => {
-    show_teacher_list.value[index] = true
+    const index = get_index()
+    if (index !== -1) {
+      show_teacher_list.value[index] = true
+    }
   })
 
   input.addEventListener('blur', () => {
+    const index = get_index()
+    if (index !== -1) {
       show_teacher_list.value[index] = false
+    }
   })
 
   list.addEventListener('mouseover', (event) => {
     if (event.target.classList && event.target.classList.contains('teacher_name')) {
       input.value = event.target.innerText
+      // keep the reactive source of truth in sync
+      const index = get_index()
+      if (index !== -1 && teachers_list.value[index]) {
+        teachers_list.value[index].value = event.target.innerText
+      }
     }
   })
 
   list.addEventListener('click', (event) => {
     if (event.target.classList && event.target.classList.contains('teacher_name')) {
       input.value = event.target.innerText
-      show_teacher_list.value[index] = false
+      const index = get_index()
+      if (index !== -1 && teachers_list.value[index]) {
+        teachers_list.value[index].value = event.target.innerText
+      }
+      if (index !== -1) {
+        show_teacher_list.value[index] = false
+      }
     }
   })
 }
@@ -280,29 +301,45 @@ onMounted(async () => {
       }
       ue_list.value.push({ id: id, ue: '', coefficient: '' })
 
-    } else if (event.target.id === 'button_teacher_plus' && access_rights.value.length > num_teacher_select.value) {
-      num_teacher_select.value += 1
+    } else if (event.target.id === 'button_teacher_plus' && access_rights.value.length > teachers_list.value.length) {
+      // add a new teacher entry
+      let id
+      if (teachers_list.value.length > 0) {
+        id = Math.max(...teachers_list.value.map(t => t.id)) + 1
+      } else {
+        id = 1
+      }
+      teachers_list.value.push({ id: id, value: '' })
       show_teacher_list.value.push(false)
 
       nextTick(() => {
         const containers = document.querySelectorAll('.teacher_select_container')
-        /* get the last container added */
+        /* attach events to the last added container */
         const new_container = containers[containers.length - 1]
-        addTeacherEvents(new_container, containers.length - 1)
+        if (new_container) addTeacherEvents(new_container)
       })
-    } else if (event.target.id === 'button_teacher_cross' && num_teacher_select.value > 1) {
-      event.target.parentElement.remove()
-      show_teacher_list.value.pop()
-    }
+
+    } else if (event.target.id === 'button_teacher_cross') {
+      // remove the corresponding teacher entry (but keep at least one)
+      const row = event.target.closest('.teacher_row')
+      if (!row) return
+      const rows = Array.from(document.querySelectorAll('.teacher_row'))
+      const index_to_remove = rows.indexOf(row)
+
+      if (index_to_remove !== -1 && teachers_list.value.length > 1) {
+        teachers_list.value = teachers_list.value.filter((_, i) => i !== index_to_remove)
+        show_teacher_list.value = show_teacher_list.value.filter((_, i) => i !== index_to_remove)
+      }
+     }
   })
 
   /* wait for the update of the DOM */
   await nextTick()
 
   const div_teacher_container = document.querySelectorAll('.teacher_select_container')
-  div_teacher_container.forEach((div, index) => {
+  div_teacher_container.forEach((div) => {
     /* add event to the new div */
-    addTeacherEvents(div, index)
+    addTeacherEvents(div)
   })
 
   /* main teacher input */
@@ -571,11 +608,11 @@ function isTeacherNamesEquals(i, j, teacher_names) {
                     <button class="button_more" id="button_teacher_plus">+</button>
                   </div>
 
-                  <div v-for="n in num_teacher_select" :key="n" class="component" style="justify-content: center">
+                  <div v-for="(teacher, t_index) in teachers_list" :key="teacher.id" class="component teacher_row" style="justify-content: center">
                     <div class="teacher_select_container">
-                      <input type="text" class="input teacher" required />
+                      <input type="text" class="input teacher" required v-model="teacher.value" />
 
-                      <div class="show_teacher" v-show="show_teacher_list[n - 1]">
+                      <div class="show_teacher" v-show="show_teacher_list[t_index]">
                         <div v-if="access_rights.length > 0">
                           <div class="teacher_name" v-for="acr in access_rights" :key="acr">
                             {{acr.user.firstname}} {{acr.user.lastname}}
