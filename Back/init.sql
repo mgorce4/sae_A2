@@ -99,14 +99,14 @@ CREATE TABLE SAE_HOURS(
 
 CREATE TABLE UE_COEFFICIENT_RESOURCE(
     id_Coefficient SERIAL PRIMARY KEY,
-    coefficient INT NOT NULL,
+    coefficient FLOAT NOT NULL,
     UE_Number INT REFERENCES UE(UE_Number),
     id_resource INT REFERENCES RESOURCE(id_Resource)
 );
 
 CREATE TABLE UE_COEFFICIENT_SAE(
     id_Coefficient_SAE SERIAL PRIMARY KEY,
-    coefficient INT NOT NULL,
+    coefficient FLOAT NOT NULL,
     UE_Number INT REFERENCES UE(UE_Number),
     id_SAE INT REFERENCES SAE(id_SAE)
 );

@@ -11,29 +11,28 @@ public class ResourceSheetDTO {
 
     // Resource information
     private Long resourceId;
-    private String resourceName;        // e.g., "Python"
-    private String resourceLabel;       // e.g., "R1.01"
-    private String resourceApogeeCode;  // e.g., "R101"
-    private String qualityReference;    // e.g., "IU EN FOR 001"
+    private String resourceName;
+    private String resourceLabel;
+    private String resourceApogeeCode;
+    private String qualityReference;
     private Integer semester;
-    private String terms;                // Terms/Periods
+    private String terms;
     private Boolean diffMultiCompetences;
 
     // Department
-    private String department;          // e.g., "GEA"
-    private Long institutionId;         // Institution ID
+    private String department;
+    private Long institutionId;
 
     // Main teacher and teachers
-    private String mainTeacher;         // e.g., "Jean Dupont"
-    private List<String> teachers;      // List of teachers
+    private String mainTeacher;
+    private List<String> teachers;
 
     // UE and coefficients
-    private List<UeInfoDTO> ueReferences; // e.g., ["UE2.1", "UE3.2"]
+    private List<UeInfoDTO> ueReferences;
 
     // Objectives and skills
-    private String objective;           // National program objective
-    private List<SkillDTO> skills;      // National program skills
-
+    private String objective;
+    private List<SkillDTO> skills;
     // Linked SAEs
     private List<SaeInfoDTO> linkedSaes;
 

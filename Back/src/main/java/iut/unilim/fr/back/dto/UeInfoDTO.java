@@ -4,13 +4,13 @@ public class UeInfoDTO {
     private Long ueNumber;
     private String label;           // e.g., "UE2.1"
     private String name;            // e.g., "Understanding organizations"
-    private Integer coefficient;    // Resource coefficient in this UE
+    private Double coefficient;    // Resource coefficient in this UE
     private Integer competenceLevel; // Competence level
 
     public UeInfoDTO() {
     }
 
-    public UeInfoDTO(Long ueNumber, String label, String name, Integer coefficient, Integer competenceLevel) {
+    public UeInfoDTO(Long ueNumber, String label, String name, Double coefficient, Integer competenceLevel) {
         this.ueNumber = ueNumber;
         this.label = label;
         this.name = name;
@@ -42,11 +42,11 @@ public class UeInfoDTO {
         this.name = name;
     }
 
-    public Integer getCoefficient() {
+    public Double getCoefficient() {
         return coefficient;
     }
 
-    public void setCoefficient(Integer coefficient) {
+    public void setCoefficient(Double coefficient) {
         this.coefficient = coefficient;
     }
 

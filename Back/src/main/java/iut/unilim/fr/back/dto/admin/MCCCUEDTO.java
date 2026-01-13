@@ -136,12 +136,12 @@ public class MCCCUEDTO {
     public static class ResourceCoefficientDTO {
         private String resourceLabel;  // e.g., "R1.01"
         private String resourceName;   // e.g., "Python"
-        private Integer coefficient;
+        private Double coefficient;
 
         public ResourceCoefficientDTO() {
         }
 
-        public ResourceCoefficientDTO(String resourceLabel, String resourceName, Integer coefficient) {
+        public ResourceCoefficientDTO(String resourceLabel, String resourceName, Double coefficient) {
             this.resourceLabel = resourceLabel;
             this.resourceName = resourceName;
             this.coefficient = coefficient;
@@ -163,11 +163,11 @@ public class MCCCUEDTO {
             this.resourceName = resourceName;
         }
 
-        public Integer getCoefficient() {
+        public Double getCoefficient() {
             return coefficient;
         }
 
-        public void setCoefficient(Integer coefficient) {
+        public void setCoefficient(Double coefficient) {
             this.coefficient = coefficient;
         }
     }
@@ -175,12 +175,12 @@ public class MCCCUEDTO {
     // Inner class for SAE and coefficient
     public static class SaeCoefficientDTO {
         private String saeLabel;       // e.g., "SAE 1.01"
-        private Integer coefficient;
+        private Double coefficient;
 
         public SaeCoefficientDTO() {
         }
 
-        public SaeCoefficientDTO(String saeLabel, Integer coefficient) {
+        public SaeCoefficientDTO(String saeLabel, Double coefficient) {
             this.saeLabel = saeLabel;
             this.coefficient = coefficient;
         }
@@ -193,11 +193,11 @@ public class MCCCUEDTO {
             this.saeLabel = saeLabel;
         }
 
-        public Integer getCoefficient() {
+        public Double getCoefficient() {
             return coefficient;
         }
 
-        public void setCoefficient(Integer coefficient) {
+        public void setCoefficient(Double coefficient) {
             this.coefficient = coefficient;
         }
     }

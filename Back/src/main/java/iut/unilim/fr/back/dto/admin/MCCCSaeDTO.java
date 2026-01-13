@@ -109,12 +109,12 @@ public class MCCCSaeDTO {
     public static class UECoefficientDTO {
         private String ueLabel;        // e.g., "UE2.1"
         private String ueName;         // e.g., "Understanding organizations"
-        private Integer coefficient;
+        private Double coefficient;
 
         public UECoefficientDTO() {
         }
 
-        public UECoefficientDTO(String ueLabel, String ueName, Integer coefficient) {
+        public UECoefficientDTO(String ueLabel, String ueName, Double coefficient) {
             this.ueLabel = ueLabel;
             this.ueName = ueName;
             this.coefficient = coefficient;
@@ -136,11 +136,11 @@ public class MCCCSaeDTO {
             this.ueName = ueName;
         }
 
-        public Integer getCoefficient() {
+        public Double getCoefficient() {
             return coefficient;
         }
 
-        public void setCoefficient(Integer coefficient) {
+        public void setCoefficient(Double coefficient) {
             this.coefficient = coefficient;
         }
     }
