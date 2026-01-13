@@ -46,7 +46,9 @@ public class MCCCSaeMapper {
         }
 
         // Hours from SAEHours table
-        dto.setHours(getHours(sae.getIdSAE()));
+        SAEHoursInfo hoursInfo = getHoursAndAlternance(sae.getIdSAE());
+        dto.setHours(hoursInfo.hours);
+        dto.setHasAlternance(hoursInfo.hasAlternance);
 
         // Institution ID from main teacher of linked resource
         dto.setInstitutionId(getInstitutionId(sae.getIdSAE()));
@@ -62,15 +64,31 @@ public class MCCCSaeMapper {
 
 
     /**
-     * Get hours from SAEHours table
+     * Inner class to hold hours and alternance info
      */
-    private Integer getHours(Long saeId) {
+    private static class SAEHoursInfo {
+        Integer hours;
+        Boolean hasAlternance;
+
+        SAEHoursInfo(Integer hours, Boolean hasAlternance) {
+            this.hours = hours;
+            this.hasAlternance = hasAlternance;
+        }
+    }
+
+    /**
+     * Get hours and alternance from SAEHours table
+     */
+    private SAEHoursInfo getHoursAndAlternance(Long saeId) {
         List<SAEHours> hoursList = saeHoursRepository.findBySae_IdSAE(saeId);
         if (!hoursList.isEmpty()) {
-            SAEHours hours = hoursList.get(0);
-            return hours.getHours() != null ? hours.getHours() : 0;
+            SAEHours saeHours = hoursList.get(0);
+            return new SAEHoursInfo(
+                saeHours.getHours() != null ? saeHours.getHours() : 0,
+                saeHours.getHasAlternance() != null ? saeHours.getHasAlternance() : false
+            );
         }
-        return 0;
+        return new SAEHoursInfo(0, false);
     }
 
     /**

@@ -13,6 +13,7 @@ public class MCCCSaeDTO {
 
     // Hours
     private Integer hours;
+    private Boolean hasAlternance;
 
     // Linked resources
     private List<String> linkedResources;   // Labels of linked resources
@@ -78,6 +79,14 @@ public class MCCCSaeDTO {
 
     public void setHours(Integer hours) {
         this.hours = hours;
+    }
+
+    public Boolean getHasAlternance() {
+        return hasAlternance;
+    }
+
+    public void setHasAlternance(Boolean hasAlternance) {
+        this.hasAlternance = hasAlternance;
     }
 
     public List<String> getLinkedResources() {

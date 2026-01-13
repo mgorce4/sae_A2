@@ -17,6 +17,9 @@ public class SAEHours {
     @JoinColumn(name = "id_SAE")
     private SAE sae;
 
+    @Column(name = "has_alternance", nullable = false)
+    private Boolean hasAlternance;
+
     public SAEHours() {
     }
 
@@ -24,6 +27,7 @@ public class SAEHours {
         this.idSAEHours = idSAEHours;
         this.hours = hours;
         this.sae = sae;
+        this.hasAlternance = false; // default value
     }
 
     public Long getIdSAEHours() {
@@ -48,6 +52,14 @@ public class SAEHours {
 
     public void setSae(SAE sae) {
         this.sae = sae;
+    }
+
+    public Boolean getHasAlternance() {
+        return hasAlternance;
+    }
+
+    public void setHasAlternance(Boolean hasAlternance) {
+        this.hasAlternance = hasAlternance;
     }
 }
 
