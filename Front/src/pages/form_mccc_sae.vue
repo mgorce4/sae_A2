@@ -278,11 +278,19 @@
 
         nextTick(() => {
             // Uncheck the work study checkbox
+            const inputs = document.querySelectorAll('.input_work_study')
             const checkbox = document.querySelector('#work_study_slider input[type="checkbox"]')
             if (checkbox) {
-                checkbox.checked = checkboxStatus.value
+                checkbox.checked = !checkboxStatus.value
             }
-
+            inputs.forEach((input) => {
+                if (checkbox.checked) {
+                    input.disabled = false
+                } else {
+                    input.disabled = true
+                }
+            })
+            
             // Open accordion after rendering
             const accordions = document.querySelectorAll('[data-accordion="add-modify-sae"]')
             accordions.forEach(accordion => {
@@ -330,6 +338,22 @@
         addModifySaeHours.value = sae.hours
         addModifySaeTermCode.value = sae.termsCode
 
+        addModifySaeHoursAlternance.value = sae.hoursAlternance
+        if (addModifySaeHoursAlternance.value > 0) {
+            checkboxStatus.value = true
+        } else {
+            checkboxStatus.value = false
+        }
+
+        for (let i = 0; i < sae.ueCoefficients.length; i++) {
+            ue_list.value[i] = {
+                id: i + 1,
+                ue: sae.ueCoefficients[i].ueLabel,
+                coefficient: sae.ueCoefficients[i].coefficient
+            }
+        }
+        console.log("UE LIST MODIF SAE : ", ue_list.value)
+
         checkboxStatus.value = /*sae.blocReleaseHours >= 1 ||*/ false
 
         display_add_ue.value = false
@@ -348,8 +372,8 @@
 </script>
 
 <template>
-    <p>{{ filteredUeTableV2 }}</p>
-    <div id="form_mccc_sae">
+    <p>{{ filteredSaeTableV2 }}</p>
+    <div id="form_mccc_sae"> 
         <div class="return_arrow">
             <button class="back_arrow" @click="goBack">←</button>
             <p>Retour</p>
@@ -408,7 +432,7 @@
                                 </div>
                                 <div class="container-fluid spb" id="work_study_hours">
                                     <p>Nombre d'heures (alternance) : </p>
-                                    <input type="number" class="input input_work_study" v-model="total_hours" @keydown="preventInvalidChars" disabled/>
+                                    <input type="number" class="input input_work_study" v-model="addModifySaeHoursAlternance" @keydown="preventInvalidChars" disabled/> 
                                 </div>
                                 <p class="error_message" v-show="errors.alternanceHours">Vous devez saisir un nombre d'heures valide, <br>ou désélectionner les heures en alternance</p>
                                 <!--V2: put comparator with the programme national hour and total alternance -->
@@ -455,15 +479,22 @@
                                 <p class="mccc_input">{{ value.hours }}</p>
                             </div>
                             <div class="container-fluid spb">
-                                <label>Nombre d'heures (formation initiale) : </label>
-                                <p class="mccc_input">{{ value.hours }}</p>
+                                <label>Modalité : </label>
+                                <p class="mccc_input">{{ value.termsCode }}</p>
                             </div>
                             <div class="container-fluid spa">
                                 <input id="btn_cancel_UE" class="btn1" type="reset" value="Supprimer">
                                 <input id="btn_save_UE" class="btn1" type="button" value="Modifier" @click="modifySae(value)">
                             </div>
                         </div>
-                        <div  class="right_side">
+                        <div  class="right_side container-fluid cfh spa">
+                            <div id="work_study" style="padding: 1vw;">
+                                    <p style="font-weight: bold;">Alternance</p>
+                                <div class="container-fluid spb" id="work_study_hours">
+                                    <p>Nombre d'heures (alternance) : </p>
+                                    <p class="mccc_input input_work_study">{{ value.hoursAlternance }}</p>
+                                </div>
+                            </div>
                             <table class="ueCoefficient">
                                 <tr>
                                     <td>U.E. affectée(s) : </td>
