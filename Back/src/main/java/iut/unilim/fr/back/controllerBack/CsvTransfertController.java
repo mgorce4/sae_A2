@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static iut.unilim.fr.back.service.ResourceGetterService.*;
@@ -34,7 +35,7 @@ public class CsvTransfertController {
     private ResourceSheetDTOController rsDTOController;
 
     @GetMapping("/generate")
-    public ResponseEntity<ByteArrayResource> generateCsv(@RequestParam String resourceName, @RequestParam(required = false ,defaultValue = "false") Boolean isGenerateFromDep) {
+    public ResponseEntity<ByteArrayResource> generateCsv(@RequestParam String resourceName, @RequestParam(required = false ,defaultValue = "false") Boolean isGenerateFromDep, @RequestParam(required = false, defaultValue = "") String userDepartment) {
         Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(resourceName);
         List<ExportCsvDTO> csvContents = new ArrayList<>();
 
@@ -42,16 +43,35 @@ public class CsvTransfertController {
             return ResponseEntity.notFound().build();
         }
 
-        List<ResourceSheetDTO> resourcesSheets = rsDTOController.getResourceSheetsByResourceId(resultResource.get().getIdResource());
-        for (ResourceSheetDTO res : resourcesSheets) {
-            csvContents.add(getExportCsvDTO(resourceName, res));
-        }
 
         StringBuilder csvBuilder = new StringBuilder();
         // En tete
         csvBuilder.append("Département; Référence UE; Référence Ressouce; Professeur référent; SAÉs; Heures; Heures Alternance; DS; CM; TD; TP; Retour de l'équipe pédagogique; Retour étudiant; Amélioration à mettre en oeuvre\n");
 
         if (!isGenerateFromDep) {
+            List<ResourceSheetDTO> resourcesSheets = rsDTOController.getResourceSheetsByResourceId(resultResource.get().getIdResource());
+            for (ResourceSheetDTO res : resourcesSheets) {
+                csvContents.add(getExportCsvDTO(resourceName, res));
+            }
+            for (ExportCsvDTO csvContent: csvContents) {
+                csvBuilder.append(generateCsvFromResource(csvContent));
+            }
+        }
+        else {
+            // TODO : Use API call to get the resource sheets
+            List<ResourceSheetDTO> allResourceSheets = rsDTOController.getAllResourceSheets();
+            List<ResourceSheetDTO> departmentResourceSheets = new ArrayList<>();
+
+            for (ResourceSheetDTO res : allResourceSheets) {
+                System.out.println("tata");
+                if (Objects.equals(res.getDepartment(), userDepartment)) {
+                    departmentResourceSheets.add(res);
+                    System.out.println("toto");
+                }
+            }
+            for (ResourceSheetDTO res : departmentResourceSheets) {
+                csvContents.add(getExportCsvDTO(resourceName, res));
+            }
             for (ExportCsvDTO csvContent: csvContents) {
                 csvBuilder.append(generateCsvFromResource(csvContent));
             }
