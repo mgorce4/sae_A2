@@ -5,7 +5,6 @@
     
     status.value = "Administration"
 
-    let display_more_area = ref(false)
     let display_add_modify_area = ref(false)
     let display_add_ue = ref(false)
 
@@ -13,19 +12,22 @@
     const addModifySdSaeModified = ref(null)
     const addModifySaeLabel = ref('')
     const addModifySaeApogeeCode = ref('')
+    const addModifySaeTermCode = ref('')
     const addModifySaeHours = ref('')
+    const addModifySaeHoursAlternance = ref('')
     const total_hours = ref('')
     const addModifyUeLabel = ref(null)
     const addModifyUeCoefficient = ref(null)
     const addModifyUeCoef = ref([])
-    const saeModalite = ref('')
     const checkboxStatus = ref(false)
-
+    
     const errors = ref({
-        saeLabel: false,
-        saeApogeeCode: false,
-        saeHours: false,
+        label: false,
+        apogeeCode: false,
+        termCode: false,
+        hours: false,
         ueCoefficients: false,
+        alternanceHours: false
     })
 
     const saeTableV2 = ref([])
@@ -52,24 +54,45 @@
         })
     })
 
+    // Filter UE data by semester
+    const filteredUeTableV2 = computed(() => {
+        return ueTableV2.value.filter((ue) => {
+            return ue.semester == semesterNumber.value
+        })
+    })
+
     const attachAccordionListeners = () => {
         nextTick(() => {
             const acc = document.getElementsByClassName("accordion_mccc");
             for (let i = 0; i < acc.length; i++) {
-                const newElement = acc[i].cloneNode(true);
-                acc[i].parentNode.replaceChild(newElement, acc[i]);
+                // Skip cloning for add-modify-sae to preserve Vue reactivity
+                if (acc[i].getAttribute('data-accordion') === 'add-modify-sae') {
+                    acc[i].addEventListener("click", function() {
+                        this.classList.toggle("active");
+                        const panel = this.nextElementSibling;
+                        if (panel.style.maxHeight) {
+                            panel.style.maxHeight = null;
+                        } else {
+                            panel.style.maxHeight = panel.scrollHeight + "vw";
+                            panel.style.padding = "0vw 0vw 0vw";
+                        }
+                    });
+                } else {
+                    const newElement = acc[i].cloneNode(true);
+                    acc[i].parentNode.replaceChild(newElement, acc[i]);
 
-                newElement.addEventListener("click", function() {
-                    this.classList.toggle("active");
-                    const panel = this.nextElementSibling;
-                    if (panel.style.maxHeight) {
-                        panel.style.maxHeight = null;
-                    } else {
-                        // Calculate the actual height including error messages
-                        panel.style.maxHeight = panel.scrollHeight + "vw";
-                        panel.style.padding = "0vw 0vw 0vw";
-                    }
-                });
+                    newElement.addEventListener("click", function() {
+                        this.classList.toggle("active");
+                        const panel = this.nextElementSibling;
+                        if (panel.style.maxHeight) {
+                            panel.style.maxHeight = null;
+                        } else {
+                            // Calculate the actual height including error messages
+                            panel.style.maxHeight = panel.scrollHeight + "vw";
+                            panel.style.padding = "0vw 0vw 0vw";
+                        }
+                    });
+                }
             }
         });
     }
@@ -104,7 +127,7 @@
         const response = await axios.get(`http://localhost:8080/api/v2/mccc/saes/institution/${localStorage.idInstitution}`)
         saeTableV2.value = response.data
         const responseUe = await axios.get(`http://localhost:8080/api/v2/mccc/ues/institution/${localStorage.idInstitution}`)
-        ueTableV2.value = responseUe.data.sort((a, b) => a.label.localeCompare(b.label)) // Sort UEs in ascending order
+        ueTableV2.value = responseUe.data.sort((a, b) => a.label.localeCompare(b.label)) // Filter UEs by semester and sort in ascending order
         attachAccordionListeners()
         attachWorkStudyListeners()
     })
@@ -123,39 +146,40 @@
     }
 
     function saveSae() {
-        // Logic to save the new SAE
-        display_more_area.value = false
-        display_add_modify_area.value = false
-        display_add_ue.value = false
-
         // Reset errors
-        errors.value = {
-            saeLabel: false,
-            saeApogeeCode: false,
-            saeHours: false,
-            ueCoefficients: false,
-        }
+        errors.value.label = false
+        errors.value.apogeeCode = false
+        errors.value.termCode = false
+        errors.value.hours = false
+        errors.value.ueCoefficients = false
+        errors.value.alternanceHours = false
+        /*document.getElementById('error_ue_coefficients').innerHTML = ''*/
 
         // Validation before saving
         let hasErrors = false
         if (!addModifySaeLabel.value) {
-            errors.value.saeLabel = true
-            hasErrors = true
+            errors.value.label = true
         }
         if (!addModifySaeApogeeCode.value) {
-            errors.value.saeApogeeCode = true
-            hasErrors = true
+            errors.value.apogeeCode = true
         }
-        if (!addModifySaeHours.value || addModifySaeHours.value <= 0) {
-            errors.value.saeHours = true
-            hasErrors = true
+        if (addModifySaeTermCode.value === '') {
+            errors.value.termCode = true
         }
+        if (addModifySaeHours.value == '' || addModifySaeHours.value <= 0) {
+            errors.value.hours = true
+        }
+        if (checkboxStatus.value) {
+            if (addModifySaeHoursAlternance.value == '' || addModifySaeHoursAlternance.value <= 0) {
+                errors.value.alternanceHours = true
+            }
+        }/*
         if (addModifyUeCoef.value.length === 0) {
-            errors.value.ueCoefficients = true
+            document.getElementById('error_ue_coefficients').innerHTML = "Les coefficients des UE sont obligatoires"
             hasErrors = true
-        }
-
+        }*/
         // If data is missing, do not proceed
+        hasErrors = errors.value.label || errors.value.apogeeCode || errors.value.termCode || errors.value.hours || errors.value.alternanceHours
         if (hasErrors) {
             return
         }
@@ -167,6 +191,7 @@
                 return
             }
         }
+/*
 
         try {
             const payload = {
@@ -213,7 +238,7 @@
             console.error('❌ Erreur lors de la sauvegarde de la SAÉ :', error);
             alert('Une erreur est survenue lors de la sauvegarde')
         }
-        
+        */
     }
 
     function initAddModifyArea() {
@@ -240,10 +265,18 @@
     }
 
     function addSae() {
+        // Reset errors
+        errors.value.label = false
+        errors.value.apogeeCode = false
+        errors.value.termCode = false
+        errors.value.hours = false
+        errors.value.ueCoefficients = false
+        errors.value.alternanceHours = false
+
         addModifySaeLabel.value = ''
         addModifySaeApogeeCode.value = ''
         addModifySaeHours.value = ''
-        saeModalite.value = ''
+        addModifySaeTermCode.value = ''
 
         checkboxStatus.value = false
 
@@ -264,7 +297,7 @@
         addModifySaeLabel.value = sae.label
         addModifySaeApogeeCode.value = sae.apogeeCode
         addModifySaeHours.value = sae.hours
-        saeModalite.value = sae.modalite
+        addModifySaeTermCode.value = sae.termsCode
 
         checkboxStatus.value = /*sae.blocReleaseHours >= 1 ||*/ false
         
@@ -276,6 +309,7 @@
 </script>
 
 <template>
+    <p>{{ filteredUeTableV2 }}</p>
     <div id="form_mccc_sae"> 
         <div class="return_arrow">
             <button class="back_arrow" onclick="document.location.href='#/mccc-select-form'">←</button>
@@ -300,20 +334,24 @@
                         <div class="left_side container-fluid cfh spa">
                             <div class="container-fluid spb">
                                 <label for="label_sae">Nom de la SAÉ :</label>
-                                <input class="mccc_input" id="label_sae" type="text" v-model="addModifySaeLabel" :placeholder="'...'" required>
+                                <input class="mccc_input" name="label_sae" type="text" v-model="addModifySaeLabel" :placeholder="'...'" required>
                             </div>
+                            <p class="error_message" v-show="errors.label">Le nom de la SAÉ est obligatoire</p>
                             <div class="container-fluid spb">
                                 <label for="apogee_code_sae">Code Apogée :</label>
-                                <input class="mccc_input" id="apogee_code_sae" type="text" v-model="addModifySaeApogeeCode" :placeholder="'...'" required>
+                                <input class="mccc_input" name="apogee_code_sae" type="text" v-model="addModifySaeApogeeCode" :placeholder="'...'" required>
                             </div>
+                            <p class="error_message" v-show="errors.apogeeCode">Le code Apogée est obligatoire</p>
                             <div class="container-fluid spb">
                                 <label for="hours_sae">Nombre d'heures (formation initiale) :</label>
-                                <input class="mccc_input" id="hours_sae" type="number" v-model="addModifySaeHours" :placeholder="'...'" @keydown="preventInvalidChars" required>
+                                <input class="mccc_input" name="hours_sae" type="number" v-model="addModifySaeHours" :placeholder="'...'" @keydown="preventInvalidChars" required>
                             </div>
+                            <p class="error_message" v-show="errors.hours">Le nombre d'heures est obligatoire et doit être supérieur à 0</p>
                             <div class="container-fluid spb">
                                 <label for="modalite_sae">Modalité :</label>
-                                <input class="mccc_input" id="modalite_sae" type="text" v-model="saeModalite" :placeholder="'...'" required>
+                                <input class="mccc_input" name="modalite_sae" type="text" v-model="addModifySaeTermCode" :placeholder="'...'" required>
                             </div>
+                            <p class="error_message" v-show="errors.termCode">La modalité est obligatoire</p>
 
                             <div class="container-fluid spa">
                                 <input class="btn1" type="reset" value="Annuler" @click="display_add_modify_area = false; display_add_ue = false">
@@ -331,41 +369,46 @@
                                 </div>
                                 <div class="container-fluid spb" id="work_study_hours">
                                     <p>Nombre d'heures (alternance) : </p>
-                                    <input type="text" class="input input_work_study" v-model="total_hours" required disabled/> 
+                                    <input type="number" class="input input_work_study" v-model="total_hours" @keydown="preventInvalidChars" required disabled/> 
                                 </div>
+                                <p class="error_message" v-show="errors.alternanceHours">Vous devez saisir un nombre d'heures valide, <br>ou désélectionner les heures en alternance</p>
                                 <!--V2: put comparator with the programme national hour and total alternance -->
                             </div>
                         
-                            <table class="ueCoefficient">
-                                <tr>
-                                    <td>U.E. affectée(s) : </td>
-                                    <th class="display_coef_label" v-for="(labelUe, indexLabelUe) in addModifyUeCoef" v-bind:key="indexLabelUe">{{ labelUe.ueLabel }}</th>
-                                    <td v-show="display_add_modify_area && !display_add_ue">
-                                        <p class="button_more button_ue" @click="display_add_ue = true">+</p>
-                                    </td>
-                                    <th v-show="display_add_modify_area && display_add_ue">
-                                        <select class="select_ue" v-model="addModifyUeLabel">
-                                            <option v-for="(ue, index) in ueTableV2" v-bind:key="index" :value="ue">{{ ue.label }}</option>
-                                        </select>
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <td>Coefficient : </td>
-                                    <td class="display_coef_ue" v-for="(coefUe, indexCoefUe) in addModifyUeCoef" v-bind:key="indexCoefUe">{{ coefUe.coefficient }}</td>
-                                    <td v-show="display_add_modify_area && display_add_ue">
-                                        <input class="display_coef_ue" type="number" :placeholder="'...'" v-model="addModifyUeCoefficient" @keydown="preventInvalidChars">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td v-for="(coefUe, index4) in addModifyUeCoef" v-bind:key="index4">
-                                        <p class="button_more button_ue" @click="remove_ue(index4)">X</p>
-                                    </td>
-                                    <td v-show="display_add_modify_area && display_add_ue">
-                                        <p class="button_more button_ue" @click="add_ue()">✓</p>
-                                    </td>
-                                </tr>
-                            </table>
+                            <p v-if="filteredUeTableV2.length <= 0">Aucune UE créée</p>
+                            <div v-else>
+                                <table class="ueCoefficient">
+                                    <tr>
+                                        <td>U.E. affectée(s) : </td>
+                                        <th class="display_coef_label" v-for="(labelUe, indexLabelUe) in addModifyUeCoef" v-bind:key="indexLabelUe">{{ labelUe.ueLabel }}</th>
+                                        <td v-show="display_add_modify_area && !display_add_ue">
+                                            <p class="button_more button_ue" @click="display_add_ue = true">+</p>
+                                        </td>
+                                        <th v-show="display_add_modify_area && display_add_ue">
+                                            <select class="select_ue" v-model="addModifyUeLabel">
+                                                <option v-for="(ue, index) in filteredUeTableV2" v-bind:key="index" :value="ue">{{ ue.label }}</option>
+                                            </select>
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td>Coefficient : </td>
+                                        <td class="display_coef_ue" v-for="(coefUe, indexCoefUe) in addModifyUeCoef" v-bind:key="indexCoefUe">{{ coefUe.coefficient }}</td>
+                                        <td v-show="display_add_modify_area && display_add_ue">
+                                            <input class="display_coef_ue" type="number" :placeholder="'...'" v-model="addModifyUeCoefficient" @keydown="preventInvalidChars">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td v-for="(coefUe, index4) in addModifyUeCoef" v-bind:key="index4">
+                                            <p class="button_more button_ue" @click="remove_ue(index4)">X</p>
+                                        </td>
+                                        <td v-show="display_add_modify_area && display_add_ue">
+                                            <p class="button_more button_ue" @click="add_ue()">✓</p>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <p id="error_ue_coefficients" class="error_message"></p>
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -378,6 +421,10 @@
                             <div class="container-fluid spb">
                                 <label>Code apogee : </label>
                                 <p class="mccc_input">{{ value.apogeeCode }}</p>
+                            </div>
+                            <div class="container-fluid spb">
+                                <label>Nombre d'heures (formation initiale) : </label>
+                                <p class="mccc_input">{{ value.hours }}</p>
                             </div>
                             <div class="container-fluid spb">
                                 <label>Nombre d'heures (formation initiale) : </label>
@@ -452,7 +499,7 @@
 
 .display_coef_label, .display_coef_ue {
     width: 2vw;
-    height: 1.25vw;
+    height: 1vw;
     border: 0.1vw solid var(--main-theme-terciary-color);
     background-color: var(--div-rect-background-color);
     padding: 0.5vw;
