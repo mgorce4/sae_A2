@@ -50,6 +50,29 @@ onMounted(() => {
       <div class="ref_Section">
         <p>Réf. Ressource : {{resource_sheet.resourceLabel}}</p>
       </div>
+
+      <div id="panel_NP">
+        <div class="dark_bar" style="margin: 0;">
+          Objectif de la resource :
+        </div>
+
+        <div id="NP_content">
+          <p>{{resource_sheet.objective}}</p>
+        </div>
+
+      </div>
+
+      <div id="panel_NP" style="justify-content: center">
+        <div class="dark_bar" style="margin: 0">
+          Compétences :
+        </div>
+
+        <div v-for="skill in resource_sheet.skills" :key="skill.id" id="NP_content">
+
+          <p>{{skill.label}}</p>
+          <p>{{skill.description}}</p>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -73,5 +96,28 @@ onMounted(() => {
   border-radius: 10px;
   color: white;
   padding: 3vw;
+}
+
+#panel_NP {
+  width: 97%;
+  justify-self: center;
+  background-color: rgba(0,0,0,0.35);
+  border-radius: 15px;
+  color: var(--main-theme-secondary-color);
+  display: flex;
+  flex-direction: column;
+  margin-top: 2vw;
+}
+
+#NP_content {
+  border-radius: 15px;
+  background-color: rgba(117, 117, 117, 100);
+  color: var(--main-theme-secondary-color);
+  text-align: center;
+  border: black 2px solid;
+  margin: 1vw;
+  padding: 1vw;
+  max-width: 80%;
+  margin-left: 5vw;
 }
 </style>

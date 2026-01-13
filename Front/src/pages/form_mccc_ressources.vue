@@ -15,6 +15,8 @@ const resource_name = ref('')
 
 const access_rights = ref([])
 
+const path = ref([])
+
 const ue_list = ref([{id : 1, ue: '', coefficient: ''}])
 /* value link with the v-model */
 const teachers_list = ref([{ id: 1, value: '' }])
@@ -111,6 +113,9 @@ onMounted(async () => {
     axios
       .get('http://localhost:8080/api/access-rights')
       .then((response) => (access_rights.value = response.data)),
+    axios
+      .get('http://localhost:8080/api/paths')
+      .then((response) => (path.value = response.data)),
   ])
 
   access_rights.value = access_rights.value.filter((ar) => ar.user.institution.idInstitution == localStorage.idInstitution).filter((ar) => ar.accessRight == access_right_teacher)
@@ -397,6 +402,7 @@ function getResourcesBySemesterAndInstitution() {
   return resource_sheets.value
     .filter((sheet) => sheet.semester == getQueryParam('id'))
     .filter((sheet) => sheet.institutionId == localStorage.idInstitution)
+    .filter((sheet) => sheet.path == getPath()[0].name)
 }
 
 function getUEFromResource(resource) {
@@ -423,6 +429,16 @@ function isTeacherNamesEquals(i, j, teacher_names) {
   return i!== j && teacher_names[i] === teacher_names[j]
 }
 
+const preventInvalidChars = (event) => {
+  const invalidChars = ['e', 'E', '+', '-', ',']
+  if (invalidChars.includes(event.key)) {
+    event.preventDefault()
+  }
+}
+
+function getPath() {
+  return path.value.filter((p) => p.idPath == getQueryParam('pathId'))
+}
 
 </script>
 
@@ -450,24 +466,25 @@ function isTeacherNamesEquals(i, j, teacher_names) {
           <div id="left">
             <div>
               <label for="resource_label">Intitulé de la ressource : </label>
-              <input id="resource_label" type="text" class="input" v-model="resource_label" required />
+              <input id="resource_label" type="text" class="input" v-model="resource_label"/>
             </div>
             <p id="error_resource_label" class="error_message"></p>
 
             <div>
               <label for="resource_name">Nom de la ressource : </label>
-              <input id="resource_name" type="text" class="input" v-model="resource_name" required />
+              <input id="resource_name" type="text" class="input" v-model="resource_name"/>
             </div>
-            
+            <p id="error_resource_name" class="error_message"></p>
+
             <div>
               <label for="apogee_code">Code apogée : </label>
-              <input id="apogee_code" type="text" class="input" v-model="apogee_code" required />
+              <input id="apogee_code" type="text" class="input" v-model="apogee_code"/>
             </div>
             <p id="error_apogee_code" class="error_message"></p>
 
             <div>
               <label>Modalités : </label>
-              <input id="terms" type="text" class="input" v-model="terms" required />
+              <input id="terms" type="text" class="input" v-model="terms"/>
             </div>
             <p id="error_terms" class="error_message"></p>
 
@@ -484,13 +501,13 @@ function isTeacherNamesEquals(i, j, teacher_names) {
                 <tbody>
                   <tr>
                     <td>
-                      <input type="text" class="input" v-model="CM_initial_formation" required />
+                      <input type="text" class="input" v-model="CM_initial_formation"/>
                     </td>
                     <td>
-                      <input type="text" class="input" v-model="TD_initial_formation" required />
+                      <input type="text" class="input" v-model="TD_initial_formation"/>
                     </td>
                     <td>
-                      <input type="text" class="input" v-model="TP_initial_formation" required />
+                      <input type="text" class="input" v-model="TP_initial_formation"/>
                     </td>
                   </tr>
                 </tbody>
@@ -529,13 +546,13 @@ function isTeacherNamesEquals(i, j, teacher_names) {
                   <tbody>
                     <tr>
                       <td>
-                        <input type="text" class="input input_work_study" v-model="CM_work_study" required disabled/>
+                        <input type="text" class="input input_work_study" v-model="CM_work_study" disabled/>
                       </td>
                       <td>
-                        <input type="text" class="input input_work_study" v-model="TD_work_study" required disabled/>
+                        <input type="text" class="input input_work_study" v-model="TD_work_study" disabled/>
                       </td>
                       <td>
-                        <input type="text" class="input input_work_study" v-model="TP_work_study" required disabled/>
+                        <input type="text" class="input input_work_study" v-model="TP_work_study" disabled/>
                       </td>
                     </tr>
                   </tbody>
@@ -576,7 +593,7 @@ function isTeacherNamesEquals(i, j, teacher_names) {
                         </option>
                       </select>
                       <button class="button_more" id="button_ue_minus">x</button>
-                      <input id="coefficient" type="text" class="input" style="margin-top: 4px" v-model="ue.coefficient" required />
+                      <input id="coefficient" type="number" class="input" style="margin-top: 4px" v-model="ue.coefficient" @keydown="preventInvalidChars" />
                     </div>
                   </div>
                   <p id="error_ue" class="error_message"></p>
@@ -951,7 +968,8 @@ function isTeacherNamesEquals(i, j, teacher_names) {
   color: var(--error-color);
   width: 80%;
   text-align: center;
-  margin-left: 3.5vw;
+  margin-bottom: 1vw;
+  margin-top: 0.5vw;
 }
 
 #teacher_div {
