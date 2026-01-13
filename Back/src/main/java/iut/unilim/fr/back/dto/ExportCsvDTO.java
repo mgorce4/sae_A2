@@ -17,4 +17,18 @@ public record ExportCsvDTO(
         String pedagoContentDs,
         String pedagoTeamFeedback,
         String studentFeedback,
-        String improvement) {}
+        String improvement) {
+
+        public String getLogs() {
+                return "        - Resource :" + resourceName + "\n" +
+                 "        - UE : " + refUE + "\n" +
+                 "        - Referent teacher : " + profRef + "\n" + 
+                 "        - Department : " + dep + "\n" +
+                 "        - Saes : " + saes.toString() + "\n" +
+                 "        - Resource is in internship : " + isInternship + "\n" +
+                 "        - Hours per student : " + hoursStudent.toString() + "\n" +
+                 "        - Hours per intern student : " + hoursStudentInternship.toString() + "\n" +
+                 "        - Pedagogical content : " + pedagoContentDs + ", " + pedagoContentCm + ", " + pedagoContentTd + ", " + pedagoContentTp + "\n" +
+                 "        - Feedbacks : " + pedagoTeamFeedback + ", " + studentFeedback + ", " + improvement + "\n`";
+        }
+}

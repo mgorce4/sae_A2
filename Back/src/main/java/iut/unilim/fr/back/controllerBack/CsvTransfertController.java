@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static iut.unilim.fr.back.controllerBack.LogController.writeInCsvLogs;
 import static iut.unilim.fr.back.service.ResourceGetterService.*;
 
 @RestController
@@ -35,7 +36,7 @@ public class CsvTransfertController {
     private ResourceSheetDTOController rsDTOController;
 
     @GetMapping("/generate")
-    public ResponseEntity<ByteArrayResource> generateCsv(@RequestParam String resourceName, @RequestParam(required = false ,defaultValue = "false") Boolean isGenerateFromDep, @RequestParam(required = false, defaultValue = "") String userDepartment) {
+    public ResponseEntity<ByteArrayResource> generateCsv(@RequestParam String resourceName, @RequestParam(required = false, defaultValue = "") String userDepartment, @RequestParam String userName) {
         Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(resourceName);
         List<ExportCsvDTO> csvContents = new ArrayList<>();
 
@@ -45,16 +46,14 @@ public class CsvTransfertController {
 
 
         StringBuilder csvBuilder = new StringBuilder();
+        StringBuilder logMessage = new StringBuilder(userName + " get from ResourceSheet :\n");
         // En tete
         csvBuilder.append("Département; Référence UE; Référence Ressouce; Professeur référent; SAÉs; Heures; Heures Alternance; DS; CM; TD; TP; Retour de l'équipe pédagogique; Retour étudiant; Amélioration à mettre en oeuvre\n");
 
-        if (!isGenerateFromDep) {
+        if (userDepartment.isEmpty()) {
             List<ResourceSheetDTO> resourcesSheets = rsDTOController.getResourceSheetsByResourceId(resultResource.get().getIdResource());
             for (ResourceSheetDTO res : resourcesSheets) {
                 csvContents.add(getExportCsvDTO(resourceName, res));
-            }
-            for (ExportCsvDTO csvContent: csvContents) {
-                csvBuilder.append(generateCsvFromResource(csvContent));
             }
         }
         else {
@@ -72,9 +71,10 @@ public class CsvTransfertController {
             for (ResourceSheetDTO res : departmentResourceSheets) {
                 csvContents.add(getExportCsvDTO(resourceName, res));
             }
-            for (ExportCsvDTO csvContent: csvContents) {
-                csvBuilder.append(generateCsvFromResource(csvContent));
-            }
+        }
+        for (ExportCsvDTO csvContent: csvContents) {
+            csvBuilder.append(generateCsvFromResource(csvContent));
+            logMessage.append(csvContent.getLogs());
         }
 
         byte[] csvBytes = ("\uFEFF" + csvBuilder.toString()).getBytes(StandardCharsets.UTF_8);
@@ -82,6 +82,7 @@ public class CsvTransfertController {
 
         String fileName = resourceName + ".csv";
 
+        writeInCsvLogs(logMessage.toString() + " in file " + fileName);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
                 .contentType(MediaType.parseMediaType("text/csv"))

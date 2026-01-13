@@ -9,13 +9,28 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class LogController {
+    private static final String openSymbol = "[";
+    private static final String closeSymbol = "] ";
+    private static final String format = "dd:MM:yyyy HH:mm:ss:SS";
+    private static final String logsPath = "logs/";
     public static void writeInPdfLog(String message) {
-        String fileName = "logs/.pdf_log.txt";
-        String openSymbol = "[";
-        String closeSymbol = "] ";
+        String fileName = logsPath + ".pdf_log.txt";
         Path path = Paths.get(fileName);
-        
-        String format = "dd:MM:yyyy HH:mm:ss:SS";
+
+        String logMessage = writeInLog(message, path);
+
+        System.out.println(logMessage);
+    }
+
+    public static void writeInCsvLogs(String message) {
+        String fileName = logsPath + ".csv_log.txt";
+        Path path = Paths.get(fileName);
+
+        String logMessage = writeInLog(message, path);
+        System.out.println(logMessage);
+    }
+
+    private static String writeInLog(String message, Path path) {
         SimpleDateFormat logDate = new SimpleDateFormat(format);
         String logMessage = openSymbol + logDate.format(new Date()) + closeSymbol + message + "\n";
 
@@ -33,8 +48,6 @@ public class LogController {
         catch (IOException e) {
             logMessage = openSymbol + logDate.format(new Date()) + closeSymbol + e.getMessage() + "\n";
         }
-
-        System.out.println(logMessage);
-
+        return logMessage + "\n";
     }
 }

@@ -144,7 +144,7 @@ public class ResourceGetterService {
 
             writeInPdfLog("Get resource \n"
                     + "     - id : " + id + "\n"
-                    + "     - label : " + label + "\n");
+                    + "     - label : " + label );
 
             objectiveContent = resourceSheetDTO.getObjective();
 
@@ -243,7 +243,7 @@ public class ResourceGetterService {
                     "   - hoursNP(" + hoursPN + ")\n" +
                     internshipLogContent +
                     "   - pedagoContent( DS: " + pedagoContentDs + "; CM: "+ pedagoContentCm + "; TD: " + pedagoContentTd + "; TP: " + pedagoContentTp + ")\n" +
-                    "   - feedBack(Student: " + studentFeedback + "; Pedagogical team: " + pedagoTeamFeedback + "; Improvements: " + improvements + ")\n");
+                    "   - feedBack(Student: " + studentFeedback + "; Pedagogical team: " + pedagoTeamFeedback + "; Improvements: " + improvements + ")");
         } else {
             writeInPdfLog("Attempt to get from database with resource name: " + resourceName +
                     "\n-> " + resourceName + " not found in resources tables");
