@@ -15,10 +15,9 @@
     const addModifySaeTermCode = ref('')
     const addModifySaeHours = ref('')
     const addModifySaeHoursAlternance = ref('')
+    const ue_list = ref([{ id: 1, ue: '', coefficient: '' }])
     const total_hours = ref('')
-    const addModifyUeLabel = ref(null)
-    const addModifyUeCoefficient = ref(null)
-    const addModifyUeCoef = ref([])
+    
     const checkboxStatus = ref(false)
     
     const errors = ref({
@@ -130,20 +129,58 @@
         ueTableV2.value = responseUe.data.sort((a, b) => a.label.localeCompare(b.label)) // Filter UEs by semester and sort in ascending order
         attachAccordionListeners()
         attachWorkStudyListeners()
+
+        
+        document.getElementById('save').addEventListener('click', () => {
+        
+            // Variabble for the messages
+            let ues = document.querySelectorAll('#ue_select')
+            let coefs = document.querySelectorAll('#coefficient')
+
+            // add ues and coefs to the list
+            for (let i = 0; i < ue_list.value.length; i++) {
+            ue_list.value[i].ue = ues[i].value
+            ue_list.value[i].coefficient = coefs[i].value
+            }
+            console.log("UE LIST : ", ue_list.value)
+        })
+
+        document.addEventListener('click', (event) => {
+            if (event.target.id === 'button_ue_minus') {
+                if (ue_list.value.length > 1) {
+                    /* find all UE divs */
+                    const ues = document.querySelectorAll('.ue_div')
+
+                    /* find which div contains the clicked button */
+                    let index_to_remove = -1
+                    ues.forEach((div, index) => {
+                    /* if the actual div is the target of the event the index is the index to remove */
+                    if (div.contains(event.target)) {
+                        index_to_remove = index
+                    }
+                    })
+
+                    /* remove the ue from the array at the good index */
+                    if (index_to_remove !== -1) {
+                    ue_list.value = ue_list.value.filter((_, index) => index !== index_to_remove)
+                    }
+                }
+
+            } else if (event.target.id === 'button_ue_plus' && filteredUeTableV2.value.length > ue_list.value.length) {
+                /* generate new unique id */
+                let id
+                if (ue_list.value.length > 0) {
+                    /* get the max id and add 1 */
+                    id = Math.max(...ue_list.value.map(u => u.id)) + 1
+                } else {
+                    /* else it's the first id */
+                    id = 1
+                }
+                ue_list.value.push({ id: id, ue: '', coefficient: '' })
+
+            }
+        })
     })
-
-    function add_ue() {
-        // Logic to add a new UE with its coefficient
-        addModifyUeCoef.value.push({ ueLabel: addModifyUeLabel.value.label, ueName: addModifyUeLabel.value.name, coefficient: addModifyUeCoefficient.value })
-        display_add_ue.value = false
-        addModifyUeLabel.value = null
-        addModifyUeCoefficient.value = null
-    }
-
-    function remove_ue(index) {
-        // Logic to remove a UE from the list
-        addModifyUeCoef.value.splice(index, 1)
-    }
 
     function saveSae() {
         // Reset errors
@@ -169,7 +206,7 @@
         if (addModifySaeHours.value == '' || addModifySaeHours.value <= 0) {
             errors.value.hours = true
         }
-        if (checkboxStatus.value) {
+        if (document.getElementById('work_study_slider').querySelector('input[type="checkbox"]').checked) {
             if (addModifySaeHoursAlternance.value == '' || addModifySaeHoursAlternance.value <= 0) {
                 errors.value.alternanceHours = true
             }
@@ -183,62 +220,6 @@
         if (hasErrors) {
             return
         }
-
-        // ueCoefficients must contain a number for coefficient
-        for (let index = 0; index < addModifyUeCoef.value.length; index++) {
-            if (isNaN(addModifyUeCoef.value[index].coefficient) || addModifyUeCoef.value[index].coefficient <= 0) {
-                errors.value.ueCoefficients = true
-                return
-            }
-        }
-/*
-
-        try {
-            const payload = {
-                label: addModifySaeLabel.value,
-                apogeeCode: addModifySaeApogeeCode.value,
-                semester: semesterNumber.value,
-                idInstitution: localStorage.idInstitution,
-                hours: addModifySaeHours.value,
-                ueCoefficients: addModifyUeCoef.value,
-                modalite: saeModalite.value,
-                userId: parseInt(localStorage.idUser)
-            }
-            console.log('Payload SAE to save:', payload)
-            axios.post('http://localhost:8080/api/saes', payload)
-                .then(async response => {
-                    console.log('✅ SAE saved successfully:', response.data)
-                    
-                    // Clear input fields after saving
-                    addModifySaeLabel.value = ''
-                    addModifySaeApogeeCode.value = ''
-                    addModifySaeHours.value = ''
-                    addModifyUeCoef.value = []
-                    
-                    // Close the form
-                    display_more_area.value = false
-                    display_add_modify_area.value = false
-                    display_add_ue.value = false
-                    
-                    // Refresh the SAE list from the database
-                    const refreshResponse = await axios.get(`http://localhost:8080/api/v2/mccc/saes/institution/${localStorage.idInstitution}`)
-                    saeTableV2.value = refreshResponse.data
-                    
-                    // Reattach listeners to the updated accordion elements
-                    attachAccordionListeners()
-                    
-                    alert('SAE créée avec succès !')
-                })
-                .catch(error => {
-                    console.error('❌ Error saving SAE:', error)
-                    alert('Erreur lors de la sauvegarde de la SAE : ' + (error.response?.data?.message || error.message))
-                })
-        }
-        catch (error) {
-            console.error('❌ Erreur lors de la sauvegarde de la SAÉ :', error);
-            alert('Une erreur est survenue lors de la sauvegarde')
-        }
-        */
     }
 
     function initAddModifyArea() {
@@ -280,7 +261,6 @@
 
         checkboxStatus.value = false
 
-        addModifyUeCoef.value = []
         display_add_ue.value = false
 
         nextTick(() => {
@@ -301,7 +281,6 @@
 
         checkboxStatus.value = /*sae.blocReleaseHours >= 1 ||*/ false
         
-        addModifyUeCoef.value = sae.ueCoefficients.map(ue => ({ ueLabel: ue.ueLabel, coefficient: ue.coefficient })) // take a copy of sae.ueCoefficients
         display_add_ue.value = false
         
         initAddModifyArea()
@@ -334,28 +313,28 @@
                         <div class="left_side container-fluid cfh spa">
                             <div class="container-fluid spb">
                                 <label for="label_sae">Nom de la SAÉ :</label>
-                                <input class="mccc_input" name="label_sae" type="text" v-model="addModifySaeLabel" :placeholder="'...'" required>
+                                <input class="mccc_input" name="label_sae" type="text" v-model="addModifySaeLabel" :placeholder="'...'">
                             </div>
                             <p class="error_message" v-show="errors.label">Le nom de la SAÉ est obligatoire</p>
                             <div class="container-fluid spb">
                                 <label for="apogee_code_sae">Code Apogée :</label>
-                                <input class="mccc_input" name="apogee_code_sae" type="text" v-model="addModifySaeApogeeCode" :placeholder="'...'" required>
+                                <input class="mccc_input" name="apogee_code_sae" type="text" v-model="addModifySaeApogeeCode" :placeholder="'...'">
                             </div>
                             <p class="error_message" v-show="errors.apogeeCode">Le code Apogée est obligatoire</p>
                             <div class="container-fluid spb">
                                 <label for="hours_sae">Nombre d'heures (formation initiale) :</label>
-                                <input class="mccc_input" name="hours_sae" type="number" v-model="addModifySaeHours" :placeholder="'...'" @keydown="preventInvalidChars" required>
+                                <input class="mccc_input" name="hours_sae" type="number" v-model="addModifySaeHours" :placeholder="'...'" @keydown="preventInvalidChars">
                             </div>
                             <p class="error_message" v-show="errors.hours">Le nombre d'heures est obligatoire et doit être supérieur à 0</p>
                             <div class="container-fluid spb">
                                 <label for="modalite_sae">Modalité :</label>
-                                <input class="mccc_input" name="modalite_sae" type="text" v-model="addModifySaeTermCode" :placeholder="'...'" required>
+                                <input class="mccc_input" name="modalite_sae" type="text" v-model="addModifySaeTermCode" :placeholder="'...'">
                             </div>
                             <p class="error_message" v-show="errors.termCode">La modalité est obligatoire</p>
 
                             <div class="container-fluid spa">
                                 <input class="btn1" type="reset" value="Annuler" @click="display_add_modify_area = false; display_add_ue = false">
-                                <input class="btn1" type="submit" value="Sauvegarder" @click="saveSae">
+                                <input id="save" class="btn1" type="submit" value="Sauvegarder" @click="saveSae">
                             </div>
                         </div>
                         <div class="right_side" style="">
@@ -369,46 +348,35 @@
                                 </div>
                                 <div class="container-fluid spb" id="work_study_hours">
                                     <p>Nombre d'heures (alternance) : </p>
-                                    <input type="number" class="input input_work_study" v-model="total_hours" @keydown="preventInvalidChars" required disabled/> 
+                                    <input type="number" class="input input_work_study" v-model="total_hours" @keydown="preventInvalidChars" disabled/> 
                                 </div>
                                 <p class="error_message" v-show="errors.alternanceHours">Vous devez saisir un nombre d'heures valide, <br>ou désélectionner les heures en alternance</p>
                                 <!--V2: put comparator with the programme national hour and total alternance -->
                             </div>
-                        
-                            <p v-if="filteredUeTableV2.length <= 0">Aucune UE créée</p>
-                            <div v-else>
-                                <table class="ueCoefficient">
-                                    <tr>
-                                        <td>U.E. affectée(s) : </td>
-                                        <th class="display_coef_label" v-for="(labelUe, indexLabelUe) in addModifyUeCoef" v-bind:key="indexLabelUe">{{ labelUe.ueLabel }}</th>
-                                        <td v-show="display_add_modify_area && !display_add_ue">
-                                            <p class="button_more button_ue" @click="display_add_ue = true">+</p>
-                                        </td>
-                                        <th v-show="display_add_modify_area && display_add_ue">
-                                            <select class="select_ue" v-model="addModifyUeLabel">
-                                                <option v-for="(ue, index) in filteredUeTableV2" v-bind:key="index" :value="ue">{{ ue.label }}</option>
-                                            </select>
-                                        </th>
-                                    </tr>
-                                    <tr>
-                                        <td>Coefficient : </td>
-                                        <td class="display_coef_ue" v-for="(coefUe, indexCoefUe) in addModifyUeCoef" v-bind:key="indexCoefUe">{{ coefUe.coefficient }}</td>
-                                        <td v-show="display_add_modify_area && display_add_ue">
-                                            <input class="display_coef_ue" type="number" :placeholder="'...'" v-model="addModifyUeCoefficient" @keydown="preventInvalidChars">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td v-for="(coefUe, index4) in addModifyUeCoef" v-bind:key="index4">
-                                            <p class="button_more button_ue" @click="remove_ue(index4)">X</p>
-                                        </td>
-                                        <td v-show="display_add_modify_area && display_add_ue">
-                                            <p class="button_more button_ue" @click="add_ue()">✓</p>
-                                        </td>
-                                    </tr>
-                                </table>
+                            
+                            <div>
+                                <div class="component" style="justify-content: center;">
+                                    <label for="ue_select">UE affectées : </label>
+
+                                    <button class="button_more" id="button_ue_plus">+</button>
+
+                                    <label for="coefficient" class="component" style="margin-top: 7px">Coefficient :</label>
+                                </div>
+                                <p v-if="ue_list.length <= 0">Aucune UE créée</p>
+                                <div v-else>
+                                    <div v-for="ue in ue_list" :key="ue.id" class="component ue_div" style="margin-bottom: 1vw; margin-left: 5.9vw;">
+                                        <select id="ue_select" class="input">
+                                            <option v-for="ue in filteredUeTableV2" :key="ue.ueNumber">
+                                            {{ ue.label }}
+                                            </option>
+                                        </select>
+                                        <button class="button_more" id="button_ue_minus">x</button>
+                                        <input id="coefficient" type="text" class="input" style="margin-top: 4px" v-model="ue.coefficient"/>
+                                    </div>
+                                </div>
                                 <p id="error_ue_coefficients" class="error_message"></p>
                             </div>
+
                         </div>
                     </div>
                 </form>
