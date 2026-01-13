@@ -10,6 +10,7 @@
   import FormRessources from './pages/form_mccc_ressources.vue'
   import FormRessourceSheet from './pages/ressource_sheet_form.vue'
   import MCCCSelectPath from './pages/mccc_select_path.vue'
+  import ResourceSheetDisplay from './pages/resource_sheet_display.vue'
 
   const routes = {
     '/': Login,
@@ -20,7 +21,8 @@
     '/form-mccc-UE': FormUE,
     '/form-mccc-ressources' : FormRessources,
     '/form-ressource-sheet': FormRessourceSheet,
-    '/mccc-select-path': MCCCSelectPath
+    '/mccc-select-path': MCCCSelectPath,
+    '/resource-sheet-display': ResourceSheetDisplay
   }
 
   const currentPath = ref(window.location.hash)
