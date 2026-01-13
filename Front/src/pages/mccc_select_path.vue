@@ -40,7 +40,7 @@
       });
     });
   }
-  
+
   // Watch for error changes to update panel height
   watch(errors, () => {
     nextTick(() => {
@@ -75,7 +75,7 @@
       const response = await axios.get(`http://localhost:8080/api/paths`)
       // Filtrer les paths par institution et ajouter la propriété show
       coursList.value = response.data
-        .filter(path => 
+        .filter(path =>
           path.institution && path.institution.idInstitution === parseInt(localStorage.idInstitution)
         )
         .map(path => ({
@@ -90,7 +90,7 @@
     }
   })
 
-  const isNameTaken = (name, excludeId = null) => { 
+  const isNameTaken = (name, excludeId = null) => {
     return coursList.value.some(c => c.name.trim().toLowerCase() === name.trim().toLowerCase() && c.idPath !== excludeId );
   };
 
@@ -133,7 +133,7 @@
       return;
     }
 
-    try{      
+    try{
       const response =  {
         name: coursName.value,
         number: parseInt(coursNb.value),
@@ -144,7 +144,7 @@
       console.log('Envoi des données du parcours:', response);
 
       await axios.post('http://localhost:8080/api/paths', response);
-      
+
       // Réinitialiser les champs
       coursName.value = '';
       coursNb.value = '';
@@ -153,7 +153,7 @@
       // Recharger et filtrer les paths par institution
       const allPaths = await axios.get(`http://localhost:8080/api/paths`);
       coursList.value = allPaths.data
-        .filter(path => 
+        .filter(path =>
           path.institution && path.institution.idInstitution === parseInt(localStorage.idInstitution)
         )
         .map(path => ({
@@ -161,7 +161,7 @@
           show: false
         }));
       attachAccordionListeners();
-      
+
       console.log('Parcours sauvegardé avec succès');
     }catch(error){
       console.error('Erreur de sauvegarde:', error);
@@ -186,15 +186,15 @@
           idInstitution: parseInt(localStorage.idInstitution)
         }
       };
-      
+
       await axios.put(`http://localhost:8080/api/paths/${cours.idPath}`, response);
       click.value = false;
       cours.show = false;
-      
+
       // Recharger la liste
       const allPaths = await axios.get(`http://localhost:8080/api/paths`);
       coursList.value = allPaths.data
-        .filter(path => 
+        .filter(path =>
           path.institution && path.institution.idInstitution === parseInt(localStorage.idInstitution)
         )
         .map(path => ({
@@ -212,11 +212,11 @@
     }
     try{
       await axios.delete(`http://localhost:8080/api/paths/${id}`);
-      
+
       // Recharger la liste après suppression
       const allPaths = await axios.get(`http://localhost:8080/api/paths`);
       coursList.value = allPaths.data
-        .filter(path => 
+        .filter(path =>
           path.institution && path.institution.idInstitution === parseInt(localStorage.idInstitution)
         )
         .map(path => ({
@@ -265,13 +265,13 @@
               <span v-if="errors.coursNb" class="error-message">Merci de remplir ce champ</span>
             </div>
 
-            <div style="display: flex; margin : 0.5vw 1vw; justify-content: center; width: 100%;"> 
+            <div style="display: flex; margin : 0.5vw 1vw; justify-content: center; width: 100%;">
               <input class="btn1" type="button" value="Annuler" @click="display_more_area = false" style="margin-right: 1vw;">
               <input class="btn1" type="submit" value="Sauvegarder" @click="save">
             </div>
           </div>
         </form>
-        
+
         <!--here's your path -->
         <div v-for="cours in getCourses" :key="cours.idPath">
           <div class="path" v-on:mouseover="cours.show = true" v-on:mouseout="!cours.edit ? cours.show = false : null" @click="goToRessourceSheet('#/mccc-select-form', cours.idPath)">

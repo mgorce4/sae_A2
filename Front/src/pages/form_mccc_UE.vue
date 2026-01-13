@@ -1,6 +1,6 @@
 <script setup>
     import { status } from '../main'
-    import { computed, onMounted, ref, nextTick, watch} from 'vue'
+    import { onMounted, ref, nextTick, watch} from 'vue'
     import axios from 'axios'
 
     status.value = "Administration"
@@ -13,8 +13,6 @@
     const name_comp = ref('')
     const comp_level = ref('')
     const terms = ref('')
-
-    const path = ref([])
 
     // Error states for validation
     const errors = ref({
@@ -224,7 +222,7 @@
         const existingUE = ueList.value.find(ue =>
             ue.semester === semester &&
             ue.label === ueLabel &&
-            ue.pathNumber === pathId
+            ue.pathId === pathId
         );
 
         if (existingUE) {
@@ -261,7 +259,7 @@
                 semester: semester,
                 userId: parseInt(localStorage.idUser),
                 termsCode: terms.value,
-                pathId: pathId
+                pathId: pathId  // Utiliser pathId directement
             };
 
             console.log('Envoi du payload:', payload);
@@ -304,7 +302,7 @@
                 semester: ue.semester,
                 userId: parseInt(localStorage.idUser),
                 termsCode: ue.termsCode || null,
-                pathNumber: pathId && !isNaN(pathId) ? pathId : null
+                pathId: pathId && !isNaN(pathId) ? pathId : ue.pathId
             };
 
             // Utiliser l'endpoint PUT du MCCC Controller

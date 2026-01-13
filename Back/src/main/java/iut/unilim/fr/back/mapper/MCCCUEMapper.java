@@ -47,6 +47,7 @@ public class MCCCUEMapper {
 
         // Path information
         if (ue.getPath() != null) {
+            dto.setPathId(ue.getPath().getIdPath());
             dto.setPathNumber(ue.getPath().getNumber());
             dto.setPathName(ue.getPath().getName());
         }

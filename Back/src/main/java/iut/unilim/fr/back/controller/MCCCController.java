@@ -352,33 +352,29 @@ public class MCCCController {
                 return ResponseEntity.badRequest().body("User has no institution");
             }
 
-            // Get or create path for institution based on pathNumber from DTO
-            Long institutionId = user.getInstitution().getIdInstitution();
+            // Get path by ID if provided, otherwise use fallback
             Path path;
 
             System.out.println("=== CRÉATION UE - DEBUG PATH ===");
-            System.out.println("Institution ID: " + institutionId);
-            System.out.println("PathNumber from DTO: " + dto.getPathNumber());
+            System.out.println("Institution ID: " + user.getInstitution().getIdInstitution());
+            System.out.println("PathId from DTO: " + dto.getPathId());
 
-            if (dto.getPathNumber() != null) {
-                // Use the provided path number
-                path = pathRepository.findByInstitution_IdInstitutionAndNumber(institutionId, dto.getPathNumber())
-                    .orElseGet(() -> {
-                        // Create path with the specified number if it doesn't exist
-                        System.out.println("⚠️ Path non trouvé, création d'un nouveau path...");
-                        Path newPath = new Path();
-                        newPath.setNumber(dto.getPathNumber());
-                        newPath.setName("Path " + dto.getPathNumber() + " - " + user.getInstitution().getName());
-                        newPath.setInstitution(user.getInstitution());
-                        Path savedPath = pathRepository.save(newPath);
-                        System.out.println("✅ Nouveau path créé - ID: " + savedPath.getIdPath() + ", Number: " + savedPath.getNumber() + ", Name: " + savedPath.getName());
-                        return savedPath;
-                    });
+            if (dto.getPathId() != null) {
+                // Use the provided path ID - direct lookup
+                path = pathRepository.findById(dto.getPathId())
+                    .orElseThrow(() -> new RuntimeException("Path not found with id: " + dto.getPathId()));
 
-                System.out.println("✅ Path utilisé - ID: " + path.getIdPath() + ", Number: " + path.getNumber() + ", Name: " + path.getName());
+                // Verify the path belongs to the user's institution
+                if (!path.getInstitution().getIdInstitution().equals(user.getInstitution().getIdInstitution())) {
+                    return ResponseEntity.badRequest()
+                        .body("Le parcours spécifié n'appartient pas à votre institution");
+                }
+
+                System.out.println("✅ Path trouvé - ID: " + path.getIdPath() + ", Number: " + path.getNumber() + ", Name: " + path.getName());
             } else {
-                System.out.println("⚠️ PathNumber est NULL, utilisation du fallback");
+                System.out.println("⚠️ PathId est NULL, utilisation du fallback");
                 // Fallback to first path or create default
+                Long institutionId = user.getInstitution().getIdInstitution();
                 path = pathRepository.findByInstitution_IdInstitution(institutionId)
                     .stream()
                     .findFirst()
@@ -469,18 +465,9 @@ public class MCCCController {
             if (labelChanged || semesterChanged) {
                 Long pathId = existingUE.getPath() != null ? existingUE.getPath().getIdPath() : null;
 
-                // Si pathNumber est fourni dans le DTO, l'utiliser pour la validation
-                if (dto.getPathNumber() != null && dto.getUserId() != null) {
-                    UserSyncadia user = userSyncadiaRepository.findById(dto.getUserId()).orElse(null);
-                    if (user != null && user.getInstitution() != null) {
-                        Path newPath = pathRepository.findByInstitution_IdInstitutionAndNumber(
-                            user.getInstitution().getIdInstitution(),
-                            dto.getPathNumber()
-                        ).orElse(null);
-                        if (newPath != null) {
-                            pathId = newPath.getIdPath();
-                        }
-                    }
+                // Si pathId est fourni dans le DTO, l'utiliser pour la validation
+                if (dto.getPathId() != null) {
+                    pathId = dto.getPathId();
                 }
 
                 if (pathId != null) {
@@ -530,22 +517,21 @@ public class MCCCController {
             }
             // Sinon, on garde le Terms actuel (même objet, même ID)
 
-            // Update Path if pathNumber is provided
-            if (dto.getPathNumber() != null) {
-                // Get user to find institution
+            // Update Path if pathId is provided
+            if (dto.getPathId() != null) {
+                // Get user to verify institution
                 if (dto.getUserId() != null) {
-                    UserSyncadia user = userSyncadiaRepository.findById(dto.getUserId())
-                        .orElse(null);
+                    UserSyncadia user = userSyncadiaRepository.findById(dto.getUserId()).orElse(null);
                     if (user != null && user.getInstitution() != null) {
-                        Long institutionId = user.getInstitution().getIdInstitution();
-                        Path path = pathRepository.findByInstitution_IdInstitutionAndNumber(institutionId, dto.getPathNumber())
-                            .orElseGet(() -> {
-                                Path newPath = new Path();
-                                newPath.setNumber(dto.getPathNumber());
-                                newPath.setName("Path " + dto.getPathNumber() + " - " + user.getInstitution().getName());
-                                newPath.setInstitution(user.getInstitution());
-                                return pathRepository.save(newPath);
-                            });
+                        Path path = pathRepository.findById(dto.getPathId())
+                            .orElseThrow(() -> new RuntimeException("Path not found with id: " + dto.getPathId()));
+
+                        // Verify the path belongs to the user's institution
+                        if (!path.getInstitution().getIdInstitution().equals(user.getInstitution().getIdInstitution())) {
+                            return ResponseEntity.badRequest()
+                                .body("Le parcours spécifié n'appartient pas à votre institution");
+                        }
+
                         existingUE.setPath(path);
                     }
                 }
@@ -561,6 +547,29 @@ public class MCCCController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Error updating UE: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Delete a UE by ID
+     * DELETE /api/v2/mccc/ues/{id}
+     */
+    @DeleteMapping("/ues/{id}")
+    public ResponseEntity<?> deleteMCCCUE(@PathVariable Long id) {
+        try {
+            // Vérifier si l'UE existe
+            if (!ueRepository.existsById(id)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Supprimer l'UE
+            ueRepository.deleteById(id);
+
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error deleting UE: " + e.getMessage());
         }
     }
 }

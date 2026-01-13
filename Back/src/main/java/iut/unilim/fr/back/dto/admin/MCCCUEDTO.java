@@ -15,6 +15,7 @@ public class MCCCUEDTO {
     private String termsCode;          // Terms code (e.g., "NGCC")
 
     // Path information
+    private Long pathId;               // Path ID for direct lookup
     private Integer pathNumber;
     private String pathName;
 
@@ -90,6 +91,14 @@ public class MCCCUEDTO {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public Long getPathId() {
+        return pathId;
+    }
+
+    public void setPathId(Long pathId) {
+        this.pathId = pathId;
     }
 
     public Integer getPathNumber() {
@@ -202,4 +211,3 @@ public class MCCCUEDTO {
         }
     }
 }
-
