@@ -136,6 +136,10 @@ async function downloadSheets() {
   }
 }
 
+const goToRessourceSheetDisplay = (url, label) => {
+  window.location.hash = `${url}?label=${label}`
+}
+
 </script>
 
 <template>
@@ -184,11 +188,10 @@ async function downloadSheets() {
 
         <div v-else class="ressource" v-for="sheet in getResourcesForSemester(selected_semester_sheets)" :key="sheet.id">
           <p>{{ sheet.resourceLabel }}</p>
-          <input
-            type="checkbox"
-            :checked="isSheetSelected(sheet.id)"
-            @change="toggleSheetSelection(sheet.id)"
-          />
+          <div style="gap: 5px">
+            <button class="btn1" style="width: 5vw" @click="goToRessourceSheetDisplay('#/resource-sheet-display', sheet.resourceLabel)">Voir</button>
+            <input type="checkbox" :checked="isSheetSelected(sheet.id)" @change="toggleSheetSelection(sheet.id)" />
+          </div>
         </div>
 
       </div>
