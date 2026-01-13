@@ -17,8 +17,8 @@
     document.location.href = '#/dashboard-administration';
   };
 
-  const goToRessourceSheet = (url, semester) => {
-    window.location.hash = `${url}?id=${semester}`
+  const goToRessourceSheet = (url, pathId) => {
+    window.location.hash = `${url}?pathId=${pathId}`
   }
 
   const attachAccordionListeners = () => {
@@ -171,6 +171,13 @@
   }
 
   const updateCourse = async (cours) => {
+
+    if(isNameTaken(coursName.value)) {
+      errors.value.nameUse = true
+      alert("Nom de parcours est déjà utilisé.")
+      return
+    }
+
     try {
       const response = {
         name: cours.name,

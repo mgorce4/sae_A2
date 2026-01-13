@@ -11,6 +11,7 @@ const afficherBoutons = ref([
 const saeTable = ref([])
 const ueTable = ref([])
 const resourceTable = ref([])
+const pathId=ref([])
 
 onMounted(async () => {
     const saes = await axios.get(`http://localhost:8080/api/v2/mccc/saes/institution/${localStorage.idInstitution}`)
@@ -19,6 +20,7 @@ onMounted(async () => {
     ueTable.value = ues.data
     const resources = await axios.get(`http://localhost:8080/api/v2/mccc/resources/institution/${localStorage.idInstitution}`)
     resourceTable.value = resources.data
+    pathId.value = parseInt(getQueryParam('pathId'))
 })
 
 const hasSAEInSemester = (semester) => {
@@ -43,8 +45,17 @@ const getStatusForSemester = (semester) => {
     return 'Vierge'
 }
 
-const goToRessourceSheet = (url, semester) => {
-  window.location.hash = `${url}?id=${semester}`
+const getQueryParam = (param) => {
+  const hash = window.location.hash
+  const queryString = hash.split('?')[1]
+  if (!queryString) return null
+  const params = new URLSearchParams(queryString)
+  return params.get(param)
+}
+
+const goToRessourceSheet = (url, semester, pathId) => {
+  localStorage.pathId = pathId
+  window.location.hash = `${url}?id=${semester}&pathId=${pathId}`
 }
 </script>
 
@@ -61,9 +72,9 @@ const goToRessourceSheet = (url, semester) => {
             <p class="semester_display">Semestre {{ 2*index+index2+1 }}</p>
             <p class="status_display" v-show="!btn">{{ getStatusForSemester(2*index+index2+1) }}</p>
             <div v-show="btn" class="container-fluid spe">
-              <button v-show="btn" class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-UE', (2*index+index2+1))">UE</button>
-              <button v-show="hasResourceInSemester(2*index+index2+1) || hasUEInSemester(2*index+index2+1)" class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-ressources', (2*index+index2+1))">Ressource</button>
-              <button v-show="hasSAEInSemester(2*index+index2+1) || hasUEInSemester(2*index+index2+1)" class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-sae', (2*index+index2+1))">SAÉ</button>
+              <button v-show="btn" class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-UE', (2*index+index2+1), pathId)">UE</button>
+              <button v-show="hasResourceInSemester(2*index+index2+1) || hasUEInSemester(2*index+index2+1)" class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-ressources', (2*index+index2+1), pathId)">Ressource</button>
+              <button v-show="hasSAEInSemester(2*index+index2+1) || hasUEInSemester(2*index+index2+1)" class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-sae', (2*index+index2+1), pathId)">SAÉ</button>
             </div>
           </div>
         </div>

@@ -83,10 +83,29 @@
         }
     }
 
-    const getUEForSemester = computed(() => {
-        return ueList.value.filter((ue) => {
-            return ue.semester == getQueryParam('id')
-        })
+    const getUEForSemester = computed(() => { 
+        const semester = parseInt(getQueryParam('id')) 
+        const pathId = parseInt(getQueryParam('pathId')) 
+        
+        console.log('getUEForSemester - Semester:', semester, 'PathId:', pathId)
+        console.log('getUEForSemester - Total UEs:', ueList.value.length)
+        
+        let filtered = ueList.value
+        
+        // Filtrer par semestre si un semestre est spécifié
+        if (semester && !isNaN(semester)) {
+            filtered = filtered.filter(ue => ue.semester === semester)
+            console.log('Après filtre semester:', filtered.length)
+        }
+        
+        // Filtrer par pathId si un pathId est spécifié
+        if (pathId && !isNaN(pathId)) {
+            filtered = filtered.filter(ue => ue.path && ue.path.pathNumber === pathId)
+            console.log('Après filtre pathId:', filtered.length)
+        }
+        
+        console.log('UEs finales affichées:', filtered)
+        return filtered.sort((a, b) => a.label.localeCompare(b.label)) 
     })
 
     // Watch for changes to reattach accordion listeners
@@ -95,8 +114,21 @@
     })
 
     onMounted(async () => {
+        const pathId = parseInt(getQueryParam('pathId'))
         const response = await axios.get(`http://localhost:8080/api/v2/mccc/ues/institution/${localStorage.idInstitution}`)
-        ueList.value = response.data
+        
+        console.log('Toutes les UEs chargées:', response.data)
+        console.log('PathId recherché:', pathId)
+        
+        // Si pathId existe, filtrer par path, sinon charger toutes les UEs
+        if (pathId && !isNaN(pathId)) {
+            ueList.value = response.data.filter(ue => ue.path && ue.path.pathNumber === pathId)
+            console.log('UEs après filtrage par pathId:', ueList.value)
+        } else {
+            ueList.value = response.data
+            console.log('Aucun pathId, toutes les UEs chargées')
+        }
+        
         attachAccordionListeners();
     })
 
@@ -170,6 +202,8 @@
                 return;
             }
 
+            const pathId = parseInt(getQueryParam('pathId'));
+
             const payload = {
                 euApogeeCode: apogee_code.value,
                 label: ueLabel,
@@ -177,7 +211,8 @@
                 competenceLevel: competenceLevelNum,
                 semester: semester,
                 userId: parseInt(localStorage.idUser),
-                termsCode: terms.value
+                termsCode: terms.value,
+                pathId: pathId && !isNaN(pathId) ? pathId : null
             };
 
             console.log('Envoi du payload:', payload);
@@ -190,8 +225,7 @@
             attachAccordionListeners();
 
             console.log('UE sauvegardée avec succès');
-        }
-        catch (error){
+        } catch (error){
             console.error('Erreur lors de la sauvegarde:', error);
             if (error.response) {
                 console.error('Détails de l\'erreur:', error.response.data);
@@ -221,8 +255,6 @@
                 termsCode: ue.termsCode || null
             };
 
-            console.log('Mise à jour de l\'UE:', payload);
-
             // Utiliser l'endpoint PUT du MCCC Controller
             await axios.put(`http://localhost:8080/api/v2/mccc/ues/${ue.ueNumber}`, payload);
 
@@ -248,7 +280,7 @@
             return;
         }
         try{
-            await axios.delete(`http://localhost:8080/api/ues/${id}`);
+            await axios.delete(`http://localhost:8080/api/v2/mccc/ues/${id}`);
             await axios.get(`http://localhost:8080/api/v2/mccc/ues/institution/${localStorage.idInstitution}`).then(response => (ueList.value = response.data));
 
             attachAccordionListeners();
