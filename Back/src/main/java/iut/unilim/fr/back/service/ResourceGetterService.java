@@ -73,7 +73,7 @@ public class ResourceGetterService {
 
     private void initializePlaceHolderValues() {
         String PLACEHOLDER_TITLE = "Aucun";
-        Double PLACEHOLDER_HOURS = -1;
+        Double PLACEHOLDER_HOURS = -1.0;
         int NB_ELEMENTS_HOURS = 4;
 
         skills.add(PLACEHOLDER);

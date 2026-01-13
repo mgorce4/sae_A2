@@ -81,17 +81,17 @@ public class MCCCMapper {
         List<HoursPerStudent> hoursList = hoursPerStudentRepository.findByResource_IdResource(resourceId);
         if (!hoursList.isEmpty()) {
             HoursPerStudent hours = hoursList.get(0);
-            dto.setPnCm(hours.getCm() != null ? hours.getCm() : 0);
-            dto.setPnTd(hours.getTd() != null ? hours.getTd() : 0);
-            dto.setPnTp(hours.getTp() != null ? hours.getTp() : 0);
-            dto.setPnTotal((dto.getPnCm() != null ? dto.getPnCm() : 0) +
-                          (dto.getPnTd() != null ? dto.getPnTd() : 0) +
-                          (dto.getPnTp() != null ? dto.getPnTp() : 0));
+            dto.setPnCm(hours.getCm() != null ? hours.getCm() : 0.0);
+            dto.setPnTd(hours.getTd() != null ? hours.getTd() : 0.0);
+            dto.setPnTp(hours.getTp() != null ? hours.getTp() : 0.0);
+            dto.setPnTotal((dto.getPnCm() != null ? dto.getPnCm() : 0.0) +
+                          (dto.getPnTd() != null ? dto.getPnTd() : 0.0) +
+                          (dto.getPnTp() != null ? dto.getPnTp() : 0.0));
         } else {
-            dto.setPnCm(0);
-            dto.setPnTd(0);
-            dto.setPnTp(0);
-            dto.setPnTotal(0);
+            dto.setPnCm(0.0);
+            dto.setPnTd(0.0);
+            dto.setPnTp(0.0);
+            dto.setPnTotal(0.0);
         }
     }
 
@@ -114,21 +114,21 @@ public class MCCCMapper {
 
         if (!initialHours.isEmpty()) {
             TeacherHours hours = initialHours.get(0);
-            dto.setInitialCm(hours.getCm() != null ? hours.getCm() : 0);
-            dto.setInitialTd(hours.getTd() != null ? hours.getTd() : 0);
-            dto.setInitialTp(hours.getTp() != null ? hours.getTp() : 0);
+            dto.setInitialCm(hours.getCm() != null ? hours.getCm() : 0.0);
+            dto.setInitialTd(hours.getTd() != null ? hours.getTd() : 0.0);
+            dto.setInitialTp(hours.getTp() != null ? hours.getTp() : 0.0);
             // Project hours would come from another field if it exists
             dto.setInitialProject(0);
-            dto.setInitialTotal((dto.getInitialCm() != null ? dto.getInitialCm() : 0) +
-                               (dto.getInitialTd() != null ? dto.getInitialTd() : 0) +
-                               (dto.getInitialTp() != null ? dto.getInitialTp() : 0) +
+            dto.setInitialTotal((dto.getInitialCm() != null ? dto.getInitialCm() : 0.0) +
+                               (dto.getInitialTd() != null ? dto.getInitialTd() : 0.0) +
+                               (dto.getInitialTp() != null ? dto.getInitialTp() : 0.0) +
                                (dto.getInitialProject() != null ? dto.getInitialProject() : 0));
         } else {
-            dto.setInitialCm(0);
-            dto.setInitialTd(0);
-            dto.setInitialTp(0);
+            dto.setInitialCm(0.0);
+            dto.setInitialTd(0.0);
+            dto.setInitialTp(0.0);
             dto.setInitialProject(0);
-            dto.setInitialTotal(0);
+            dto.setInitialTotal(0.0);
         }
 
         // Alternance hours
@@ -138,20 +138,20 @@ public class MCCCMapper {
 
         if (!alternanceHours.isEmpty()) {
             TeacherHours hours = alternanceHours.get(0);
-            dto.setAlternanceCm(hours.getCm() != null ? hours.getCm() : 0);
-            dto.setAlternanceTd(hours.getTd() != null ? hours.getTd() : 0);
-            dto.setAlternanceTp(hours.getTp() != null ? hours.getTp() : 0);
+            dto.setAlternanceCm(hours.getCm() != null ? hours.getCm() : 0.0);
+            dto.setAlternanceTd(hours.getTd() != null ? hours.getTd() : 0.0);
+            dto.setAlternanceTp(hours.getTp() != null ? hours.getTp() : 0.0);
             dto.setAlternanceProject(0);
-            dto.setAlternanceTotal((dto.getAlternanceCm() != null ? dto.getAlternanceCm() : 0) +
-                                  (dto.getAlternanceTd() != null ? dto.getAlternanceTd() : 0) +
-                                  (dto.getAlternanceTp() != null ? dto.getAlternanceTp() : 0) +
+            dto.setAlternanceTotal((dto.getAlternanceCm() != null ? dto.getAlternanceCm() : 0.0) +
+                                  (dto.getAlternanceTd() != null ? dto.getAlternanceTd() : 0.0) +
+                                  (dto.getAlternanceTp() != null ? dto.getAlternanceTp() : 0.0) +
                                   (dto.getAlternanceProject() != null ? dto.getAlternanceProject() : 0));
         } else {
-            dto.setAlternanceCm(0);
-            dto.setAlternanceTd(0);
-            dto.setAlternanceTp(0);
+            dto.setAlternanceCm(0.0);
+            dto.setAlternanceTd(0.0);
+            dto.setAlternanceTp(0.0);
             dto.setAlternanceProject(0);
-            dto.setAlternanceTotal(0);
+            dto.setAlternanceTotal(0.0);
         }
     }
 

@@ -282,13 +282,13 @@ public class ResourceSheetMapper {
 
         if (hours != null) {
             return new HoursDTO(
-                hours.getCm() != null ? hours.getCm() : 0,
-                hours.getTd() != null ? hours.getTd() : 0,
-                hours.getTp() != null ? hours.getTp() : 0,
+                hours.getCm() != null ? hours.getCm() : 0.0,
+                hours.getTd() != null ? hours.getTd() : 0.0,
+                hours.getTp() != null ? hours.getTp() : 0.0,
                 hours.getHasAlternance()
             );
         }
-        return new HoursDTO(0, 0, 0, isAlternance);
+        return new HoursDTO(0.0, 0.0, 0.0, isAlternance);
     }
 
     private HoursDTO getHoursTeacher(Long resourceSheetId) {

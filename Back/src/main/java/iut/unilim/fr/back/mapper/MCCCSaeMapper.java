@@ -84,11 +84,11 @@ public class MCCCSaeMapper {
         if (!hoursList.isEmpty()) {
             SAEHours saeHours = hoursList.get(0);
             return new SAEHoursInfo(
-                saeHours.getHours() != null ? saeHours.getHours() : 0,
+                saeHours.getHours() != null ? saeHours.getHours() : 0.0,
                 saeHours.getHasAlternance() != null ? saeHours.getHasAlternance() : false
             );
         }
-        return new SAEHoursInfo(0, false);
+        return new SAEHoursInfo(0.0, false);
     }
 
     /**

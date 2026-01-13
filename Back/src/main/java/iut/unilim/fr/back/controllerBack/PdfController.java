@@ -258,8 +258,8 @@ public class PdfController {
         // Actual :
         Chunk programme = new Chunk("Votre programme - Alternance", contentFont);
         programmeContent.add(programme);
-        ArrayList<Integer> hours = (ArrayList<Integer>) res.getHoursStudentInternship();
-        for (Integer h : hours) {
+        ArrayList<Double> hours = (ArrayList<Double>) res.getHoursStudentInternship();
+        for (Double h : hours) {
             Chunk chunk = new Chunk(h.toString(), contentFont);
             programmeContent.add(chunk);
         }
@@ -272,8 +272,8 @@ public class PdfController {
         Chunk pn = new Chunk("Programme Nationnal - Alternance", contentFont);
         programmeContent.add(pn);
 
-        ArrayList<Integer> pnContent = (ArrayList<Integer>) res.getHoursPNInternship();
-        for (Integer h : pnContent) {
+        ArrayList<Double> pnContent = (ArrayList<Double>) res.getHoursPNInternship();
+        for (Double h : pnContent) {
             Chunk chunk = new Chunk(h.toString(), contentFont);
             programmeContent.add(chunk);
         }
@@ -302,8 +302,8 @@ public class PdfController {
         Chunk pn = new Chunk("Programme Nationnal", contentFont);
         programmeContent.add(pn);
 
-        ArrayList<Integer> pnContent = (ArrayList<Integer>) res.getHoursPN();
-        for (Integer h : pnContent) {
+        ArrayList<Double> pnContent = (ArrayList<Double>) res.getHoursPN();
+        for (Double h : pnContent) {
             Chunk chunk = new Chunk(h.toString(), contentFont);
             programmeContent.add(chunk);
         }
@@ -316,8 +316,8 @@ public class PdfController {
         // Actual :
         Chunk programme = new Chunk("Votre programme", contentFont);
         programmeContent.add(programme);
-        ArrayList<Integer> hours = (ArrayList<Integer>) res.getHoursStudent();
-        for (Integer h : hours) {
+        ArrayList<Double> hours = (ArrayList<Double>) res.getHoursStudent();
+        for (Double h : hours) {
             Chunk chunk = new Chunk(h.toString(), contentFont);
             programmeContent.add(chunk);
         }
