@@ -80,7 +80,8 @@
         )
         .map(path => ({
           ...path,
-          show: false
+          show: false,
+          edit:false,
         }))
       attachAccordionListeners();
     } catch (error) {
@@ -88,6 +89,10 @@
       coursList.value = [];
     }
   })
+
+  const isNameTaken = (name, excludeId = null) => { 
+    return coursList.value.some(c => c.name.trim().toLowerCase() === name.trim().toLowerCase() && c.idPath !== excludeId );
+  };
 
   const save = async () => {
     errors.value = {
@@ -113,6 +118,11 @@
     const coursNbIsNum = parseInt(coursNb.value)
     if (isNaN(coursNbIsNum)) {
       errors.value.coursNb = true
+      return
+    }
+
+    if(isNameTaken(coursName.value)) {
+      errors.value.nameUse = true
       return
     }
 
@@ -230,19 +240,24 @@
           <button id="button_more" v-on:click="display_more_area = true">+</button>
         </div>
 
+        <!--creer le formulaire-->
         <form v-show="display_more_area" method="post" v-on:submit.prevent="">
           <a class="accordion_UE" id="dark_bar">Ajout d'un parcours :</a>
           <div class="panel_UE" style="padding-top: 0.6vw; flex-wrap: wrap;">
+
             <div style="margin-right: 0.5vw;">
               <label>Nom du parcours : <span class="required">*</span></label>
               <input type="text" class="input" v-model="coursName"/>
               <span v-if="errors.coursName" class="error-message">Merci de remplir ce champ</span>
+              <span v-if="errors.nameUse" class="error-message">Nom de parcours est déjà utilisé.</span>
             </div>
+
             <div style="margin-right: 0.5vw;">
               <label>Nombre associé au parcours : <span class="required">*</span></label>
               <input type="number" step="1" class="input" v-model="coursNb" @keydown="preventInvalidChars" />
               <span v-if="errors.coursNb" class="error-message">Merci de remplir ce champ</span>
             </div>
+
             <div style="display: flex; margin : 0.5vw 1vw; justify-content: center; width: 100%;"> 
               <input class="btn1" type="button" value="Annuler" @click="display_more_area = false" style="margin-right: 1vw;">
               <input class="btn1" type="submit" value="Sauvegarder" @click="save">
@@ -250,25 +265,26 @@
           </div>
         </form>
         
+        <!--here's your path -->
         <div v-for="cours in getCourses" :key="cours.idPath">
-          <div class="path" v-on:mouseover="cours.show = true" v-on:mouseout="cours.show = false" @click="goToRessourceSheet('#/mccc-select-form', cours.idPath)">
+          <div class="path" v-on:mouseover="cours.show = true" v-on:mouseout="!cours.edit ? cours.show = false : null" @click="goToRessourceSheet('#/mccc-select-form', cours.idPath)">
             <p>{{ cours.name }}</p>
-            <div v-show="cours.show" @click.stop>
-              <div style="display: flex; margin : 0.5vw 1vw; justify-content: center; width: 100%;">
-                <button v-if="!click" @click="click = !click" class="btn_modify">Modifier</button>
-                <button v-if="!click" class="btn_modify" @click="del(cours.idPath)">Supprimer</button>
+            <div v-show="cours.show || cours.edit" @click.stop>
+              <div style="display: flex; margin-right: 4vw; justify-content: center; width: 100%; ">
+                <button v-if="!cours.edit" @click="cours.edit = true" class="btn_modify">Modifier</button>
+                <button v-if="!cours.edit" class="btn_modify" @click="del(cours.idPath)">Supprimer</button>
               </div>
-              <div v-if="click" >
+              <div v-if="cours.edit" style="margin: 1vw 4vw; ">
                 <div>
-                  <label>Nom du parcours : <span class="required">* </span></label>
-                  <input type="text" class="input" v-model="cours.name" />
+                  <label style="font-size: 0.9vw;">Nom du parcours : <span class="required">* </span></label>
+                  <input type="text" class="inp_path" v-model="cours.name"/>
                 </div>
                 <div>
-                  <label>Nombre associé au parcours : <span class="required">* </span></label>
-                  <input type="number" step="1" class="input" v-model="cours.number" @keydown="preventInvalidChars" />
+                  <label style="font-size: 0.9vw;">Nombre associé au parcours : <span class="required">* </span></label>
+                  <input type="number" step="1" class="inp_path" v-model="cours.number" @keydown="preventInvalidChars" />
                 </div>
                 <div style="display: flex;">
-                  <button class="btn_path" type="button" @click="click = false">Annuler</button>
+                  <button class="btn_path" type="button" @click="cours.edit = false">Annuler</button>
                   <button class="btn_path" type="submit" @click="updateCourse(cours)">Sauvegarder</button>
                 </div>
               </div>
@@ -284,13 +300,13 @@
 #form_select_page {
   margin: 3vw 14vw;
   justify-content: center;
-  color: var(--main-theme-tertiary-color);
+  color: var(--main-theme-terciary-color);
 }
 
 .back {
   font-size: 1.5vw;
   font-weight: bold;
-  color: var(--main-theme-tertiary-color);
+  color: var(--main-theme-terciary-color);
   margin-left: 1.5vw;
 }
 
@@ -312,6 +328,7 @@
   padding-bottom: 0.5vw;
   font-weight: lighter;
   font-size: 2.1vw;
+  margin: 0;
 }
 
 .required {
@@ -339,11 +356,10 @@ input[type="number"] {
 }
 
 .path {
-  height: 2.5vw;
+  height: 5.5vw;
   background-color: var(--sub-scrollbar-color);
   border-radius: 0.5vw;
   margin: 2% 0 0 0;
-  padding: 2% 5%;
   color: var(--main-theme-secondary-color);
   display: flex;
   justify-content: space-between;
@@ -352,13 +368,14 @@ input[type="number"] {
 
 .path p {
   font-size: 1.5vw;
+  margin : 3.5vw;
 }
 
 .btn_path{
   cursor: pointer;
   background-color: var(--clickable-background-color)/*#242222*/;
   border-color: var(--main-theme-tertiary-color);
-  height: 2vw;
+  height: 1.3vw;
   color: white;
   font-size: 0.8vw;
   border-radius: 0.5vw;
@@ -366,6 +383,14 @@ input[type="number"] {
   display: flex;
   align-items: center;
   margin-right: 0.5vw;
+}
+
+.inp_path{
+  border-radius: 5px;
+  background-color: rgba(117, 117, 117, 100);
+  color: var(--main-theme-secondary-color);
+  width: 5vw;
+  font-size: 0.8vw;
 }
 
 .btn_modify{
@@ -377,6 +402,7 @@ input[type="number"] {
   font-size: 0.8vw;
   border-radius: 0.5vw;
   padding: 0 1vw;
+  margin-right: 1vw;
   display: flex;
   align-items: center;
   justify-content: center;

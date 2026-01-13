@@ -458,8 +458,7 @@ function isTeacherNamesEquals(i, j, teacher_names) {
               <label for="resource_name">Nom de la ressource : </label>
               <input id="resource_name" type="text" class="input" v-model="resource_name" required />
             </div>
-            <p id="error_resource_name" class="error_message"></p>
-
+            
             <div>
               <label for="apogee_code">Code apogée : </label>
               <input id="apogee_code" type="text" class="input" v-model="apogee_code" required />
