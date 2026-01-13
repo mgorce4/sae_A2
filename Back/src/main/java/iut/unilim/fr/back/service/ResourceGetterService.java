@@ -24,7 +24,7 @@ public class ResourceGetterService {
     @Autowired
     private ResourceSheetDTOController rsDTOController;
 
-    private String fileName = "";
+    private String resourceName = "";
 
     private String ref;
     private String qualityReference;
@@ -55,7 +55,7 @@ public class ResourceGetterService {
     private String studentFeedback;
     private String improvements;
 
-    private final String PLACEHOLDER = "Aucun contenue pour cette catégorie";
+    public static final String PLACEHOLDER = "Aucun contenue pour cette catégorie";
 
     public ResourceGetterService() {
         skills = new ArrayList<>();
@@ -106,7 +106,7 @@ public class ResourceGetterService {
 
     @Transactional
     public void setValuesFromResource(String resourceName) {
-        this.fileName = "";
+        this.resourceName = "";
         initializePlaceHolderValues();
         int multi_skill_limit = 1;
 
@@ -123,7 +123,7 @@ public class ResourceGetterService {
             writeInPdfLog("Could not get the resource sheet from the database because there is no resource with id = " + resourceName);}
 
         if (resultResource.isPresent() && resultResourceSheet.isPresent()) {
-            fileName = resourceName;
+            this.resourceName = resourceName;
             Ressource resource = resultResource.get();
 
             id = resource.getIdResource();
@@ -251,7 +251,7 @@ public class ResourceGetterService {
 
     }
 
-    private void setHoursDTO(HoursDTO hoursDTO, List<Double> hours) {
+    public static void setHoursDTO(HoursDTO hoursDTO, List<Double> hours) {
         hours.clear();
         hours.add(hoursDTO.getCm());
         hours.add(hoursDTO.getTd());
@@ -341,8 +341,8 @@ public class ResourceGetterService {
         return improvements;
     }
 
-    public String getFileName() {
-        return fileName;
+    public String getResourceName() {
+        return resourceName;
     }
 
 }

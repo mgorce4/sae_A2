@@ -60,10 +60,9 @@ public class PdfController {
         float[] pedagoTableWidth = {1f, 6f};
         String pedagoContentSplitDelimitator = ",";
 
-
-        String fileName = res.getFileName();
-        String pdfFileName = fileName + "_ressource_sheet.pdf";
-        if (!fileName.isEmpty()) {
+        String resResourceName = res.getResourceName();
+        if (!resResourceName.isEmpty()) {
+            String pdfFileName = resResourceName + "_ressource_sheet.pdf";
             try {
                 Document document = new Document(PageSize.A4, documentMargin, documentMargin, documentMarginTop, documentMarginBottom);
                 PdfWriter writer = PdfWriter.getInstance(document, out);
