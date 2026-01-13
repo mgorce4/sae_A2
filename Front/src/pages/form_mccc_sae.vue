@@ -132,6 +132,9 @@
 
         
         document.getElementById('save').addEventListener('click', () => {
+
+            errors.value.ueCoefficients = false
+            document.getElementById("error_ue").innerHTML = ""
         
             // Variabble for the messages
             let ues = document.querySelectorAll('#ue_select')
@@ -141,6 +144,24 @@
             for (let i = 0; i < ue_list.value.length; i++) {
             ue_list.value[i].ue = ues[i].value
             ue_list.value[i].coefficient = coefs[i].value
+            }
+
+            for (let i = 0; i < ue_list.value.length; i++) {
+                if (ue_list.value[i].coefficient === '') {
+                    errors.value.ueCoefficients = true
+                    document.getElementById("error_ue").innerHTML = "Le coefficient de chaque UE est obligatoire"
+                }
+            }
+
+            if (ue_list.value.length > 1) {
+                let first_ue = ue_list.value[0].ue
+
+                for (let i = 1; i < ue_list.value.length; i++) {
+                    if (first_ue === ue_list.value[i].ue) {
+                        errors.value.ueCoefficients = true
+                        document.getElementById("error_ue").innerHTML = "Une resource ne peut pas être affectée plusieurs fois à la même UE"
+                    }
+                }
             }
             console.log("UE LIST : ", ue_list.value)
         })
@@ -374,7 +395,7 @@
                                         <input id="coefficient" type="text" class="input" style="margin-top: 4px" v-model="ue.coefficient"/>
                                     </div>
                                 </div>
-                                <p id="error_ue_coefficients" class="error_message"></p>
+                                <p id="error_ue" class="error_message"></p>
                             </div>
 
                         </div>
