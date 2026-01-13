@@ -17,7 +17,9 @@ public class ResourceSheetDTO {
     private String qualityReference;
     private Integer semester;
     private String terms;
+    private String path;
     private Boolean diffMultiCompetences;
+
 
     // Department
     private String department;
@@ -135,6 +137,14 @@ public class ResourceSheetDTO {
 
     public void setTerms(String terms) {
         this.terms = terms;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
     }
 
     public Boolean getDiffMultiCompetences() {

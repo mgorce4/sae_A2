@@ -49,7 +49,6 @@ public class ResourceSheetDTOController {
     /**
      * GET /api/v2/resource-sheets/{id}
      * Returns ONE complete resource sheet with ALL data
-     *
      * THIS IS THE MAGIC: one request, all data!
      */
     @GetMapping("/{id}")

@@ -80,6 +80,7 @@ public class ResourceSheetMapper {
         dto.setQualityReference("IU EN FOR 001"); // Fixed value
         dto.setSemester(resource.getSemester());
         dto.setTerms(resource.getTerms() != null ? resource.getTerms().getCode() : null);
+        dto.setPath(getPath(resource.getIdResource()));
         dto.setDiffMultiCompetences(resource.getDiffMultiCompetences());
 
         // Department (via main teacher's institution)
@@ -159,6 +160,17 @@ public class ResourceSheetMapper {
             UserSyncadia user = mainTeachers.get(0).getUser();
             if (user != null) {
                 return user.getFirstname() + " " + user.getLastname();
+            }
+        }
+        return null;
+    }
+
+    private String getPath(Long resourceId) {
+        List<UeCoefficient> coefficients = ueCoefficientRepository.findByResource_IdResource(resourceId);
+        if (!coefficients.isEmpty()) {
+            UE ue = coefficients.get(0).getUe();
+            if (ue != null && ue.getPath() != null) {
+                return ue.getPath().getName();
             }
         }
         return null;
