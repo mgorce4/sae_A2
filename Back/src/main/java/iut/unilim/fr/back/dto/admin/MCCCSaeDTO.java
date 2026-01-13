@@ -12,8 +12,9 @@ public class MCCCSaeDTO {
     private String termsCode;          // Terms code (e.g., "NGCC")
 
     // Hours
-    private Double hours;
-    private Boolean hasAlternance;
+    private Double hours;              // Hours for formation initiale (has_alternance = 0)
+    private Double hoursAlternance;    // Hours for alternance (has_alternance = 1)
+    private Boolean hasAlternance;     // Deprecated: use hoursAlternance instead
 
     // Linked resources
     private List<String> linkedResources;   // Labels of linked resources
@@ -79,6 +80,14 @@ public class MCCCSaeDTO {
 
     public void setHours(Double hours) {
         this.hours = hours;
+    }
+
+    public Double getHoursAlternance() {
+        return hoursAlternance;
+    }
+
+    public void setHoursAlternance(Double hoursAlternance) {
+        this.hoursAlternance = hoursAlternance;
     }
 
     public Boolean getHasAlternance() {

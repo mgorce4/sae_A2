@@ -6,6 +6,8 @@ public class SaeInfoDTO {
     private String label;       // e.g., "SAE 1.01"
     private String apogeeCode;  // e.g., "SAE101"
     private Boolean isLinked;   // true if the resource is linked to this SAE
+    private Double hours;       // Hours for formation initiale (has_alternance = 0)
+    private Double hoursAlternance; // Hours for alternance (has_alternance = 1)
 
     public SaeInfoDTO() {
     }
@@ -15,6 +17,15 @@ public class SaeInfoDTO {
         this.label = label;
         this.apogeeCode = apogeeCode;
         this.isLinked = isLinked;
+    }
+
+    public SaeInfoDTO(Long id, String label, String apogeeCode, Boolean isLinked, Double hours, Double hoursAlternance) {
+        this.id = id;
+        this.label = label;
+        this.apogeeCode = apogeeCode;
+        this.isLinked = isLinked;
+        this.hours = hours;
+        this.hoursAlternance = hoursAlternance;
     }
 
     public Long getId() {
@@ -47,6 +58,22 @@ public class SaeInfoDTO {
 
     public void setIsLinked(Boolean isLinked) {
         this.isLinked = isLinked;
+    }
+
+    public Double getHours() {
+        return hours;
+    }
+
+    public void setHours(Double hours) {
+        this.hours = hours;
+    }
+
+    public Double getHoursAlternance() {
+        return hoursAlternance;
+    }
+
+    public void setHoursAlternance(Double hoursAlternance) {
+        this.hoursAlternance = hoursAlternance;
     }
 }
 

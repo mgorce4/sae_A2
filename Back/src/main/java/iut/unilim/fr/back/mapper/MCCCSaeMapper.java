@@ -48,6 +48,7 @@ public class MCCCSaeMapper {
         // Hours from SAEHours table
         SAEHoursInfo hoursInfo = getHoursAndAlternance(sae.getIdSAE());
         dto.setHours(hoursInfo.hours);
+        dto.setHoursAlternance(hoursInfo.hoursAlternance);
         dto.setHasAlternance(hoursInfo.hasAlternance);
 
         // Institution ID from main teacher of linked resource
@@ -67,11 +68,13 @@ public class MCCCSaeMapper {
      * Inner class to hold hours and alternance info
      */
     private static class SAEHoursInfo {
-        Double hours;
-        Boolean hasAlternance;
+        Double hours;              // Formation initiale (has_alternance = 0)
+        Double hoursAlternance;    // Alternance (has_alternance = 1)
+        Boolean hasAlternance;     // True if at least one alternance entry exists
 
-        SAEHoursInfo(Double hours, Boolean hasAlternance) {
+        SAEHoursInfo(Double hours, Double hoursAlternance, Boolean hasAlternance) {
             this.hours = hours;
+            this.hoursAlternance = hoursAlternance;
             this.hasAlternance = hasAlternance;
         }
     }
@@ -81,14 +84,21 @@ public class MCCCSaeMapper {
      */
     private SAEHoursInfo getHoursAndAlternance(Long saeId) {
         List<SAEHours> hoursList = saeHoursRepository.findBySae_IdSAE(saeId);
-        if (!hoursList.isEmpty()) {
-            SAEHours saeHours = hoursList.get(0);
-            return new SAEHoursInfo(
-                saeHours.getHours() != null ? saeHours.getHours() : 0.0,
-                saeHours.getHasAlternance() != null ? saeHours.getHasAlternance() : false
-            );
+
+        Double hours = null;
+        Double hoursAlternance = null;
+        Boolean hasAlternance = false;
+
+        for (SAEHours saeHours : hoursList) {
+            if (saeHours.getHasAlternance() != null && saeHours.getHasAlternance()) {
+                hoursAlternance = saeHours.getHours();
+                hasAlternance = true;
+            } else {
+                hours = saeHours.getHours();
+            }
         }
-        return new SAEHoursInfo(0.0, false);
+
+        return new SAEHoursInfo(hours, hoursAlternance, hasAlternance);
     }
 
     /**
