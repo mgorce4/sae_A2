@@ -113,22 +113,15 @@
         attachAccordionListeners();
     })
 
-    onMounted(async () => {
-        const pathId = parseInt(getQueryParam('pathId'))
+    const reloadUEs = async () => {
+        // Charger toutes les UEs de l'institution
         const response = await axios.get(`http://localhost:8080/api/v2/mccc/ues/institution/${localStorage.idInstitution}`)
-        
-        console.log('Toutes les UEs chargées:', response.data)
-        console.log('PathId recherché:', pathId)
-        
-        // Si pathId existe, filtrer par path, sinon charger toutes les UEs
-        if (pathId && !isNaN(pathId)) {
-            ueList.value = response.data.filter(ue => ue.path && ue.path.pathNumber === pathId)
-            console.log('UEs après filtrage par pathId:', ueList.value)
-        } else {
-            ueList.value = response.data
-            console.log('Aucun pathId, toutes les UEs chargées')
-        }
-        
+        ueList.value = response.data
+        console.log('UEs chargées:', response.data)
+    }
+
+    onMounted(async () => {
+        await reloadUEs();
         attachAccordionListeners();
     })
 
@@ -212,7 +205,7 @@
                 semester: semester,
                 userId: parseInt(localStorage.idUser),
                 termsCode: terms.value,
-                pathId: pathId && !isNaN(pathId) ? pathId : null
+                pathNumber: pathId
             };
 
             console.log('Envoi du payload:', payload);
@@ -221,7 +214,7 @@
             [nb_UE, apogee_code, name_comp, comp_level, terms].forEach(f => f.value = '');
             display_more_area.value = false;
 
-            await axios.get(`http://localhost:8080/api/v2/mccc/ues/institution/${localStorage.idInstitution}`).then(response => (ueList.value = response.data));
+            await reloadUEs();
             attachAccordionListeners();
 
             console.log('UE sauvegardée avec succès');
@@ -259,8 +252,7 @@
             await axios.put(`http://localhost:8080/api/v2/mccc/ues/${ue.ueNumber}`, payload);
 
             // Recharger les UEs
-            const response = await axios.get(`http://localhost:8080/api/v2/mccc/ues/institution/${localStorage.idInstitution}`);
-            ueList.value = response.data;
+            await reloadUEs();
 
             attachAccordionListeners();
             console.log('UE modifiée avec succès');
@@ -281,12 +273,21 @@
         }
         try{
             await axios.delete(`http://localhost:8080/api/v2/mccc/ues/${id}`);
-            await axios.get(`http://localhost:8080/api/v2/mccc/ues/institution/${localStorage.idInstitution}`).then(response => (ueList.value = response.data));
+            await reloadUEs();
 
             attachAccordionListeners();
         }
         catch (error){
             console.error('Erreur lors de la suppression', error);
+        }
+    }
+
+    const goBack = () => {
+        const pathId = parseInt(getQueryParam('pathId'));
+        if (pathId && !isNaN(pathId)) {
+            window.location.hash = `#/mccc-select-form?pathId=${pathId}`;
+        } else {
+            window.location.hash = '#/mccc-select-form';
         }
     }
 </script>
@@ -295,7 +296,7 @@
 <template>
     <div id="UE">
         <div id="return_arrow">
-            <button id="back_arrow" onclick="document.location.href='#/mccc-select-form'">←</button>
+            <button id="back_arrow" @click="goBack">←</button>
             <p>Retour</p>
         </div>
         <div id="background_form_UE">
@@ -345,36 +346,40 @@
                         </div>
                     </div>
                 </form>
+                <div id="form_resources">
+                    <p v-if="getUEForSemester.length > 0">UE créées :</p>
+                    <p v-else>Aucune UE n'a été créée</p>
 
-                <div v-for="ueACord in getUEForSemester" :key="ueACord.ueNumber">
-                    <a class="accordion_UE" id="dark_bar">{{ueACord.label}} {{ueACord.name}}</a>
-                    <div class="panel_UE">
-                        <div id="left">
-                            <div>
-                                <p>Numéro de l'UE : </p>
-                                <input type="text" class="input" v-model="ueACord.label" />
+                    <div v-for="ueACord in getUEForSemester" :key="ueACord.ueNumber">
+                        <a class="accordion_UE" id="dark_bar">{{ueACord.label}} {{ueACord.name}}</a>
+                        <div class="panel_UE">
+                            <div id="left">
+                                <div>
+                                    <p>Numéro de l'UE : </p>
+                                    <input type="text" class="input" v-model="ueACord.label" />
+                                </div>
+                                <div>
+                                    <p>Code apogee : </p>
+                                    <input type="text" class="input" v-model="ueACord.euApogeeCode" />
+                                </div>
+                                <div>
+                                    <p>Intitulé de la compétence : </p>
+                                    <input type="text" class="input" v-model="ueACord.name" />
+                                </div>
+                                <div>
+                                    <p>Niveau de la compétence : </p>
+                                    <input type="number" step="1" class="input" v-model="ueACord.competenceLevel" @keydown="preventInvalidChars" />
+                                </div>
+                                <div>
+                                    <p>Modalité : </p>
+                                    <input type="text" class="input" v-model="ueACord.termsCode" />
+                                </div>
                             </div>
-                            <div>
-                                <p>Code apogee : </p>
-                                <input type="text" class="input" v-model="ueACord.euApogeeCode" />
-                            </div>
-                            <div>
-                                <p>Intitulé de la compétence : </p>
-                                <input type="text" class="input" v-model="ueACord.name" />
-                            </div>
-                            <div>
-                                <p>Niveau de la compétence : </p>
-                                <input type="number" step="1" class="input" v-model="ueACord.competenceLevel" @keydown="preventInvalidChars" />
-                            </div>
-                            <div>
-                                <p>Modalité : </p>
-                                <input type="text" class="input" v-model="ueACord.termsCode" />
-                            </div>
-                        </div>
 
-                        <div id="right">
-                            <input id="btn_cancel_UE" class="btn1" type="reset" value="Supprimer" @click="del(ueACord.ueNumber)">
-                            <input id="btn_save_UE" class="btn1" type="submit" value="Modifier" @click="updateUE(ueACord)">
+                            <div id="right">
+                                <input id="btn_cancel_UE" class="btn1" type="button" value="Supprimer" @click="del(ueACord.ueNumber)">
+                                <input id="btn_save_UE" class="btn1" type="button" value="Modifier" @click="updateUE(ueACord)">
+                            </div>
                         </div>
                     </div>
                 </div>
