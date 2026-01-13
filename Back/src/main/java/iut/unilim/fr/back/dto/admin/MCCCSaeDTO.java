@@ -12,7 +12,7 @@ public class MCCCSaeDTO {
     private String termsCode;          // Terms code (e.g., "NGCC")
 
     // Hours
-    private Integer hours;
+    private Double hours;
     private Boolean hasAlternance;
 
     // Linked resources
@@ -73,11 +73,11 @@ public class MCCCSaeDTO {
         this.termsCode = termsCode;
     }
 
-    public Integer getHours() {
+    public Double getHours() {
         return hours;
     }
 
-    public void setHours(Integer hours) {
+    public void setHours(Double hours) {
         this.hours = hours;
     }
 

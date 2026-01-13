@@ -40,10 +40,10 @@ public class ResourceGetterService {
     private final List<String> modalities;
     private final List<String> keywords;
 
-    private final List<Integer> hoursPN;
-    private final List<Integer> hoursStudent;
-    private final List<Integer> hoursPNInternship;
-    private final List<Integer> hoursStudentInternship;
+    private final List<Double> hoursPN;
+    private final List<Double> hoursStudent;
+    private final List<Double> hoursPNInternship;
+    private final List<Double> hoursStudentInternship;
     private boolean isAlternance;
 
     private String pedagoContentCm;
@@ -63,17 +63,17 @@ public class ResourceGetterService {
         modalities = new ArrayList<>();
         keywords = new ArrayList<>();
 
-        hoursPN = new ArrayList<>();
-        hoursPNInternship = new ArrayList<>();
-        hoursStudent = new ArrayList<>();
-        hoursStudentInternship = new ArrayList<>();
+        hoursPN = new ArrayList<Double>();
+        hoursPNInternship = new ArrayList<Double>();
+        hoursStudent = new ArrayList<Double>();
+        hoursStudentInternship = new ArrayList<Double>();
 
         initializePlaceHolderValues();
     }
 
     private void initializePlaceHolderValues() {
         String PLACEHOLDER_TITLE = "Aucun";
-        int PLACEHOLDER_HOURS = -1;
+        Double PLACEHOLDER_HOURS = -1;
         int NB_ELEMENTS_HOURS = 4;
 
         skills.add(PLACEHOLDER);
@@ -251,7 +251,7 @@ public class ResourceGetterService {
 
     }
 
-    private void setHoursDTO(HoursDTO hoursDTO, List<Integer> hours) {
+    private void setHoursDTO(HoursDTO hoursDTO, List<Double> hours) {
         hours.clear();
         hours.add(hoursDTO.getCm());
         hours.add(hoursDTO.getTd());
@@ -307,16 +307,16 @@ public class ResourceGetterService {
     public List<String> getModalities() {
         return modalities;
     }
-    public List<Integer> getHoursPN() {
+    public List<Double> getHoursPN() {
         return hoursPN;
     }
-    public List<Integer> getHoursStudent() {
+    public List<Double> getHoursStudent() {
         return hoursStudent;
     }
-    public List<Integer> getHoursPNInternship() {
+    public List<Double> getHoursPNInternship() {
         return hoursPNInternship;
     }
-    public List<Integer> getHoursStudentInternship() {
+    public List<Double> getHoursStudentInternship() {
         return hoursStudentInternship;
     }
     public String getPedagoContentDs(){

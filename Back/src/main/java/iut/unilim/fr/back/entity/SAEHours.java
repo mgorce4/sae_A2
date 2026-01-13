@@ -11,7 +11,7 @@ public class SAEHours {
     private Long idSAEHours;
 
     @Column(nullable = false)
-    private Integer hours;
+    private Double hours;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_SAE")
@@ -23,7 +23,7 @@ public class SAEHours {
     public SAEHours() {
     }
 
-    public SAEHours(Long idSAEHours, Integer hours, SAE sae) {
+    public SAEHours(Long idSAEHours, Double hours, SAE sae) {
         this.idSAEHours = idSAEHours;
         this.hours = hours;
         this.sae = sae;
@@ -38,11 +38,11 @@ public class SAEHours {
         this.idSAEHours = idSAEHours;
     }
 
-    public Integer getHours() {
+    public Double getHours() {
         return hours;
     }
 
-    public void setHours(Integer hours) {
+    public void setHours(Double hours) {
         this.hours = hours;
     }
 

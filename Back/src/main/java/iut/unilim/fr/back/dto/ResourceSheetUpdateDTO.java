@@ -129,34 +129,34 @@ public class ResourceSheetUpdateDTO {
     }
 
     public static class HoursUpdateDTO {
-        private Integer cm;
-        private Integer td;
-        private Integer tp;
+        private Double cm;
+        private Double td;
+        private Double tp;
 
         public HoursUpdateDTO() {
         }
 
-        public Integer getCm() {
+        public Double getCm() {
             return cm;
         }
 
-        public void setCm(Integer cm) {
+        public void setCm(Double cm) {
             this.cm = cm;
         }
 
-        public Integer getTd() {
+        public Double getTd() {
             return td;
         }
 
-        public void setTd(Integer td) {
+        public void setTd(Double td) {
             this.td = td;
         }
 
-        public Integer getTp() {
+        public Double getTp() {
             return tp;
         }
 
-        public void setTp(Integer tp) {
+        public void setTp(Double tp) {
             this.tp = tp;
         }
     }

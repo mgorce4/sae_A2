@@ -1,16 +1,16 @@
 package iut.unilim.fr.back.dto;
 
 public class HoursDTO {
-    private Integer cm;
-    private Integer td;
-    private Integer tp;
-    private Integer total;
+    private Double cm;
+    private Double td;
+    private Double tp;
+    private double total;
     private Boolean hasAlternance;
 
     public HoursDTO() {
     }
 
-    public HoursDTO(Integer cm, Integer td, Integer tp, Boolean hasAlternance) {
+    public HoursDTO(Double cm, Double td, Double tp, Boolean hasAlternance) {
         this.cm = cm != null ? cm : 0;
         this.td = td != null ? td : 0;
         this.tp = tp != null ? tp : 0;
@@ -18,38 +18,38 @@ public class HoursDTO {
         this.hasAlternance = hasAlternance != null ? hasAlternance : false;
     }
 
-    public Integer getCm() {
+    public Double getCm() {
         return cm;
     }
 
-    public void setCm(Integer cm) {
+    public void setCm(Double cm) {
         this.cm = cm;
         updateTotal();
     }
 
-    public Integer getTd() {
+    public Double getTd() {
         return td;
     }
 
-    public void setTd(Integer td) {
+    public void setTd(Double td) {
         this.td = td;
         updateTotal();
     }
 
-    public Integer getTp() {
+    public Double getTp() {
         return tp;
     }
 
-    public void setTp(Integer tp) {
+    public void setTp(Double tp) {
         this.tp = tp;
         updateTotal();
     }
 
-    public Integer getTotal() {
+    public double getTotal() {
         return total;
     }
 
-    public void setTotal(Integer total) {
+    public void setTotal(double total) {
         this.total = total;
     }
 

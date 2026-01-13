@@ -67,10 +67,10 @@ public class MCCCSaeMapper {
      * Inner class to hold hours and alternance info
      */
     private static class SAEHoursInfo {
-        Integer hours;
+        Double hours;
         Boolean hasAlternance;
 
-        SAEHoursInfo(Integer hours, Boolean hasAlternance) {
+        SAEHoursInfo(Double hours, Boolean hasAlternance) {
             this.hours = hours;
             this.hasAlternance = hasAlternance;
         }

@@ -13,24 +13,24 @@ public class MCCCResourceDTO {
     private String termsCode;          // Terms code (e.g., "NGCC")
 
     // PN hours (National Program)
-    private Integer pnCm;
-    private Integer pnTd;
-    private Integer pnTp;
-    private Integer pnTotal;
+    private Double pnCm;
+    private Double pnTd;
+    private Double pnTp;
+    private double pnTotal;
 
     // Initial training hours
-    private Integer initialCm;
-    private Integer initialTd;
-    private Integer initialTp;
+    private Double initialCm;
+    private Double initialTd;
+    private Double initialTp;
     private Integer initialProject;
-    private Integer initialTotal;
+    private double initialTotal;
 
     // Work-study hours
-    private Integer alternanceCm;
-    private Integer alternanceTd;
-    private Integer alternanceTp;
+    private Double alternanceCm;
+    private Double alternanceTd;
+    private Double alternanceTp;
     private Integer alternanceProject;
-    private Integer alternanceTotal;
+    private double alternanceTotal;
 
     // Main teacher and coefficient
     private String mainTeacherName;
@@ -102,59 +102,59 @@ public class MCCCResourceDTO {
         this.termsCode = termsCode;
     }
 
-    public Integer getPnCm() {
+    public Double getPnCm() {
         return pnCm;
     }
 
-    public void setPnCm(Integer pnCm) {
+    public void setPnCm(Double pnCm) {
         this.pnCm = pnCm;
     }
 
-    public Integer getPnTd() {
+    public Double getPnTd() {
         return pnTd;
     }
 
-    public void setPnTd(Integer pnTd) {
+    public void setPnTd(Double pnTd) {
         this.pnTd = pnTd;
     }
 
-    public Integer getPnTp() {
+    public Double getPnTp() {
         return pnTp;
     }
 
-    public void setPnTp(Integer pnTp) {
+    public void setPnTp(Double pnTp) {
         this.pnTp = pnTp;
     }
 
-    public Integer getPnTotal() {
+    public double getPnTotal() {
         return pnTotal;
     }
 
-    public void setPnTotal(Integer pnTotal) {
+    public void setPnTotal(double pnTotal) {
         this.pnTotal = pnTotal;
     }
 
-    public Integer getInitialCm() {
+    public Double getInitialCm() {
         return initialCm;
     }
 
-    public void setInitialCm(Integer initialCm) {
+    public void setInitialCm(Double initialCm) {
         this.initialCm = initialCm;
     }
 
-    public Integer getInitialTd() {
+    public Double getInitialTd() {
         return initialTd;
     }
 
-    public void setInitialTd(Integer initialTd) {
+    public void setInitialTd(Double initialTd) {
         this.initialTd = initialTd;
     }
 
-    public Integer getInitialTp() {
+    public Double getInitialTp() {
         return initialTp;
     }
 
-    public void setInitialTp(Integer initialTp) {
+    public void setInitialTp(Double initialTp) {
         this.initialTp = initialTp;
     }
 
@@ -166,35 +166,35 @@ public class MCCCResourceDTO {
         this.initialProject = initialProject;
     }
 
-    public Integer getInitialTotal() {
+    public double getInitialTotal() {
         return initialTotal;
     }
 
-    public void setInitialTotal(Integer initialTotal) {
+    public void setInitialTotal(double initialTotal) {
         this.initialTotal = initialTotal;
     }
 
-    public Integer getAlternanceCm() {
+    public Double getAlternanceCm() {
         return alternanceCm;
     }
 
-    public void setAlternanceCm(Integer alternanceCm) {
+    public void setAlternanceCm(Double alternanceCm) {
         this.alternanceCm = alternanceCm;
     }
 
-    public Integer getAlternanceTd() {
+    public Double getAlternanceTd() {
         return alternanceTd;
     }
 
-    public void setAlternanceTd(Integer alternanceTd) {
+    public void setAlternanceTd(Double alternanceTd) {
         this.alternanceTd = alternanceTd;
     }
 
-    public Integer getAlternanceTp() {
+    public Double getAlternanceTp() {
         return alternanceTp;
     }
 
-    public void setAlternanceTp(Integer alternanceTp) {
+    public void setAlternanceTp(Double alternanceTp) {
         this.alternanceTp = alternanceTp;
     }
 
@@ -206,11 +206,11 @@ public class MCCCResourceDTO {
         this.alternanceProject = alternanceProject;
     }
 
-    public Integer getAlternanceTotal() {
+    public double getAlternanceTotal() {
         return alternanceTotal;
     }
 
-    public void setAlternanceTotal(Integer alternanceTotal) {
+    public void setAlternanceTotal(double alternanceTotal) {
         this.alternanceTotal = alternanceTotal;
     }
 
