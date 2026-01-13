@@ -87,16 +87,35 @@
 
     function getUESemesterInstitution(){
         const pathId = parseInt(getQueryParam('pathId'))
-        
-        return ueList.value
-            .filter((ue) => ue.semester == getQueryParam('id'))
-            .filter((ue) => ue.institutionId == localStorage.idInstitution)
-            .filter((ue) => {
-                if (pathId && !isNaN(pathId)) {
-                    return ue.path && ue.path.pathNumber === pathId
-                }
-                return true
-            })
+        const semester = parseInt(getQueryParam('id'))
+        const institutionId = parseInt(localStorage.idInstitution)
+
+        console.log('=== FILTRAGE UE POUR AFFICHAGE ===');
+        console.log('PathId:', pathId);
+        console.log('Semester:', semester);
+        console.log('Institution:', institutionId);
+        console.log('UE totales dans ueList:', ueList.value.length);
+
+        const filtered = ueList.value.filter((ue) => {
+            const matchSemester = ue.semester === semester;
+            const matchInstitution = ue.institutionId === institutionId;
+            const matchPath = pathId && !isNaN(pathId) ? ue.pathNumber === pathId : true;
+
+            console.log(`UE ${ue.label}:`, {
+                semester: ue.semester,
+                matchSemester,
+                institutionId: ue.institutionId,
+                matchInstitution,
+                pathNumber: ue.pathNumber,
+                matchPath,
+                included: matchSemester && matchInstitution && matchPath
+            });
+
+            return matchSemester && matchInstitution && matchPath;
+        });
+
+        console.log('UE filtrées pour affichage:', filtered.length);
+        return filtered;
     }
 
     // Watch for changes to reattach accordion listeners
@@ -105,10 +124,43 @@
     })
 
     const reloadUEs = async () => {
-        // Charger toutes les UEs de l'institution
-        const response = await axios.get(`http://localhost:8080/api/v2/mccc/ues/institution/${localStorage.idInstitution}`)
-        ueList.value = response.data
-        console.log('UEs chargées:', response.data)
+        try {
+            const pathId = parseInt(getQueryParam('pathId'));
+            const institutionId = parseInt(localStorage.idInstitution);
+
+            if (!pathId || isNaN(pathId)) {
+                console.error('PathId manquant ou invalide');
+                alert('Erreur: Parcours non spécifié. Retour à la sélection des parcours.');
+                window.location.hash = '#/mccc-select-path';
+                return;
+            }
+
+            if (!institutionId || isNaN(institutionId)) {
+                console.error('Institution ID manquant ou invalide');
+                alert('Erreur: Institution non définie. Veuillez vous reconnecter.');
+                return;
+            }
+
+            // Charger les UEs filtrées par path
+            const response = await axios.get(`http://localhost:8080/api/v2/mccc/ues/path/${pathId}`);
+
+            // Filtrer par institution seulement (pas par semestre, c'est fait dans getUESemesterInstitution)
+            ueList.value = response.data.filter(ue =>
+                ue.institutionId === institutionId
+            );
+
+            console.log('=== RELOAD UEs ===');
+            console.log(`UEs chargées pour institution ${institutionId} et path ${pathId}:`, ueList.value.length);
+            console.log('Détails des UEs:', ueList.value.map(ue => ({
+                label: ue.label,
+                semester: ue.semester,
+                institutionId: ue.institutionId,
+                pathNumber: ue.pathNumber
+            })));
+        } catch (error) {
+            console.error('Erreur lors du chargement des UEs:', error);
+            ueList.value = [];
+        }
     }
 
     onMounted(async () => {
@@ -165,16 +217,20 @@
         }
 
         const semester = parseInt(getQueryParam('id'));
+        const pathId = parseInt(getQueryParam('pathId'));
         const ueLabel = `UE${semester}.${nb_UE.value}`;
 
-        // Vérifier si une UE avec le même numéro existe déjà dans ce semestre
+        // Vérifier si une UE avec le même numéro existe déjà dans ce semestre ET ce path
         const existingUE = ueList.value.find(ue =>
-            ue.semester === semester && ue.label === ueLabel
+            ue.semester === semester &&
+            ue.label === ueLabel &&
+            ue.pathNumber === pathId
         );
 
         if (existingUE) {
             errors.value.nb_UE = true;
             isDuplicateUE.value = true;
+            alert(`Une UE avec le numéro ${nb_UE.value} existe déjà dans ce semestre pour ce parcours.`);
             return;
         }
 
@@ -186,6 +242,16 @@
             }
 
             const pathId = parseInt(getQueryParam('pathId'));
+
+            console.log('=== CRÉATION UE - DEBUG ===');
+            console.log('PathId from URL:', getQueryParam('pathId'));
+            console.log('PathId parsed:', pathId);
+            console.log('PathId isNaN:', isNaN(pathId));
+
+            if (!pathId || isNaN(pathId)) {
+                alert('Erreur: Le parcours n\'est pas spécifié dans l\'URL. Veuillez revenir à la sélection des parcours.');
+                return;
+            }
 
             const payload = {
                 euApogeeCode: apogee_code.value,
@@ -226,6 +292,8 @@
                 return;
             }
 
+            const pathId = parseInt(getQueryParam('pathId'));
+
             // Préparer les données pour la mise à jour via l'API MCCC
             const payload = {
                 ueNumber: ue.ueNumber,
@@ -235,7 +303,8 @@
                 competenceLevel: parseInt(ue.competenceLevel),
                 semester: ue.semester,
                 userId: parseInt(localStorage.idUser),
-                termsCode: ue.termsCode || null
+                termsCode: ue.termsCode || null,
+                pathNumber: pathId && !isNaN(pathId) ? pathId : null
             };
 
             // Utiliser l'endpoint PUT du MCCC Controller

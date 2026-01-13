@@ -5,9 +5,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PathRepository extends JpaRepository<Path, Long> {
     List<Path> findByInstitution_IdInstitution(Long institutionId);
+    Optional<Path> findByInstitution_IdInstitutionAndNumber(Long institutionId, Integer number);
 }
 

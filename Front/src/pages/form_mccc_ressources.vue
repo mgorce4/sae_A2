@@ -21,6 +21,15 @@ const ue_list = ref([{id : 1, ue: '', coefficient: ''}])
 /* value link with the v-model */
 const teachers_list = ref([{ id: 1, value: '' }])
 
+// Extract ID from hash URL parameters
+const getQueryParam = (param) => {
+  const hash = window.location.hash
+  const queryString = hash.split('?')[1]
+  if (!queryString) return null
+  const params = new URLSearchParams(queryString)
+  return params.get(param)
+}
+
 const access_right_teacher = 1
 
 /*
@@ -103,13 +112,33 @@ function addTeacherEvents(div) {
 }
 
 onMounted(async () => {
+  const pathId = parseInt(getQueryParam('pathId'));
+  const institutionId = parseInt(localStorage.idInstitution);
+
+  if (!pathId || isNaN(pathId)) {
+    console.error('PathId manquant ou invalide');
+    alert('Erreur: Parcours non spécifié. Retour à la sélection des parcours.');
+    window.location.hash = '#/mccc-select-path';
+    return;
+  }
+
+  if (!institutionId || isNaN(institutionId)) {
+    console.error('Institution ID manquant ou invalide');
+    alert('Erreur: Institution non définie. Veuillez vous reconnecter.');
+    return;
+  }
+
   await Promise.all([
     axios
       .get('http://localhost:8080/api/v2/resource-sheets')
       .then((reponse) => (resource_sheets.value = reponse.data)),
     axios
-      .get('http://localhost:8080/api/v2/mccc/ues')
-      .then((response) => (UEs.value = response.data)),
+      .get(`http://localhost:8080/api/v2/mccc/ues/path/${pathId}`)
+      .then((response) => {
+        // Filtrer par institution pour sécurité supplémentaire
+        UEs.value = response.data.filter(ue => ue.institutionId === institutionId);
+        console.log(`UEs chargées pour institution ${institutionId} et path ${pathId}:`, UEs.value.length);
+      }),
     axios
       .get('http://localhost:8080/api/access-rights')
       .then((response) => (access_rights.value = response.data)),
@@ -378,13 +407,6 @@ function areTotalNaN() {
   return isNaN(total_initial_formation.value) && isNaN(total_work_study.value)
 }
 
-const getQueryParam = (param) => {
-  const hash = window.location.hash
-  const queryString = hash.split('?')[1]
-  if (!queryString) return null
-  const params = new URLSearchParams(queryString)
-  return params.get(param)
-}
 
 function getTotalInitialFormation() {
   return parseInt(CM_initial_formation.value) + parseInt(TD_initial_formation.value) + parseInt(TP_initial_formation.value)

@@ -11,16 +11,55 @@ const afficherBoutons = ref([
 const saeTable = ref([])
 const ueTable = ref([])
 const resourceTable = ref([])
-const pathId=ref([])
+const pathId = ref(null)
 
 onMounted(async () => {
-    const saes = await axios.get(`http://localhost:8080/api/v2/mccc/saes/institution/${localStorage.idInstitution}`)
-    saeTable.value = saes.data
-    const ues = await axios.get(`http://localhost:8080/api/v2/mccc/ues/institution/${localStorage.idInstitution}`)
-    ueTable.value = ues.data
-    const resources = await axios.get(`http://localhost:8080/api/v2/mccc/resources/institution/${localStorage.idInstitution}`)
-    resourceTable.value = resources.data
+    // Récupérer le pathId depuis l'URL
     pathId.value = parseInt(getQueryParam('pathId'))
+    const institutionId = parseInt(localStorage.idInstitution)
+
+    if (!pathId.value || isNaN(pathId.value)) {
+        console.error('PathId manquant ou invalide dans l\'URL')
+        alert('Erreur: Parcours non spécifié. Retour à la sélection des parcours.')
+        window.location.hash = '#/mccc-select-path'
+        return
+    }
+
+    if (!institutionId || isNaN(institutionId)) {
+        console.error('Institution ID manquant ou invalide')
+        alert('Erreur: Institution non définie. Veuillez vous reconnecter.')
+        return
+    }
+
+    try {
+        // Charger les données filtrées par path
+        const saes = await axios.get(`http://localhost:8080/api/v2/mccc/saes/path/${pathId.value}`)
+        // Filtrer par institution pour sécurité supplémentaire
+        saeTable.value = saes.data.filter(sae =>
+            sae.institutionId === institutionId
+        )
+
+        const ues = await axios.get(`http://localhost:8080/api/v2/mccc/ues/path/${pathId.value}`)
+        // Filtrer par institution pour sécurité supplémentaire
+        ueTable.value = ues.data.filter(ue =>
+            ue.institutionId === institutionId
+        )
+
+        const resources = await axios.get(`http://localhost:8080/api/v2/mccc/resources/path/${pathId.value}`)
+        // Filtrer par institution pour sécurité supplémentaire
+        resourceTable.value = resources.data.filter(resource =>
+            resource.institutionId === institutionId
+        )
+
+        console.log(`Données chargées pour le parcours ${pathId.value} et institution ${institutionId}:`, {
+            saes: saeTable.value.length,
+            ues: ueTable.value.length,
+            resources: resourceTable.value.length
+        })
+    } catch (error) {
+        console.error('Erreur lors du chargement des données:', error)
+        alert('Erreur lors du chargement des données du parcours')
+    }
 })
 
 const hasSAEInSemester = (semester) => {

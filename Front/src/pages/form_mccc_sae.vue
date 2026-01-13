@@ -2,7 +2,7 @@
     import { onMounted, ref, computed, nextTick } from 'vue'
     import axios from 'axios'
     import { status } from '../main'
-    
+
     status.value = "Administration"
 
     let display_add_modify_area = ref(false)
@@ -17,9 +17,9 @@
     const addModifySaeHoursAlternance = ref('')
     const ue_list = ref([{ id: 1, ue: '', coefficient: '' }])
     const total_hours = ref('')
-    
+
     const checkboxStatus = ref(false)
-    
+
     const errors = ref({
         label: false,
         apogeeCode: false,
@@ -123,19 +123,49 @@
     }
 
     onMounted(async () => {
-        const response = await axios.get(`http://localhost:8080/api/v2/mccc/saes/institution/${localStorage.idInstitution}`)
-        saeTableV2.value = response.data
-        const responseUe = await axios.get(`http://localhost:8080/api/v2/mccc/ues/institution/${localStorage.idInstitution}`)
-        ueTableV2.value = responseUe.data.sort((a, b) => a.label.localeCompare(b.label)) // Filter UEs by semester and sort in ascending order
-        attachAccordionListeners()
-        attachWorkStudyListeners()
+        const pathId = parseInt(getQueryParam('pathId'));
+        const institutionId = parseInt(localStorage.idInstitution);
 
-        
+        if (!pathId || isNaN(pathId)) {
+            console.error('PathId manquant ou invalide');
+            alert('Erreur: Parcours non spécifié. Retour à la sélection des parcours.');
+            window.location.hash = '#/mccc-select-path';
+            return;
+        }
+
+        if (!institutionId || isNaN(institutionId)) {
+            console.error('Institution ID manquant ou invalide');
+            alert('Erreur: Institution non définie. Veuillez vous reconnecter.');
+            return;
+        }
+
+        // Charger les SAE et UE filtrées par path
+        const response = await axios.get(`http://localhost:8080/api/v2/mccc/saes/path/${pathId}`);
+        // Filtrer par institution pour sécurité supplémentaire
+        saeTableV2.value = response.data.filter(sae =>
+            sae.institutionId === institutionId
+        );
+
+        const responseUe = await axios.get(`http://localhost:8080/api/v2/mccc/ues/path/${pathId}`);
+        // Filtrer par institution et trier
+        ueTableV2.value = responseUe.data
+            .filter(ue => ue.institutionId === institutionId)
+            .sort((a, b) => a.label.localeCompare(b.label));
+
+        console.log(`SAE et UE chargées pour institution ${institutionId} et path ${pathId}:`, {
+            saes: saeTableV2.value.length,
+            ues: ueTableV2.value.length
+        });
+
+        attachAccordionListeners();
+        attachWorkStudyListeners();
+
+
         document.getElementById('save').addEventListener('click', () => {
 
             errors.value.ueCoefficients = false
             document.getElementById("error_ue").innerHTML = ""
-        
+
             // Variabble for the messages
             let ues = document.querySelectorAll('#ue_select')
             let coefs = document.querySelectorAll('#coefficient')
@@ -252,7 +282,7 @@
             if (checkbox) {
                 checkbox.checked = checkboxStatus.value
             }
-            
+
             // Open accordion after rendering
             const accordions = document.querySelectorAll('[data-accordion="add-modify-sae"]')
             accordions.forEach(accordion => {
@@ -287,7 +317,7 @@
         nextTick(() => {
             addModifySaeTitle.value = "Ajout d'une nouvelle SAÉ"
         })
-        
+
         initAddModifyArea()
     }
 
@@ -301,9 +331,9 @@
         addModifySaeTermCode.value = sae.termsCode
 
         checkboxStatus.value = /*sae.blocReleaseHours >= 1 ||*/ false
-        
+
         display_add_ue.value = false
-        
+
         initAddModifyArea()
     }
 
@@ -319,7 +349,7 @@
 
 <template>
     <p>{{ filteredUeTableV2 }}</p>
-    <div id="form_mccc_sae"> 
+    <div id="form_mccc_sae">
         <div class="return_arrow">
             <button class="back_arrow" @click="goBack">←</button>
             <p>Retour</p>
@@ -378,12 +408,12 @@
                                 </div>
                                 <div class="container-fluid spb" id="work_study_hours">
                                     <p>Nombre d'heures (alternance) : </p>
-                                    <input type="number" class="input input_work_study" v-model="total_hours" @keydown="preventInvalidChars" disabled/> 
+                                    <input type="number" class="input input_work_study" v-model="total_hours" @keydown="preventInvalidChars" disabled/>
                                 </div>
                                 <p class="error_message" v-show="errors.alternanceHours">Vous devez saisir un nombre d'heures valide, <br>ou désélectionner les heures en alternance</p>
                                 <!--V2: put comparator with the programme national hour and total alternance -->
                             </div>
-                            
+
                             <div>
                                 <div class="component" style="justify-content: center;">
                                     <label for="ue_select">UE affectées : </label>
@@ -410,7 +440,7 @@
                         </div>
                     </div>
                 </form>
-                
+
                 <!-- Display existing SAEs for the semester -->
                 <div v-for="(value, index) in filteredSaeTableV2" v-bind:key="index" class="added_content_mccc">
                     <a class="dark_bar accordion_mccc">{{ value.label }}</a>

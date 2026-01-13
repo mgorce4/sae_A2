@@ -318,6 +318,21 @@ public class MCCCController {
     }
 
     /**
+     * Get MCCC UEs by path ID
+     * GET /api/v2/mccc/ues/path/{pathId}
+     */
+    @GetMapping("/ues/path/{pathId}")
+    public ResponseEntity<List<MCCCUEDTO>> getMCCCUEsByPath(@PathVariable Long pathId) {
+        try {
+            List<UE> ues = ueRepository.findByPath_IdPath(pathId);
+            List<MCCCUEDTO> dtos = mcccUEMapper.toDTOList(ues);
+            return ResponseEntity.ok(dtos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
      * Create a new UE with Terms support
      * POST /api/v2/mccc/ues
      */
@@ -337,18 +352,44 @@ public class MCCCController {
                 return ResponseEntity.badRequest().body("User has no institution");
             }
 
-            // Get or create path for institution
+            // Get or create path for institution based on pathNumber from DTO
             Long institutionId = user.getInstitution().getIdInstitution();
-            Path path = pathRepository.findByInstitution_IdInstitution(institutionId)
-                .stream()
-                .findFirst()
-                .orElseGet(() -> {
-                    Path newPath = new Path();
-                    newPath.setNumber(1);
-                    newPath.setName("Default Path - " + user.getInstitution().getName());
-                    newPath.setInstitution(user.getInstitution());
-                    return pathRepository.save(newPath);
-                });
+            Path path;
+
+            System.out.println("=== CRÉATION UE - DEBUG PATH ===");
+            System.out.println("Institution ID: " + institutionId);
+            System.out.println("PathNumber from DTO: " + dto.getPathNumber());
+
+            if (dto.getPathNumber() != null) {
+                // Use the provided path number
+                path = pathRepository.findByInstitution_IdInstitutionAndNumber(institutionId, dto.getPathNumber())
+                    .orElseGet(() -> {
+                        // Create path with the specified number if it doesn't exist
+                        System.out.println("⚠️ Path non trouvé, création d'un nouveau path...");
+                        Path newPath = new Path();
+                        newPath.setNumber(dto.getPathNumber());
+                        newPath.setName("Path " + dto.getPathNumber() + " - " + user.getInstitution().getName());
+                        newPath.setInstitution(user.getInstitution());
+                        Path savedPath = pathRepository.save(newPath);
+                        System.out.println("✅ Nouveau path créé - ID: " + savedPath.getIdPath() + ", Number: " + savedPath.getNumber() + ", Name: " + savedPath.getName());
+                        return savedPath;
+                    });
+
+                System.out.println("✅ Path utilisé - ID: " + path.getIdPath() + ", Number: " + path.getNumber() + ", Name: " + path.getName());
+            } else {
+                System.out.println("⚠️ PathNumber est NULL, utilisation du fallback");
+                // Fallback to first path or create default
+                path = pathRepository.findByInstitution_IdInstitution(institutionId)
+                    .stream()
+                    .findFirst()
+                    .orElseGet(() -> {
+                        Path newPath = new Path();
+                        newPath.setNumber(1);
+                        newPath.setName("Default Path - " + user.getInstitution().getName());
+                        newPath.setInstitution(user.getInstitution());
+                        return pathRepository.save(newPath);
+                    });
+            }
 
             // Find or create Terms
             Terms terms = null;
@@ -359,6 +400,18 @@ public class MCCCController {
                         newTerms.setCode(dto.getTermsCode());
                         return termsRepository.save(newTerms);
                     });
+            }
+
+            // Vérifier si une UE avec le même label existe déjà dans ce semestre et ce path
+            Optional<UE> existingUE = ueRepository.findByLabelAndSemesterAndPath_IdPath(
+                dto.getLabel(),
+                dto.getSemester(),
+                path.getIdPath()
+            );
+
+            if (existingUE.isPresent()) {
+                return ResponseEntity.badRequest()
+                    .body("Une UE avec le même numéro existe déjà dans ce semestre pour ce parcours.");
             }
 
             // Create UE
@@ -372,6 +425,19 @@ public class MCCCController {
             ue.setTerms(terms);
 
             UE savedUE = ueRepository.save(ue);
+
+            System.out.println("=== UE SAUVEGARDÉE ===");
+            System.out.println("UE ID: " + savedUE.getUeNumber());
+            System.out.println("UE Label: " + savedUE.getLabel());
+            System.out.println("UE Semester: " + savedUE.getSemester());
+            if (savedUE.getPath() != null) {
+                System.out.println("Path ID: " + savedUE.getPath().getIdPath());
+                System.out.println("Path Number: " + savedUE.getPath().getNumber());
+                System.out.println("Path Name: " + savedUE.getPath().getName());
+            } else {
+                System.out.println("⚠️ PATH EST NULL!");
+            }
+            System.out.println("====================");
 
             // Convert to DTO and return
             MCCCUEDTO resultDto = mcccUEMapper.toDTO(savedUE);
@@ -394,6 +460,43 @@ public class MCCCController {
             // Find existing UE
             UE existingUE = ueRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("UE not found with id: " + id));
+
+            // Vérifier si le label, semestre ou path a changé
+            boolean labelChanged = !existingUE.getLabel().equals(dto.getLabel());
+            boolean semesterChanged = !existingUE.getSemester().equals(dto.getSemester());
+
+            // Si label ou semestre a changé, vérifier qu'il n'y a pas de doublon
+            if (labelChanged || semesterChanged) {
+                Long pathId = existingUE.getPath() != null ? existingUE.getPath().getIdPath() : null;
+
+                // Si pathNumber est fourni dans le DTO, l'utiliser pour la validation
+                if (dto.getPathNumber() != null && dto.getUserId() != null) {
+                    UserSyncadia user = userSyncadiaRepository.findById(dto.getUserId()).orElse(null);
+                    if (user != null && user.getInstitution() != null) {
+                        Path newPath = pathRepository.findByInstitution_IdInstitutionAndNumber(
+                            user.getInstitution().getIdInstitution(),
+                            dto.getPathNumber()
+                        ).orElse(null);
+                        if (newPath != null) {
+                            pathId = newPath.getIdPath();
+                        }
+                    }
+                }
+
+                if (pathId != null) {
+                    Optional<UE> duplicateUE = ueRepository.findByLabelAndSemesterAndPath_IdPath(
+                        dto.getLabel(),
+                        dto.getSemester(),
+                        pathId
+                    );
+
+                    // Vérifier que ce n'est pas la même UE qu'on est en train de modifier
+                    if (duplicateUE.isPresent() && !duplicateUE.get().getUeNumber().equals(id)) {
+                        return ResponseEntity.badRequest()
+                            .body("Une UE avec le même numéro existe déjà dans ce semestre pour ce parcours.");
+                    }
+                }
+            }
 
             // Update basic fields
             existingUE.setEuApogeeCode(dto.getEuApogeeCode());
@@ -426,6 +529,27 @@ public class MCCCController {
                 }
             }
             // Sinon, on garde le Terms actuel (même objet, même ID)
+
+            // Update Path if pathNumber is provided
+            if (dto.getPathNumber() != null) {
+                // Get user to find institution
+                if (dto.getUserId() != null) {
+                    UserSyncadia user = userSyncadiaRepository.findById(dto.getUserId())
+                        .orElse(null);
+                    if (user != null && user.getInstitution() != null) {
+                        Long institutionId = user.getInstitution().getIdInstitution();
+                        Path path = pathRepository.findByInstitution_IdInstitutionAndNumber(institutionId, dto.getPathNumber())
+                            .orElseGet(() -> {
+                                Path newPath = new Path();
+                                newPath.setNumber(dto.getPathNumber());
+                                newPath.setName("Path " + dto.getPathNumber() + " - " + user.getInstitution().getName());
+                                newPath.setInstitution(user.getInstitution());
+                                return pathRepository.save(newPath);
+                            });
+                        existingUE.setPath(path);
+                    }
+                }
+            }
 
             UE updatedUE = ueRepository.save(existingUE);
 
