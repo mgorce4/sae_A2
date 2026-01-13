@@ -45,6 +45,11 @@ public class SAEController {
         return saeService.getSAEsByTermsId(termsId);
     }
 
+    @GetMapping("/path/{pathId}")
+    public List<SAE> getSAEsByPathId(@PathVariable Long pathId) {
+        return saeService.getSAEsByPathId(pathId);
+    }
+
     @PostMapping
     public ResponseEntity<SAE> createSAE(@RequestBody Map<String, Object> payload) {
         try {

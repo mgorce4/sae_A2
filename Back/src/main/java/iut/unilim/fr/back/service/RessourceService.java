@@ -20,6 +20,10 @@ public class RessourceService {
         return ressourceRepository.findById(id);
     }
 
+    public List<Ressource> getRessourcesByPathId(Long pathId) {
+        return ressourceRepository.findByPathId(pathId);
+    }
+
     public Ressource createRessource(Ressource resource) {
         return ressourceRepository.save(resource);
     }

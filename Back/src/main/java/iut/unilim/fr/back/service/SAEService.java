@@ -25,6 +25,10 @@ public class SAEService {
         return saeRepository.findByTerms_IdTerms(termsId);
     }
 
+    public List<SAE> getSAEsByPathId(Long pathId) {
+        return saeRepository.findByPathId(pathId);
+    }
+
     public SAE createSAE(SAE sae) {
         return saeRepository.save(sae);
     }

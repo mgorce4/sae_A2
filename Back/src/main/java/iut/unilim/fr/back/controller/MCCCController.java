@@ -128,6 +128,21 @@ public class MCCCController {
         }
     }
 
+    /**
+     * Get MCCC resources by path ID
+     * GET /api/v2/mccc/resources/path/{pathId}
+     */
+    @GetMapping("/resources/path/{pathId}")
+    public ResponseEntity<List<MCCCResourceDTO>> getMCCCResourcesByPath(@PathVariable Long pathId) {
+        try {
+            List<Ressource> resources = ressourceRepository.findByPathId(pathId);
+            List<MCCCResourceDTO> dtos = mcccMapper.toDTOList(resources);
+            return ResponseEntity.ok(dtos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     // ==================== SAE ENDPOINTS ====================
 
     /**
@@ -195,6 +210,21 @@ public class MCCCController {
                 .toList();
 
             return ResponseEntity.ok(filteredDtos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Get MCCC SAEs by path ID
+     * GET /api/v2/mccc/saes/path/{pathId}
+     */
+    @GetMapping("/saes/path/{pathId}")
+    public ResponseEntity<List<MCCCSaeDTO>> getMCCCSaesByPath(@PathVariable Long pathId) {
+        try {
+            List<SAE> saes = saeRepository.findByPathId(pathId);
+            List<MCCCSaeDTO> dtos = mcccSaeMapper.toDTOList(saes);
+            return ResponseEntity.ok(dtos);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

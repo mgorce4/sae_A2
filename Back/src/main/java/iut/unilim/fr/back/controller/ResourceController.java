@@ -26,6 +26,11 @@ public class ResourceController {
             .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/path/{pathId}")
+    public List<Ressource> getResourcesByPathId(@PathVariable Long pathId) {
+        return resourceService.getRessourcesByPathId(pathId);
+    }
+
     @PostMapping
     public Ressource createResource(@RequestBody Ressource resource) {
         return resourceService.createRessource(resource);
