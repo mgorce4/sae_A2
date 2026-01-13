@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import iut.unilim.fr.back.entity.Path;
+import iut.unilim.fr.back.service.PathService;
 
 @RestController
 @RequestMapping("/api/ues")
@@ -13,6 +15,10 @@ import java.util.List;
 public class UEController {
     @Autowired
     private UEService ueService;
+
+    @Autowired
+    private PathService pathService;
+
 
     @GetMapping
     public List<UE> getAllUEs() {
@@ -31,10 +37,6 @@ public class UEController {
         return ueService.getUEsByPathId(pathId);
     }
 
-    @PostMapping
-    public UE createUE(@RequestBody UE ue) {
-        return ueService.createUE(ue);
-    }
 
     @PutMapping("/{id}")
     public UE updateUE(@PathVariable Long id, @RequestBody UE ue) {
@@ -46,4 +48,29 @@ public class UEController {
         ueService.deleteUE(id);
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/filter")
+    public List<UE> getUEsByFilter(
+            @RequestParam Long institutionId,
+            @RequestParam Long pathId,
+            @RequestParam Integer semester
+    ) {
+        return ueService.getUEsByInstitutionPathAndSemester(
+                institutionId,
+                pathId,
+                semester
+        );
+    }
+
+
+    @PostMapping
+    public UE createUE(@RequestBody UE ue) {
+        if (ue.getPath() != null && ue.getPath().getIdPath() != null) {
+            Path path = pathService
+                    .getPathById(ue.getPath().getIdPath())
+                    .orElseThrow(() -> new RuntimeException("Path not found"));
+            ue.setPath(path);
+        }
+        return ueService.createUE(ue);
+    }
+
 }

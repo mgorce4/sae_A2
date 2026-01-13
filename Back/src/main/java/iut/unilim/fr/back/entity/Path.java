@@ -16,9 +16,10 @@ public class Path {
     @Column(nullable = false)
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_institution")
     private Institution institution;
+
 
     public Path() {
     }

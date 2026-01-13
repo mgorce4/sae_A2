@@ -12,5 +12,7 @@ public interface UERepository extends JpaRepository<UE, Long> {
     List<UE> findBySemester(Integer semester);
     List<UE> findByCompetenceLevel(Integer competenceLevel);
     Optional<UE> findByLabelAndSemesterAndPath_IdPath(String label, Integer semester, Long pathId);
+    List<UE> findByPath_IdPathAndSemester(Long pathId, Integer semester);
+
 }
 

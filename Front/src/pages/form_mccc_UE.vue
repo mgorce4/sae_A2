@@ -99,7 +99,7 @@
         const filtered = ueList.value.filter((ue) => {
             const matchSemester = ue.semester === semester;
             const matchInstitution = ue.institutionId === institutionId;
-            const matchPath = pathId && !isNaN(pathId) ? ue.pathNumber === pathId : true;
+            const matchPath = true;
 
             console.log(`UE ${ue.label}:`, {
                 semester: ue.semester,
@@ -261,7 +261,7 @@
                 semester: semester,
                 userId: parseInt(localStorage.idUser),
                 termsCode: terms.value,
-                pathNumber: pathId
+                pathId: pathId
             };
 
             console.log('Envoi du payload:', payload);

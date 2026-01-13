@@ -71,8 +71,9 @@ const hasResourceInSemester = (semester) => {
 }
 
 const hasUEInSemester = (semester) => {
-    return ueTable.value.some(ue => ue.semester === semester)
+  return ueTable.value.some(ue => Number(ue.semester) === Number(semester))
 }
+
 
 const getStatusForSemester = (semester) => {
     const hasResource = hasResourceInSemester(semester)

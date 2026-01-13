@@ -32,6 +32,24 @@ public class UEService {
         ue.setUeNumber(id);
         return ueRepository.save(ue);
     }
+    public List<UE> getUEsByInstitutionPathAndSemester(
+            Long institutionId,
+            Long pathId,
+            Integer semester
+    ) {
+        // Récupère toutes les UEs pour le path et le semester
+        List<UE> ues = ueRepository.findByPath_IdPathAndSemester(pathId, semester);
+
+        // Filtrer en mémoire par institutionId
+        return ues.stream()
+                .filter(ue -> ue.getPath() != null
+                        && ue.getPath().getInstitution() != null
+                        && ue.getPath().getInstitution().getIdInstitution().equals(institutionId))
+                .toList();
+    }
+
+
+
 
     public void deleteUE(Long id) {
         ueRepository.deleteById(id);

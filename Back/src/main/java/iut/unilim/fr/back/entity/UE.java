@@ -27,9 +27,10 @@ public class UE {
     @Column(nullable = false)
     private Integer semester;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_Path")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "path_id")
     private Path path;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_terms")

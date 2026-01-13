@@ -49,7 +49,7 @@ CREATE TABLE UE(
     name TEXT NOT NULL,
     competenceLevel INT NOT NULL,
     semester INT NOT NULL,
-    id_Path INT REFERENCES PATH(id_Path)
+    id_Path INT REFERENCES PATH(id_Path),
     id_terms INT REFERENCES TERMS(id_Terms)
 );
 
@@ -84,15 +84,15 @@ CREATE TABLE SAE_LINK_RESOURCE(
 CREATE TABLE HOURS_PER_STUDENT(
     id_HoursPerStudent SERIAL PRIMARY KEY,
     has_alternance BOOLEAN NOT NULL,
-    cm INT ,
-    td INT,
-    tp INT,
+    cm FLOAT ,
+    td FLOAT,
+    tp FLOAT,
     id_resource INT REFERENCES RESOURCE(id_Resource)
 );
 
 CREATE TABLE SAE_HOURS(
     id_SAE_Hours SERIAL PRIMARY KEY,
-    hours INT NOT NULL,
+    hours FLOAT NOT NULL,
     id_SAE INT REFERENCES SAE(id_SAE),
     has_alternance BOOLEAN NOT NULL
 );
