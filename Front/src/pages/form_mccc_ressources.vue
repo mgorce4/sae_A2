@@ -50,26 +50,6 @@ const total_work_study = ref(0)
 
 const list_of_lesson = ['CM', 'TD', 'TP']
 
-function areTotalNaN() {
-  return isNaN(total_initial_formation.value) && isNaN(total_work_study.value)
-}
-
-const getQueryParam = (param) => {
-  const hash = window.location.hash
-  const queryString = hash.split('?')[1]
-  if (!queryString) return null
-  const params = new URLSearchParams(queryString)
-  return params.get(param)
-}
-
-function getTotalInitialFormation() {
-  return parseInt(CM_initial_formation.value) + parseInt(TD_initial_formation.value) + parseInt(TP_initial_formation.value)
-}
-
-function getTotalWorkStudyFormation() {
-  return parseInt(CM_work_study.value) + parseInt(TD_work_study.value) + parseInt(TP_work_study.value)
-}
-
 /* allows to put event on each div selected */
 function addTeacherEvents(div, index) {
 
@@ -141,27 +121,90 @@ onMounted(async () => {
 
     display_more_area.value = false
 
-    /* display errors messages if the UEs or teachers are already */
+    /* display errors messages */
+
+    /* reset all error messages */
+    document.getElementById("error_resource_label").innerHTML = ""
+    document.getElementById("error_resource_name").innerHTML = ""
+    document.getElementById("error_apogee_code").innerHTML = ""
+    document.getElementById("error_terms").innerHTML = ""
+    document.getElementById("error_initial_formation").innerHTML = ""
+    document.getElementById("error_work_study").innerHTML = ""
+    document.getElementById("error_ue").innerHTML = ""
+    document.getElementById("error_main_teacher").innerHTML = ""
+    document.getElementById("error_teacher").innerHTML = ""
+
+    /* variable for the messages */
 
     let ues = document.querySelectorAll('#ue_select')
     let coefs = document.querySelectorAll('#coefficient')
+    let teachers = document.querySelectorAll('.teacher')
 
+    /* get all inputs values */
+    let resource_label_input = document.getElementById('resource_label').value
+    let resource_name_input = document.getElementById('resource_name').value
+    let apogee_code_input = document.getElementById('apogee_code').value
+    let terms_input = document.getElementById('terms').value
+    let CM_initial_formation_input = CM_initial_formation.value
+    let TD_initial_formation_input = TD_initial_formation.value
+    let TP_initial_formation_input = TP_initial_formation.value
+    let CM_work_study_input = CM_work_study.value
+    let TD_work_study_input = TD_work_study.value
+    let TP_work_study_input = TP_work_study.value
+    let main_teacher_input = document.getElementById('main_teacher').value
+
+    /* display error messages if needed */
+
+    if (resource_label_input === '') {
+      document.getElementById("error_resource_label").innerHTML = "L'intitulé de la ressource est obligatoire"
+    }
+
+    if (resource_name_input === '') {
+      document.getElementById("error_resource_name").innerHTML = "Le nom de la ressource est obligatoire"
+    }
+
+    if (apogee_code_input === '') {
+      document.getElementById("error_apogee_code").innerHTML = "Le code apogée est obligatoire"
+    }
+
+    if (terms_input === '') {
+      document.getElementById("error_terms").innerHTML = "Les modalités sont obligatoires"
+    }
+
+    if (CM_initial_formation_input === undefined && TD_initial_formation_input === undefined && TP_initial_formation_input === undefined) {
+      document.getElementById("error_initial_formation").innerHTML = "Les heures de la formation innitiale sont obligatoire"
+    }
+
+    if (document.getElementById('work_study_slider').querySelector('input[type="checkbox"]').checked
+        && CM_work_study_input === undefined && TD_work_study_input === undefined && TP_work_study_input === undefined) {
+        document.getElementById("error_work_study").innerHTML = "Les heures de l'alternance sont obligatoire"
+    }
+
+    if (main_teacher_input === '') {
+      document.getElementById("error_main_teacher").innerHTML = "Le professeur principal est obligatoire"
+    }
+
+    /* add ues and coefficent to the list */
     for (let i = 0; i < ue_list.value.length; i++) {
       ue_list.value[i].ue = ues[i].value
       ue_list.value[i].coefficient = coefs[i].value
+    }
+
+    for (let i = 0; i < ue_list.value.length; i++) {
+      if (ue_list.value[i].coefficient === '') {
+        document.getElementById("error_ue").innerHTML = "Le coefficient de chaque UE est obligatoire"
+      }
     }
 
     if (ue_list.value.length > 1) {
       let first_ue = ue_list.value[0].ue
 
       for (let i = 0; i < ue_list.value.length; i++) {
-        if (first_ue === ue_list.value[i].ue && i != 0) {
-          document.getElementById("error_ue").innerHTML = "Une resource ne peut pas être affectée plusieurs fois à la même UE."
+        if (first_ue === ue_list.value[i].ue) {
+          document.getElementById("error_ue").innerHTML = "Une resource ne peut pas être affectée plusieurs fois à la même UE"
         }
       }
     }
-
-    let teachers = document.querySelectorAll('.teacher')
 
     if (teachers.length > 0) {
       let teacher_names = []
@@ -173,10 +216,17 @@ onMounted(async () => {
       })
 
       for (let i = 0; i < teacher_names.length; i++) {
+
+        if (teacher_names[i] === '') {
+          document.getElementById("error_teacher").innerHTML += "Un ou plusieurs professeurs ne sont pas renseignés."
+          return
+        }
+
         for (let j = 0; j < teacher_names.length; j++) {
-          console.log(teacher_names[i], teacher_names[j],teacher_names[i].value === teacher_names[j].value)
-          if (i !== j && teacher_names[i].value === teacher_names[j].value) {
-            document.getElementById("error_teacher").innerHTML = "Un professeur ne peut pas être sélectionné plusieurs fois pour la même ressource."
+
+          if (isTeacherNamesEquals(i, j, teacher_names)) {
+            document.getElementById("error_teacher").innerHTML += " Un professeur ne peut pas être sélectionné plusieurs fois pour la même ressource"
+            return
           }
         }
       }
@@ -257,30 +307,50 @@ onMounted(async () => {
 
   /* main teacher input */
 
-  const main_teacher_input = document.getElementById('main_teacher')
+  const main_teacher = document.getElementById('main_teacher')
   const list = document.querySelector('.show_teacher')
 
-  main_teacher_input.addEventListener('focus', () => {
+  main_teacher.addEventListener('focus', () => {
     show_teacher.value = true
   })
 
-  main_teacher_input.addEventListener('blur', () => {
+  main_teacher.addEventListener('blur', () => {
     show_teacher.value = false
   })
 
   list.addEventListener('mouseover', (event) => {
     if (event.target.classList && event.target.classList.contains('teacher_name')) {
-      main_teacher_input.value = event.target.innerText
+      main_teacher.value = event.target.innerText
     }
   })
 
   list.addEventListener('click', (event) => {
     if (event.target.classList && event.target.classList.contains('teacher_name')) {
-      main_teacher_input.value = event.target.innerText
+      main_teacher.value = event.target.innerText
       show_teacher.value = false
     }
   })
 })
+
+function areTotalNaN() {
+  return isNaN(total_initial_formation.value) && isNaN(total_work_study.value)
+}
+
+const getQueryParam = (param) => {
+  const hash = window.location.hash
+  const queryString = hash.split('?')[1]
+  if (!queryString) return null
+  const params = new URLSearchParams(queryString)
+  return params.get(param)
+}
+
+function getTotalInitialFormation() {
+  return parseInt(CM_initial_formation.value) + parseInt(TD_initial_formation.value) + parseInt(TP_initial_formation.value)
+}
+
+function getTotalWorkStudyFormation() {
+  return parseInt(CM_work_study.value) + parseInt(TD_work_study.value) + parseInt(TP_work_study.value)
+}
 
 function getUEsByInstitution() {
   return UEs.value.filter((ue) => ue.institutionId == localStorage.idInstitution)
@@ -312,6 +382,11 @@ function getCoefFromResource(resource) {
   return coefs
 }
 
+function isTeacherNamesEquals(i, j, teacher_names) {
+  return i!== j && teacher_names[i] === teacher_names[j]
+}
+
+
 </script>
 
 <template>
@@ -340,21 +415,25 @@ function getCoefFromResource(resource) {
               <label for="resource_label">Intitulé de la ressource : </label>
               <input id="resource_label" type="text" class="input" v-model="resource_label" required />
             </div>
+            <p id="error_resource_label" class="error_message"></p>
 
             <div>
               <label for="resource_name">Nom de la ressource : </label>
               <input id="resource_name" type="text" class="input" v-model="resource_name" required />
             </div>
+            <p id="error_resource_name" class="error_message"></p>
 
             <div>
               <label for="apogee_code">Code apogée : </label>
               <input id="apogee_code" type="text" class="input" v-model="apogee_code" required />
             </div>
+            <p id="error_apogee_code" class="error_message"></p>
 
             <div>
               <label>Modalités : </label>
-              <input type="text" class="input" v-model="terms" required />
+              <input id="terms" type="text" class="input" v-model="terms" required />
             </div>
+            <p id="error_terms" class="error_message"></p>
 
             <div>
               <p>Nombre d'heures (formation initiale) :</p>
@@ -383,6 +462,7 @@ function getCoefFromResource(resource) {
 
               <p>Nombre d'heures totales : {{ total_initial_formation }}</p>
             </div>
+            <p id="error_initial_formation" class="error_message"></p>
 
             <div id="btn">
               <input class="btn1" type="reset" value="Annuler" />
@@ -427,6 +507,7 @@ function getCoefFromResource(resource) {
 
                 <p>Nombre d'heures totales : {{ total_work_study }}</p>
               </div>
+              <p id="error_work_study" class="error_message"></p>
             </div>
 
             <div>
@@ -461,10 +542,8 @@ function getCoefFromResource(resource) {
                       <button class="button_more" id="button_ue_minus">x</button>
                       <input id="coefficient" type="text" class="input" style="margin-top: 4px" v-model="ue.coefficient" required />
                     </div>
-
-                    <p id="error_ue"></p>
-
                   </div>
+                  <p id="error_ue" class="error_message"></p>
                 </div>
 
                 <div style="margin-top: 5px">
@@ -484,7 +563,7 @@ function getCoefFromResource(resource) {
                         <p v-else >Aucun professeur ne peut être sélectionné</p>
                       </div>
                     </div>
-
+                    <p id="error_main_teacher" class="error_message"></p>
                   </div>
 
                   <div class="component" style="justify-content: center">
@@ -509,7 +588,7 @@ function getCoefFromResource(resource) {
                     <button class="button_more" id="button_teacher_cross">x</button>
                   </div>
                 </div>
-                <p id="error_teacher"></p>
+                <p id="error_teacher" class="error_message"></p>
               </div>
             </div>
           </div>
@@ -727,7 +806,6 @@ function getCoefFromResource(resource) {
   width: 50%;
   padding-right: 1vw;
   margin-top: 20px;
-  gap: 15px;
 }
 
 #right {
@@ -833,14 +911,7 @@ function getCoefFromResource(resource) {
   margin: 0.3vw;
 }
 
-#error_ue {
-  color: var(--error-color);
-  width: 80%;
-  text-align: center;
-  margin-left: 3.5vw;
-}
-
-#error_teacher {
+.error_message {
   color: var(--error-color);
   width: 80%;
   text-align: center;
