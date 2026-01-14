@@ -182,13 +182,18 @@
                 }
             }
 
-            if (ue_list.value.length > 1) {
-                let first_ue = ue_list.value[0].ue
-
-                for (let i = 1; i < ue_list.value.length; i++) {
-                    if (first_ue === ue_list.value[i].ue) {
-                        errors.value.ueCoefficients = true
-                        document.getElementById("error_ue").innerHTML = "Une resource ne peut pas être affectée plusieurs fois à la même UE"
+            if (ue_list.value.length >= 1) {
+                for (let index1 = 0; index1 < ue_list.value.length; index1++) {
+                    if (ue_list.value[index1].ue === '') {
+                        document.getElementById("error_ue").innerHTML = "Les UE doivent être sélectionnées"                        
+                    }
+                    
+                    // verify if the same UE is selected multiple times
+                    for (let index2 = index1 + 1; index2 < ue_list.value.length; index2++) {
+                        if (ue_list.value[index1].ue === ue_list.value[index2].ue && ue_list.value[index1].ue !== '') {
+                            errors.value.ueCoefficients = true
+                            document.getElementById("error_ue").innerHTML = "Une UE ne peut pas être affectée plusieurs fois"
+                        }
                     }
                 }
             }
@@ -197,6 +202,8 @@
 
         document.addEventListener('click', (event) => {
             if (event.target.id === 'button_ue_minus') {
+                errors.value.ueCoefficients = false
+                document.getElementById("error_ue").innerHTML = ""
                 if (ue_list.value.length > 1) {
                     /* find all UE divs */
                     const ues = document.querySelectorAll('.ue_div')
@@ -216,17 +223,24 @@
                     }
                 }
 
-            } else if (event.target.id === 'button_ue_plus' && filteredUeTableV2.value.length > ue_list.value.length) {
-                /* generate new unique id */
-                let id
-                if (ue_list.value.length > 0) {
-                    /* get the max id and add 1 */
-                    id = Math.max(...ue_list.value.map(u => u.id)) + 1
+            } else if (event.target.id === 'button_ue_plus') {
+                errors.value.ueCoefficients = false
+                document.getElementById("error_ue").innerHTML = ""
+                if (filteredUeTableV2.value.length > ue_list.value.length) {
+                    /* generate new unique id */
+                    let id
+                    if (ue_list.value.length > 0) {
+                        /* get the max id and add 1 */
+                        id = Math.max(...ue_list.value.map(u => u.id)) + 1
+                    } else {
+                        /* else it's the first id */
+                        id = 1
+                    }
+                    ue_list.value.push({ id: id, ue: '', coefficient: '' }) 
                 } else {
-                    /* else it's the first id */
-                    id = 1
+                    errors.value.ueCoefficients = true
+                    document.getElementById("error_ue").innerHTML = "Vous avez sélectionné toutes les UE disponibles pour ce semestre"
                 }
-                ue_list.value.push({ id: id, ue: '', coefficient: '' })
 
             }
         })
