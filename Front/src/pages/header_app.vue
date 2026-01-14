@@ -1,8 +1,27 @@
 <script setup>
     import { status, userName, removeUser } from '../main'
+    import { ref, computed } from 'vue'
+    import how_to_administration from '../userGuidePages/how_to_administration.vue'
+    import how_to_teacher from '../userGuidePages/how_to_teacher.vue'
 
     status.value = localStorage.status
     userName.value = localStorage.lastname + " " + localStorage.firstname
+
+    const show_how_to_popup = ref(false)
+
+    const togglePopup = () => {
+      show_how_to_popup.value = !show_how_to_popup.value
+    }
+
+    const routes = {
+      'Administration': how_to_administration,
+      'Professeur' : how_to_teacher
+    }
+
+    const current_how_to = computed(() => {
+      return routes[status.value] || null
+    })
+
 </script>
 
 <template>
@@ -22,11 +41,21 @@
         </div>
         <div id="red_rect" class="container-fluid spb">
             <p v-if="status" id="user_status">Statut : {{ status }}</p>
-            <a v-if="status" id="btn_disconnect" v-on:click="removeUser()" href="#/">
-                Déconnexion
-            </a>
+
+            <div style="display: flex; align-items: center">
+              <p class="btn_how_to" @click="togglePopup">ⓘ</p>
+              <a v-if="status" id="btn_disconnect" v-on:click="removeUser()" href="#/">Déconnexion</a>
+            </div>
+
         </div>
     </header>
+
+  <div v-if="show_how_to_popup" class="popup-overlay">
+    <div class="popup-content" @click.stop>
+      <button class="popup-close" @click="togglePopup">&times;</button>
+      <component :is="current_how_to" />
+    </div>
+  </div>
 </template>
 
 <style>

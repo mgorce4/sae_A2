@@ -11,7 +11,7 @@
   --div-rect-background-color:#757575FF;
   --error-color:#ff6b6b;
   --sub-section-background-color:#2C2C3B;
-
+  --pop-up-background-color: #303060FA;
 }
 
 html {
@@ -235,4 +235,63 @@ main {
 
 .accordion_mccc.active::after {
     transform: rotate(180deg);
+}
+
+.btn_how_to {
+  height: 1.5vw;
+  width: 3vw;
+  padding: 0.2vw;
+  border-width: 0.15vw;
+  border-radius: 0.5vw;
+  font-size: 1.5vw;
+  font-weight: bold;
+  text-decoration: none;
+  align-content: center;
+  text-align: center;
+  color: var(--main-theme-secondary-color);
+  margin-right: 1vw;
+  cursor: pointer;
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.popup-content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--pop-up-background-color);
+  padding: 2vw;
+  border-radius: 1vw;
+  width: 50vw;
+  max-width: 80vw;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  color: white;
+}
+
+.popup-close {
+  position: absolute;
+  top: 0.5vw;
+  right: 1vw;
+  font-size: 2vw;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: white;
+}
+
+.popup-close:hover {
+  color: var(--header-footer-color);
 }
