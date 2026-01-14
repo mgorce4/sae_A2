@@ -249,6 +249,19 @@ onMounted(() => {
 
         </div>
       </div>
+
+      <div id="form">
+        <p class="section_title">Suivi de la ressource / module</p>
+        <div>
+          <p>Retour de l'équipe pédagogique et des acteurs impactés</p>
+          <p id="text_area_styled" class="tracking-textarea">{{resource_sheet.tracking.pedagogicalFeedback}}</p>
+          <p>Retour des étudiants</p>
+          <p id="text_area_styled" class="tracking-textarea">{{resource_sheet.tracking.studentFeedback}}</p>
+          <p>Amélioration(s) à mettre en oeuvre</p>
+          <p id="text_area_styled" class="tracking-textarea">{{resource_sheet.tracking.improvementSuggestions}}</p>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
