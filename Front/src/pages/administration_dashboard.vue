@@ -225,7 +225,7 @@ const goToRessourceSheetDisplay = (url, label) => {
         <div v-else class="ressource" v-for="sheet in getResourcesForSemester(selected_semester_sheets)" :key="sheet.id">
           <p>{{ sheet.resourceLabel }}</p>
           <div style="gap: 5px">
-            <button class="btn1" style="width: 5vw" @click="goToRessourceSheetDisplay('#/resource-sheet-display', sheet.resourceLabel)">Voir</button>
+            <button class="btn1" style="width: 5vw" @click="goToRessourceSheetDisplay('#/resource-sheet-display', sheet.resourceLabel)">Visualiser</button>
             <input type="checkbox" :checked="isSheetSelected(sheet.id)" @change="toggleSheetSelection(sheet.id)" />
           </div>
         </div>
