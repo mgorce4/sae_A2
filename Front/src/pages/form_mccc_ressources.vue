@@ -254,7 +254,7 @@ onMounted(async () => {
     if (ue_list.value.length > 1) {
       let first_ue = ue_list.value[0].ue
 
-      for (let i = 0; i < ue_list.value.length; i++) {
+      for (let i = 1; i < ue_list.value.length; i++) {
         if (first_ue === ue_list.value[i].ue) {
           document.getElementById("error_ue").innerHTML = "Une resource ne peut pas être affectée plusieurs fois à la même UE"
         }
