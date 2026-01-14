@@ -221,24 +221,14 @@ FOREIGN KEY (id_resource)
 REFERENCES RESOURCE(id_Resource)
 ON DELETE CASCADE;
 
-CREATE OR REPLACE FUNCTION cleanup_orphan_sae()
-RETURNS TRIGGER AS $$
-BEGIN
-    DELETE FROM SAE s
-    WHERE s.id_sae = OLD.id_sae
-      AND NOT EXISTS (
-          SELECT 1
-          FROM UE_COEFFICIENT_SAE ucs
-          WHERE ucs.id_sae = s.id_sae
-      );
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
+ALTER TABLE SAE_HOURS
+DROP CONSTRAINT sae_hours_id_sae_fkey;
 
-CREATE TRIGGER trg_cleanup_orphan_sae
-AFTER DELETE ON UE_COEFFICIENT_SAE
-FOR EACH ROW
-EXECUTE FUNCTION cleanup_orphan_sae();
+ALTER TABLE SAE_HOURS
+ADD CONSTRAINT sae_hours_id_sae_fkey
+FOREIGN KEY (id_SAE)
+REFERENCES SAE(id_SAE)
+ON DELETE CASCADE;
 
 
 CREATE OR REPLACE FUNCTION cleanup_orphan_resource()

@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import iut.unilim.fr.back.repository.PathRepository;
+import iut.unilim.fr.back.entity.Path;
+
 
 import java.util.List;
 import java.util.Map;
@@ -27,6 +30,10 @@ public class SAEController {
 
     @Autowired
     private UserSyncadiaService userSyncadiaService;
+
+    @Autowired
+    private PathRepository pathRepository;
+
 
     @GetMapping
     public List<SAE> getAllSAEs() {
@@ -53,13 +60,10 @@ public class SAEController {
     @PostMapping
     public ResponseEntity<SAE> createSAE(@RequestBody Map<String, Object> payload) {
         try {
-            // Extract values from payload
+            // ----- 1️⃣ Récupération des champs simples -----
             String label = (String) payload.get("label");
             String apogeeCode = (String) payload.get("apogeeCode");
             Integer semester = null;
-            Object modalite = payload.get("modalite");
-            
-            // Handle semester - it might be a string or number
             Object semesterObj = payload.get("semester");
             if (semesterObj != null) {
                 if (semesterObj instanceof Number) {
@@ -68,70 +72,56 @@ public class SAEController {
                     semester = Integer.parseInt(semesterObj.toString());
                 }
             }
-            
+
             Long userId = payload.get("userId") != null ?
-                ((Number) payload.get("userId")).longValue() : null;
+                    ((Number) payload.get("userId")).longValue() : null;
 
-            if (label == null || label.isEmpty()) {
-                System.err.println("❌ Label is required");
-                return ResponseEntity.badRequest().build();
-            }
-            
-            if (semester == null) {
-                System.err.println("❌ Semester is required");
-                return ResponseEntity.badRequest().build();
-            }
-            
-            if (userId == null) {
-                System.err.println("❌ userId is required");
-                return ResponseEntity.badRequest().build();
-            }
+            if (label == null || label.isEmpty()) return ResponseEntity.badRequest().body(null);
+            if (semester == null) return ResponseEntity.badRequest().body(null);
+            if (userId == null) return ResponseEntity.badRequest().body(null);
 
-            // Retrieve user and their institution
+            // ----- 2️⃣ Récupération et validation de l'utilisateur -----
             Optional<UserSyncadia> userOpt = userSyncadiaService.getUserById(userId);
-            if (userOpt.isEmpty()) {
-                System.err.println("❌ User not found with id: " + userId);
+            if (userOpt.isEmpty() || userOpt.get().getInstitution() == null) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
-
-            if (userOpt.get().getInstitution() == null) {
-                System.err.println("❌ User has no institution: " + userId);
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-
             UserSyncadia user = userOpt.get();
-            Long institutionId = user.getInstitution().getIdInstitution();
 
-            System.out.println("✅ Creating SAE for institution: " + institutionId);
-
-            // Create SAE entity
+            // ----- 3️⃣ Création de la SAE -----
             SAE sae = new SAE();
             sae.setLabel(label);
             sae.setApogeeCode(apogeeCode);
             sae.setSemester(semester);
-            
-            // Try to find Terms if termsId is provided
-            if (payload.containsKey("modalite") && payload.get("modalite") != null) {
+
+            // ----- 4️⃣ Récupérer Terms si fourni -----
+            if (payload.get("modalite") != null) {
                 Long termsId = ((Number) payload.get("modalite")).longValue();
                 Optional<Terms> termsOpt = termsRepository.findById(termsId);
-                if (termsOpt.isPresent()) {
-                    sae.setTerms(termsOpt.get());
+                termsOpt.ifPresent(sae::setTerms);
+            }
+
+            // ----- 5️⃣ Récupérer Path si fourni -----
+            if (payload.get("pathId") != null) {
+                Long pathId = ((Number) payload.get("pathId")).longValue();
+                Optional<Path> pathOpt = pathRepository.findById(pathId);
+                if (pathOpt.isPresent()) {
+                    sae.setPath(pathOpt.get()); // ✅ LIGNE CRUCIALE
                 } else {
-                    System.err.println("❌ Terms not found with id: " + termsId);
+                    System.err.println("❌ Path not found with id: " + pathId);
                     return ResponseEntity.badRequest().build();
                 }
             }
-            
-            // Save SAE
-            System.out.println("✅ Saving SAE: " + label);
+
+            // ----- 6️⃣ Sauvegarde -----
             SAE savedSAE = saeService.createSAE(sae);
             return ResponseEntity.ok(savedSAE);
+
         } catch (Exception e) {
-            System.err.println("❌ Error creating SAE: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
 
     @PutMapping("/{id}")
     public SAE updateSAE(@PathVariable Long id, @RequestBody SAE sae) {

@@ -7,6 +7,7 @@ import iut.unilim.fr.back.entity.Path;
 import iut.unilim.fr.back.entity.Ressource;
 import iut.unilim.fr.back.entity.SAE;
 import iut.unilim.fr.back.entity.SAEHours;
+import iut.unilim.fr.back.entity.SAELinkResource;
 import iut.unilim.fr.back.entity.Terms;
 import iut.unilim.fr.back.entity.UE;
 import iut.unilim.fr.back.entity.UeCoefficientSAE;
@@ -57,6 +58,9 @@ public class MCCCController {
 
     @Autowired
     private iut.unilim.fr.back.repository.UeCoefficientSAERepository ueCoefficientSAERepository;
+
+    @Autowired
+    private iut.unilim.fr.back.repository.SAELinkResourceRepository saeLinkResourceRepository;
 
     @Autowired
     private MCCCMapper mcccMapper;
@@ -357,8 +361,12 @@ public class MCCCController {
 
             System.out.println("=== SAE COMPLÈTEMENT SAUVEGARDÉE ===");
 
+            // Reload SAE from database to ensure all relationships are loaded
+            SAE reloadedSAE = saeRepository.findById(savedSAE.getIdSAE())
+                .orElseThrow(() -> new RuntimeException("Failed to reload saved SAE"));
+
             // Convert to DTO and return
-            MCCCSaeDTO resultDto = mcccSaeMapper.toDTO(savedSAE);
+            MCCCSaeDTO resultDto = mcccSaeMapper.toDTO(reloadedSAE);
             return ResponseEntity.ok(resultDto);
 
         } catch (Exception e) {
@@ -498,8 +506,12 @@ public class MCCCController {
 
             System.out.println("=== SAE MODIFIÉE ===");
 
+            // Reload SAE from database to ensure all relationships are loaded
+            SAE reloadedSAE = saeRepository.findById(updatedSAE.getIdSAE())
+                .orElseThrow(() -> new RuntimeException("Failed to reload updated SAE"));
+
             // Convert to DTO and return
-            MCCCSaeDTO resultDto = mcccSaeMapper.toDTO(updatedSAE);
+            MCCCSaeDTO resultDto = mcccSaeMapper.toDTO(reloadedSAE);
             return ResponseEntity.ok(resultDto);
 
         } catch (Exception e) {
@@ -525,6 +537,11 @@ public class MCCCController {
                 return ResponseEntity.notFound().build();
             }
 
+            // Delete related SAE-Resource links
+            List<SAELinkResource> saeLinks = saeLinkResourceRepository.findByIdSAE(id);
+            saeLinkResourceRepository.deleteAll(saeLinks);
+            System.out.println("✅ Liens SAE-Resource supprimés: " + saeLinks.size());
+
             // Delete related SAEHours
             List<SAEHours> saeHours = saeHoursRepository.findBySae_IdSAE(id);
             saeHoursRepository.deleteAll(saeHours);
@@ -535,8 +552,16 @@ public class MCCCController {
             ueCoefficientSAERepository.deleteAll(ueCoefficients);
             System.out.println("✅ UE Coefficients supprimés: " + ueCoefficients.size());
 
+            // Flush to ensure all deletions are sent to DB
+            saeRepository.flush();
+
+            // Reload the SAE to avoid OptimisticLockingException
+            SAE saeToDelete = saeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("SAE not found after deleting relations"));
+
             // Delete the SAE
-            saeRepository.deleteById(id);
+            saeRepository.delete(saeToDelete);
+            saeRepository.flush();
             System.out.println("✅ SAE supprimée");
 
             return ResponseEntity.ok().build();

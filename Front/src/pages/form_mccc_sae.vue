@@ -431,7 +431,12 @@
             attachAccordionListeners()
         } catch (error) {
             console.error('Erreur lors de la suppression:', error)
-            alert('Erreur lors de la suppression de la SAÉ: ' + (error.response?.data || error.message))
+            console.error('Détails de l\'erreur:', error.response?.data)
+            console.error('Status:', error.response?.status)
+            const errorMessage = typeof error.response?.data === 'string'
+                ? error.response.data
+                : JSON.stringify(error.response?.data) || error.message
+            alert('Erreur lors de la suppression de la SAÉ:\n' + errorMessage)
         }
     }
 
