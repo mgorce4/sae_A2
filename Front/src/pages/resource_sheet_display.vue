@@ -178,8 +178,90 @@ onMounted(() => {
             </div>
           </div>
         </div>
-
       </div>
+
+      <div id="pedagogical_content_section" v-if="resource_sheet.pedagogicalContent !== undefined">
+        <p class="section_title">Contenu pédagogique : </p>
+        <div class="pedagogical-content">
+          <div class="pedagogical-section">
+            <div class="pedagogical-header">
+              <p class="pedagogical-title">CM</p>
+            </div>
+            <p class="pedagogical-subtitle">Détailles des contenu pédagogique des CM</p>
+            <div class="pedagogical-items-container">
+              <div v-if="resource_sheet.pedagogicalContent.cm.length === 0" class="no-content-message">
+                Aucun contenu CM
+              </div>
+              <div v-for="(item, index) in resource_sheet.pedagogicalContent.cm" :key="index" class="pedagogical-items">
+                <span class="pedagogical-number">{{ item.order }}</span>
+                <p class="pedagogical-input" rows="1">{{item.content}}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="pedagogical-section">
+            <div class="pedagogical-header">
+              <p class="pedagogical-title">TD</p>
+            </div>
+            <p class="pedagogical-subtitle">Détailles des contenu pédagogique des TD</p>
+            <div class="pedagogical-items-container">
+              <div v-if="resource_sheet.pedagogicalContent.tp.length === 0" class="no-content-message">
+                Aucun contenu TD
+              </div>
+              <div v-for="(item, index) in resource_sheet.pedagogicalContent.tp" :key="index" class="pedagogical-items">
+                <span class="pedagogical-number">{{ item.order }}</span>
+                <p class="pedagogical-input" rows="1">{{item.content}}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="pedagogical-section">
+            <div class="pedagogical-header">
+              <p class="pedagogical-title">TP</p>
+            </div>
+            <p class="pedagogical-subtitle">Détailles des contenu pédagogique des TP</p>
+            <div class="pedagogical-items-container">
+              <div v-if="resource_sheet.pedagogicalContent.tp.length === 0" class="no-content-message">
+                Aucun contenu TP
+              </div>
+              <div v-for="(item, index) in resource_sheet.pedagogicalContent.tp" :key="index" class="pedagogical-items">
+                <span class="pedagogical-number">{{ item.order }}</span>
+                <p class="pedagogical-input" rows="1">{{item.content}}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="pedagogical-section">
+            <div class="pedagogical-header">
+              <p class="pedagogical-title">DS</p>
+            </div>
+            <p class="pedagogical-subtitle">Détailles des contenu pédagogique des DS</p>
+            <div class="pedagogical-items-container">
+              <div v-if="resource_sheet.pedagogicalContent.ds.length === 0" class="no-content-message">
+                Aucun contenu TP
+              </div>
+              <div v-for="(item, index) in resource_sheet.pedagogicalContent.ds" :key="index" class="pedagogical-items">
+                <span class="pedagogical-number">{{ item.order }}</span>
+                <p class="pedagogical-input" rows="1">{{item.content}}</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div id="form">
+        <p class="section_title">Suivi de la ressource / module</p>
+        <div>
+          <p>Retour de l'équipe pédagogique et des acteurs impactés</p>
+          <p id="text_area_styled" class="tracking-textarea">{{resource_sheet.tracking.pedagogicalFeedback}}</p>
+          <p>Retour des étudiants</p>
+          <p id="text_area_styled" class="tracking-textarea">{{resource_sheet.tracking.studentFeedback}}</p>
+          <p>Amélioration(s) à mettre en oeuvre</p>
+          <p id="text_area_styled" class="tracking-textarea">{{resource_sheet.tracking.improvementSuggestions}}</p>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
@@ -213,5 +295,20 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   margin-top: 2vw;
+}
+
+
+.pedagogical-items {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8vw;
+  margin-bottom: 0.8vw;
+  background-color: rgba(200, 200, 200, 0.3);
+  border-radius: 8px;
+  padding: 0.6vw 0.8vw;
+  min-height: 2.5vw;
+  box-sizing: border-box;
+  width: 100%;
 }
 </style>
