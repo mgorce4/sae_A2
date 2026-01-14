@@ -13,13 +13,22 @@
       show_how_to_popup.value = !show_how_to_popup.value
     }
 
-    const routes = {
+    const routes_how_to = {
       'Administration': how_to_administration,
       'Professeur' : how_to_teacher
     }
 
+    const routes = {
+        'Administration': '#/dashboard-administration',
+        'Professeur' : '#/teacher-dashboard'
+    }
+
     const current_how_to = computed(() => {
-      return routes[status.value] || null
+      return routes_how_to[status.value] || null
+    })
+
+    const dashboard_route = computed(() => {
+        document.location.href = routes[status.value] || '#/'
     })
 
 </script>
@@ -28,7 +37,7 @@
     <header id="header_div">
         <div id="header_top" class="container-fluid spb">
             <div id="app_name_and_logo" class="container-fluid">
-                <a id="unilim_logo">
+                <a id="unilim_logo" @click="dashboard_route">
                     <img src="./../../media/unilim_logo.webp" style="margin: 0; padding: 0; width: 100%; height: 100%;" alt="logo">
                 </a>
                 <div id="dividing_line"></div>

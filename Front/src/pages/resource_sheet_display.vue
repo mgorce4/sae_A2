@@ -80,7 +80,7 @@ onMounted(() => {
               <div class="skill-column-label">Label</div>
               <div class="skill-column-description">Description</div>
             </div>
-            <div v-if="resource_sheet.skills !== undefined || resource_sheet.skills.length > 0">
+            <div v-if="resource_sheet.skills !== undefined">
               <div v-for="skill in resource_sheet.skills" :key="skill.id" class="skill-row">
                 <div class="skill-inputs">
                   <p class="skill-input skill-input-label">{{skill.label}}</p>
@@ -146,7 +146,7 @@ onMounted(() => {
         </div>
       </div>
 
-      <div id="hours_section" v-if="resource_sheet.hoursTeacher !== undefined || resource_sheet.hoursTeacher.length > 0">
+      <div id="hours_section" v-if="resource_sheet.hoursTeacher !== undefined">
         <p class="section_title">Répartition des heures (volume étudiant) :</p>
 
         <p class="subsection_title" style="color: white; margin-top: 1.5vw; margin-bottom: 0.5vw;">Formation Initiale</p>
