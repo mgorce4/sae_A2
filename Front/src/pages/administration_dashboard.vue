@@ -365,7 +365,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 #list-of-ressources::-webkit-scrollbar-thumb {
   background: var(--main-theme-secondary-color);
   border-radius: 15px;
-  border: 0.2vw var(--main-theme-terciary-color) solid;
+  border: 0.2vw var(--main-theme-tertiary-color) solid;
 }
 
 /* Remove scrollbar from parent div */

@@ -307,13 +307,13 @@
 #form_select_page {
   margin: 3vw 14vw;
   justify-content: center;
-  color: var(--main-theme-terciary-color);
+  color: var(--main-theme-tertiary-color);
 }
 
 .back {
   font-size: 1.5vw;
   font-weight: bold;
-  color: var(--main-theme-terciary-color);
+  color: var(--main-theme-tertiary-color);
   margin-left: 1.5vw;
 }
 
