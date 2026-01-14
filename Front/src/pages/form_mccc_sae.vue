@@ -544,7 +544,7 @@
 }
 
 .mccc_input {
-    border: 0.1vw solid var(--main-theme-terciary-color);
+    border: 0.1vw solid var(--main-theme-tertiary-color);
     background-color: var(--div-rect-background-color);
     border-radius: 0.5vw;
     padding: 0.5vw;
@@ -571,7 +571,7 @@
 .display_coef_label, .display_coef_ue {
     width: 2vw;
     height: 1vw;
-    border: 0.1vw solid var(--main-theme-terciary-color);
+    border: 0.1vw solid var(--main-theme-tertiary-color);
     background-color: var(--div-rect-background-color);
     padding: 0.5vw;
 }
@@ -588,7 +588,7 @@
 
 .select_ue {
     height: 2vw;
-    border: 0.1vw solid var(--main-theme-terciary-color);
+    border: 0.1vw solid var(--main-theme-tertiary-color);
     background-color: var(--div-rect-background-color);
     border-top-left-radius: 0.8vw;
     border-top-right-radius: 0.8vw;
