@@ -12,11 +12,12 @@ import java.util.List;
 public interface SAERepository extends JpaRepository<SAE, Long> {
     List<SAE> findByTerms_IdTerms(Long idTerms);
     List<SAE> findBySemester(Integer semester);
+    List<SAE> findByPath_IdPath(Long pathId);
 
     @Query("SELECT DISTINCT s FROM SAE s " +
-           "JOIN UeCoefficientSAE ucs ON ucs.sae.idSAE = s.idSAE " +
-           "JOIN UE ue ON ue.ueNumber = ucs.ue.ueNumber " +
-           "WHERE ue.path.idPath = :pathId")
+           "LEFT JOIN FETCH s.path p " +
+           "LEFT JOIN FETCH p.institution " +
+           "WHERE p.idPath = :pathId")
     List<SAE> findByPathId(@Param("pathId") Long pathId);
 }
 

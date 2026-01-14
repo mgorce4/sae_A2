@@ -10,6 +10,8 @@ public class MCCCSaeDTO {
     private Integer semester;
     private Long institutionId;        // Institution ID
     private String termsCode;          // Terms code (e.g., "NGCC")
+    private Long pathId;               // Path ID
+    private String pathName;           // Path name
 
     // Hours
     private Double hours;              // Hours for formation initiale (has_alternance = 0)
@@ -74,6 +76,22 @@ public class MCCCSaeDTO {
         this.termsCode = termsCode;
     }
 
+    public Long getPathId() {
+        return pathId;
+    }
+
+    public void setPathId(Long pathId) {
+        this.pathId = pathId;
+    }
+
+    public String getPathName() {
+        return pathName;
+    }
+
+    public void setPathName(String pathName) {
+        this.pathName = pathName;
+    }
+
     public Double getHours() {
         return hours;
     }
@@ -116,6 +134,7 @@ public class MCCCSaeDTO {
 
     // Inner class for UE and coefficient
     public static class UECoefficientDTO {
+        private Long ueId;             // UE ID for identification
         private String ueLabel;        // e.g., "UE2.1"
         private String ueName;         // e.g., "Understanding organizations"
         private Double coefficient;
@@ -127,6 +146,14 @@ public class MCCCSaeDTO {
             this.ueLabel = ueLabel;
             this.ueName = ueName;
             this.coefficient = coefficient;
+        }
+
+        public Long getUeId() {
+            return ueId;
+        }
+
+        public void setUeId(Long ueId) {
+            this.ueId = ueId;
         }
 
         public String getUeLabel() {

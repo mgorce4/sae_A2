@@ -1,5 +1,5 @@
 <script setup>
-    import { onMounted, ref, computed, nextTick } from 'vue'
+    import { onMounted, ref, computed, nextTick, watch } from 'vue'
     import axios from 'axios'
     import { status } from '../main'
 
@@ -16,8 +16,16 @@
     const addModifySaeHours = ref('')
     const addModifySaeHoursAlternance = ref('')
     const ue_list = ref([{ id: 1, ue: '', coefficient: '' }])
-    
+
     const checkboxStatus = ref(false)
+
+    // Watch checkboxStatus to clear alternance hours when unchecked
+    watch(checkboxStatus, (newValue) => {
+        if (!newValue) {
+            // When checkbox is unchecked, clear alternance hours
+            addModifySaeHoursAlternance.value = ''
+        }
+    })
 
     const errors = ref({
         label: false,
@@ -95,24 +103,6 @@
         });
     }
 
-    const attachWorkStudyListeners = () => {
-        const workStudySlider = document.getElementById('work_study_slider')
-        if (workStudySlider) {
-            workStudySlider.addEventListener('click', () => {
-                const inputs = document.querySelectorAll('.input_work_study')
-                const checkbox = document.querySelector('#work_study_slider input[type="checkbox"]')
-
-                inputs.forEach((input) => {
-                if (checkbox.checked) {
-                    input.disabled = false
-                } else {
-                    input.disabled = true
-                }
-                })
-            })
-        }
-    }
-
     // Prevent typing invalid characters in number inputs
     const preventInvalidChars = (event) => {
         const invalidChars = ['e', 'E', '+', '-', ',']
@@ -157,7 +147,6 @@
         });
 
         attachAccordionListeners();
-        attachWorkStudyListeners();
 
 
         document.getElementById('save').addEventListener('click', () => {
@@ -185,9 +174,9 @@
             if (ue_list.value.length >= 1) {
                 for (let index1 = 0; index1 < ue_list.value.length; index1++) {
                     if (ue_list.value[index1].ue === '') {
-                        document.getElementById("error_ue").innerHTML = "Les UE doivent être sélectionnées"                        
+                        document.getElementById("error_ue").innerHTML = "Les UE doivent être sélectionnées"
                     }
-                    
+
                     // verify if the same UE is selected multiple times
                     for (let index2 = index1 + 1; index2 < ue_list.value.length; index2++) {
                         if (ue_list.value[index1].ue === ue_list.value[index2].ue && ue_list.value[index1].ue !== '') {
@@ -236,7 +225,7 @@
                         /* else it's the first id */
                         id = 1
                     }
-                    ue_list.value.push({ id: id, ue: '', coefficient: '' }) 
+                    ue_list.value.push({ id: id, ue: '', coefficient: '' })
                 } else {
                     errors.value.ueCoefficients = true
                     document.getElementById("error_ue").innerHTML = "Vous avez sélectionné toutes les UE disponibles pour ce semestre"
@@ -254,35 +243,195 @@
         errors.value.hours = false
         errors.value.ueCoefficients = false
         errors.value.alternanceHours = false
-        /*document.getElementById('error_ue_coefficients').innerHTML = ''*/
+        document.getElementById('error_ue').innerHTML = ''
 
         // Validation before saving
         let hasErrors = false
         if (!addModifySaeLabel.value) {
             errors.value.label = true
+            hasErrors = true
         }
         if (!addModifySaeApogeeCode.value) {
             errors.value.apogeeCode = true
+            hasErrors = true
         }
         if (addModifySaeTermCode.value === '') {
             errors.value.termCode = true
+            hasErrors = true
         }
         if (addModifySaeHours.value == '' || addModifySaeHours.value <= 0) {
             errors.value.hours = true
+            hasErrors = true
         }
-        if (document.getElementById('work_study_slider').querySelector('input[type="checkbox"]').checked) {
+        if (checkboxStatus.value) {
             if (addModifySaeHoursAlternance.value == '' || addModifySaeHoursAlternance.value <= 0) {
                 errors.value.alternanceHours = true
+                hasErrors = true
             }
-        }/*
-        if (addModifyUeCoef.value.length === 0) {
-            document.getElementById('error_ue_coefficients').innerHTML = "Les coefficients des UE sont obligatoires"
+        }
+
+        // Validate UE coefficients
+        const ues = document.querySelectorAll('#ue_select')
+        const coefs = document.querySelectorAll('#coefficient')
+
+        // Update ue_list with current values
+        for (let i = 0; i < ue_list.value.length; i++) {
+            ue_list.value[i].ue = ues[i].value
+            ue_list.value[i].coefficient = coefs[i].value
+        }
+
+        // Check if at least one UE is selected
+        let hasValidUE = false
+        for (let i = 0; i < ue_list.value.length; i++) {
+            if (ue_list.value[i].ue !== '' && ue_list.value[i].coefficient !== '') {
+                hasValidUE = true
+                break
+            }
+        }
+
+        if (!hasValidUE) {
+            errors.value.ueCoefficients = true
+            document.getElementById('error_ue').innerHTML = "Au moins une UE avec un coefficient doit être sélectionnée"
             hasErrors = true
-        }*/
+        }
+
+        // Check for empty coefficients on selected UEs
+        for (let i = 0; i < ue_list.value.length; i++) {
+            if (ue_list.value[i].ue !== '' && ue_list.value[i].coefficient === '') {
+                errors.value.ueCoefficients = true
+                document.getElementById('error_ue').innerHTML = "Le coefficient de chaque UE sélectionnée est obligatoire"
+                hasErrors = true
+            }
+            if (ue_list.value[i].ue === '' && ue_list.value[i].coefficient !== '') {
+                errors.value.ueCoefficients = true
+                document.getElementById('error_ue').innerHTML = "Vous devez sélectionner une UE pour chaque coefficient"
+                hasErrors = true
+            }
+        }
+
+        // Check for duplicate UEs
+        for (let index1 = 0; index1 < ue_list.value.length; index1++) {
+            for (let index2 = index1 + 1; index2 < ue_list.value.length; index2++) {
+                if (ue_list.value[index1].ue === ue_list.value[index2].ue && ue_list.value[index1].ue !== '') {
+                    errors.value.ueCoefficients = true
+                    document.getElementById('error_ue').innerHTML = "Une UE ne peut pas être affectée plusieurs fois"
+                    hasErrors = true
+                }
+            }
+        }
+
         // If data is missing, do not proceed
-        hasErrors = errors.value.label || errors.value.apogeeCode || errors.value.termCode || errors.value.hours || errors.value.alternanceHours
         if (hasErrors) {
             return
+        }
+
+        // Prepare DTO
+        const pathId = parseInt(getQueryParam('pathId'));
+        const institutionId = parseInt(localStorage.idInstitution);
+
+        const saeDTO = {
+            label: addModifySaeLabel.value,
+            apogeeCode: addModifySaeApogeeCode.value,
+            semester: parseInt(semesterNumber.value),
+            institutionId: institutionId,
+            termsCode: addModifySaeTermCode.value,
+            pathId: pathId,
+            hours: parseFloat(addModifySaeHours.value),
+            hoursAlternance: (checkboxStatus.value && addModifySaeHoursAlternance.value !== '' && addModifySaeHoursAlternance.value > 0)
+                ? parseFloat(addModifySaeHoursAlternance.value)
+                : null,
+            ueCoefficients: ue_list.value
+                .filter(u => u.ue !== '' && u.coefficient !== '')
+                .map(u => {
+                    // Find the UE object to get its ID
+                    const ueObject = filteredUeTableV2.value.find(ueItem => ueItem.label === u.ue)
+                    return {
+                        ueId: ueObject ? ueObject.ueNumber : null,  // Use ueNumber as ueId
+                        ueLabel: u.ue,  // Keep label for backwards compatibility
+                        coefficient: parseFloat(u.coefficient)
+                    }
+                })
+        }
+
+        console.log("SAE DTO à sauvegarder:", saeDTO)
+
+        if (addModifySdSaeModified.value === null) {
+            // Create new SAE
+            axios.post('http://localhost:8080/api/v2/mccc/saes', saeDTO)
+                .then(async response => {
+                    console.log('SAE créée:', response.data)
+                    // Reload SAEs
+                    const responseReload = await axios.get(`http://localhost:8080/api/v2/mccc/saes/path/${pathId}`);
+                    saeTableV2.value = responseReload.data.filter(sae =>
+                        sae.institutionId === institutionId
+                    );
+                    // Close add/modify area
+                    display_add_modify_area.value = false
+                    // Reset form
+                    addModifySaeLabel.value = ''
+                    addModifySaeApogeeCode.value = ''
+                    addModifySaeHours.value = ''
+                    addModifySaeTermCode.value = ''
+                    addModifySaeHoursAlternance.value = ''
+                    ue_list.value = [{ id: 1, ue: '', coefficient: '' }]
+                    checkboxStatus.value = false
+                    attachAccordionListeners()
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la création:', error)
+                    alert('Erreur lors de la création de la SAÉ: ' + (error.response?.data || error.message))
+                })
+        } else {
+            // Update existing SAE
+            axios.put(`http://localhost:8080/api/v2/mccc/saes/${addModifySdSaeModified.value}`, saeDTO)
+                .then(async response => {
+                    console.log('SAE modifiée:', response.data)
+                    // Reload SAEs
+                    const responseReload = await axios.get(`http://localhost:8080/api/v2/mccc/saes/path/${pathId}`);
+                    saeTableV2.value = responseReload.data.filter(sae =>
+                        sae.institutionId === institutionId
+                    );
+                    // Close add/modify area
+                    display_add_modify_area.value = false
+                    // Reset form
+                    addModifySdSaeModified.value = null
+                    addModifySaeLabel.value = ''
+                    addModifySaeApogeeCode.value = ''
+                    addModifySaeHours.value = ''
+                    addModifySaeTermCode.value = ''
+                    addModifySaeHoursAlternance.value = ''
+                    ue_list.value = [{ id: 1, ue: '', coefficient: '' }]
+                    checkboxStatus.value = false
+                    attachAccordionListeners()
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la modification:', error)
+                    alert('Erreur lors de la modification de la SAÉ: ' + (error.response?.data || error.message))
+                })
+        }
+    }
+
+    async function deleteSae(saeId) {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer cette SAÉ ?')) {
+            return
+        }
+
+        try {
+            await axios.delete(`http://localhost:8080/api/v2/mccc/saes/${saeId}`)
+            console.log('SAE supprimée:', saeId)
+
+            // Reload SAEs
+            const pathId = parseInt(getQueryParam('pathId'));
+            const institutionId = parseInt(localStorage.idInstitution);
+            const responseReload = await axios.get(`http://localhost:8080/api/v2/mccc/saes/path/${pathId}`);
+            saeTableV2.value = responseReload.data.filter(sae =>
+                sae.institutionId === institutionId
+            );
+
+            attachAccordionListeners()
+        } catch (error) {
+            console.error('Erreur lors de la suppression:', error)
+            alert('Erreur lors de la suppression de la SAÉ: ' + (error.response?.data || error.message))
         }
     }
 
@@ -299,20 +448,6 @@
         document.getElementById("error_ue").innerHTML = ""
 
         nextTick(() => {
-            // Uncheck the work study checkbox if adding or no alternance hours
-            const inputs = document.querySelectorAll('.input_work_study')
-            const checkbox = document.querySelector('#work_study_slider input[type="checkbox"]')
-            if (checkbox) {
-                checkbox.checked = checkboxStatus.value
-            }
-            inputs.forEach((input) => {
-                if (checkbox.checked) {
-                    input.disabled = false
-                } else {
-                    input.disabled = true
-                }
-            })
-            
             // Open accordion after rendering
             const accordions = document.querySelectorAll('[data-accordion="add-modify-sae"]')
             accordions.forEach(accordion => {
@@ -339,7 +474,7 @@
 
         ue_list.value = [{ id: 1, ue: '', coefficient: '' }]
         display_add_ue.value = false
-        
+
         initAddModifyArea()
     }
 
@@ -352,8 +487,8 @@
         addModifySaeHours.value = sae.hours
         addModifySaeTermCode.value = sae.termsCode
 
-        addModifySaeHoursAlternance.value = sae.hoursAlternance
-        if (addModifySaeHoursAlternance.value > 0) {
+        addModifySaeHoursAlternance.value = sae.hoursAlternance || ''
+        if (sae.hoursAlternance != null && sae.hoursAlternance > 0) {
             checkboxStatus.value = true
         } else {
             checkboxStatus.value = false
@@ -367,7 +502,7 @@
             }
         }
         console.log("UE LIST MODIF SAE : ", ue_list.value)
-        
+
         display_add_ue.value = false
 
         initAddModifyArea()
@@ -384,7 +519,7 @@
 </script>
 
 <template>
-    <div id="form_mccc_sae"> 
+    <div id="form_mccc_sae">
         <div class="return_arrow">
             <button class="back_arrow" @click="goBack">←</button>
             <p>Retour</p>
@@ -436,14 +571,14 @@
                             <div id="work_study" style="padding: 1vw;">
                                 <div class="component">
                                     <label class="switch" id="work_study_slider">
-                                        <input type="checkbox"/>
+                                        <input type="checkbox" v-model="checkboxStatus"/>
                                         <span class="slider"></span>
                                     </label>
                                     <p>Alternance</p>
                                 </div>
                                 <div class="container-fluid spb" id="work_study_hours">
                                     <p>Nombre d'heures (alternance) : </p>
-                                    <input type="number" class="input input_work_study" v-model="addModifySaeHoursAlternance" @keydown="preventInvalidChars" step="any" disabled/> 
+                                    <input type="number" class="input input_work_study" v-model="addModifySaeHoursAlternance" @keydown="preventInvalidChars" step="any" :disabled="!checkboxStatus"/>
                                 </div>
                                 <p class="error_message" v-show="errors.alternanceHours">Vous devez saisir un nombre d'heures valide, <br>ou désélectionner les heures en alternance</p>
                                 <!--V2: put comparator with the programme national hour and total alternance -->
@@ -495,7 +630,7 @@
                                 <p class="mccc_input">{{ value.termsCode }}</p>
                             </div>
                             <div class="container-fluid spa">
-                                <input id="btn_cancel_UE" class="btn1" type="reset" value="Supprimer">
+                                <input id="btn_cancel_UE" class="btn1" type="reset" value="Supprimer" @click="deleteSae(value.saeId)">
                                 <input id="btn_save_UE" class="btn1" type="button" value="Modifier" @click="modifySae(value)">
                             </div>
                         </div>

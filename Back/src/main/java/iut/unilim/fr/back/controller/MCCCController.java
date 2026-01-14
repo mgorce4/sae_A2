@@ -6,8 +6,10 @@ import iut.unilim.fr.back.dto.admin.MCCCUEDTO;
 import iut.unilim.fr.back.entity.Path;
 import iut.unilim.fr.back.entity.Ressource;
 import iut.unilim.fr.back.entity.SAE;
+import iut.unilim.fr.back.entity.SAEHours;
 import iut.unilim.fr.back.entity.Terms;
 import iut.unilim.fr.back.entity.UE;
+import iut.unilim.fr.back.entity.UeCoefficientSAE;
 import iut.unilim.fr.back.entity.UserSyncadia;
 import iut.unilim.fr.back.mapper.MCCCMapper;
 import iut.unilim.fr.back.mapper.MCCCSaeMapper;
@@ -21,6 +23,7 @@ import iut.unilim.fr.back.repository.UserSyncadiaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,6 +51,12 @@ public class MCCCController {
 
     @Autowired
     private UserSyncadiaRepository userSyncadiaRepository;
+
+    @Autowired
+    private iut.unilim.fr.back.repository.SAEHoursRepository saeHoursRepository;
+
+    @Autowired
+    private iut.unilim.fr.back.repository.UeCoefficientSAERepository ueCoefficientSAERepository;
 
     @Autowired
     private MCCCMapper mcccMapper;
@@ -227,6 +236,314 @@ public class MCCCController {
             return ResponseEntity.ok(dtos);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Create a new SAE with path, hours, and UE coefficients
+     * POST /api/v2/mccc/saes
+     */
+    @PostMapping("/saes")
+    @Transactional
+    public ResponseEntity<?> createMCCCSAE(@RequestBody MCCCSaeDTO dto) {
+        try {
+            System.out.println("=== CRÉATION SAÉ - DEBUG ===");
+            System.out.println("Label: " + dto.getLabel());
+            System.out.println("PathId from DTO: " + dto.getPathId());
+            System.out.println("Semester: " + dto.getSemester());
+
+            // Validate required fields
+            if (dto.getPathId() == null) {
+                return ResponseEntity.badRequest().body("pathId is required");
+            }
+            if (dto.getLabel() == null || dto.getLabel().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("label is required");
+            }
+            if (dto.getApogeeCode() == null || dto.getApogeeCode().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("apogeeCode is required");
+            }
+            if (dto.getSemester() == null) {
+                return ResponseEntity.badRequest().body("semester is required");
+            }
+            if (dto.getTermsCode() == null || dto.getTermsCode().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("termsCode is required");
+            }
+            if (dto.getHours() == null || dto.getHours() <= 0) {
+                return ResponseEntity.badRequest().body("hours is required and must be > 0");
+            }
+            if (dto.getUeCoefficients() == null || dto.getUeCoefficients().isEmpty()) {
+                return ResponseEntity.badRequest().body("At least one UE coefficient is required");
+            }
+
+            // Get path by ID
+            Path path = pathRepository.findById(dto.getPathId())
+                .orElseThrow(() -> new RuntimeException("Path not found with id: " + dto.getPathId()));
+
+            // Find or create Terms
+            Terms terms = termsRepository.findFirstByCode(dto.getTermsCode())
+                .orElseGet(() -> {
+                    Terms newTerms = new Terms();
+                    newTerms.setCode(dto.getTermsCode());
+                    return termsRepository.save(newTerms);
+                });
+
+            // Create SAE
+            SAE sae = new SAE();
+            sae.setLabel(dto.getLabel());
+            sae.setApogeeCode(dto.getApogeeCode());
+            sae.setSemester(dto.getSemester());
+            sae.setTerms(terms);
+            sae.setPath(path);
+
+            SAE savedSAE = saeRepository.save(sae);
+            System.out.println("✅ SAE sauvegardée - ID: " + savedSAE.getIdSAE());
+
+            // Create SAEHours for formation initiale (has_alternance = false)
+            SAEHours hoursInitiale = new SAEHours();
+            hoursInitiale.setHours(dto.getHours());
+            hoursInitiale.setSae(savedSAE);
+            hoursInitiale.setHasAlternance(false);
+            saeHoursRepository.save(hoursInitiale);
+            System.out.println("✅ Heures formation initiale sauvegardées: " + dto.getHours());
+
+            // Create SAEHours for alternance if provided
+            if (dto.getHoursAlternance() != null && dto.getHoursAlternance() > 0) {
+                SAEHours hoursAlternance = new SAEHours();
+                hoursAlternance.setHours(dto.getHoursAlternance());
+                hoursAlternance.setSae(savedSAE);
+                hoursAlternance.setHasAlternance(true);
+                saeHoursRepository.save(hoursAlternance);
+                System.out.println("✅ Heures alternance sauvegardées: " + dto.getHoursAlternance());
+            }
+
+            // Create UE coefficients
+            for (MCCCSaeDTO.UECoefficientDTO ueCoefDto : dto.getUeCoefficients()) {
+                // Check if ueId is provided (preferred method)
+                if (ueCoefDto.getUeId() != null) {
+                    // Find UE by ID - most reliable method
+                    UE ue = ueRepository.findById(ueCoefDto.getUeId())
+                        .orElseThrow(() -> new RuntimeException("UE not found with id: " + ueCoefDto.getUeId()));
+
+                    UeCoefficientSAE ueCoefficientSAE = new UeCoefficientSAE();
+                    ueCoefficientSAE.setUe(ue);
+                    ueCoefficientSAE.setSae(savedSAE);
+                    ueCoefficientSAE.setCoefficient(ueCoefDto.getCoefficient());
+                    ueCoefficientSAERepository.save(ueCoefficientSAE);
+                    System.out.println("✅ Coefficient UE sauvegardé: " + ue.getLabel() + " (ID: " + ue.getUeNumber() + ") = " + ueCoefDto.getCoefficient());
+                } else if (ueCoefDto.getUeLabel() != null && !ueCoefDto.getUeLabel().trim().isEmpty()) {
+                    // Fallback: Find UE by label, semester and path (for backwards compatibility)
+                    Optional<UE> ueOpt = ueRepository.findByLabelAndSemesterAndPath_IdPath(
+                        ueCoefDto.getUeLabel(),
+                        dto.getSemester(),
+                        dto.getPathId()
+                    );
+
+                    if (!ueOpt.isPresent()) {
+                        throw new RuntimeException("UE not found with label: " + ueCoefDto.getUeLabel() +
+                            " for semester " + dto.getSemester() + " and path " + dto.getPathId());
+                    }
+
+                    UE ue = ueOpt.get();
+
+                    UeCoefficientSAE ueCoefficientSAE = new UeCoefficientSAE();
+                    ueCoefficientSAE.setUe(ue);
+                    ueCoefficientSAE.setSae(savedSAE);
+                    ueCoefficientSAE.setCoefficient(ueCoefDto.getCoefficient());
+                    ueCoefficientSAERepository.save(ueCoefficientSAE);
+                    System.out.println("✅ Coefficient UE sauvegardé: " + ue.getLabel() + " = " + ueCoefDto.getCoefficient());
+                }
+                // Skip if neither ueId nor ueLabel is provided
+            }
+
+            System.out.println("=== SAE COMPLÈTEMENT SAUVEGARDÉE ===");
+
+            // Convert to DTO and return
+            MCCCSaeDTO resultDto = mcccSaeMapper.toDTO(savedSAE);
+            return ResponseEntity.ok(resultDto);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error creating SAE: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Update an existing SAE
+     * PUT /api/v2/mccc/saes/{id}
+     */
+    @PutMapping("/saes/{id}")
+    @Transactional
+    public ResponseEntity<?> updateMCCCSAE(@PathVariable Long id, @RequestBody MCCCSaeDTO dto) {
+        try {
+            System.out.println("=== MODIFICATION SAÉ - DEBUG ===");
+            System.out.println("SAE ID reçu: " + id);
+            System.out.println("Label: " + dto.getLabel());
+            System.out.println("PathId: " + dto.getPathId());
+            System.out.println("Hours: " + dto.getHours());
+            System.out.println("Hours Alternance: " + dto.getHoursAlternance());
+
+            // Check if SAE exists
+            System.out.println("Recherche de la SAE avec ID: " + id);
+            boolean exists = saeRepository.existsById(id);
+            System.out.println("SAE existe? " + exists);
+
+            if (!exists) {
+                System.out.println("❌ ERREUR: SAE non trouvée avec l'ID " + id);
+                System.out.println("Liste des SAEs existantes:");
+                saeRepository.findAll().forEach(s -> System.out.println("  - SAE ID: " + s.getIdSAE() + ", Label: " + s.getLabel()));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("SAE not found with id: " + id);
+            }
+
+            // Find existing SAE
+            SAE existingSAE = saeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("SAE not found with id: " + id));
+
+            // IMPORTANT: Delete child records FIRST before updating the parent
+            // Delete existing hours
+            List<SAEHours> existingHours = saeHoursRepository.findBySae_IdSAE(id);
+            saeHoursRepository.deleteAll(existingHours);
+            System.out.println("✅ Anciennes heures supprimées: " + existingHours.size());
+
+            // Delete existing UE coefficients
+            List<UeCoefficientSAE> existingCoefficients = ueCoefficientSAERepository.findBySae_IdSAE(id);
+            ueCoefficientSAERepository.deleteAll(existingCoefficients);
+            System.out.println("✅ Anciens coefficients supprimés: " + existingCoefficients.size());
+
+            // Now update basic fields
+            existingSAE.setLabel(dto.getLabel());
+            existingSAE.setApogeeCode(dto.getApogeeCode());
+            existingSAE.setSemester(dto.getSemester());
+
+            // Update Terms
+            if (dto.getTermsCode() != null && !dto.getTermsCode().trim().isEmpty()) {
+                Terms terms = termsRepository.findFirstByCode(dto.getTermsCode())
+                    .orElseGet(() -> {
+                        Terms newTerms = new Terms();
+                        newTerms.setCode(dto.getTermsCode());
+                        return termsRepository.save(newTerms);
+                    });
+                existingSAE.setTerms(terms);
+            }
+
+            // Update Path if pathId is provided
+            if (dto.getPathId() != null) {
+                Path path = pathRepository.findById(dto.getPathId())
+                    .orElseThrow(() -> new RuntimeException("Path not found with id: " + dto.getPathId()));
+                existingSAE.setPath(path);
+            }
+
+            SAE updatedSAE = saeRepository.save(existingSAE);
+            System.out.println("✅ SAE mise à jour");
+
+            // Create new hours for formation initiale
+            if (dto.getHours() != null && dto.getHours() > 0) {
+                SAEHours hoursInitiale = new SAEHours();
+                hoursInitiale.setHours(dto.getHours());
+                hoursInitiale.setSae(updatedSAE);
+                hoursInitiale.setHasAlternance(false);
+                saeHoursRepository.save(hoursInitiale);
+                System.out.println("✅ Nouvelles heures formation initiale: " + dto.getHours());
+            }
+
+            // Create new hours for alternance if provided
+            if (dto.getHoursAlternance() != null && dto.getHoursAlternance() > 0) {
+                SAEHours hoursAlternance = new SAEHours();
+                hoursAlternance.setHours(dto.getHoursAlternance());
+                hoursAlternance.setSae(updatedSAE);
+                hoursAlternance.setHasAlternance(true);
+                saeHoursRepository.save(hoursAlternance);
+                System.out.println("✅ Nouvelles heures alternance: " + dto.getHoursAlternance());
+            }
+
+            // Create new UE coefficients
+            if (dto.getUeCoefficients() != null) {
+                for (MCCCSaeDTO.UECoefficientDTO ueCoefDto : dto.getUeCoefficients()) {
+                    // Check if ueId is provided (preferred method)
+                    if (ueCoefDto.getUeId() != null) {
+                        // Find UE by ID - most reliable method
+                        UE ue = ueRepository.findById(ueCoefDto.getUeId())
+                            .orElseThrow(() -> new RuntimeException("UE not found with id: " + ueCoefDto.getUeId()));
+
+                        UeCoefficientSAE ueCoefficientSAE = new UeCoefficientSAE();
+                        ueCoefficientSAE.setUe(ue);
+                        ueCoefficientSAE.setSae(updatedSAE);
+                        ueCoefficientSAE.setCoefficient(ueCoefDto.getCoefficient());
+                        ueCoefficientSAERepository.save(ueCoefficientSAE);
+                    } else if (ueCoefDto.getUeLabel() != null && !ueCoefDto.getUeLabel().trim().isEmpty()) {
+                        // Fallback: Find UE by label, semester and path (for backwards compatibility)
+                        Optional<UE> ueOpt = ueRepository.findByLabelAndSemesterAndPath_IdPath(
+                            ueCoefDto.getUeLabel(),
+                            dto.getSemester(),
+                            dto.getPathId()
+                        );
+
+                        if (!ueOpt.isPresent()) {
+                            throw new RuntimeException("UE not found with label: " + ueCoefDto.getUeLabel() +
+                                " for semester " + dto.getSemester() + " and path " + dto.getPathId());
+                        }
+
+                        UE ue = ueOpt.get();
+
+                        UeCoefficientSAE ueCoefficientSAE = new UeCoefficientSAE();
+                        ueCoefficientSAE.setUe(ue);
+                        ueCoefficientSAE.setSae(updatedSAE);
+                        ueCoefficientSAE.setCoefficient(ueCoefDto.getCoefficient());
+                        ueCoefficientSAERepository.save(ueCoefficientSAE);
+                    }
+                    // Skip if neither ueId nor ueLabel is provided
+                }
+            }
+
+            System.out.println("=== SAE MODIFIÉE ===");
+
+            // Convert to DTO and return
+            MCCCSaeDTO resultDto = mcccSaeMapper.toDTO(updatedSAE);
+            return ResponseEntity.ok(resultDto);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error updating SAE: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Delete a SAE by ID
+     * DELETE /api/v2/mccc/saes/{id}
+     */
+    @DeleteMapping("/saes/{id}")
+    @Transactional
+    public ResponseEntity<?> deleteMCCCSAE(@PathVariable Long id) {
+        try {
+            System.out.println("=== SUPPRESSION SAÉ - DEBUG ===");
+            System.out.println("SAE ID: " + id);
+
+            // Vérifier si la SAÉ existe
+            if (!saeRepository.existsById(id)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Delete related SAEHours
+            List<SAEHours> saeHours = saeHoursRepository.findBySae_IdSAE(id);
+            saeHoursRepository.deleteAll(saeHours);
+            System.out.println("✅ SAEHours supprimées: " + saeHours.size());
+
+            // Delete related UE coefficients
+            List<UeCoefficientSAE> ueCoefficients = ueCoefficientSAERepository.findBySae_IdSAE(id);
+            ueCoefficientSAERepository.deleteAll(ueCoefficients);
+            System.out.println("✅ UE Coefficients supprimés: " + ueCoefficients.size());
+
+            // Delete the SAE
+            saeRepository.deleteById(id);
+            System.out.println("✅ SAE supprimée");
+
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error deleting SAE: " + e.getMessage());
         }
     }
 

@@ -22,9 +22,6 @@ public class MCCCSaeMapper {
     @Autowired
     private UeCoefficientSAERepository ueCoefficientSAERepository;
 
-    @Autowired
-    private MainTeacherForResourceRepository mainTeacherForResourceRepository;
-
 
     /**
      * Convert a SAE entity to MCCCSaeDTO
@@ -45,14 +42,23 @@ public class MCCCSaeMapper {
             dto.setTermsCode(sae.getTerms().getCode());
         }
 
+        // Path information
+        if (sae.getPath() != null) {
+            dto.setPathId(sae.getPath().getIdPath());
+            dto.setPathName(sae.getPath().getName());
+
+            // Get institution ID from path
+            if (sae.getPath().getInstitution() != null) {
+                dto.setInstitutionId(sae.getPath().getInstitution().getIdInstitution());
+            }
+        }
+
         // Hours from SAEHours table
         SAEHoursInfo hoursInfo = getHoursAndAlternance(sae.getIdSAE());
         dto.setHours(hoursInfo.hours);
         dto.setHoursAlternance(hoursInfo.hoursAlternance);
         dto.setHasAlternance(hoursInfo.hasAlternance);
 
-        // Institution ID from main teacher of linked resource
-        dto.setInstitutionId(getInstitutionId(sae.getIdSAE()));
 
         // Linked resources
         dto.setLinkedResources(getLinkedResources(sae.getIdSAE()));
@@ -101,30 +107,6 @@ public class MCCCSaeMapper {
         return new SAEHoursInfo(hours, hoursAlternance, hasAlternance);
     }
 
-    /**
-     * Get institution ID from main teacher of a linked resource
-     */
-    private Long getInstitutionId(Long saeId) {
-        // Get linked resources
-        List<SAELinkResource> links = saeLinkResourceRepository.findByIdSAE(saeId);
-
-        for (SAELinkResource link : links) {
-            if (link.getResource() != null) {
-                // Find main teacher for this resource
-                List<MainTeacherForResource> mainTeachers =
-                    mainTeacherForResourceRepository.findByIdResource(link.getResource().getIdResource());
-
-                if (!mainTeachers.isEmpty()) {
-                    MainTeacherForResource mainTeacher = mainTeachers.get(0);
-                    if (mainTeacher.getUser() != null && mainTeacher.getUser().getInstitution() != null) {
-                        return mainTeacher.getUser().getInstitution().getIdInstitution();
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
 
     /**
      * Get linked resources labels
@@ -146,11 +128,13 @@ public class MCCCSaeMapper {
             .filter(c -> c.getUe() != null)
             .map(c -> {
                 UE ue = c.getUe();
-                return new UECoefficientDTO(
+                UECoefficientDTO dto = new UECoefficientDTO(
                     ue.getLabel(),
                     ue.getName(),
                     c.getCoefficient()
                 );
+                dto.setUeId(ue.getUeNumber());  // Set the UE ID
+                return dto;
             })
             .collect(Collectors.toList());
     }

@@ -25,15 +25,20 @@ public class SAE {
     @JoinColumn(name = "id_terms")
     private Terms terms;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "path_id")
+    private Path path;
+
     public SAE() {
     }
 
-    public SAE(Long idSAE, String label, String apogeeCode, Integer semester, Terms terms) {
+    public SAE(Long idSAE, String label, String apogeeCode, Integer semester, Terms terms, Path path) {
         this.idSAE = idSAE;
         this.label = label;
         this.apogeeCode = apogeeCode;
         this.semester = semester;
         this.terms = terms;
+        this.path = path;
     }
 
     public Long getIdSAE() {
@@ -74,6 +79,14 @@ public class SAE {
 
     public void setTerms(Terms terms) {
         this.terms = terms;
+    }
+
+    public Path getPath() {
+        return path;
+    }
+
+    public void setPath(Path path) {
+        this.path = path;
     }
 }
 
