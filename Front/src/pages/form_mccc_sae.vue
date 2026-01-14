@@ -404,7 +404,7 @@
                             <p class="error_message" v-show="errors.apogeeCode">Le code Apogée est obligatoire</p>
                             <div class="container-fluid spb">
                                 <label for="hours_sae">Nombre d'heures (formation initiale) :</label>
-                                <input class="mccc_input" name="hours_sae" type="number" v-model="addModifySaeHours" :placeholder="'...'" @keydown="preventInvalidChars">
+                                <input class="mccc_input" name="hours_sae" type="number" v-model="addModifySaeHours" :placeholder="'...'" @keydown="preventInvalidChars" step="any">
                             </div>
                             <p class="error_message" v-show="errors.hours">Le nombre d'heures est obligatoire et doit être supérieur à 0</p>
                             <div class="container-fluid spb">
@@ -429,7 +429,7 @@
                                 </div>
                                 <div class="container-fluid spb" id="work_study_hours">
                                     <p>Nombre d'heures (alternance) : </p>
-                                    <input type="number" class="input input_work_study" v-model="addModifySaeHoursAlternance" @keydown="preventInvalidChars" disabled/> 
+                                    <input type="number" class="input input_work_study" v-model="addModifySaeHoursAlternance" @keydown="preventInvalidChars" step="any" disabled/> 
                                 </div>
                                 <p class="error_message" v-show="errors.alternanceHours">Vous devez saisir un nombre d'heures valide, <br>ou désélectionner les heures en alternance</p>
                                 <!--V2: put comparator with the programme national hour and total alternance -->
