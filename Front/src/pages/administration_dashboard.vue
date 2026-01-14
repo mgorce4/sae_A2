@@ -182,7 +182,7 @@ const goToRessourceSheetDisplay = (url, label) => {
           <p>Date de rendu du 1er semestre</p>
           <input type="date" v-model="firstDeliveryDate" name="first-delivery" :min="new Date().toISOString().split('T')[0]" />
         </div>
-        <div id="inline">
+        <div id="inline">                                                                                                                                                 
           <p>Date de rendu du 2ème semestre</p>
           <input type="date" v-model="secondDeliveryDate" name="second-delivery" :min="new Date().toISOString().split('T')[0]" />
         </div>
@@ -444,5 +444,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   margin-bottom:0vw;
   border: none;
   text-align: center;
+  font-size: 1.3vw;
 }
 </style>
