@@ -176,6 +176,101 @@ CREATE TABLE TEACHER_HOURS(
     id_ResourceSheet INT REFERENCES RESOURCE_SHEET(id_ResourceSheet)
 );
 
+ALTER TABLE UE
+DROP CONSTRAINT ue_id_path_fkey;
+
+ALTER TABLE UE
+ADD CONSTRAINT ue_id_path_fkey
+FOREIGN KEY (id_Path)
+REFERENCES PATH(id_Path)
+ON DELETE CASCADE;
+
+ALTER TABLE UE_COEFFICIENT_RESOURCE
+DROP CONSTRAINT ue_coefficient_resource_ue_number_fkey;
+
+ALTER TABLE UE_COEFFICIENT_RESOURCE
+ADD CONSTRAINT ue_coefficient_resource_ue_number_fkey
+FOREIGN KEY (UE_Number)
+REFERENCES UE(UE_Number)
+ON DELETE CASCADE;
+
+ALTER TABLE UE_COEFFICIENT_SAE
+DROP CONSTRAINT ue_coefficient_sae_ue_number_fkey;
+
+ALTER TABLE UE_COEFFICIENT_SAE
+ADD CONSTRAINT ue_coefficient_sae_ue_number_fkey
+FOREIGN KEY (UE_Number)
+REFERENCES UE(UE_Number)
+ON DELETE CASCADE;
+
+ALTER TABLE UE_COEFFICIENT_SAE
+DROP CONSTRAINT ue_coefficient_sae_id_sae_fkey;
+
+ALTER TABLE UE_COEFFICIENT_SAE
+ADD CONSTRAINT ue_coefficient_sae_id_sae_fkey
+FOREIGN KEY (id_SAE)
+REFERENCES SAE(id_SAE)
+ON DELETE CASCADE;
+
+ALTER TABLE UE_COEFFICIENT_RESOURCE
+DROP CONSTRAINT ue_coefficient_resource_id_resource_fkey;
+
+ALTER TABLE UE_COEFFICIENT_RESOURCE
+ADD CONSTRAINT ue_coefficient_resource_id_resource_fkey
+FOREIGN KEY (id_resource)
+REFERENCES RESOURCE(id_Resource)
+ON DELETE CASCADE;
+
+CREATE OR REPLACE FUNCTION cleanup_orphan_sae()
+RETURNS TRIGGER AS $$
+BEGIN
+    DELETE FROM SAE s
+    WHERE s.id_sae = OLD.id_sae
+      AND NOT EXISTS (
+          SELECT 1
+          FROM UE_COEFFICIENT_SAE ucs
+          WHERE ucs.id_sae = s.id_sae
+      );
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_cleanup_orphan_sae
+AFTER DELETE ON UE_COEFFICIENT_SAE
+FOR EACH ROW
+EXECUTE FUNCTION cleanup_orphan_sae();
+
+
+CREATE OR REPLACE FUNCTION cleanup_orphan_resource()
+RETURNS TRIGGER AS $$
+BEGIN
+    DELETE FROM RESOURCE r
+    WHERE r.id_resource = OLD.id_resource
+      AND NOT EXISTS (
+          SELECT 1
+          FROM UE_COEFFICIENT_RESOURCE ucr
+          WHERE ucr.id_resource = r.id_resource
+      );
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_cleanup_orphan_resource
+AFTER DELETE ON UE_COEFFICIENT_RESOURCE
+FOR EACH ROW
+EXECUTE FUNCTION cleanup_orphan_resource();
+
+
+ALTER TABLE RESOURCE_SHEET
+DROP CONSTRAINT resource_sheet_id_resource_fkey;
+
+ALTER TABLE RESOURCE_SHEET
+ADD CONSTRAINT resource_sheet_id_resource_fkey
+FOREIGN KEY (id_resource)
+REFERENCES RESOURCE(id_Resource)
+ON DELETE CASCADE;
+
+
 INSERT INTO INSTITUTION (name, location) VALUES
 ('INFORMATIQUE', 'IUT du Limousin'),
 ('GEA', 'IUT de Guéret'),
