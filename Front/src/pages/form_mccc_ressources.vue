@@ -323,7 +323,13 @@ onMounted(async () => {
         }
       }
 
-    } else if (event.target.id === 'button_ue_plus' && getUEsByInstitution().length > ue_list.value.length) {
+    } else if (event.target.id === 'button_ue_plus') {
+
+      if (getUEsByInstitution().length > ue_list.value.length) {
+        document.getElementById("error_ue").innerHTML = "Vous ne pouvez pas ajouter plus d'UEs car vous avez déjà séléctionné toutes les UE disponibles"
+        return
+      }
+
       /* generate new unique id */
       let id
       if (ue_list.value.length > 0) {
@@ -531,13 +537,13 @@ const goBack = () => {
                 <tbody>
                   <tr>
                     <td>
-                      <input type="text" class="input" v-model="CM_initial_formation"/>
+                      <input type="number" class="input" v-model="CM_initial_formation" @keydown="preventInvalidChars"/>
                     </td>
                     <td>
-                      <input type="text" class="input" v-model="TD_initial_formation"/>
+                      <input type="number" class="input" v-model="TD_initial_formation" @keydown="preventInvalidChars"/>
                     </td>
                     <td>
-                      <input type="text" class="input" v-model="TP_initial_formation"/>
+                      <input type="number" class="input" v-model="TP_initial_formation" @keydown="preventInvalidChars"/>
                     </td>
                   </tr>
                 </tbody>
@@ -576,13 +582,13 @@ const goBack = () => {
                   <tbody>
                     <tr>
                       <td>
-                        <input type="text" class="input input_work_study" v-model="CM_work_study" disabled/>
+                        <input type="number" class="input input_work_study" v-model="CM_work_study" @keydown="preventInvalidChars" disabled/>
                       </td>
                       <td>
-                        <input type="text" class="input input_work_study" v-model="TD_work_study" disabled/>
+                        <input type="number" class="input input_work_study" v-model="TD_work_study" @keydown="preventInvalidChars" disabled/>
                       </td>
                       <td>
-                        <input type="text" class="input input_work_study" v-model="TP_work_study" disabled/>
+                        <input type="number" class="input input_work_study" v-model="TP_work_study" @keydown="preventInvalidChars" disabled/>
                       </td>
                     </tr>
                   </tbody>
