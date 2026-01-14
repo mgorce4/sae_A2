@@ -14,7 +14,6 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -49,7 +48,6 @@ class ResourceSheetMapperTest {
     @Mock
     private RessourceTrackingRepository resourceTrackingRepository;
 
-    // Not used in toDTO directly but autowired in class, good practice to mock to avoid context issues if context was loaded
     @Mock
     private RessourceRepository ressourceRepository;
 

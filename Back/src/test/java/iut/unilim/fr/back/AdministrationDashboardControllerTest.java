@@ -49,6 +49,7 @@ class AdministrationDashboardControllerTest {
         ResponseEntity<List<AdministrationDashboardDTO>> response = controller.getAdministrationDashboard();
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
         assertEquals(2, response.getBody().size());
         verify(ressourceSheetRepository).findAll();
         verify(dashboardMapper).toDTOList(sheets);
@@ -90,7 +91,7 @@ class AdministrationDashboardControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(1, response.getBody().size());
-        assertEquals(targetInstitutionId, response.getBody().get(0).getInstitutionId());
+        assertEquals(targetInstitutionId, response.getBody().getFirst().getInstitutionId());
     }
 
     @Test
@@ -128,7 +129,7 @@ class AdministrationDashboardControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(1, response.getBody().size());
-        assertEquals(targetSemester, response.getBody().get(0).getSemester());
+        assertEquals(targetSemester, response.getBody().getFirst().getSemester());
     }
 
     @Test
