@@ -16,8 +16,7 @@
     const addModifySaeHours = ref('')
     const addModifySaeHoursAlternance = ref('')
     const ue_list = ref([{ id: 1, ue: '', coefficient: '' }])
-    const total_hours = ref('')
-
+    
     const checkboxStatus = ref(false)
 
     const errors = ref({
@@ -116,7 +115,7 @@
 
     // Prevent typing invalid characters in number inputs
     const preventInvalidChars = (event) => {
-        const invalidChars = ['e', 'E', '+', '-', '.', ',']
+        const invalidChars = ['e', 'E', '+', '-', ',']
         if (invalidChars.includes(event.key)) {
             event.preventDefault()
         }
@@ -274,14 +273,23 @@
     }
 
     function initAddModifyArea() {
+        // Reset errors
+        errors.value.label = false
+        errors.value.apogeeCode = false
+        errors.value.termCode = false
+        errors.value.hours = false
+        errors.value.ueCoefficients = false
+        errors.value.alternanceHours = false
+
         display_add_modify_area.value = true
+        document.getElementById("error_ue").innerHTML = ""
 
         nextTick(() => {
-            // Uncheck the work study checkbox
+            // Uncheck the work study checkbox if adding or no alternance hours
             const inputs = document.querySelectorAll('.input_work_study')
             const checkbox = document.querySelector('#work_study_slider input[type="checkbox"]')
             if (checkbox) {
-                checkbox.checked = !checkboxStatus.value
+                checkbox.checked = checkboxStatus.value
             }
             inputs.forEach((input) => {
                 if (checkbox.checked) {
@@ -305,27 +313,19 @@
     }
 
     function addSae() {
-        // Reset errors
-        errors.value.label = false
-        errors.value.apogeeCode = false
-        errors.value.termCode = false
-        errors.value.hours = false
-        errors.value.ueCoefficients = false
-        errors.value.alternanceHours = false
+        addModifySaeTitle.value = "Ajout d'une nouvelle SAÉ"
 
         addModifySaeLabel.value = ''
         addModifySaeApogeeCode.value = ''
         addModifySaeHours.value = ''
         addModifySaeTermCode.value = ''
 
+        addModifySaeHoursAlternance.value = ''
         checkboxStatus.value = false
 
+        ue_list.value = [{ id: 1, ue: '', coefficient: '' }]
         display_add_ue.value = false
-
-        nextTick(() => {
-            addModifySaeTitle.value = "Ajout d'une nouvelle SAÉ"
-        })
-
+        
         initAddModifyArea()
     }
 
@@ -353,9 +353,7 @@
             }
         }
         console.log("UE LIST MODIF SAE : ", ue_list.value)
-
-        checkboxStatus.value = /*sae.blocReleaseHours >= 1 ||*/ false
-
+        
         display_add_ue.value = false
 
         initAddModifyArea()
@@ -372,7 +370,6 @@
 </script>
 
 <template>
-    <p>{{ filteredSaeTableV2 }}</p>
     <div id="form_mccc_sae"> 
         <div class="return_arrow">
             <button class="back_arrow" @click="goBack">←</button>
@@ -449,9 +446,10 @@
                                 <p v-if="ue_list.length <= 0">Aucune UE créée</p>
                                 <div v-else>
                                     <div v-for="ue in ue_list" :key="ue.id" class="component ue_div" style="margin-bottom: 1vw; margin-left: 5.9vw;">
-                                        <select id="ue_select" class="input">
-                                            <option v-for="ue in filteredUeTableV2" :key="ue.ueNumber">
-                                            {{ ue.label }}
+                                        <select id="ue_select" class="input" v-model="ue.ue">
+                                            <option value="">Sélectionner une UE</option>
+                                            <option v-for="ueOption in filteredUeTableV2" :key="ueOption.ueNumber" :value="ueOption.label">
+                                            {{ ueOption.label }}
                                             </option>
                                         </select>
                                         <button class="button_more" id="button_ue_minus">x</button>
