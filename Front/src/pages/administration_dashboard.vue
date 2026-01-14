@@ -24,6 +24,8 @@ const firstDeliveryDate = ref('')
 const secondDeliveryDate = ref('')
 const deliveryDatesId = ref(null)
 const selectedSheets = ref([]) // Pour stocker les IDs des fiches sélectionnées
+const paths = ref([]) // Liste des parcours pour l'institution
+const pathId = ref(null) // ID du parcours sélectionné
 
 onMounted(async () => {
     try {
@@ -51,11 +53,36 @@ onMounted(async () => {
             console.error('Error loading delivery dates:', error)
         }
     }
+
+    // Load paths for the current institution
+    try {
+        const institutionId = localStorage.idInstitution
+        if (institutionId) {
+            const pathsResponse = await axios.get('http://localhost:8080/api/paths')
+            paths.value = pathsResponse.data.filter(path => 
+                path.institution?.idInstitution === parseInt(institutionId)
+            )
+        }
+    } catch (error) {
+        console.error('Error loading paths:', error)
+        paths.value = []
+    }
 })
 
 function getResourcesForSemester(semester) {
-  return resource_sheets.value.filter((sheet) => sheet.semester === semester)
-                              .filter((sheet) => sheet.institutionId == localStorage.idInstitution)
+  let filteredSheets = resource_sheets.value
+    .filter((sheet) => sheet.semester === semester)
+    .filter((sheet) => sheet.institutionId == localStorage.idInstitution)
+  
+  // Filtrer par path si un path est sélectionné
+  if (pathId.value !== null) {
+    const selectedPath = paths.value.find(p => p.idPath === pathId.value)
+    if (selectedPath) {
+      filteredSheets = filteredSheets.filter((sheet) => sheet.path === selectedPath.name)
+    }
+  }
+  
+  return filteredSheets
 }
 
 async function saveDeliveryDates() {
@@ -169,6 +196,15 @@ const goToRessourceSheetDisplay = (url, label) => {
         <div id="top">
           <p>Rendu des fiches</p>
           <img id="download" src="../../media/download.webp" width="35" height="35" alt="download" @click="downloadSheets"/>
+        </div>
+
+        <div id="option_path">
+          <select name="paths" class="paths" v-model="pathId">
+            <option :value="null" disabled>Sélectionner un parcours</option>
+            <option v-for="path in paths" :key="path.idPath" :value="path.idPath">
+              {{ path.name }}
+            </option>
+          </select>  
         </div>
 
         <div id="semesters_div">
@@ -334,7 +370,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 #return_sheets_div_header {
   position: sticky;
   top: 0;
-
   background-color: var(--main-theme-background-color);
   z-index: 10;
   padding-bottom: 1vw;
@@ -375,7 +410,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .ressource {
   background-color: var(--sub-div-background-color);
-  margin: 1vw;
+  margin-bottom: 1vw;
   padding: 5px;
   font-size: 2vw;
   border-radius: 15px;
@@ -383,16 +418,31 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   display: flex;
   height: 4vw;
   align-items: center;
+  margin-left: 1.5vw;
+  margin-right: 1vw;
 }
 
 .semesters {
   background-color: var(--sub-div-background-color);
-  width: 100%;
-  height: 3vw;
+  width: 90%;
+  height: 2.5vw;
   text-align: center;
   color: var(--main-theme-secondary-color);
-  border-top-left-radius: 15px;
-  border-top-right-radius: 15px;
-  font-size: 15px;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+  font-size: 1.5vw;
+  margin-left:1.5vw;
+  margin-top: 0vw;
+}
+
+.paths{
+  background-color: var(--sub-scrollbar-color);
+  color: var(--main-theme-secondary-color);
+  width: 100%;
+  height: 3.5vw;
+  border-radius: 15px;
+  margin-bottom:0vw;
+  border: none;
+  text-align: center;
 }
 </style>
