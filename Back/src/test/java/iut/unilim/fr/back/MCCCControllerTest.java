@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -169,7 +167,7 @@ class MCCCControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(1, response.getBody().size());
-        assertEquals(targetInstitutionId, response.getBody().get(0).getInstitutionId());
+        assertEquals(targetInstitutionId, response.getBody().getFirst().getInstitutionId());
     }
 
 
@@ -242,6 +240,6 @@ class MCCCControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(1, response.getBody().size());
-        assertEquals(targetInstitutionId, response.getBody().get(0).getInstitutionId());
+        assertEquals(targetInstitutionId, response.getBody().getFirst().getInstitutionId());
     }
 }
