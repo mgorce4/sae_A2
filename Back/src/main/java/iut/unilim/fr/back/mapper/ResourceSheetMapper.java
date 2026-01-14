@@ -115,11 +115,9 @@ public class ResourceSheetMapper {
         // PN hours (alternance)
         dto.setHoursPNAlternance(getHoursPN(resource.getIdResource(), true));
 
-        // Teacher hours (formation initiale)
-        dto.setHoursTeacher(getHoursTeacher(resourceSheet.getIdResourceSheet()));
-
-        // Teacher hours (alternance)
-        dto.setHoursTeacherAlternance(getHoursTeacherAlternance(resourceSheet.getIdResourceSheet()));
+        // Teacher hours - Priorité : HOURS_PER_STUDENT (si existe), sinon TEACHER_HOURS (legacy)
+        dto.setHoursTeacher(getHoursTeacherCombined(resource.getIdResource(), resourceSheet.getIdResourceSheet()));
+        dto.setHoursTeacherAlternance(getHoursTeacherAlternanceCombined(resource.getIdResource(), resourceSheet.getIdResourceSheet()));
 
         // Pedagogical content
         dto.setPedagogicalContent(getPedagogicalContent(resourceSheet.getIdResourceSheet()));
@@ -291,44 +289,80 @@ public class ResourceSheetMapper {
         return new HoursDTO(0.0, 0.0, 0.0, isAlternance);
     }
 
-    private HoursDTO getHoursTeacher(Long resourceSheetId) {
-        List<TeacherHours> hoursList = teacherHoursRepository.findByResourceSheet_IdResourceSheet(resourceSheetId);
+    // === MÉTHODES COMBINÉES - Essaient HOURS_PER_STUDENT d'abord, puis TEACHER_HOURS ===
 
-        // Find non-alternance hours (formation initiale)
-        TeacherHours nonAlternanceHours = hoursList.stream()
-            .filter(h -> h.getIsAlternance() != null && !h.getIsAlternance())
+    private HoursDTO getHoursTeacherCombined(Long resourceId, Long resourceSheetId) {
+        // Essayer d'abord depuis HOURS_PER_STUDENT (utilisé par form_mccc_ressources)
+        HoursDTO fromHoursPerStudent = getHoursFromHoursPerStudent(resourceId, false);
+        if (fromHoursPerStudent != null) {
+            return fromHoursPerStudent;
+        }
+
+        // Sinon, charger depuis TEACHER_HOURS (legacy, utilisé par resource_sheet_form)
+        return getHoursFromTeacherHours(resourceSheetId, false);
+    }
+
+    private HoursDTO getHoursTeacherAlternanceCombined(Long resourceId, Long resourceSheetId) {
+        // Essayer d'abord depuis HOURS_PER_STUDENT (utilisé par form_mccc_ressources)
+        HoursDTO fromHoursPerStudent = getHoursFromHoursPerStudent(resourceId, true);
+        if (fromHoursPerStudent != null) {
+            return fromHoursPerStudent;
+        }
+
+        // Sinon, charger depuis TEACHER_HOURS (legacy, utilisé par resource_sheet_form)
+        return getHoursFromTeacherHours(resourceSheetId, true);
+    }
+
+    // === MÉTHODES POUR HOURS_PER_STUDENT (form_mccc_ressources) ===
+
+    private HoursDTO getHoursFromHoursPerStudent(Long resourceId, boolean isAlternance) {
+        List<HoursPerStudent> hoursList = hoursPerStudentRepository.findByResource_IdResource(resourceId);
+
+        HoursPerStudent hours = hoursList.stream()
+            .filter(h -> h.getHasAlternance() != null && h.getHasAlternance() == isAlternance)
             .findFirst()
             .orElse(null);
 
-        if (nonAlternanceHours != null) {
+        if (hours != null) {
             return new HoursDTO(
-                nonAlternanceHours.getCm() != null ? nonAlternanceHours.getCm() : 0,
-                nonAlternanceHours.getTd() != null ? nonAlternanceHours.getTd() : 0,
-                nonAlternanceHours.getTp() != null ? nonAlternanceHours.getTp() : 0,
-                false
+                hours.getCm() != null ? hours.getCm().doubleValue() : 0.0,
+                hours.getTd() != null ? hours.getTd().doubleValue() : 0.0,
+                hours.getTp() != null ? hours.getTp().doubleValue() : 0.0,
+                isAlternance
             );
         }
         return null;
     }
 
-    private HoursDTO getHoursTeacherAlternance(Long resourceSheetId) {
+    // === MÉTHODES POUR TEACHER_HOURS (resource_sheet_form - legacy) ===
+
+    private HoursDTO getHoursFromTeacherHours(Long resourceSheetId, boolean isAlternance) {
         List<TeacherHours> hoursList = teacherHoursRepository.findByResourceSheet_IdResourceSheet(resourceSheetId);
 
-        // Find alternance hours
-        TeacherHours alternanceHours = hoursList.stream()
-            .filter(h -> h.getIsAlternance() != null && h.getIsAlternance())
+        TeacherHours hours = hoursList.stream()
+            .filter(h -> h.getIsAlternance() != null && h.getIsAlternance() == isAlternance)
             .findFirst()
             .orElse(null);
 
-        if (alternanceHours != null) {
+        if (hours != null) {
             return new HoursDTO(
-                alternanceHours.getCm() != null ? alternanceHours.getCm() : 0,
-                alternanceHours.getTd() != null ? alternanceHours.getTd() : 0,
-                alternanceHours.getTp() != null ? alternanceHours.getTp() : 0,
-                true
+                hours.getCm() != null ? hours.getCm().doubleValue() : 0.0,
+                hours.getTd() != null ? hours.getTd().doubleValue() : 0.0,
+                hours.getTp() != null ? hours.getTp().doubleValue() : 0.0,
+                isAlternance
             );
         }
         return null;
+    }
+
+    // === ANCIENNES MÉTHODES (deprecated mais conservées pour compatibilité) ===
+
+    private HoursDTO getHoursTeacher(Long resourceId) {
+        return getHoursFromHoursPerStudent(resourceId, false);
+    }
+
+    private HoursDTO getHoursTeacherAlternance(Long resourceId) {
+        return getHoursFromHoursPerStudent(resourceId, true);
     }
 
     private PedagogicalContentDTO getPedagogicalContent(Long resourceSheetId) {

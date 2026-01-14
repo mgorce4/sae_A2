@@ -1,11 +1,14 @@
 <script setup>
 import { status } from '../main'
-import { onMounted, ref, nextTick } from 'vue'
+import { onMounted, ref, nextTick, watch } from 'vue'
 import axios from 'axios'
 
 status.value = 'Administration'
 
 let display_more_area = ref(false)
+let is_modifying = ref(false)
+let resource_id_to_modify = ref(null)
+let checkboxAlternanceStatus = ref(false)
 
 const resource_sheets = ref([])
 
@@ -21,6 +24,25 @@ const ue_list = ref([{id : 1, ue: '', coefficient: ''}])
 /* value link with the v-model */
 const teachers_list = ref([{ id: 1, value: '' }])
 
+// Errors object for validation
+const errors = ref({
+  label: false,
+  name: false,
+  apogeeCode: false,
+  terms: false,
+  hours: false,
+  alternanceHours: false,
+  ueCoefficients: false
+})
+
+// Watch checkboxAlternanceStatus to clear alternance hours when unchecked
+watch(checkboxAlternanceStatus, (newValue) => {
+  if (!newValue) {
+    CM_work_study.value = undefined
+    TD_work_study.value = undefined
+    TP_work_study.value = undefined
+  }
+})
 // Extract ID from hash URL parameters
 const getQueryParam = (param) => {
   const hash = window.location.hash
@@ -111,6 +133,316 @@ function addTeacherEvents(div) {
   })
 }
 
+// Fonction pour modifier une ressource
+async function modifyResource(resource) {
+  console.log('=== MODIFICATION RESSOURCE ===', resource)
+
+  // D'abord ouvrir le formulaire et passer en mode modification
+  is_modifying.value = true
+  resource_id_to_modify.value = resource.resourceId
+  display_more_area.value = true
+
+  // Attendre que le DOM soit mis à jour
+  await nextTick()
+
+  // Charger les données de la ressource dans le formulaire
+  resource_label.value = resource.resourceLabel || ''
+  resource_name.value = resource.resourceName || ''
+  apogee_code.value = resource.resourceApogeeCode || ''
+  terms.value = resource.terms || ''
+
+  // Charger les heures (il faut récupérer depuis l'API car resource n'a pas toutes les données)
+  try {
+    const hoursResponse = await axios.get(`http://localhost:8080/api/hours-per-student/resource/${resource.resourceId}`)
+    const hours = hoursResponse.data
+
+    // Trouver les heures formation initiale (has_alternance = false)
+    const hoursInitial = hours.find(h => h.hasAlternance === false)
+    if (hoursInitial) {
+      CM_initial_formation.value = hoursInitial.cm
+      TD_initial_formation.value = hoursInitial.td
+      TP_initial_formation.value = hoursInitial.tp
+    }
+
+    // Trouver les heures alternance (has_alternance = true)
+    const hoursAlt = hours.find(h => h.hasAlternance === true)
+    if (hoursAlt) {
+      checkboxAlternanceStatus.value = true
+      CM_work_study.value = hoursAlt.cm
+      TD_work_study.value = hoursAlt.td
+      TP_work_study.value = hoursAlt.tp
+    } else {
+      checkboxAlternanceStatus.value = false
+      CM_work_study.value = undefined
+      TD_work_study.value = undefined
+      TP_work_study.value = undefined
+    }
+
+    // Charger le professeur principal (maintenant que le DOM est prêt)
+    const mainTeacherResponse = await axios.get(`http://localhost:8080/api/main-teachers-for-resource/resource/${resource.resourceId}`)
+    if (mainTeacherResponse.data && mainTeacherResponse.data.length > 0) {
+      const mainTeacher = mainTeacherResponse.data[0]
+      const mainTeacherInput = document.getElementById('main_teacher')
+      if (mainTeacherInput) {
+        mainTeacherInput.value = `${mainTeacher.user.firstname} ${mainTeacher.user.lastname}`
+      }
+    } else {
+      const mainTeacherInput = document.getElementById('main_teacher')
+      if (mainTeacherInput) {
+        mainTeacherInput.value = ''
+      }
+    }
+
+    // Charger les professeurs associés
+    const teachersResponse = await axios.get(`http://localhost:8080/api/teachers-for-resource/resource/${resource.resourceId}`)
+    if (teachersResponse.data && teachersResponse.data.length > 0) {
+      teachers_list.value = teachersResponse.data.map((t, index) => ({
+        id: index + 1,
+        value: `${t.user.firstname} ${t.user.lastname}`
+      }))
+      // Réinitialiser show_teacher_list avec la même taille
+      show_teacher_list.value = teachersResponse.data.map(() => false)
+    } else {
+      teachers_list.value = [{ id: 1, value: '' }]
+      show_teacher_list.value = [false]
+    }
+
+    // Charger les coefficients UE
+    const coeffResponse = await axios.get(`http://localhost:8080/api/ue-coefficients/resource/${resource.resourceId}`)
+    if (coeffResponse.data && coeffResponse.data.length > 0) {
+      ue_list.value = coeffResponse.data.map((coeff, index) => ({
+        id: index + 1,
+        ue: coeff.ue.label,
+        coefficient: coeff.coefficient
+      }))
+    } else {
+      ue_list.value = [{ id: 1, ue: '', coefficient: '' }]
+    }
+
+    // Attendre une frame supplémentaire puis réattacher les événements et scroller
+    await nextTick()
+
+    // Réattacher les événements pour les professeurs associés
+    const containers = document.querySelectorAll('.teacher_select_container')
+    containers.forEach(container => {
+      addTeacherEvents(container)
+    })
+
+    // Scroll vers le formulaire
+    document.getElementById('dark_bar').scrollIntoView({ behavior: 'smooth' })
+
+  } catch (error) {
+    console.error('❌ Erreur lors du chargement de la ressource:', error)
+    alert('Erreur lors du chargement de la ressource pour modification')
+  }
+}
+
+// Fonction pour supprimer une ressource
+async function deleteResource(resourceId) {
+  if (!confirm('Êtes-vous sûr de vouloir supprimer cette ressource ?')) {
+    return
+  }
+
+  try {
+    console.log('=== SUPPRESSION RESSOURCE ===', resourceId)
+
+    // Le backend gère tout automatiquement
+    await axios.delete(`http://localhost:8080/api/v2/mccc/resources/${resourceId}`)
+
+    console.log('✅ Ressource supprimée')
+
+    // Reload resource sheets
+    const reloadResponse = await axios.get('http://localhost:8080/api/v2/resource-sheets')
+    resource_sheets.value = reloadResponse.data
+
+    alert('Ressource supprimée avec succès !')
+
+  } catch (error) {
+    console.error('❌ Erreur lors de la suppression:', error)
+    alert('Erreur lors de la suppression de la ressource: ' + (error.response?.data || error.message))
+  }
+}
+
+// Fonction de sauvegarde de ressource - Comme saveSae
+async function saveResource() {
+  console.log('=== SAUVEGARDE RESSOURCE ===')
+
+  // Reset errors
+  Object.keys(errors.value).forEach(key => errors.value[key] = false)
+  document.querySelectorAll('.error_message').forEach(el => el.innerHTML = '')
+
+  // Validation
+  let hasErrors = false
+
+  if (!resource_label.value) {
+    errors.value.label = true
+    hasErrors = true
+  }
+  if (!resource_name.value) {
+    errors.value.name = true
+    hasErrors = true
+  }
+  if (!apogee_code.value) {
+    errors.value.apogeeCode = true
+    hasErrors = true
+  }
+  if (terms.value === '') {
+    errors.value.terms = true
+    hasErrors = true
+  }
+  if (!CM_initial_formation.value && !TD_initial_formation.value && !TP_initial_formation.value) {
+    errors.value.hours = true
+    hasErrors = true
+  }
+
+  // Validate alternance hours if checkbox is checked
+  if (checkboxAlternanceStatus.value) {
+    if (!CM_work_study.value && !TD_work_study.value && !TP_work_study.value) {
+      errors.value.alternanceHours = true
+      hasErrors = true
+    }
+  }
+
+  // Validate UE coefficients
+  const ues = document.querySelectorAll('#ue_select')
+  const coefs = document.querySelectorAll('#coefficient')
+
+  // Update ue_list with current values
+  for (let i = 0; i < ue_list.value.length; i++) {
+    ue_list.value[i].ue = ues[i].value
+    ue_list.value[i].coefficient = coefs[i].value
+  }
+
+  // Check if at least one UE is selected
+  let hasValidUE = false
+  for (let i = 0; i < ue_list.value.length; i++) {
+    if (ue_list.value[i].ue !== '' && ue_list.value[i].coefficient !== '') {
+      hasValidUE = true
+      break
+    }
+  }
+
+  if (!hasValidUE) {
+    errors.value.ueCoefficients = true
+    document.getElementById('error_ue').innerHTML = "Au moins une UE avec un coefficient doit être sélectionnée"
+    hasErrors = true
+  }
+
+  // Check for empty coefficients on selected UEs
+  for (let i = 0; i < ue_list.value.length; i++) {
+    if (ue_list.value[i].ue !== '' && ue_list.value[i].coefficient === '') {
+      errors.value.ueCoefficients = true
+      document.getElementById('error_ue').innerHTML = "Le coefficient de chaque UE sélectionnée est obligatoire"
+      hasErrors = true
+    }
+    if (ue_list.value[i].ue === '' && ue_list.value[i].coefficient !== '') {
+      errors.value.ueCoefficients = true
+      document.getElementById('error_ue').innerHTML = "Vous devez sélectionner une UE pour chaque coefficient"
+      hasErrors = true
+    }
+  }
+
+  // Check for duplicate UEs
+  for (let index1 = 0; index1 < ue_list.value.length; index1++) {
+    for (let index2 = index1 + 1; index2 < ue_list.value.length; index2++) {
+      if (ue_list.value[index1].ue === ue_list.value[index2].ue && ue_list.value[index1].ue !== '') {
+        errors.value.ueCoefficients = true
+        document.getElementById('error_ue').innerHTML = "Une UE ne peut pas être affectée plusieurs fois"
+        hasErrors = true
+      }
+    }
+  }
+
+  if (hasErrors) {
+    console.log('❌ Erreurs de validation')
+    return
+  }
+
+  // Prepare DTO
+  const pathId = parseInt(getQueryParam('pathId'))
+  const institutionId = parseInt(localStorage.idInstitution)
+
+  const main_teacher_input = document.getElementById('main_teacher')?.value
+
+  const resourceDTO = {
+    label: resource_label.value,
+    name: resource_name.value,
+    apogeeCode: apogee_code.value,
+    semester: parseInt(getQueryParam('id')),
+    institutionId: institutionId,
+    termsCode: terms.value,
+    pathId: pathId,
+    cmInitial: parseFloat(CM_initial_formation.value) || 0,
+    tdInitial: parseFloat(TD_initial_formation.value) || 0,
+    tpInitial: parseFloat(TP_initial_formation.value) || 0,
+    cmAlternance: (checkboxAlternanceStatus.value && CM_work_study.value) ? parseFloat(CM_work_study.value) : null,
+    tdAlternance: (checkboxAlternanceStatus.value && TD_work_study.value) ? parseFloat(TD_work_study.value) : null,
+    tpAlternance: (checkboxAlternanceStatus.value && TP_work_study.value) ? parseFloat(TP_work_study.value) : null,
+    mainTeacher: main_teacher_input && main_teacher_input.trim() !== '' ? main_teacher_input.trim() : null,
+    teachers: teachers_list.value
+      .filter(t => t.value && t.value.trim() !== '')
+      .map(t => t.value.trim()),
+    ueCoefficients: ue_list.value
+      .filter(u => u.ue !== '' && u.coefficient !== '')
+      .map(u => {
+        const ueObject = UEs.value.find(ueItem => ueItem.label === u.ue)
+        return {
+          ueId: ueObject ? ueObject.ueNumber : null,
+          ueLabel: u.ue,
+          coefficient: parseFloat(u.coefficient)
+        }
+      })
+  }
+
+  console.log('📤 Envoi du DTO ressource:', resourceDTO)
+
+  try {
+    if (is_modifying.value && resource_id_to_modify.value) {
+      // Update existing resource
+      const response = await axios.put(`http://localhost:8080/api/v2/mccc/resources/${resource_id_to_modify.value}`, resourceDTO)
+      console.log('✅ Ressource modifiée:', response.data)
+    } else {
+      // Create new resource
+      const response = await axios.post('http://localhost:8080/api/v2/mccc/resources', resourceDTO)
+      console.log('✅ Ressource créée:', response.data)
+    }
+
+    // Reload resource sheets
+    const reloadResponse = await axios.get('http://localhost:8080/api/v2/resource-sheets')
+    resource_sheets.value = reloadResponse.data
+
+    // Reset form
+    resource_label.value = ''
+    resource_name.value = ''
+    apogee_code.value = ''
+    terms.value = ''
+    CM_initial_formation.value = undefined
+    TD_initial_formation.value = undefined
+    TP_initial_formation.value = undefined
+    CM_work_study.value = undefined
+    TD_work_study.value = undefined
+    TP_work_study.value = undefined
+    checkboxAlternanceStatus.value = false
+    ue_list.value = [{ id: 1, ue: '', coefficient: '' }]
+    teachers_list.value = [{ id: 1, value: '' }]
+
+    const mainTeacherInput = document.getElementById('main_teacher')
+    if (mainTeacherInput) {
+      mainTeacherInput.value = ''
+    }
+
+    is_modifying.value = false
+    resource_id_to_modify.value = null
+    display_more_area.value = false
+
+    console.log('✅ Ressource sauvegardée avec succès')
+
+  } catch (error) {
+    console.error('❌ Erreur lors de la sauvegarde:', error)
+    alert('Erreur lors de la sauvegarde de la ressource: ' + (error.response?.data || error.message))
+  }
+}
+
 onMounted(async () => {
   const pathId = parseInt(getQueryParam('pathId'));
   const institutionId = parseInt(localStorage.idInstitution);
@@ -163,143 +495,10 @@ onMounted(async () => {
     })
   })
 
-  document.getElementById('save').addEventListener('click', () => {
-    total_initial_formation.value = getTotalInitialFormation()
-    total_work_study.value = getTotalWorkStudyFormation()
+  // Lier la fonction de sauvegarde au bouton save
+  document.getElementById('save').addEventListener('click', saveResource)
 
-    /* if the forms are empty or filled with non-numeric values set totals to 0 */
-
-    if (areTotalNaN()) {
-      total_initial_formation.value = 0
-      total_work_study.value = 0
-    }
-
-    display_more_area.value = false
-
-    /* display errors messages */
-
-    /* reset all error messages */
-    document.getElementById("error_resource_label").innerHTML = ""
-    document.getElementById("error_resource_name").innerHTML = ""
-    document.getElementById("error_apogee_code").innerHTML = ""
-    document.getElementById("error_terms").innerHTML = ""
-    document.getElementById("error_initial_formation").innerHTML = ""
-    document.getElementById("error_work_study").innerHTML = ""
-    document.getElementById("error_ue").innerHTML = ""
-    document.getElementById("error_main_teacher").innerHTML = ""
-    document.getElementById("error_teacher").innerHTML = ""
-
-    /* variable for the messages */
-
-    let ues = document.querySelectorAll('#ue_select')
-    let coefs = document.querySelectorAll('#coefficient')
-    let teachers = document.querySelectorAll('.teacher')
-
-    /* get all inputs values */
-    let resource_label_input = document.getElementById('resource_label').value
-    let resource_name_input = document.getElementById('resource_name').value
-    let apogee_code_input = document.getElementById('apogee_code').value
-    let terms_input = document.getElementById('terms').value
-    let CM_initial_formation_input = CM_initial_formation.value
-    let TD_initial_formation_input = TD_initial_formation.value
-    let TP_initial_formation_input = TP_initial_formation.value
-    let CM_work_study_input = CM_work_study.value
-    let TD_work_study_input = TD_work_study.value
-    let TP_work_study_input = TP_work_study.value
-    let main_teacher_input = document.getElementById('main_teacher').value
-
-    /* display error messages if needed */
-
-    if (resource_label_input === '') {
-      document.getElementById("error_resource_label").innerHTML = "L'intitulé de la ressource est obligatoire"
-    }
-
-    if (resource_name_input === '') {
-      document.getElementById("error_resource_name").innerHTML = "Le nom de la ressource est obligatoire"
-    }
-
-    if (apogee_code_input === '') {
-      document.getElementById("error_apogee_code").innerHTML = "Le code apogée est obligatoire"
-    }
-
-    if (terms_input === '') {
-      document.getElementById("error_terms").innerHTML = "Les modalités sont obligatoires"
-    }
-
-    if (CM_initial_formation_input === undefined && TD_initial_formation_input === undefined && TP_initial_formation_input === undefined) {
-      document.getElementById("error_initial_formation").innerHTML = "Les heures de la formation innitiale sont obligatoire"
-    }
-
-    if (document.getElementById('work_study_slider').querySelector('input[type="checkbox"]').checked
-        && CM_work_study_input === undefined && TD_work_study_input === undefined && TP_work_study_input === undefined) {
-        document.getElementById("error_work_study").innerHTML = "Les heures de l'alternance sont obligatoire"
-    }
-
-    if (main_teacher_input === '') {
-      document.getElementById("error_main_teacher").innerHTML = "Le professeur principal est obligatoire"
-    }
-
-    /* add ues and coefficent to the list */
-    for (let i = 0; i < ue_list.value.length; i++) {
-      ue_list.value[i].ue = ues[i].value
-      ue_list.value[i].coefficient = coefs[i].value
-    }
-
-    for (let i = 0; i < ue_list.value.length; i++) {
-      if (ue_list.value[i].coefficient === '') {
-        document.getElementById("error_ue").innerHTML = "Le coefficient de chaque UE est obligatoire"
-      }
-    }
-
-    if (ue_list.value.length > 1) {
-      let first_ue = ue_list.value[0].ue
-
-      for (let i = 1; i < ue_list.value.length; i++) {
-        if (first_ue === ue_list.value[i].ue) {
-          document.getElementById("error_ue").innerHTML = "Une resource ne peut pas être affectée plusieurs fois à la même UE"
-        }
-      }
-    }
-
-    if (teachers.length > 0) {
-      let teacher_names = []
-
-      teacher_names.push(document.getElementById('main_teacher').value)
-
-      teachers.forEach((teacher) => {
-        teacher_names.push(teacher.value)
-      })
-
-      for (let i = 0; i < teacher_names.length; i++) {
-
-        if (teacher_names[i] === '') {
-          document.getElementById("error_teacher").innerHTML += "Un ou plusieurs professeurs ne sont pas renseignés."
-          return
-        }
-
-        for (let j = 0; j < teacher_names.length; j++) {
-
-          if (isTeacherNamesEquals(i, j, teacher_names)) {
-            document.getElementById("error_teacher").innerHTML += " Un professeur ne peut pas être sélectionné plusieurs fois pour la même ressource"
-            return
-          }
-        }
-      }
-    }
-  })
-
-  document.getElementById('work_study_slider').addEventListener('click', () => {
-    const inputs = document.querySelectorAll('.input_work_study')
-    const checkbox = document.querySelector('#work_study_slider input[type="checkbox"]')
-
-    inputs.forEach((input) => {
-      if (checkbox.checked) {
-        input.disabled = false
-      } else {
-        input.disabled = true
-      }
-    })
-  })
+  // Le switch est géré par v-model et watch, pas besoin d'écouteur manuel
 
   document.addEventListener('click', (event) => {
 
@@ -492,13 +691,15 @@ const goBack = () => {
         </div>
 
         <div id="dark_bar">
-          <h2>Ajouter une ressource</h2>
-          <button id="button_more" v-on:click="display_more_area = true">+</button>
+          <h2>{{ is_modifying ? 'Modifier une ressource' : 'Ajouter une ressource' }}</h2>
+          <button id="button_more" v-on:click="display_more_area = !display_more_area">{{ display_more_area ? '-' : '+' }}</button>
         </div>
 
-        <a class="accordion" id="dark_bar" style="width: 97%" v-show="display_more_area" method="post" v-on:submit.prevent="">Ajout d'une ressource :</a>
+        <a class="accordion" id="dark_bar" style="width: 97%" v-show="display_more_area" method="post" v-on:submit.prevent="">
+          {{ is_modifying ? 'Modification de la ressource :' : 'Ajout d\'une ressource :' }}
+        </a>
 
-        <div class="panel_resource">
+        <div class="panel_resource" v-show="display_more_area">
           <div id="left">
             <div>
               <label for="resource_label">Intitulé de la ressource : </label>
@@ -563,7 +764,7 @@ const goBack = () => {
             <div id="work_study">
               <div class="component">
                 <label class="switch" id="work_study_slider">
-                  <input type="checkbox" />
+                  <input type="checkbox" v-model="checkboxAlternanceStatus" />
                   <span class="slider"></span>
                 </label>
 
@@ -582,13 +783,13 @@ const goBack = () => {
                   <tbody>
                     <tr>
                       <td>
-                        <input type="number" class="input input_work_study" v-model="CM_work_study" @keydown="preventInvalidChars" disabled/>
+                        <input type="number" class="input input_work_study" v-model="CM_work_study" @keydown="preventInvalidChars" :disabled="!checkboxAlternanceStatus"/>
                       </td>
                       <td>
-                        <input type="number" class="input input_work_study" v-model="TD_work_study" @keydown="preventInvalidChars" disabled/>
+                        <input type="number" class="input input_work_study" v-model="TD_work_study" @keydown="preventInvalidChars" :disabled="!checkboxAlternanceStatus"/>
                       </td>
                       <td>
-                        <input type="number" class="input input_work_study" v-model="TP_work_study" @keydown="preventInvalidChars" disabled/>
+                        <input type="number" class="input input_work_study" v-model="TP_work_study" @keydown="preventInvalidChars" :disabled="!checkboxAlternanceStatus"/>
                       </td>
                     </tr>
                   </tbody>
@@ -601,15 +802,6 @@ const goBack = () => {
 
             <div>
               <div id="right_bottom">
-                <div class="component">
-                  <label class="switch">
-                    <input type="checkbox" />
-                    <span class="slider"></span>
-                  </label>
-
-                  <p>Épreuve différente si multi‑compétences</p>
-                </div>
-
                 <div>
                   <div class="component" style="justify-content: center;">
                     <label for="ue_select">UE affectées : </label>
@@ -694,33 +886,33 @@ const goBack = () => {
             <div id="left_resource">
               <div class="container-fluid">
                 <p>Code Apogee :</p>
-                <input type="text" class="input" :value="resource.resourceApogeeCode" />
+                <input type="text" class="input" :value="resource.resourceApogeeCode || ''" readonly />
               </div>
 
               <div class="container-fluid">
                 <p>Modalités :</p>
-                <input type="text" class="input" :value="resource.terms" />
+                <input type="text" class="input" :value="resource.terms || ''" readonly />
               </div>
 
               <p>Nombre d'heures (formation initiale) :</p>
 
               <div class="container-fluid">
                 <p>CM :</p>
-                <input type="text" class="input" :value="resource.hoursTeacher.cm" />
+                <input type="text" class="input" :value="resource.hoursTeacher?.cm || ''" readonly />
               </div>
 
               <div class="container-fluid">
                 <p>TD :</p>
-                <input type="text" class="input" :value="resource.hoursTeacher.td" />
+                <input type="text" class="input" :value="resource.hoursTeacher?.td || ''" readonly />
               </div>
 
               <div class="container-fluid">
                 <p>TP :</p>
-                <input type="text" class="input" :value="resource.hoursTeacher.tp" />
+                <input type="text" class="input" :value="resource.hoursTeacher?.tp || ''" readonly />
               </div>
 
               <div class="container-fluid">
-                <p>Total : {{resource.hoursTeacher.total}}</p>
+                <p>Total : {{resource.hoursTeacher?.total || 0}}</p>
               </div>
 
               <p>Nombre d'heures (alternance) : </p>
@@ -732,28 +924,27 @@ const goBack = () => {
               <div v-else>
                 <div class="container-fluid">
                   <p>CM :</p>
-                  <input type="text" class="input" :value="resource.hoursTeacherAltenrance.cm" />
+                  <input type="text" class="input" :value="resource.hoursTeacherAltenrance?.cm || ''" readonly />
                 </div>
 
                 <div class="container-fluid">
                   <p>TD :</p>
-                  <input type="text" class="input" :value="resource.hoursTeacherAltenrance.td" />
+                  <input type="text" class="input" :value="resource.hoursTeacherAltenrance?.td || ''" readonly />
                 </div>
 
                 <div class="container-fluid">
                   <p>TP :</p>
-                  <input type="text" class="input" :value="resource.hoursTeacherAltenrance.tp" />
+                  <input type="text" class="input" :value="resource.hoursTeacherAltenrance?.tp || ''" readonly />
                 </div>
 
                 <div class="container-fluid">
-                  <p>Total : {{resource.hoursTeacher.total}}</p>
+                  <p>Total : {{resource.hoursTeacherAltenrance?.total || 0}}</p>
                 </div>
               </div>
 
             </div>
 
             <div id="right_resource">
-
               <div id="UE_table">
                 <table class="ueCoefficient">
                   <tr>
@@ -768,16 +959,22 @@ const goBack = () => {
               </div>
 
               <div id="teacher_div">
+                <p>Professeur référent :</p>
+                <input type="text" class="input" :value="resource.mainTeacher || 'Non renseigné'" readonly />
+
                 <p>Professeur(s) associé(s) :</p>
-                <div v-for="teacher in resource.teachers" :key="teacher">
-                  <input type="text" class="input" :value="teacher" />
+                <div v-if="(resource.teachers || []).length === 0">
+                  <p style="color: #888; font-style: italic;">Aucun professeur associé</p>
+                </div>
+                <div v-for="teacher in (resource.teachers || [])" :key="teacher">
+                  <input type="text" class="input" :value="teacher" readonly />
                 </div>
               </div>
 
               <div style="display: flex; gap: 10px; justify-content: center">
-                <input class="btn1" type="button" value="Supprimer" />
+                <input class="btn1" type="button" value="Supprimer" @click="deleteResource(resource.resourceId)" />
                 <br />
-                <input class="btn1" type="button" value="Modifier" />
+                <input class="btn1" type="button" value="Modifier" @click="modifyResource(resource)" />
               </div>
             </div>
           </div>
@@ -1014,5 +1211,13 @@ const goBack = () => {
   gap: 10px;
   padding-top: 4vw;
   padding-bottom: 4vw;
+}
+
+/* Style pour les inputs en lecture seule dans la visualisation */
+input[readonly].input {
+  background-color: #4B575F !important;
+  color: white !important;
+  cursor: not-allowed;
+  opacity: 1;
 }
 </style>
