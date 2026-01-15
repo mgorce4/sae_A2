@@ -28,7 +28,6 @@ onMounted(() => {
 
 <template>
   <div id="main">
-    <div>{{resource_sheet}}</div>
     <div class="component spb">
       <div id="return_arrow">
         <button id="back_arrow" onclick="document.location.href='#/dashboard-administration'">←</button>
