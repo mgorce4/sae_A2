@@ -20,6 +20,8 @@ const resource_name = ref('')
 
 const access_rights = ref([])
 
+const main_teacher = ref('')
+
 const path = ref([])
 
 const ue_list = ref([{id : 1, ue: '', coefficient: ''}])
@@ -382,6 +384,11 @@ async function saveResource() {
     }
   }
 
+  if (main_teacher.value === '') {
+    document.getElementById("error_teacher").innerHTML = "Le professeur principal est obligatoire"
+    hasErrors = true
+  }
+
   if (hasErrors) {
     console.log('❌ Erreurs de validation')
     return
@@ -391,7 +398,7 @@ async function saveResource() {
   const pathId = parseInt(getQueryParam('pathId'))
   const institutionId = parseInt(localStorage.idInstitution)
 
-  const main_teacher_input = document.getElementById('main_teacher')?.value
+    const main_teacher_input = document.getElementById('main_teacher')?.value
 
   const resourceDTO = {
     label: resource_label.value,
@@ -889,7 +896,7 @@ total_work_study.value = computed(() => {
                     <label>Professeur principal de la ressource : </label>
 
                     <div>
-                      <input type="text" class="input" id="main_teacher" required />
+                      <input type="text" class="input" v-model="main_teacher" id="main_teacher" required />
 
                       <div class="show_teacher" v-show="show_teacher">
                         <div v-if="access_rights.length > 0">
