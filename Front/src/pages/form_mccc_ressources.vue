@@ -1,6 +1,6 @@
 <script setup>
 import { status } from '../main'
-import { onMounted, ref, nextTick, watch } from 'vue'
+import { onMounted, ref, nextTick, watch, computed } from 'vue'
 import axios from 'axios'
 
 status.value = 'Administration'
@@ -11,6 +11,8 @@ let resource_id_to_modify = ref(null)
 let checkboxAlternanceStatus = ref(false)
 
 const resource_sheets = ref([])
+const resources = ref([])
+const saes = ref([])
 
 const UEs = ref([])
 
@@ -265,6 +267,9 @@ async function deleteResource(resourceId) {
 
 // Fonction de sauvegarde de ressource - Comme saveSae
 async function saveResource() {
+
+  /* display errors messages */
+
   console.log('=== SAUVEGARDE RESSOURCE ===')
 
   // Reset errors
@@ -276,22 +281,27 @@ async function saveResource() {
 
   if (!resource_label.value) {
     errors.value.label = true
+    document.getElementById("error_resource_label").innerHTML = "L'intitulé de la ressource est obligatoire"
     hasErrors = true
   }
   if (!resource_name.value) {
     errors.value.name = true
+    document.getElementById("error_resource_name").innerHTML = "Le nom de la ressource est obligatoire"
     hasErrors = true
   }
   if (!apogee_code.value) {
     errors.value.apogeeCode = true
+    document.getElementById("error_apogee_code").innerHTML = "Le code apogée est obligatoire"
     hasErrors = true
   }
   if (terms.value === '') {
     errors.value.terms = true
+    document.getElementById("error_terms").innerHTML = "Les modalités sont obligatoires"
     hasErrors = true
   }
   if (!CM_initial_formation.value && !TD_initial_formation.value && !TP_initial_formation.value) {
     errors.value.hours = true
+    document.getElementById("error_initial_formation").innerHTML = "Les heures de la formation innitiale sont obligatoire"
     hasErrors = true
   }
 
@@ -299,6 +309,7 @@ async function saveResource() {
   if (checkboxAlternanceStatus.value) {
     if (!CM_work_study.value && !TD_work_study.value && !TP_work_study.value) {
       errors.value.alternanceHours = true
+      document.getElementById("error_work_study").innerHTML = "Les heures de l'alternance sont obligatoire"
       hasErrors = true
     }
   }
@@ -465,6 +476,12 @@ onMounted(async () => {
       .get('http://localhost:8080/api/v2/resource-sheets')
       .then((reponse) => (resource_sheets.value = reponse.data)),
     axios
+      .get(`http://localhost:8080/api/v2/mccc/resources/path/${pathId}`)
+      .then((response) => (resources.value = response.data)),
+    axios
+      .get(`http://localhost:8080/api/v2/mccc/saes/path/${pathId}`)
+      .then((response) => saes.value = response.data),
+    axios
       .get(`http://localhost:8080/api/v2/mccc/ues/path/${pathId}`)
       .then((response) => {
         // Filtrer par institution pour sécurité supplémentaire
@@ -480,6 +497,7 @@ onMounted(async () => {
   ])
 
   access_rights.value = access_rights.value.filter((ar) => ar.user.institution.idInstitution == localStorage.idInstitution).filter((ar) => ar.accessRight == access_right_teacher)
+  saes.value = saes.value.filter((saes) => saes.semester == getQueryParam('id'))
 
   await nextTick()
 
@@ -524,7 +542,7 @@ onMounted(async () => {
 
     } else if (event.target.id === 'button_ue_plus') {
 
-      if (getUEsByInstitution().length > ue_list.value.length) {
+      if (getUEsByInstitution().length <= ue_list.value.length) {
         document.getElementById("error_ue").innerHTML = "Vous ne pouvez pas ajouter plus d'UEs car vous avez déjà séléctionné toutes les UE disponibles"
         return
       }
@@ -608,35 +626,20 @@ onMounted(async () => {
   })
 })
 
-function areTotalNaN() {
-  return isNaN(total_initial_formation.value) && isNaN(total_work_study.value)
-}
-
-
-function getTotalInitialFormation() {
-  return parseInt(CM_initial_formation.value) + parseInt(TD_initial_formation.value) + parseInt(TP_initial_formation.value)
-}
-
-function getTotalWorkStudyFormation() {
-  return parseInt(CM_work_study.value) + parseInt(TD_work_study.value) + parseInt(TP_work_study.value)
-}
-
 function getUEsByInstitution() {
   return UEs.value.filter((ue) => ue.institutionId == localStorage.idInstitution)
 }
 
-function getResourcesBySemesterAndInstitution() {
-  return resource_sheets.value
-    .filter((sheet) => sheet.semester == getQueryParam('id'))
-    .filter((sheet) => sheet.institutionId == localStorage.idInstitution)
-    .filter((sheet) => sheet.path == getPath()[0].name)
+function getResourcesBySemester() {
+  return resources.value
+    .filter((res) => res.semester == getQueryParam('id'))
 }
 
 function getUEFromResource(resource) {
   let ues = []
 
-  resource.ueReferences.map((ue) => {
-    ues.push(ue.label)
+  resource.ueCoefficients.map((ue) => {
+    ues.push(ue.ueLabel)
   })
 
   return ues
@@ -645,7 +648,7 @@ function getUEFromResource(resource) {
 function getCoefFromResource(resource) {
   let coefs = []
 
-  resource.ueReferences.map((ue) => {
+  resource.ueCoefficients.map((ue) => {
     coefs.push(ue.coefficient)
   })
 
@@ -675,6 +678,21 @@ const goBack = () => {
     window.location.hash = '#/mccc-select-form';
   }
 }
+
+total_initial_formation.value = computed(() => {
+  const cm = parseFloat(CM_initial_formation.value) || 0
+  const td = parseFloat(TD_initial_formation.value) || 0
+  const tp = parseFloat(TP_initial_formation.value) || 0
+  return cm + td + tp
+})
+
+total_work_study.value = computed(() => {
+  const cm = parseFloat(CM_work_study.value) || 0
+  const td = parseFloat(TD_work_study.value) || 0
+  const tp = parseFloat(TP_work_study.value) || 0
+  return cm + td + tp
+})
+
 </script>
 
 <template>
@@ -753,6 +771,19 @@ const goBack = () => {
               <p>Nombre d'heures totales : {{ total_initial_formation }}</p>
             </div>
             <p id="error_initial_formation" class="error_message"></p>
+
+            <div id="sae_container">
+              <p>SAE liées : </p>
+              <div class="component">
+                <div v-for="sae in saes" :key="sae.saeId" class="component sae_item">
+                  <label class="switch" >
+                    <input type="checkbox"/>
+                    <span class="slider"></span>
+                  </label>
+                  <label>{{ sae.label }}</label>
+                </div>
+              </div>
+            </div>
 
             <div id="btn">
               <input class="btn1" type="reset" value="Annuler" />
@@ -876,70 +907,70 @@ const goBack = () => {
         </div>
       </div>
       <div id="form_resources">
-        <p v-if="getResourcesBySemesterAndInstitution().length > 0">Ressources créées :</p>
+        <p v-if="getResourcesBySemester().length > 0">Ressources créées :</p>
         <p v-else>Aucune ressource n'a été créée</p>
 
-        <div v-for="resource in getResourcesBySemesterAndInstitution()" :key="resource.resourceId">
-          <a class="accordion" id="dark_bar" style="width: 97%">{{ resource.resourceLabel }} {{ resource.resourceName }}</a>
+        <div v-for="resource in getResourcesBySemester()" :key="resource.resourceId">
+          <a class="accordion" id="dark_bar" style="width: 97%">{{ resource.label }} {{ resource.name }}</a>
 
           <div class="panel_resource">
             <div id="left_resource">
               <div class="container-fluid">
                 <p>Code Apogee :</p>
-                <input type="text" class="input" :value="resource.resourceApogeeCode || ''" readonly />
+                <input type="text" class="input" :value="resource.apogeeCode || ''" readonly />
               </div>
 
               <div class="container-fluid">
                 <p>Modalités :</p>
-                <input type="text" class="input" :value="resource.terms || ''" readonly />
+                <input type="text" class="input" :value="resource.termsCode || ''" readonly />
               </div>
 
               <p>Nombre d'heures (formation initiale) :</p>
 
               <div class="container-fluid">
                 <p>CM :</p>
-                <input type="text" class="input" :value="resource.hoursTeacher?.cm || ''" readonly />
+                <input type="text" class="input" :value="resource.initialCm" readonly />
               </div>
 
               <div class="container-fluid">
                 <p>TD :</p>
-                <input type="text" class="input" :value="resource.hoursTeacher?.td || ''" readonly />
+                <input type="text" class="input" :value="resource.initialTd" readonly />
               </div>
 
               <div class="container-fluid">
                 <p>TP :</p>
-                <input type="text" class="input" :value="resource.hoursTeacher?.tp || ''" readonly />
+                <input type="text" class="input" :value="resource.initialTp" readonly />
               </div>
 
               <div class="container-fluid">
-                <p>Total : {{resource.hoursTeacher?.total || 0}}</p>
+                <p>Total : {{resource.initialTotal || 0}}</p>
               </div>
 
-              <p>Nombre d'heures (alternance) : </p>
+              <div v-if="resources.alternanceCm == 0 && resources.alternanceTd == 0 && resources.alternanceTp == 0 && resources.alternanceTotal == 0">
+                <p>Nombre d'heures (alternance) : </p>
 
-              <div v-if="resource.hoursTeacherAltenrance == undefined">
-                <p>Cette ressource n'a pas d'alternance</p>
-              </div>
-
-              <div v-else>
                 <div class="container-fluid">
                   <p>CM :</p>
-                  <input type="text" class="input" :value="resource.hoursTeacherAltenrance?.cm || ''" readonly />
+                  <input type="text" class="input" :value="resource.alternanceCm || ''" readonly />
                 </div>
 
                 <div class="container-fluid">
                   <p>TD :</p>
-                  <input type="text" class="input" :value="resource.hoursTeacherAltenrance?.td || ''" readonly />
+                  <input type="text" class="input" :value="resource.alternanceTd || ''" readonly />
                 </div>
 
                 <div class="container-fluid">
                   <p>TP :</p>
-                  <input type="text" class="input" :value="resource.hoursTeacherAltenrance?.tp || ''" readonly />
+                  <input type="text" class="input" :value="resource.alternanceTp || ''" readonly />
                 </div>
 
                 <div class="container-fluid">
-                  <p>Total : {{resource.hoursTeacherAltenrance?.total || 0}}</p>
+                  <p>Total : {{resource.alternanceCm || 0}}</p>
                 </div>
+              </div>
+
+              <div v-else>
+                <p>La ressource n'est pas en alternance</p>
               </div>
 
             </div>
@@ -958,16 +989,27 @@ const goBack = () => {
                 </table>
               </div>
 
+              <div id="sae_container">
+                <p>SAE liées :</p>
+                <div v-if="(resource.saeResources || []).length === 0">
+                  <p style="color: #888; font-style: italic;">Aucune SAE liée</p>
+                </div>
+                <div v-for="saeResource in (resource.saeResources || [])" :key="saeResource.saeId">
+                  <input type="text" class="input" :value="saeResource.label" readonly />
+                </div>
+
+              </div>
+
               <div id="teacher_div">
                 <p>Professeur référent :</p>
-                <input type="text" class="input" :value="resource.mainTeacher || 'Non renseigné'" readonly />
+                <input type="text" class="input" :value="resource.mainTeacherName || 'Non renseigné'" readonly />
 
                 <p>Professeur(s) associé(s) :</p>
                 <div v-if="(resource.teachers || []).length === 0">
                   <p style="color: #888; font-style: italic;">Aucun professeur associé</p>
                 </div>
                 <div v-for="teacher in (resource.teachers || [])" :key="teacher">
-                  <input type="text" class="input" :value="teacher" readonly />
+                  <input type="text" class="input" :value="teacherName" readonly />
                 </div>
               </div>
 
@@ -1115,6 +1157,7 @@ const goBack = () => {
   height: 25%;
   align-items: start;
   align-content: center;
+  margin: 2vw;
 }
 
 #btn > input {
