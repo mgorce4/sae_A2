@@ -69,9 +69,22 @@
             Si aucune UE n'existe pour le semestre, les boutons pour accéder aux formulaires des resources et des SAÉ ne seront pas affichés.
           </p>
         </div>
+        <div class="popup_sub_title">Formulaires : </div>
+          <p>Si vous voyez une barre noire comme ci-dessous, vous pouvez cliquer dessus pour dérouler ou replier une section.</p>
+          <a class="dark_bar accordion_popup" style="width: 80%;">Menu déroulant</a>
+          <div class="panel_popup" style="width: 70%; margin-right: 10vw;"></div>
         <p class="popup_sub_title">Formulaire UE : </p>
         <div class="container-fluid">
-          <p>!!! Blabla pouet !!!</p>
+          <button class="button_more">+</button>
+          <p>
+            En cliquant sur ce bouton, une zone d'ajout d'UE apparaîtra.<br>
+            Il vous suffira de renseigner les informations demandées, puis de cliquer sur <span class="btn_modify" style="height: 2vh; padding: 0.7vw; margin: 0; display: inline-block;">Sauvegarder</span> pour créer une nouvelle UE.<br>
+          </p>
+        </div>
+        <div class="container-fluid">
+          <p>
+            Vous pouvez modifier les informations d'une UE directement dans la partie "UE créées", et cliquer sur <span class="btn_modify" style="height: 2vh; padding: 0.7vw; margin: 0; display: inline-block;">Modifier</span> pour appliquer les changements.<br>
+          </p>
         </div>
       </div>
       <a class="dark_bar accordion_popup">Dates de rendu des fiches</a>
