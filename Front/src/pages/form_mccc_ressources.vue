@@ -633,6 +633,7 @@ function getUEsByInstitution() {
 function getResourcesBySemester() {
   return resources.value
     .filter((res) => res.semester == getQueryParam('id'))
+    .filter((res) => res.pathId == getQueryParam('pathId'))
 }
 
 function getUEFromResource(resource) {
