@@ -57,15 +57,12 @@ public class CsvTransfertController {
             }
         }
         else {
-            // TODO : Use API call to get the resource sheets
             List<ResourceSheetDTO> allResourceSheets = rsDTOController.getAllResourceSheets();
             List<ResourceSheetDTO> departmentResourceSheets = new ArrayList<>();
 
             for (ResourceSheetDTO res : allResourceSheets) {
-                System.out.println("tata");
                 if (Objects.equals(res.getDepartment(), userDepartment)) {
                     departmentResourceSheets.add(res);
-                    System.out.println("toto");
                 }
             }
             for (ResourceSheetDTO res : departmentResourceSheets) {
@@ -109,15 +106,14 @@ public class CsvTransfertController {
             saes.add(sae.getLabel());
         }
 
-        List<Integer> hoursStudent = new ArrayList<>();
-        List<Integer> hoursStudentInternship = new ArrayList<>();
+        List<Double> hoursStudent = new ArrayList<>();
+        List<Double> hoursStudentInternship = new ArrayList<>();
         boolean isInternship = false;
 
         if (hoursDTOTeacherInternship != null && hoursDTOTeacherInternship.getHasAlternance()) {
             HoursDTO hoursDTOInternship = res.getHoursTeacherAlternance();
             setHoursDTO(hoursDTOInternship, hoursStudent);
             HoursDTO hoursDTOPNInternship = res.getHoursPNAlternance();
-            System.out.println(hoursDTOPNInternship);
             setHoursDTO(hoursDTOPNInternship, hoursStudentInternship);
             isInternship = true;
         }
@@ -146,10 +142,10 @@ public class CsvTransfertController {
         for (String sae : csvContent.saes()) {
             saes.append(sae).append(";");
         }
-        for (Integer hour : csvContent.hoursStudent()) {
+        for (Double hour : csvContent.hoursStudent()) {
             hours.append(hour.toString()).append(";");
         }
-        for (Integer hourInternship : csvContent.hoursStudentInternship()) {
+        for (Double hourInternship : csvContent.hoursStudentInternship()) {
             hoursInternship.append(hourInternship.toString()).append(";");
         }
 

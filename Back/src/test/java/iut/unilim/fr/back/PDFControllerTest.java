@@ -40,8 +40,8 @@ class PdfControllerTest {
         when(res.getSaes()).thenReturn(new ArrayList<>(List.of("SAE1")));
         when(res.getKeyWords()).thenReturn(new ArrayList<>(List.of("Java")));
         when(res.getModalities()).thenReturn(new ArrayList<>(List.of("Ecrit")));
-        when(res.getHoursPN()).thenReturn(new ArrayList<>(List.of(10, 0, 0, 10)));
-        when(res.getHoursStudent()).thenReturn(new ArrayList<>(List.of(10, 0, 0, 10)));
+        when(res.getHoursPN()).thenReturn(new ArrayList<>(List.of(10.0, 0.0, 0.0, 10.0)));
+        when(res.getHoursStudent()).thenReturn(new ArrayList<>(List.of(10.0, 0.0, 0.0, 10.0)));
         when(res.isAlternance()).thenReturn(false);
         when(res.getPedagoContentDs()).thenReturn("DS1");
         when(res.getPedagoContentCm()).thenReturn("CM1");

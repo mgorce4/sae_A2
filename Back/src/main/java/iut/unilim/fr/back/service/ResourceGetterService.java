@@ -194,7 +194,6 @@ public class ResourceGetterService {
                 setHoursDTO(hoursDTOInternship, hoursStudentInternship);
                 setHoursDTO(hoursDTOInternship, hoursStudentInternship);
                 HoursDTO hoursDTOPNInternship = resourceSheetDTO.getHoursPNAlternance();
-                System.out.println(hoursDTOPNInternship);
                 setHoursDTO(hoursDTOPNInternship, hoursPNInternship);
                 isAlternance = true;
             }

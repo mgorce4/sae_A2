@@ -106,7 +106,7 @@ class ResourceSheetMapperTest {
 
         UeCoefficient coef = new UeCoefficient();
         coef.setUe(ue);
-        coef.setCoefficient(2);
+        coef.setCoefficient(2.0);
 
         when(ueCoefficientRepository.findByResource_IdResource(resId))
                 .thenReturn(Collections.singletonList(coef));
@@ -144,19 +144,19 @@ class ResourceSheetMapperTest {
         when(modalitiesRepository.findByResourceSheet_IdResourceSheet(sheetId)).thenReturn(Collections.singletonList(modality));
 
         HoursPerStudent hpInit = new HoursPerStudent();
-        hpInit.setHasAlternance(false); hpInit.setCm(10); hpInit.setTd(20); hpInit.setTp(0);
+        hpInit.setHasAlternance(false); hpInit.setCm(10.0); hpInit.setTd(20.0); hpInit.setTp(0.0);
 
         HoursPerStudent hpAlt = new HoursPerStudent();
-        hpAlt.setHasAlternance(true); hpAlt.setCm(5); hpAlt.setTd(5); hpAlt.setTp(5);
+        hpAlt.setHasAlternance(true); hpAlt.setCm(5.0); hpAlt.setTd(5.0); hpAlt.setTp(5.0);
 
         when(hoursPerStudentRepository.findByResource_IdResource(resId))
                 .thenReturn(Arrays.asList(hpInit, hpAlt));
 
         TeacherHours thInit = new TeacherHours();
-        thInit.setIsAlternance(false); thInit.setCm(10); thInit.setTd(20); thInit.setTp(30);
+        thInit.setIsAlternance(false); thInit.setCm("10"); thInit.setTd("20"); thInit.setTp("30");
 
         TeacherHours thAlt = new TeacherHours();
-        thAlt.setIsAlternance(true); thAlt.setCm(5); thAlt.setTd(5); thAlt.setTp(5);
+        thAlt.setIsAlternance(true); thAlt.setCm("5"); thAlt.setTd("5"); thAlt.setTp("5");
 
         when(teacherHoursRepository.findByResourceSheet_IdResourceSheet(sheetId))
                 .thenReturn(Arrays.asList(thInit, thAlt));

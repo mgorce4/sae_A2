@@ -80,9 +80,9 @@ class MCCCMapperTest {
                 .thenReturn(Collections.singletonList(teacherRel));
 
         HoursPerStudent pnHours = new HoursPerStudent();
-        pnHours.setCm(10);
-        pnHours.setTd(20);
-        pnHours.setTp(30);
+        pnHours.setCm(10.0);
+        pnHours.setTd(20.0);
+        pnHours.setTp(30.0);
 
         when(hoursPerStudentRepository.findByResource_IdResource(resId))
                 .thenReturn(Collections.singletonList(pnHours));
@@ -93,16 +93,16 @@ class MCCCMapperTest {
         TeacherHours initialHours = new TeacherHours();
         initialHours.setResourceSheet(sheet);
         initialHours.setIsAlternance(false);
-        initialHours.setCm(5);
-        initialHours.setTd(5);
-        initialHours.setTp(5);
+        initialHours.setCm("5");
+        initialHours.setTd("5");
+        initialHours.setTp("5");
 
         TeacherHours alternanceHours = new TeacherHours();
         alternanceHours.setResourceSheet(sheet);
         alternanceHours.setIsAlternance(true);
-        alternanceHours.setCm(2);
-        alternanceHours.setTd(2);
-        alternanceHours.setTp(2);
+        alternanceHours.setCm("2");
+        alternanceHours.setTd("2");
+        alternanceHours.setTp("2");
 
         when(teacherHoursRepository.findAll())
                 .thenReturn(Arrays.asList(initialHours, alternanceHours));
@@ -113,7 +113,7 @@ class MCCCMapperTest {
 
         UeCoefficient coef = new UeCoefficient();
         coef.setUe(ue);
-        coef.setCoefficient(3);
+        coef.setCoefficient(3.0);
 
         when(ueCoefficientRepository.findByResource_IdResource(resId))
                 .thenReturn(Collections.singletonList(coef));

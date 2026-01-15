@@ -22,17 +22,18 @@ class MCCCResourceDTOTest {
         Integer semester = 1;
         Long institutionId = 100L;
 
-        Integer pnCm = 10, pnTd = 20, pnTp = 30, pnTotal = 60;
+        Double pnCm = 10.0, pnTd = 20.0, pnTp = 30.0, pnTotal = 60.0;
 
-        Integer initCm = 12, initTd = 22, initTp = 32, initProj = 5, initTotal = 71;
-
-        Integer altCm = 5, altTd = 15, altTp = 25, altProj = 10, altTotal = 55;
+        Double initCm = 12.0, initTd = 22.0, initTp = 32.0, initTotal = 71.0;
+        Integer initProj = 5;
+        Double altCm = 5.0, altTd = 15.0, altTp = 25.0, altTotal = 55.0;
+        Integer altProj = 10;
 
         String mainTeacher = "Prof. Turing";
         MCCCResourceDTO.TeacherInfoDTO teacher1 = new MCCCResourceDTO.TeacherInfoDTO(1L, "Turing");
         List<MCCCResourceDTO.TeacherInfoDTO> teachers = List.of(teacher1);
 
-        MCCCResourceDTO.UECoefficientDTO ueCoef = new MCCCResourceDTO.UECoefficientDTO("UE1", "Base", 3);
+        MCCCResourceDTO.UECoefficientDTO ueCoef = new MCCCResourceDTO.UECoefficientDTO("UE1", "Base", 3.0);
         List<MCCCResourceDTO.UECoefficientDTO> ueCoefficients = List.of(ueCoef);
 
         List<String> linkedSaes = Arrays.asList("S1.01", "S1.02");
@@ -117,7 +118,7 @@ class MCCCResourceDTOTest {
     void testUECoefficientDTO_InnerClass() {
         String label = "UE1.1";
         String name = "Dev Base";
-        Integer coef = 4;
+        Double coef = 4.0;
 
         MCCCResourceDTO.UECoefficientDTO ue = new MCCCResourceDTO.UECoefficientDTO(label, name, coef);
 
@@ -128,7 +129,7 @@ class MCCCResourceDTOTest {
 
         ue.setUeLabel("UE2.2");
         ue.setUeName("Advanced");
-        ue.setCoefficient(5);
+        ue.setCoefficient(5.0);
 
         assertEquals("UE2.2", ue.getUeLabel());
         assertEquals("Advanced", ue.getUeName());
