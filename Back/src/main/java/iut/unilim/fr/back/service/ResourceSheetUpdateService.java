@@ -195,19 +195,23 @@ public class ResourceSheetUpdateService {
     }
 
     private void updateTeacherHours(RessourceSheet resourceSheet, ResourceSheetUpdateDTO.HoursUpdateDTO hours, boolean isAlternance) {
-        if (hours == null) return;
-
         // Find existing teacher hours for this resource sheet and alternance type
         List<TeacherHours> existingHours =
             teacherHoursRepository.findByResourceSheet_IdResourceSheet(resourceSheet.getIdResourceSheet());
 
-        TeacherHours teacherHours;
-
         // Find existing hours for this alternance type
-        teacherHours = existingHours.stream()
+        TeacherHours teacherHours = existingHours.stream()
             .filter(h -> h.getIsAlternance() != null && h.getIsAlternance() == isAlternance)
             .findFirst()
             .orElse(null);
+
+        if (hours == null) {
+            // If hours is null, delete existing entry if it exists
+            if (teacherHours != null) {
+                teacherHoursRepository.delete(teacherHours);
+            }
+            return;
+        }
 
         if (teacherHours == null) {
             // Create new
@@ -216,9 +220,10 @@ public class ResourceSheetUpdateService {
             teacherHours.setIsAlternance(isAlternance);
         }
 
-        teacherHours.setCm(hours.getCm() != null ? hours.getCm() : 0);
-        teacherHours.setTd(hours.getTd() != null ? hours.getTd() : 0);
-        teacherHours.setTp(hours.getTp() != null ? hours.getTp() : 0);
+        // Store as strings in the database (database schema uses TEXT)
+        teacherHours.setCm(hours.getCm() != null && !hours.getCm().isEmpty() ? hours.getCm() : "0");
+        teacherHours.setTd(hours.getTd() != null && !hours.getTd().isEmpty() ? hours.getTd() : "0");
+        teacherHours.setTp(hours.getTp() != null && !hours.getTp().isEmpty() ? hours.getTp() : "0");
 
         teacherHoursRepository.save(teacherHours);
     }

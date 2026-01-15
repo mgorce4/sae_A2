@@ -11,13 +11,13 @@ public class TeacherHours {
     private Long idTeacherHours;
 
     @Column
-    private Double cm;
+    private String cm;
 
     @Column
-    private Double td;
+    private String td;
 
     @Column
-    private Double tp;
+    private String tp;
 
     @Column(name = "isalternance")
     private Boolean isAlternance;
@@ -29,7 +29,7 @@ public class TeacherHours {
     public TeacherHours() {
     }
 
-    public TeacherHours(Long idTeacherHours, Double cm, Double td, Double tp, Boolean isAlternance, RessourceSheet resourceSheet) {
+    public TeacherHours(Long idTeacherHours, String cm, String td, String tp, Boolean isAlternance, RessourceSheet resourceSheet) {
         this.idTeacherHours = idTeacherHours;
         this.cm = cm;
         this.td = td;
@@ -46,27 +46,27 @@ public class TeacherHours {
         this.idTeacherHours = idTeacherHours;
     }
 
-    public Double getCm() {
+    public String getCm() {
         return cm;
     }
 
-    public void setCm(Double cm) {
+    public void setCm(String cm) {
         this.cm = cm;
     }
 
-    public Double getTd() {
+    public String getTd() {
         return td;
     }
 
-    public void setTd(Double td) {
+    public void setTd(String td) {
         this.td = td;
     }
 
-    public Double getTp() {
+    public String getTp() {
         return tp;
     }
 
-    public void setTp(Double tp) {
+    public void setTp(String tp) {
         this.tp = tp;
     }
 

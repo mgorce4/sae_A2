@@ -289,28 +289,51 @@ public class ResourceSheetMapper {
         return new HoursDTO(0.0, 0.0, 0.0, isAlternance);
     }
 
-    // === MÉTHODES COMBINÉES - Essaient HOURS_PER_STUDENT d'abord, puis TEACHER_HOURS ===
+    // === MÉTHODES COMBINÉES - Priorité à TEACHER_HOURS pour resource_sheet_form ===
 
     private HoursDTO getHoursTeacherCombined(Long resourceId, Long resourceSheetId) {
-        // Essayer d'abord depuis HOURS_PER_STUDENT (utilisé par form_mccc_ressources)
-        HoursDTO fromHoursPerStudent = getHoursFromHoursPerStudent(resourceId, false);
-        if (fromHoursPerStudent != null) {
-            return fromHoursPerStudent;
+        // Pour resource_sheet_form, on charge depuis TEACHER_HOURS en priorité
+        // car c'est cette table qui est mise à jour par le formulaire
+        List<TeacherHours> teacherHoursList = teacherHoursRepository.findByResourceSheet_IdResourceSheet(resourceSheetId);
+
+        TeacherHours teacherHours = teacherHoursList.stream()
+            .filter(h -> h.getIsAlternance() != null && !h.getIsAlternance())
+            .findFirst()
+            .orElse(null);
+
+        if (teacherHours != null) {
+            // Si TEACHER_HOURS existe, on les retourne (elles seront affichées dans les champs)
+            Double cm = parseHoursString(teacherHours.getCm());
+            Double td = parseHoursString(teacherHours.getTd());
+            Double tp = parseHoursString(teacherHours.getTp());
+            return new HoursDTO(cm, td, tp, false);
         }
 
-        // Sinon, charger depuis TEACHER_HOURS (legacy, utilisé par resource_sheet_form)
-        return getHoursFromTeacherHours(resourceSheetId, false);
+        // Sinon, retourner null pour que le frontend affiche les champs vides
+        // (HOURS_PER_STUDENT sera affiché en placeholder via hoursPN)
+        return null;
     }
 
     private HoursDTO getHoursTeacherAlternanceCombined(Long resourceId, Long resourceSheetId) {
-        // Essayer d'abord depuis HOURS_PER_STUDENT (utilisé par form_mccc_ressources)
-        HoursDTO fromHoursPerStudent = getHoursFromHoursPerStudent(resourceId, true);
-        if (fromHoursPerStudent != null) {
-            return fromHoursPerStudent;
+        // Pour resource_sheet_form, on charge depuis TEACHER_HOURS en priorité
+        List<TeacherHours> teacherHoursList = teacherHoursRepository.findByResourceSheet_IdResourceSheet(resourceSheetId);
+
+        TeacherHours teacherHours = teacherHoursList.stream()
+            .filter(h -> h.getIsAlternance() != null && h.getIsAlternance())
+            .findFirst()
+            .orElse(null);
+
+        if (teacherHours != null) {
+            // Si TEACHER_HOURS existe, on les retourne (elles seront affichées dans les champs)
+            Double cm = parseHoursString(teacherHours.getCm());
+            Double td = parseHoursString(teacherHours.getTd());
+            Double tp = parseHoursString(teacherHours.getTp());
+            return new HoursDTO(cm, td, tp, true);
         }
 
-        // Sinon, charger depuis TEACHER_HOURS (legacy, utilisé par resource_sheet_form)
-        return getHoursFromTeacherHours(resourceSheetId, true);
+        // Sinon, retourner null pour que le frontend affiche les champs vides
+        // (HOURS_PER_STUDENT sera affiché en placeholder via hoursPNAlternance)
+        return null;
     }
 
     // === MÉTHODES POUR HOURS_PER_STUDENT (form_mccc_ressources) ===
@@ -345,14 +368,28 @@ public class ResourceSheetMapper {
             .orElse(null);
 
         if (hours != null) {
-            return new HoursDTO(
-                hours.getCm() != null ? hours.getCm().doubleValue() : 0.0,
-                hours.getTd() != null ? hours.getTd().doubleValue() : 0.0,
-                hours.getTp() != null ? hours.getTp().doubleValue() : 0.0,
-                isAlternance
-            );
+            // Parse String values from database to Double
+            Double cm = parseHoursString(hours.getCm());
+            Double td = parseHoursString(hours.getTd());
+            Double tp = parseHoursString(hours.getTp());
+
+            return new HoursDTO(cm, td, tp, isAlternance);
         }
-        return null;
+
+        // Retourner un DTO avec des valeurs à 0 au lieu de null
+        // pour que le frontend puisse afficher correctement
+        return new HoursDTO(0.0, 0.0, 0.0, isAlternance);
+    }
+
+    private Double parseHoursString(String hoursStr) {
+        if (hoursStr == null || hoursStr.trim().isEmpty()) {
+            return 0.0;
+        }
+        try {
+            return Double.parseDouble(hoursStr);
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
     }
 
     // === ANCIENNES MÉTHODES (deprecated mais conservées pour compatibilité) ===

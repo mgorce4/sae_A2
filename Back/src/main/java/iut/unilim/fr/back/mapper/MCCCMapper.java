@@ -114,9 +114,10 @@ public class MCCCMapper {
 
         if (!initialHours.isEmpty()) {
             TeacherHours hours = initialHours.get(0);
-            dto.setInitialCm(hours.getCm() != null ? hours.getCm() : 0.0);
-            dto.setInitialTd(hours.getTd() != null ? hours.getTd() : 0.0);
-            dto.setInitialTp(hours.getTp() != null ? hours.getTp() : 0.0);
+            // Parse String hours to Double
+            dto.setInitialCm(parseHoursString(hours.getCm()));
+            dto.setInitialTd(parseHoursString(hours.getTd()));
+            dto.setInitialTp(parseHoursString(hours.getTp()));
             // Project hours would come from another field if it exists
             dto.setInitialProject(0);
             dto.setInitialTotal((dto.getInitialCm() != null ? dto.getInitialCm() : 0.0) +
@@ -138,9 +139,10 @@ public class MCCCMapper {
 
         if (!alternanceHours.isEmpty()) {
             TeacherHours hours = alternanceHours.get(0);
-            dto.setAlternanceCm(hours.getCm() != null ? hours.getCm() : 0.0);
-            dto.setAlternanceTd(hours.getTd() != null ? hours.getTd() : 0.0);
-            dto.setAlternanceTp(hours.getTp() != null ? hours.getTp() : 0.0);
+            // Parse String hours to Double
+            dto.setAlternanceCm(parseHoursString(hours.getCm()));
+            dto.setAlternanceTd(parseHoursString(hours.getTd()));
+            dto.setAlternanceTp(parseHoursString(hours.getTp()));
             dto.setAlternanceProject(0);
             dto.setAlternanceTotal((dto.getAlternanceCm() != null ? dto.getAlternanceCm() : 0.0) +
                                   (dto.getAlternanceTd() != null ? dto.getAlternanceTd() : 0.0) +
@@ -234,6 +236,20 @@ public class MCCCMapper {
         return resources.stream()
             .map(this::toDTO)
             .collect(Collectors.toList());
+    }
+
+    /**
+     * Parse hours string from database to Double
+     */
+    private Double parseHoursString(String hoursStr) {
+        if (hoursStr == null || hoursStr.trim().isEmpty()) {
+            return 0.0;
+        }
+        try {
+            return Double.parseDouble(hoursStr);
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
     }
 }
 

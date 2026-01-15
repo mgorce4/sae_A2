@@ -426,14 +426,14 @@ const saveResourceSheet = async () => {
             .map(sae => sae.id)
         ),
       teacherHours: {
-        cm: localHours.value.cm || 0,
-        td: localHours.value.td || 0,
-        tp: localHours.value.tp || 0
+        cm: String(localHours.value.cm || 0),
+        td: String(localHours.value.td || 0),
+        tp: String(localHours.value.tp || 0)
       },
       teacherHoursAlternance: hasAlternanceHours.value ? {
-        cm: localHoursAlternance.value.cm || 0,
-        td: localHoursAlternance.value.td || 0,
-        tp: localHoursAlternance.value.tp || 0
+        cm: String(localHoursAlternance.value.cm || 0),
+        td: String(localHoursAlternance.value.td || 0),
+        tp: String(localHoursAlternance.value.tp || 0)
       } : null,
       pedagogicalContent: {
         cm: localPedagogicalContent.value.cm.map(item => ({ order: item.number, content: item.content })),
@@ -447,6 +447,10 @@ const saveResourceSheet = async () => {
         improvementSuggestions: localResourceTracking.value.improvementSuggestions
       }
     }
+
+    console.log('📤 Sending update DTO:', updateDTO)
+    console.log('📊 Teacher hours:', updateDTO.teacherHours)
+    console.log('📊 Teacher hours alternance:', updateDTO.teacherHoursAlternance)
 
     // Send PUT request
     await axios.put(
@@ -507,30 +511,40 @@ onMounted(async () => {
         localModalities.value = []
       }
 
-      // Hours - prioritize teacher hours, but if empty show PN hours in placeholder
+      // Hours - si hoursTeacher existe, on affiche ses valeurs, sinon on laisse vide (hoursPN sera en placeholder)
+      console.log('📊 hoursTeacher from DTO:', resourceSheetDTO.value.hoursTeacher)
+      console.log('📊 hoursPN from DTO:', resourceSheetDTO.value.hoursPN)
+
       if (resourceSheetDTO.value.hoursTeacher) {
-        // Teacher hours exist - use them (including 0 values if explicitly set)
+        // Teacher hours exist - use them (convert null or undefined to empty string for display)
         localHours.value = {
-          cm: resourceSheetDTO.value.hoursTeacher.cm ?? '',
-          td: resourceSheetDTO.value.hoursTeacher.td ?? '',
-          tp: resourceSheetDTO.value.hoursTeacher.tp ?? ''
+          cm: resourceSheetDTO.value.hoursTeacher.cm !== null && resourceSheetDTO.value.hoursTeacher.cm !== undefined ? resourceSheetDTO.value.hoursTeacher.cm : '',
+          td: resourceSheetDTO.value.hoursTeacher.td !== null && resourceSheetDTO.value.hoursTeacher.td !== undefined ? resourceSheetDTO.value.hoursTeacher.td : '',
+          tp: resourceSheetDTO.value.hoursTeacher.tp !== null && resourceSheetDTO.value.hoursTeacher.tp !== undefined ? resourceSheetDTO.value.hoursTeacher.tp : ''
         }
+        console.log('✅ Using hoursTeacher:', localHours.value)
       } else {
         // No teacher hours - leave empty (will show PN hours in placeholder)
         localHours.value = { cm: '', td: '', tp: '' }
+        console.log('📝 No hoursTeacher, fields will be empty with hoursPN as placeholder')
       }
 
       // Hours Alternance
+      console.log('📊 hoursTeacherAlternance from DTO:', resourceSheetDTO.value.hoursTeacherAlternance)
+      console.log('📊 hoursPNAlternance from DTO:', resourceSheetDTO.value.hoursPNAlternance)
+
       if (resourceSheetDTO.value.hoursTeacherAlternance) {
         // Teacher hours alternance exist - use them
         localHoursAlternance.value = {
-          cm: resourceSheetDTO.value.hoursTeacherAlternance.cm ?? '',
-          td: resourceSheetDTO.value.hoursTeacherAlternance.td ?? '',
-          tp: resourceSheetDTO.value.hoursTeacherAlternance.tp ?? ''
+          cm: resourceSheetDTO.value.hoursTeacherAlternance.cm !== null && resourceSheetDTO.value.hoursTeacherAlternance.cm !== undefined ? resourceSheetDTO.value.hoursTeacherAlternance.cm : '',
+          td: resourceSheetDTO.value.hoursTeacherAlternance.td !== null && resourceSheetDTO.value.hoursTeacherAlternance.td !== undefined ? resourceSheetDTO.value.hoursTeacherAlternance.td : '',
+          tp: resourceSheetDTO.value.hoursTeacherAlternance.tp !== null && resourceSheetDTO.value.hoursTeacherAlternance.tp !== undefined ? resourceSheetDTO.value.hoursTeacherAlternance.tp : ''
         }
+        console.log('✅ Using hoursTeacherAlternance:', localHoursAlternance.value)
       } else {
         // No teacher hours alternance
         localHoursAlternance.value = { cm: '', td: '', tp: '' }
+        console.log('📝 No hoursTeacherAlternance, fields will be empty')
       }
 
       // Pedagogical content
@@ -750,7 +764,7 @@ onMounted(async () => {
               <div class="hours_box">
                 <input
                   type="number"
-                  v-model="localHours.cm"
+                  v-model.number="localHours.cm"
                   class="hours_display"
                   min="0"
                   step="0.5"
@@ -763,7 +777,7 @@ onMounted(async () => {
               <div class="hours_box">
                 <input
                   type="number"
-                  v-model="localHours.td"
+                  v-model.number="localHours.td"
                   class="hours_display"
                   min="0"
                   step="0.5"
@@ -776,7 +790,7 @@ onMounted(async () => {
               <div class="hours_box">
                 <input
                   type="number"
-                  v-model="localHours.tp"
+                  v-model.number="localHours.tp"
                   class="hours_display"
                   min="0"
                   step="0.5"
@@ -800,7 +814,7 @@ onMounted(async () => {
                 <div class="hours_box">
                   <input
                     type="number"
-                    v-model="localHoursAlternance.cm"
+                    v-model.number="localHoursAlternance.cm"
                     class="hours_display"
                     min="0"
                     step="0.5"
@@ -813,7 +827,7 @@ onMounted(async () => {
                 <div class="hours_box">
                   <input
                     type="number"
-                    v-model="localHoursAlternance.td"
+                    v-model.number="localHoursAlternance.td"
                     class="hours_display"
                     min="0"
                     step="0.5"
@@ -826,7 +840,7 @@ onMounted(async () => {
                 <div class="hours_box">
                   <input
                     type="number"
-                    v-model="localHoursAlternance.tp"
+                    v-model.number="localHoursAlternance.tp"
                     class="hours_display"
                     min="0"
                     step="0.5"
@@ -1783,7 +1797,7 @@ input:checked + .slider::before {
 
 /* Validation error messages */
 .error-message {
-  color: red;
+  color: var(--error-color);
   font-size: 0.9vw;
   margin-top: 0.5vw;
   display: block;
