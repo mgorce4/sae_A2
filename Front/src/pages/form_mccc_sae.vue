@@ -616,6 +616,9 @@
                         </div>
                     </div>
                 </form>
+                
+                <p v-if="filteredSaeTableV2.length > 0" style="color: var(--main-theme-secondary-color); font-size: 1.5vw;">SAÉ créées :</p>
+                <p v-else style="color: var(--main-theme-secondary-color); font-size: 1.5vw;">Aucune SAÉ n'a été créée</p>
 
                 <!-- Display existing SAEs for the semester -->
                 <div v-for="(value, index) in filteredSaeTableV2" v-bind:key="index" class="added_content_mccc">
@@ -640,8 +643,8 @@
                             </div>
                         </div>
                         <div  class="right_side container-fluid cfh spa">
-                            <div id="work_study" style="padding: 1vw;">
-                                    <p style="font-weight: bold;">Alternance</p>
+                            <div id="work_study" v-show="value.hoursAlternance" style="padding: 1vw;">
+                                <p style="font-weight: bold;">Alternance</p>
                                 <div class="container-fluid spb" id="work_study_hours">
                                     <p>Nombre d'heures (alternance) : </p>
                                     <p class="mccc_input input_work_study">{{ value.hoursAlternance }}</p>
