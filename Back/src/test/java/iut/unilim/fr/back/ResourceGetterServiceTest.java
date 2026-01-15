@@ -79,7 +79,7 @@ class ResourceGetterServiceTest {
         when(mockDto.getModalities()).thenReturn(List.of("Ecrit"));
 
         HoursDTO hours = new HoursDTO();
-        hours.setCm(10); hours.setTd(10); hours.setTp(10); hours.setTotal(30);
+        hours.setCm(10.0); hours.setTd(10.0); hours.setTp(10.0); hours.setTotal(30.0);
         when(mockDto.getHoursPN()).thenReturn(hours);
         when(mockDto.getHoursTeacher()).thenReturn(hours);
 

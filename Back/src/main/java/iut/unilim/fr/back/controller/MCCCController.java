@@ -251,11 +251,6 @@ public class MCCCController {
     @Transactional
     public ResponseEntity<?> createMCCCSAE(@RequestBody MCCCSaeDTO dto) {
         try {
-            System.out.println("=== CRÉATION SAÉ - DEBUG ===");
-            System.out.println("Label: " + dto.getLabel());
-            System.out.println("PathId from DTO: " + dto.getPathId());
-            System.out.println("Semester: " + dto.getSemester());
-
             // Validate required fields
             if (dto.getPathId() == null) {
                 return ResponseEntity.badRequest().body("pathId is required");
@@ -300,7 +295,6 @@ public class MCCCController {
             sae.setPath(path);
 
             SAE savedSAE = saeRepository.save(sae);
-            System.out.println("✅ SAE sauvegardée - ID: " + savedSAE.getIdSAE());
 
             // Create SAEHours for formation initiale (has_alternance = false)
             SAEHours hoursInitiale = new SAEHours();
@@ -308,7 +302,6 @@ public class MCCCController {
             hoursInitiale.setSae(savedSAE);
             hoursInitiale.setHasAlternance(false);
             saeHoursRepository.save(hoursInitiale);
-            System.out.println("✅ Heures formation initiale sauvegardées: " + dto.getHours());
 
             // Create SAEHours for alternance if provided
             if (dto.getHoursAlternance() != null && dto.getHoursAlternance() > 0) {
@@ -317,7 +310,6 @@ public class MCCCController {
                 hoursAlternance.setSae(savedSAE);
                 hoursAlternance.setHasAlternance(true);
                 saeHoursRepository.save(hoursAlternance);
-                System.out.println("✅ Heures alternance sauvegardées: " + dto.getHoursAlternance());
             }
 
             // Create UE coefficients
@@ -333,8 +325,7 @@ public class MCCCController {
                     ueCoefficientSAE.setSae(savedSAE);
                     ueCoefficientSAE.setCoefficient(ueCoefDto.getCoefficient());
                     ueCoefficientSAERepository.save(ueCoefficientSAE);
-                    System.out.println("✅ Coefficient UE sauvegardé: " + ue.getLabel() + " (ID: " + ue.getUeNumber() + ") = " + ueCoefDto.getCoefficient());
-                } else if (ueCoefDto.getUeLabel() != null && !ueCoefDto.getUeLabel().trim().isEmpty()) {
+                    } else if (ueCoefDto.getUeLabel() != null && !ueCoefDto.getUeLabel().trim().isEmpty()) {
                     // Fallback: Find UE by label, semester and path (for backwards compatibility)
                     Optional<UE> ueOpt = ueRepository.findByLabelAndSemesterAndPath_IdPath(
                         ueCoefDto.getUeLabel(),
@@ -342,7 +333,7 @@ public class MCCCController {
                         dto.getPathId()
                     );
 
-                    if (!ueOpt.isPresent()) {
+                    if (ueOpt.isEmpty()) {
                         throw new RuntimeException("UE not found with label: " + ueCoefDto.getUeLabel() +
                             " for semester " + dto.getSemester() + " and path " + dto.getPathId());
                     }
@@ -354,12 +345,9 @@ public class MCCCController {
                     ueCoefficientSAE.setSae(savedSAE);
                     ueCoefficientSAE.setCoefficient(ueCoefDto.getCoefficient());
                     ueCoefficientSAERepository.save(ueCoefficientSAE);
-                    System.out.println("✅ Coefficient UE sauvegardé: " + ue.getLabel() + " = " + ueCoefDto.getCoefficient());
                 }
-                // Skip if neither ueId nor ueLabel is provided
             }
 
-            System.out.println("=== SAE COMPLÈTEMENT SAUVEGARDÉE ===");
 
             // Reload SAE from database to ensure all relationships are loaded
             SAE reloadedSAE = saeRepository.findById(savedSAE.getIdSAE())
@@ -384,21 +372,9 @@ public class MCCCController {
     @Transactional
     public ResponseEntity<?> updateMCCCSAE(@PathVariable Long id, @RequestBody MCCCSaeDTO dto) {
         try {
-            System.out.println("=== MODIFICATION SAÉ - DEBUG ===");
-            System.out.println("SAE ID reçu: " + id);
-            System.out.println("Label: " + dto.getLabel());
-            System.out.println("PathId: " + dto.getPathId());
-            System.out.println("Hours: " + dto.getHours());
-            System.out.println("Hours Alternance: " + dto.getHoursAlternance());
-
-            // Check if SAE exists
-            System.out.println("Recherche de la SAE avec ID: " + id);
             boolean exists = saeRepository.existsById(id);
-            System.out.println("SAE existe? " + exists);
 
             if (!exists) {
-                System.out.println("❌ ERREUR: SAE non trouvée avec l'ID " + id);
-                System.out.println("Liste des SAEs existantes:");
                 saeRepository.findAll().forEach(s -> System.out.println("  - SAE ID: " + s.getIdSAE() + ", Label: " + s.getLabel()));
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("SAE not found with id: " + id);
@@ -412,12 +388,10 @@ public class MCCCController {
             // Delete existing hours
             List<SAEHours> existingHours = saeHoursRepository.findBySae_IdSAE(id);
             saeHoursRepository.deleteAll(existingHours);
-            System.out.println("✅ Anciennes heures supprimées: " + existingHours.size());
 
             // Delete existing UE coefficients
             List<UeCoefficientSAE> existingCoefficients = ueCoefficientSAERepository.findBySae_IdSAE(id);
             ueCoefficientSAERepository.deleteAll(existingCoefficients);
-            System.out.println("✅ Anciens coefficients supprimés: " + existingCoefficients.size());
 
             // Now update basic fields
             existingSAE.setLabel(dto.getLabel());
@@ -443,7 +417,6 @@ public class MCCCController {
             }
 
             SAE updatedSAE = saeRepository.save(existingSAE);
-            System.out.println("✅ SAE mise à jour");
 
             // Create new hours for formation initiale
             if (dto.getHours() != null && dto.getHours() > 0) {
@@ -452,7 +425,6 @@ public class MCCCController {
                 hoursInitiale.setSae(updatedSAE);
                 hoursInitiale.setHasAlternance(false);
                 saeHoursRepository.save(hoursInitiale);
-                System.out.println("✅ Nouvelles heures formation initiale: " + dto.getHours());
             }
 
             // Create new hours for alternance if provided
@@ -462,7 +434,6 @@ public class MCCCController {
                 hoursAlternance.setSae(updatedSAE);
                 hoursAlternance.setHasAlternance(true);
                 saeHoursRepository.save(hoursAlternance);
-                System.out.println("✅ Nouvelles heures alternance: " + dto.getHoursAlternance());
             }
 
             // Create new UE coefficients
@@ -504,7 +475,6 @@ public class MCCCController {
                 }
             }
 
-            System.out.println("=== SAE MODIFIÉE ===");
 
             // Reload SAE from database to ensure all relationships are loaded
             SAE reloadedSAE = saeRepository.findById(updatedSAE.getIdSAE())
@@ -529,8 +499,6 @@ public class MCCCController {
     @Transactional
     public ResponseEntity<?> deleteMCCCSAE(@PathVariable Long id) {
         try {
-            System.out.println("=== SUPPRESSION SAÉ - DEBUG ===");
-            System.out.println("SAE ID: " + id);
 
             // Vérifier si la SAÉ existe
             if (!saeRepository.existsById(id)) {
@@ -540,17 +508,14 @@ public class MCCCController {
             // Delete related SAE-Resource links
             List<SAELinkResource> saeLinks = saeLinkResourceRepository.findByIdSAE(id);
             saeLinkResourceRepository.deleteAll(saeLinks);
-            System.out.println("✅ Liens SAE-Resource supprimés: " + saeLinks.size());
 
             // Delete related SAEHours
             List<SAEHours> saeHours = saeHoursRepository.findBySae_IdSAE(id);
             saeHoursRepository.deleteAll(saeHours);
-            System.out.println("✅ SAEHours supprimées: " + saeHours.size());
 
             // Delete related UE coefficients
             List<UeCoefficientSAE> ueCoefficients = ueCoefficientSAERepository.findBySae_IdSAE(id);
             ueCoefficientSAERepository.deleteAll(ueCoefficients);
-            System.out.println("✅ UE Coefficients supprimés: " + ueCoefficients.size());
 
             // Flush to ensure all deletions are sent to DB
             saeRepository.flush();
@@ -562,8 +527,6 @@ public class MCCCController {
             // Delete the SAE
             saeRepository.delete(saeToDelete);
             saeRepository.flush();
-            System.out.println("✅ SAE supprimée");
-
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             e.printStackTrace();
@@ -697,9 +660,6 @@ public class MCCCController {
             // Get path by ID if provided, otherwise use fallback
             Path path;
 
-            System.out.println("=== CRÉATION UE - DEBUG PATH ===");
-            System.out.println("Institution ID: " + user.getInstitution().getIdInstitution());
-            System.out.println("PathId from DTO: " + dto.getPathId());
 
             if (dto.getPathId() != null) {
                 // Use the provided path ID - direct lookup
@@ -712,10 +672,7 @@ public class MCCCController {
                         .body("Le parcours spécifié n'appartient pas à votre institution");
                 }
 
-                System.out.println("✅ Path trouvé - ID: " + path.getIdPath() + ", Number: " + path.getNumber() + ", Name: " + path.getName());
-            } else {
-                System.out.println("⚠️ PathId est NULL, utilisation du fallback");
-                // Fallback to first path or create default
+                } else {
                 Long institutionId = user.getInstitution().getIdInstitution();
                 path = pathRepository.findByInstitution_IdInstitution(institutionId)
                     .stream()
@@ -764,20 +721,6 @@ public class MCCCController {
 
             UE savedUE = ueRepository.save(ue);
 
-            System.out.println("=== UE SAUVEGARDÉE ===");
-            System.out.println("UE ID: " + savedUE.getUeNumber());
-            System.out.println("UE Label: " + savedUE.getLabel());
-            System.out.println("UE Semester: " + savedUE.getSemester());
-            if (savedUE.getPath() != null) {
-                System.out.println("Path ID: " + savedUE.getPath().getIdPath());
-                System.out.println("Path Number: " + savedUE.getPath().getNumber());
-                System.out.println("Path Name: " + savedUE.getPath().getName());
-            } else {
-                System.out.println("⚠️ PATH EST NULL!");
-            }
-            System.out.println("====================");
-
-            // Convert to DTO and return
             MCCCUEDTO resultDto = mcccUEMapper.toDTO(savedUE);
             return ResponseEntity.ok(resultDto);
 

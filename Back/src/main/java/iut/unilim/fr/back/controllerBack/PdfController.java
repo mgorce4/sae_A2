@@ -139,8 +139,6 @@ public class PdfController {
                 Chunk hoursRepartition = new Chunk("Répartition des heures par élève:", contentFont);
                 ArrayList<PdfPTable> hours = new ArrayList<>();
 
-                System.out.println(isAlternance);
-
                 if (isAlternance) {
                     Chunk internshipRepartition = new Chunk("Répartition des heures par élève en alternance :");
                     PdfPTable internshipProgramTable = new PdfPTable(repartitionProgramNbColumn);
