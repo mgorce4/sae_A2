@@ -28,6 +28,7 @@ onMounted(() => {
 
 <template>
   <div id="main">
+    <div>{{resource_sheet}}</div>
     <div class="component spb">
       <div id="return_arrow">
         <button id="back_arrow" onclick="document.location.href='#/dashboard-administration'">←</button>
@@ -45,10 +46,10 @@ onMounted(() => {
         <p v-if="ueLabels.length !== 0">{{ ueLabels && ueLabels.length > 0 ? ueLabels.join(', ') : '' }}</p>
         <p v-else style="max-width: 1vw">Aucune UE pour <br> cette ressource</p>
 
-        <p v-if="resource_sheet.resourceName !== undefined" class="title">{{resource_sheet.resourceName}}</p>
+        <p v-if="resource_sheet.resourceName != undefined" class="title">{{resource_sheet.resourceName}}</p>
         <p v-else class="title">Aucun nom pour cette ressource</p>
 
-        <p v-if="resource_sheet.department !== undefined">DEP : {{resource_sheet.department}}</p>
+        <p v-if="resource_sheet.department != undefined">DEP : {{resource_sheet.department}}</p>
         <p v-else>DEP : Aucun département <br> pour  cette ressource</p>
       </div>
 
@@ -63,7 +64,7 @@ onMounted(() => {
         </div>
 
         <div style="padding: 1.5vw">
-          <p v-if="resource_sheet.objective !== undefined" class="skill-input skill-input-description">{{resource_sheet.objective}}</p>
+          <p v-if="resource_sheet.objective != undefined || resource_sheet.objective != null" class="skill-input skill-input-description">{{resource_sheet.objective}}</p>
           <p v-else class="skill-input skill-input-description">Aucun objectif pour cette ressource</p>
         </div>
 
@@ -80,7 +81,7 @@ onMounted(() => {
               <div class="skill-column-label">Label</div>
               <div class="skill-column-description">Description</div>
             </div>
-            <div v-if="resource_sheet.skills !== undefined">
+            <div v-if="resource_sheet.skills != undefined && resource_sheet.skills.length > 0">
               <div v-for="skill in resource_sheet.skills" :key="skill.id" class="skill-row">
                 <div class="skill-inputs">
                   <p class="skill-input skill-input-label">{{skill.label}}</p>
@@ -100,13 +101,13 @@ onMounted(() => {
 
       <div id="sae_alignement">
         <p class="section_title">SAE(s) Concérnées : </p>
-        <div v-if="resource_sheet.linkedSaes !== undefined || resource_sheet.linkedSaes > 0" class="sae_switches_container">
+        <div v-if="resource_sheet.linkedSaes !== undefined && resource_sheet.linkedSaes.length > 0" class="sae_switches_container">
           <div v-for="sae in resource_sheet.linkedSaes" :key="sae.id" class="sae_switch_item">
             <label class="switch">
               <input type="checkbox" :checked="sae.isLinked" disabled>
               <span class="slider"></span>
             </label>
-            <span class="sae_label" :title="`ID: ${sae.id}, ApogeeCode: ${sae.apogeeCode}, Label: ${sae.label}`">{{ sae.label }}</span>
+            <span class="sae_label">{{ sae.label }}</span>
           </div>
         </div>
 
@@ -120,7 +121,7 @@ onMounted(() => {
       <div id="align_items_inline_center">
         <div id="align_items_column_left">
           <p class="subsection_title">Mots clés : </p>
-          <div v-if="resource_sheet.keywords !== undefined || resource_sheet.keywords > 0" class="keywords-container">
+          <div v-if="resource_sheet.keywords !== undefined && resource_sheet.keywords.length > 0" class="keywords-container">
             <div v-for="keyword in resource_sheet.keywords" :key="keyword" class="keyword-item" style="justify-content: center">
               <p class="keyword-input" style="margin-top: 0px; margin-bottom: 0px;flex: 0.5">{{keyword}}</p>
             </div>
@@ -134,7 +135,7 @@ onMounted(() => {
         </div>
         <div id="align_items_column_left">
           <p class="subsection_title">Modalités de mise en œuvre :</p>
-          <div v-if="resource_sheet.modalities !== undefined || resource_sheet.modalities > 0" class="modalities-list">
+          <div v-if="resource_sheet.modalities !== undefined && resource_sheet.modalities.length > 0" class="modalities-list">
             <div v-for="modality in resource_sheet.modalities" :key="modality" class="modality-item" >
               <p class="modality-textarea" rows="3">{{modality}}</p>
             </div>
@@ -184,14 +185,14 @@ onMounted(() => {
           </div>
         </div>
 
-        <div v-if="resource_sheet.hoursTeacherAlternance !== null || resource_sheet.hoursTeacherAlternance !== undefined || resource_sheet.hoursTeacherAlternance.length > 0">
+        <div v-if="resource_sheet.hoursTeacherAlternance != null || resource_sheet.hoursTeacherAlternance != undefined">
           <p class="subsection_title" style="color: white; margin-top: 1.5vw; margin-bottom: 0.5vw;">Alternance</p>
           <div class="hours_container">
             <div class="hours_row">
               <div class="hours_item">
                 <label class="hours_label">CM</label>
                 <div class="hours_box">
-                  <p v-if="resource_sheet.hoursTeacherAlternance.cm !== undefined" class="hours_display" min="0" step="0.5">{{resource_sheet.hoursTeacherAlternance.cm}}</p>
+                  <p v-if="resource_sheet.hoursTeacherAlternance.cm != undefined" class="hours_display" min="0" step="0.5">{{resource_sheet.hoursTeacherAlternance.cm}}</p>
                   <p v-else class="hours_display" min="0" step="0.5">0</p>
                 </div>
               </div>
@@ -296,13 +297,13 @@ onMounted(() => {
         <p class="section_title">Suivi de la ressource / module</p>
         <div>
           <p>Retour de l'équipe pédagogique et des acteurs impactés</p>
-          <p v-if="resource_sheet.tracking.pedagogicalFeedback !== undefined" id="text_area_styled" class="tracking-textarea">{{resource_sheet.tracking.pedagogicalFeedback}}</p>
+          <p v-if="resource_sheet.tracking.pedagogicalFeedback != undefined" id="text_area_styled" class="tracking-textarea">{{resource_sheet.tracking.pedagogicalFeedback}}</p>
           <p v-else id="text_area_styled" class="tracking-textarea">Aucun retour pédagogique</p>
           <p>Retour des étudiants</p>
-          <p v-if="resource_sheet.tracking.studentFeedback !== undefined" id="text_area_styled" class="tracking-textarea">{{resource_sheet.tracking.studentFeedback}}</p>
+          <p v-if="resource_sheet.tracking.studentFeedback != undefined" id="text_area_styled" class="tracking-textarea">{{resource_sheet.tracking.studentFeedback}}</p>
           <p v-else id="text_area_styled" class="tracking-textarea">Aucun retour des étudiants</p>
           <p>Amélioration(s) à mettre en oeuvre</p>
-          <p v-if="resource_sheet.tracking.improvementSuggestions !== undefined" id="text_area_styled" class="tracking-textarea">{{resource_sheet.tracking.improvementSuggestions}}</p>
+          <p v-if="resource_sheet.tracking.improvementSuggestions != undefined" id="text_area_styled" class="tracking-textarea">{{resource_sheet.tracking.improvementSuggestions}}</p>
           <p v-else id="text_area_styled" class="tracking-textarea">Aucun retour pédagogique</p>
         </div>
       </div>
