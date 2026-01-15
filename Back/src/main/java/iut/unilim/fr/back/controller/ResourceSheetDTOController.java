@@ -76,6 +76,18 @@ public class ResourceSheetDTOController {
     }
 
     /**
+     * GET /api/v2/resource-sheets/teacher/{userId}
+     * Returns all resource sheets where the user is the main teacher
+     */
+    @GetMapping("/teacher/{userId}")
+    public List<ResourceSheetDTO> getResourceSheetsByTeacherId(@PathVariable Long userId) {
+        List<RessourceSheet> resourceSheets = ressourceSheetRepository.findByMainTeacher(userId);
+        return resourceSheets.stream()
+            .map(resourceSheetMapper::toDTO)
+            .collect(Collectors.toList());
+    }
+
+    /**
      * PUT /api/v2/resource-sheets/{id}
      * Update a resource sheet with new data
      * Handles both creation (new data) and update (modify existing data)

@@ -278,7 +278,8 @@ INSERT INTO USERSYNCADIA ( firstname, lastname, username, password, id_instituti
 ('julie', 'ju', 'jCty', '456', 1),
 ('edith', 'didith', 'BigED', '789', 1),
 ('martin', 'matin', 'mm', '101112', 1),
-('noé', 'NO WAY', 'njacquet', '131415', 1);
+('noé', 'NO WAY', 'njacquet', '131415', 1),
+( 'Prof2', 'Test2', 'ptest2', 'test123', 4);
 
 INSERT INTO TASK (name, description, delivery , id_User) VALUES
 ('remplir fiche ressource', 'vous devez remplir la fiche ressource pour chaque ressource pédagogique que vous créez', '2026-01-30',  1),
@@ -299,7 +300,8 @@ INSERT INTO ACCESSRIGHT ( id_User,accessRight) VALUES
 (8, 1),
 (9, 1),
 (10, 1),
-(11, 2);
+(11, 2),
+(12, 1);
 
 
 INSERT INTO PATH(number, name, id_institution) VALUES

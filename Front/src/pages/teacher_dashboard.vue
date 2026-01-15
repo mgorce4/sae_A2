@@ -1,5 +1,5 @@
 <script setup>
-    import { ref, onMounted, computed } from 'vue'
+    import { ref, onMounted } from 'vue'
     import axios from 'axios'
 
     import { status, institutionLocation } from '../main'
@@ -10,24 +10,23 @@
 
     onMounted(async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/v2/resource-sheets')
+            const userId = localStorage.idUser
+
+            if (!userId) {
+                console.error('No user ID found in localStorage')
+                return
+            }
+
+            // Charger uniquement les fiches où l'utilisateur est professeur principal
+            const response = await axios.get(`http://localhost:8080/api/v2/resource-sheets/teacher/${userId}`)
             resourceSheetsDTO.value = response.data
+
+            console.log(`✅ Loaded ${resourceSheetsDTO.value.length} resource sheets for teacher ${userId}`)
         } catch (error) {
             console.error('Error loading resource sheets:', error)
         }
     })
 
-    const filteredResourceSheets = computed(() => {
-        const institutionId = parseInt(localStorage.idInstitution)
-
-        if (!institutionId) {
-            return resourceSheetsDTO.value
-        }
-
-        return resourceSheetsDTO.value.filter(sheet =>
-            sheet.institutionId === institutionId
-        )
-    })
 
     const goToRessourceSheet = (id) => {
         if (!id) return
@@ -40,11 +39,11 @@
         <div id="for_scroll_bar" style="overflow-y: scroll; margin: 1vw; height: 24vw;">
             <p id="title">Vos ressources :</p>
             <div id="div_sheets">
-                <p v-if="filteredResourceSheets.length === 0" style="color: white; padding: 1vw;">
-                    Aucune ressource trouvée pour votre institution.
+                <p v-if="resourceSheetsDTO.length === 0" style="color: white; padding: 1vw;">
+                    Aucune ressource trouvée. Vous n'êtes professeur principal d'aucune ressource.
                 </p>
                 <button
-                    v-for="sheet in filteredResourceSheets"
+                    v-for="sheet in resourceSheetsDTO"
                     :key="sheet.id"
                     id="sheets"
                     @click="goToRessourceSheet(sheet.id)"
