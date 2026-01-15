@@ -578,7 +578,7 @@ onMounted(async () => {
 
     } else if (event.target.id === 'button_teacher_plus') {
 
-      if (access_rights.value.length <= teachers_list.value.length) {
+      if (access_rights.value.length - 1 <= teachers_list.value.length) {
         document.getElementById("error_teacher").innerHTML = "Vous ne pouvez pas ajouter plus de professeurs car il n'y a plus de professeurs disponibles"
         return
       }
