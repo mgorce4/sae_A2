@@ -10,7 +10,7 @@
     </p>
     <div class="min_div">
       <button class="accordion" id="dark_Bar" style="width: 13vw;" > ... </button>
-      <p class="text"> - Signifie un menu déroulant.</p>
+      <p class="text"> - Si vous voyez une barre noire comme celle-ci, vous pouvez cliquer dessus pour dérouler ou replier une section.</p>
     </div>
     <div class="min_div ">
       <input type="text" class="keyword-input" style="width: 13vw; flex: 0;"/>
@@ -45,10 +45,7 @@
         <p class="text"> - Double cliquez et maintenez la partie "contenue" pour pouvoir la changer de place avec les autres.</p>
         <p class="text"> - Cliquez sur la zone de texte pour modifier et entrer votre texte (contenu dans ce cas là).</p>
       </div>
-      
     </div>
-
-    
   </div>
 </template>
 
@@ -94,5 +91,4 @@
 .full::-webkit-scrollbar-thumb:hover {
   background: blue;
 }
-
 </style>

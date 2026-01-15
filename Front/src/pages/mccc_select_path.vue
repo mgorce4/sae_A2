@@ -271,7 +271,6 @@
             </div>
           </div>
         </form>
-
         <!--here's your path -->
         <div v-for="cours in getCourses" :key="cours.idPath">
           <div class="path" v-on:mouseover="cours.show = true" v-on:mouseout="!cours.edit ? cours.show = false : null" @click="goToRessourceSheet('#/mccc-select-form', cours.idPath)">
