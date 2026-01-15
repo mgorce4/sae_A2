@@ -27,9 +27,9 @@
       return routes_how_to[status.value] || null
     })
 
-    const dashboard_route = computed(() => {
+    const goToDashboard = () => {
         document.location.href = routes[status.value] || '#/'
-    })
+    }
 
 </script>
 
@@ -37,7 +37,7 @@
     <header id="header_div">
         <div id="header_top" class="container-fluid spb">
             <div id="app_name_and_logo" class="container-fluid">
-                <a id="unilim_logo" @click="dashboard_route">
+                <a id="unilim_logo" @click="goToDashboard">
                     <img src="./../../media/unilim_logo.webp" style="margin: 0; padding: 0; width: 100%; height: 100%;" alt="logo">
                 </a>
                 <div id="dividing_line"></div>
@@ -52,7 +52,7 @@
             <p v-if="status" id="user_status">Statut : {{ status }}</p>
 
             <div style="display: flex; align-items: center">
-              <p class="btn_how_to" @click="togglePopup">ⓘ</p>
+              <p v-if="status" class="btn_how_to" @click="togglePopup">ⓘ</p>
               <a v-if="status" id="btn_disconnect" v-on:click="removeUser()" href="#/">Déconnexion</a>
             </div>
 
