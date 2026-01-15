@@ -2,22 +2,25 @@
 </script>
 
 <template>
-  <p style="font-size: 2vw;">Guide utilisateur:</p>
+  <p style="font-size: 2vw;">Guide utilisateur :</p>
   <div class="full">
-    <p style="font-size: 1.3vw;">Tout d'abord, pas de panique, certains champs sont déjà préremplis. Cliquez dessus pour pouvoir les modifier.</p>
+    <p style="font-size: 1.4vw; margin-top: 0; margin-bottom: 1vh;">Certains champs sont déjà préremplis. Cliquez dessus pour pouvoir les modifier.<br/>
+      La fiche reste constament modifiable, tant que vous sauvegarder à la fin. <br />
+      N'oubliez pas de sauvegarder pour enregistrer tout changement. 
+    </p>
     <div class="min_div">
       <button class="accordion" id="dark_Bar" style="width: 13vw;" > ... </button>
-      <p class="text"> - Signifie un menu déroulant</p>
+      <p class="text"> - Signifie un menu déroulant.</p>
     </div>
     <div class="min_div ">
-      <input type="text" placeholder="Mot-clé..." class="keyword-input" style="width: 13vw; flex: 0;"/>
-      <p class="text"> - Champs gris pour pouvoir entrer du texte </p>
+      <input type="text" class="keyword-input" style="width: 13vw; flex: 0;"/>
+      <p class="text"> - Champs gris pour pouvoir entrer du texte.</p>
     </div>
      <div class="min_div">
       <div class="copycat">
         <p class="hours_total_text" style="font-size: 1vw;">Nombre d'heures total : ... / ...</p>
       </div>
-      <p class="text"> - Partie non modifiable, se calcule automatiquement</p>
+      <p class="text"> - Partie non modifiable, se calcule automatiquement.</p>
     </div>
     <!-- DS Section -->
     <div class="min_div">
@@ -38,16 +41,15 @@
         </div>
       </div>
       <div style="flex-wrap: wrap;">
-        <p class="text"> - Section pour les contenue pédagogique de chaque séances</p>
-        <p class="text"> - Double cliquez et maintenez la partie "contenue" pour pouvoir la changer de place avec les autres</p>
-        <p class="text"> - Cliquez sur la zone de texte pour modifier et entrer votre texte (contenu dans ce cas là)</p>
+        <p class="text"> - Section pour les contenue pédagogique de chaque séances, chaque zone "contenue" représente une séance.</p>
+        <p class="text"> - Double cliquez et maintenez la partie "contenue" pour pouvoir la changer de place avec les autres.</p>
+        <p class="text"> - Cliquez sur la zone de texte pour modifier et entrer votre texte (contenu dans ce cas là).</p>
       </div>
       
     </div>
 
     
   </div>
-  
 </template>
 
 <style>
