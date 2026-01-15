@@ -364,6 +364,24 @@ async function saveResource() {
     }
   }
 
+  let teacher_names = []
+
+  for (let i = 0; i < teachers_list.value.length; i++) {
+    teacher_names.push(teachers_list.value[i].value)
+  }
+
+  teacher_names.push(document.getElementById('main_teacher').value)
+
+  // Check for duplicate teacher names
+  for (let i = 0; i < teacher_names.length; i++) {
+    for (let j = 0; j < teacher_names.length; j++) {
+      if (i!== j && teacher_names[i] === teacher_names[j]) {
+        document.getElementById("error_teacher").innerHTML = "Un même professeur ne peut pas être affecté plusieurs fois"
+        hasErrors = true
+      }
+    }
+  }
+
   if (hasErrors) {
     console.log('❌ Erreurs de validation')
     return
@@ -558,7 +576,13 @@ onMounted(async () => {
       }
       ue_list.value.push({ id: id, ue: '', coefficient: '' })
 
-    } else if (event.target.id === 'button_teacher_plus' && access_rights.value.length > teachers_list.value.length) {
+    } else if (event.target.id === 'button_teacher_plus') {
+
+      if (access_rights.value.length <= teachers_list.value.length) {
+        document.getElementById("error_teacher").innerHTML = "Vous ne pouvez pas ajouter plus de professeurs car il n'y a plus de professeurs disponibles"
+        return
+      }
+
       // add a new teacher entry
       let id
       if (teachers_list.value.length > 0) {
