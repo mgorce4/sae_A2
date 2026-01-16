@@ -36,11 +36,8 @@ public class PathService {
 
     @Transactional
     public void deletePath(Long id) {
-        // Delete all UEs linked to this path first (cascade will handle UE coefficients)
-        ueRepository.deleteByPath_IdPath(id);
-
-        // Then delete the path
         pathRepository.deleteById(id);
     }
+
 }
 
