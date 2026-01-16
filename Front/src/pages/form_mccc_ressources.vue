@@ -36,7 +36,9 @@ const errors = ref({
   terms: false,
   hours: false,
   alternanceHours: false,
-  ueCoefficients: false
+  ueCoefficients: false,
+  mainTeacher : false,
+    teacher : false
 })
 
 // Watch checkboxAlternanceStatus to clear alternance hours when unchecked
@@ -377,7 +379,8 @@ async function saveResource() {
   // Check for duplicate teacher names
   for (let i = 0; i < teacher_names.length; i++) {
     for (let j = 0; j < teacher_names.length; j++) {
-      if (i!== j && teacher_names[i] === teacher_names[j]) {
+      if (isTeacherNamesEquals(i, j, teacher_names)) {
+        errors.value.teacher = true
         document.getElementById("error_teacher").innerHTML = "Un même professeur ne peut pas être affecté plusieurs fois"
         hasErrors = true
       }
@@ -385,7 +388,8 @@ async function saveResource() {
   }
 
   if (main_teacher.value === '') {
-    document.getElementById("error_teacher").innerHTML = "Le professeur principal est obligatoire"
+    errors.value.mainTeacher = true
+    document.getElementById("error_main_teacher").innerHTML = "Le professeur principal est obligatoire"
     hasErrors = true
   }
 
@@ -608,11 +612,15 @@ onMounted(async () => {
       })
 
     } else if (event.target.id === 'button_teacher_cross') {
-      // remove the corresponding teacher entry (but keep at least one)
-      const row = event.target.closest('.teacher_row')
-      if (!row) return
-      const rows = Array.from(document.querySelectorAll('.teacher_row'))
-      const index_to_remove = rows.indexOf(row)
+        const teachers = document.querySelectorAll('.teacher_row')
+
+        let index_to_remove = -1
+
+        teachers.forEach((div, index) => {
+          if (div.contains(event.target)) {
+            index_to_remove = index
+          }
+        })
 
       if (index_to_remove !== -1 && teachers_list.value.length > 1) {
         teachers_list.value = teachers_list.value.filter((_, i) => i !== index_to_remove)
@@ -688,7 +696,7 @@ function getCoefFromResource(resource) {
 }
 
 function isTeacherNamesEquals(i, j, teacher_names) {
-  return i!== j && teacher_names[i] === teacher_names[j]
+  return i!== j && teacher_names[i] === teacher_names[j] && teacher_names[i] !== '' && teacher_names[j] !== ''
 }
 
 const preventInvalidChars = (event) => {
