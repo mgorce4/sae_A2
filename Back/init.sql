@@ -63,7 +63,8 @@ CREATE TABLE SAE(
     label TEXT NOT NULL,
     apogeeCode TEXT,
     semester INT NOT NULL,
-    id_terms INT REFERENCES TERMS(id_Terms)
+    id_terms INT REFERENCES TERMS(id_Terms),
+    path_id INT REFERENCES PATH(id_Path)
 );
 
 CREATE TABLE RESOURCE(
@@ -73,7 +74,8 @@ CREATE TABLE RESOURCE(
     name TEXT NOT NULL,
     diffMultiCompetences BOOLEAN NOT NULL,
     semester INT NOT NULL,
-    id_terms INT REFERENCES TERMS(id_Terms)
+    id_terms INT REFERENCES TERMS(id_Terms),
+    path_id INT REFERENCES PATH(id_Path)
 );
 
 CREATE TABLE SAE_LINK_RESOURCE(

@@ -28,7 +28,7 @@ public class UE {
     private Integer semester;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "path_id")
+    @JoinColumn(name = "id_path")
     private Path path;
 
 
