@@ -14,6 +14,8 @@ public interface UERepository extends JpaRepository<UE, Long> {
     Optional<UE> findByLabel(String label);
     Optional<UE> findByLabelAndSemesterAndPath_IdPath(String label, Integer semester, Long pathId);
     List<UE> findByPath_IdPathAndSemester(Long pathId, Integer semester);
+    void deleteByPath_IdPath(Long pathId);
+
 
 }
 
