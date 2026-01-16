@@ -9,17 +9,34 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class LogController {
-    public static void writeInLog(String message) {
-        String fileName = "log.txt";
+    private static final String openSymbol = "[";
+    private static final String closeSymbol = "] ";
+    private static final String format = "dd:MM:yyyy HH:mm:ss:SS";
+    private static String logsPath = "logs/";
+    public static void writeInPdfLog(String message) {
+        String fileName = logsPath + ".pdf_log.txt";
         Path path = Paths.get(fileName);
-        
-        String format = "dd:MM:yyyy HH:mm:ss:SS";
+
+        String logMessage = writeInLog(message, path);
+
+        System.out.println(logMessage);
+    }
+
+    public static void writeInCsvLogs(String message) {
+        String fileName = logsPath + ".csv_log.txt";
+        Path path = Paths.get(fileName);
+
+        String logMessage = writeInLog(message, path);
+        System.out.println(logMessage);
+    }
+
+    private static String writeInLog(String message, Path path) {
         SimpleDateFormat logDate = new SimpleDateFormat(format);
-        String logMessage = "[" + logDate.format(new Date()) + "] " + message + "\n";
+        String logMessage = openSymbol + logDate.format(new Date()) + closeSymbol + message + "\n";
 
         try {
             if (!Files.exists(path)) {
-                logMessage = "[" + logDate.format(new Date()) + "] Create log file\n" + logMessage;
+                logMessage = openSymbol + logDate.format(new Date()) + closeSymbol + "Create log file\n" + logMessage;
             }
             Files.writeString(
                     path,
@@ -29,10 +46,8 @@ public class LogController {
             );
         }
         catch (IOException e) {
-            logMessage = "[" + logDate.format(new Date()) + "] " + e.getMessage() + "\n";
+            logMessage = openSymbol + logDate.format(new Date()) + closeSymbol + e.getMessage() + "\n";
         }
-
-        System.out.println(logMessage);
-
+        return logMessage + "\n";
     }
 }

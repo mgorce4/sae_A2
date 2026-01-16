@@ -11,7 +11,7 @@ public class UeCoefficient {
     private Long idCoefficient;
 
     @Column(nullable = false)
-    private Integer coefficient;
+    private Double coefficient;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "UE_Number")
@@ -24,7 +24,7 @@ public class UeCoefficient {
     public UeCoefficient() {
     }
 
-    public UeCoefficient(Long idCoefficient, Integer coefficient, UE ue, Ressource resource) {
+    public UeCoefficient(Long idCoefficient, Double coefficient, UE ue, Ressource resource) {
         this.idCoefficient = idCoefficient;
         this.coefficient = coefficient;
         this.ue = ue;
@@ -39,11 +39,11 @@ public class UeCoefficient {
         this.idCoefficient = idCoefficient;
     }
 
-    public Integer getCoefficient() {
+    public Double getCoefficient() {
         return coefficient;
     }
 
-    public void setCoefficient(Integer coefficient) {
+    public void setCoefficient(Double coefficient) {
         this.coefficient = coefficient;
     }
 

@@ -24,7 +24,8 @@ CREATE TABLE TASK(
 CREATE TABLE FINAL_DELIVERY_DATES(
     id_FinalDelivery SERIAL PRIMARY KEY,
     firstDelivery DATE,
-    secondDelivery DATE
+    secondDelivery DATE,
+    id_institution INT REFERENCES INSTITUTION(id_institution)
 );
 
 CREATE TABLE ACCESSRIGHT(
@@ -37,7 +38,8 @@ CREATE TABLE ACCESSRIGHT(
 CREATE TABLE PATH(
     id_Path SERIAL PRIMARY KEY,
     number INT NOT NULL,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    id_institution INT REFERENCES INSTITUTION(id_institution)
 );
 
 CREATE TABLE UE(
@@ -46,7 +48,9 @@ CREATE TABLE UE(
     label TEXT NOT NULL,
     name TEXT NOT NULL,
     competenceLevel INT NOT NULL,
-    id_Path INT REFERENCES PATH(id_Path)
+    semester INT NOT NULL,
+    id_Path INT REFERENCES PATH(id_Path),
+    id_terms INT REFERENCES TERMS(id_Terms)
 );
 
 CREATE TABLE TERMS(
@@ -58,7 +62,9 @@ CREATE TABLE SAE(
     id_SAE SERIAL PRIMARY KEY,
     label TEXT NOT NULL,
     apogeeCode TEXT,
-    id_terms INT REFERENCES TERMS(id_Terms)
+    semester INT NOT NULL,
+    id_terms INT REFERENCES TERMS(id_Terms),
+    path_id INT REFERENCES PATH(id_Path)
 );
 
 CREATE TABLE RESOURCE(
@@ -68,7 +74,8 @@ CREATE TABLE RESOURCE(
     name TEXT NOT NULL,
     diffMultiCompetences BOOLEAN NOT NULL,
     semester INT NOT NULL,
-    id_terms INT REFERENCES TERMS(id_Terms)
+    id_terms INT REFERENCES TERMS(id_Terms),
+    path_id INT REFERENCES PATH(id_Path)
 );
 
 CREATE TABLE SAE_LINK_RESOURCE(
@@ -79,28 +86,29 @@ CREATE TABLE SAE_LINK_RESOURCE(
 CREATE TABLE HOURS_PER_STUDENT(
     id_HoursPerStudent SERIAL PRIMARY KEY,
     has_alternance BOOLEAN NOT NULL,
-    cm INT ,
-    td INT,
-    tp INT,
+    cm FLOAT ,
+    td FLOAT,
+    tp FLOAT,
     id_resource INT REFERENCES RESOURCE(id_Resource)
 );
 
 CREATE TABLE SAE_HOURS(
     id_SAE_Hours SERIAL PRIMARY KEY,
-    hours INT NOT NULL,
-    id_SAE INT REFERENCES SAE(id_SAE)
+    hours FLOAT NOT NULL,
+    id_SAE INT REFERENCES SAE(id_SAE),
+    has_alternance BOOLEAN NOT NULL
 );
 
 CREATE TABLE UE_COEFFICIENT_RESOURCE(
     id_Coefficient SERIAL PRIMARY KEY,
-    coefficient INT NOT NULL,
+    coefficient FLOAT NOT NULL,
     UE_Number INT REFERENCES UE(UE_Number),
     id_resource INT REFERENCES RESOURCE(id_Resource)
 );
 
 CREATE TABLE UE_COEFFICIENT_SAE(
     id_Coefficient_SAE SERIAL PRIMARY KEY,
-    coefficient INT NOT NULL,
+    coefficient FLOAT NOT NULL,
     UE_Number INT REFERENCES UE(UE_Number),
     id_SAE INT REFERENCES SAE(id_SAE)
 );
@@ -161,19 +169,99 @@ CREATE TABLE KEYWORD(
     id_ResourceSheet INT REFERENCES RESOURCE_SHEET(id_ResourceSheet)
 );
 
-CREATE TABLE NATIONAL_PROGRAM_OBJECTIVE(
-    content TEXT NOT NULL,
-    id_RessourceSheet INT REFERENCES RESSOURCE_SHEET(id_RessourceSheet)
-);
-
 CREATE TABLE TEACHER_HOURS(
     id_TeacherHours SERIAL PRIMARY KEY,
     cm TEXT,
     td TEXT,
     tp TEXT,
     isalternance BOOLEAN,
-    id_RessourceSheet INT REFERENCES RESSOURCE_SHEET(id_RessourceSheet)
+    id_ResourceSheet INT REFERENCES RESOURCE_SHEET(id_ResourceSheet)
 );
+
+ALTER TABLE UE
+DROP CONSTRAINT ue_id_path_fkey;
+
+ALTER TABLE UE
+ADD CONSTRAINT ue_id_path_fkey
+FOREIGN KEY (id_Path)
+REFERENCES PATH(id_Path)
+ON DELETE CASCADE;
+
+ALTER TABLE UE_COEFFICIENT_RESOURCE
+DROP CONSTRAINT ue_coefficient_resource_ue_number_fkey;
+
+ALTER TABLE UE_COEFFICIENT_RESOURCE
+ADD CONSTRAINT ue_coefficient_resource_ue_number_fkey
+FOREIGN KEY (UE_Number)
+REFERENCES UE(UE_Number)
+ON DELETE CASCADE;
+
+ALTER TABLE UE_COEFFICIENT_SAE
+DROP CONSTRAINT ue_coefficient_sae_ue_number_fkey;
+
+ALTER TABLE UE_COEFFICIENT_SAE
+ADD CONSTRAINT ue_coefficient_sae_ue_number_fkey
+FOREIGN KEY (UE_Number)
+REFERENCES UE(UE_Number)
+ON DELETE CASCADE;
+
+ALTER TABLE UE_COEFFICIENT_SAE
+DROP CONSTRAINT ue_coefficient_sae_id_sae_fkey;
+
+ALTER TABLE UE_COEFFICIENT_SAE
+ADD CONSTRAINT ue_coefficient_sae_id_sae_fkey
+FOREIGN KEY (id_SAE)
+REFERENCES SAE(id_SAE)
+ON DELETE CASCADE;
+
+ALTER TABLE UE_COEFFICIENT_RESOURCE
+DROP CONSTRAINT ue_coefficient_resource_id_resource_fkey;
+
+ALTER TABLE UE_COEFFICIENT_RESOURCE
+ADD CONSTRAINT ue_coefficient_resource_id_resource_fkey
+FOREIGN KEY (id_resource)
+REFERENCES RESOURCE(id_Resource)
+ON DELETE CASCADE;
+
+ALTER TABLE SAE_HOURS
+DROP CONSTRAINT sae_hours_id_sae_fkey;
+
+ALTER TABLE SAE_HOURS
+ADD CONSTRAINT sae_hours_id_sae_fkey
+FOREIGN KEY (id_SAE)
+REFERENCES SAE(id_SAE)
+ON DELETE CASCADE;
+
+
+CREATE OR REPLACE FUNCTION cleanup_orphan_resource()
+RETURNS TRIGGER AS $$
+BEGIN
+    DELETE FROM RESOURCE r
+    WHERE r.id_resource = OLD.id_resource
+      AND NOT EXISTS (
+          SELECT 1
+          FROM UE_COEFFICIENT_RESOURCE ucr
+          WHERE ucr.id_resource = r.id_resource
+      );
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_cleanup_orphan_resource
+AFTER DELETE ON UE_COEFFICIENT_RESOURCE
+FOR EACH ROW
+EXECUTE FUNCTION cleanup_orphan_resource();
+
+
+ALTER TABLE RESOURCE_SHEET
+DROP CONSTRAINT resource_sheet_id_resource_fkey;
+
+ALTER TABLE RESOURCE_SHEET
+ADD CONSTRAINT resource_sheet_id_resource_fkey
+FOREIGN KEY (id_resource)
+REFERENCES RESOURCE(id_Resource)
+ON DELETE CASCADE;
+
 
 INSERT INTO INSTITUTION (name, location) VALUES
 ('INFORMATIQUE', 'IUT du Limousin'),
@@ -187,14 +275,19 @@ INSERT INTO USERSYNCADIA ( firstname, lastname, username, password, id_instituti
 ('Thomas', 'Hugel', 'thugel', 'FanDeTux:)', 2),
 ('Max', 'Gorce', 'mgorce', 'SlayKing', 3),
 ('prof','test','ptest','test123',4),
-('administration','test','atest','test123',4);
+('administration','test','atest','test123',4),
+('Nath', 'nathyouistiti', 'nn', '123', 1),
+('julie', 'ju', 'jCty', '456', 1),
+('edith', 'didith', 'BigED', '789', 1),
+('martin', 'matin', 'mm', '101112', 1),
+('noé', 'NO WAY', 'njacquet', '131415', 1),
+( 'Prof2', 'Test2', 'ptest2', 'test123', 4);
 
 INSERT INTO TASK (name, description, delivery , id_User) VALUES
 ('remplir fiche ressource', 'vous devez remplir la fiche ressource pour chaque ressource pédagogique que vous créez', '2026-01-30',  1),
 ('mettre à jour fiche ressource', 'vous devez mettre à jour la fiche ressource pour chaque ressource pédagogique que vous modifiez', '2026-01-30', 3);
 
-INSERT INTO FINAL_DELIVERY_DATES ( firstDelivery, secondDelivery) VALUES
-('2026-01-30', '2026-07-15');
+
 
 INSERT INTO ACCESSRIGHT ( id_User,accessRight) VALUES
 (1, 1),
@@ -204,17 +297,23 @@ INSERT INTO ACCESSRIGHT ( id_User,accessRight) VALUES
 (3, 1),
 (4, 3),
 (5, 1),
-(6, 2);
+(6, 2),
+(7, 2),
+(8, 1),
+(9, 1),
+(10, 1),
+(11, 2),
+(12, 1);
 
 
-INSERT INTO PATH(number, name) VALUES
-(1, 'BUT INFORMATIQUE parcours réalisation d''applications : conception, développement, validation'),
-(2, 'parcours de test');
+INSERT INTO PATH(number, name, id_institution) VALUES
+(1, 'BUT INFORMATIQUE parcours réalisation d''applications : conception, développement, validation', 1),
+(2, 'parcours de test', 4);
 
-INSERT INTO UE(EuApogeeCode, label, name, competenceLevel, id_Path) VALUES
-('TIN0101U', 'UE1.1','Réaliser',1, 1),
-('TIN0102U', 'UE1.2','Optimiser',1, 1),
-('TIN0103U', 'UE1.3','Administrer',1, 1);
+INSERT INTO UE(EuApogeeCode, label, name, competenceLevel, semester, id_Path) VALUES
+('TIN0101U', 'UE1.1','Réaliser',1, 1, 1),
+('TIN0102U', 'UE1.2','Optimiser',1, 1, 1),
+('TIN0103U', 'UE1.3','Administrer',1, 1, 1);
 
 INSERT INTO TERMS(code) VALUES
 ('NGCC'),
@@ -229,13 +328,13 @@ INSERT INTO TERMS(code) VALUES
 ('NGCC'),
 ('NGCC');
 
-INSERT INTO SAE(label, id_terms) VALUES
-('SAE 1', 5),
-('SAE 2', 6),
-('SAE 3', 7),
-('SAE 4', 8),
-('SAE 5', 9),
-('SAE 6', 10);
+INSERT INTO SAE(label, apogeeCode, semester, id_terms) VALUES
+('SAE 1', 'SAE101', 1, 5),
+('SAE 2', 'SAE102', 1, 6),
+('SAE 3', 'SAE103', 1, 7),
+('SAE 4', 'SAE201', 2, 8),
+('SAE 5', 'SAE202', 2, 9),
+('SAE 6', 'SAE203', 2, 10);
 
 
 INSERT INTO RESOURCE(apogeeCode, label,name, diffMultiCompetences, semester, id_terms) VALUES
@@ -251,11 +350,15 @@ INSERT INTO SAE_LINK_RESOURCE(id_SAE, id_resource) VALUES
 (3, 3),
 (4, 4);
 
-INSERT INTO HOURS_PER_STUDENT (has_alternance,cm, td, tp,id_ressource) VALUES
+INSERT INTO HOURS_PER_STUDENT (has_alternance,cm, td, tp,id_resource) VALUES
+(TRUE, 8, 12, 20, 1),
 (FALSE,6, 10, 20, 1),
 (FALSE, 4, 10, 16, 2),
 (FALSE, 10, 8, 10, 3),
 (FALSE, 5, 5, 5, 4);
+
+INSERT INTO TEACHER_HOURS (isalternance,cm, td, tp,id_resourcesheet) VALUES
+(TRUE, 8, 12, 20, 1);
 
 INSERT INTO SAE_HOURS(hours, id_SAE) VALUES
 (36, 1),

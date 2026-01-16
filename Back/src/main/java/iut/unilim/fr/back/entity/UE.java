@@ -24,20 +24,30 @@ public class UE {
     @Column(name = "competenceLevel", nullable = false)
     private Integer competenceLevel;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_Path")
+    @Column(nullable = false)
+    private Integer semester;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_path")
     private Path path;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_terms")
+    private Terms terms;
 
     public UE() {
     }
 
-    public UE(Long ueNumber, String euApogeeCode, String label, String name, Integer competenceLevel, Path path) {
+    public UE(Long ueNumber, String euApogeeCode, String label, String name, Integer competenceLevel, Integer semester, Path path, Terms terms) {
         this.ueNumber = ueNumber;
         this.euApogeeCode = euApogeeCode;
         this.label = label;
         this.name = name;
         this.competenceLevel = competenceLevel;
+        this.semester = semester;
         this.path = path;
+        this.terms = terms;
     }
 
     public Long getUeNumber() {
@@ -80,11 +90,27 @@ public class UE {
         this.competenceLevel = competenceLevel;
     }
 
+    public Integer getSemester() {
+        return semester;
+    }
+
+    public void setSemester(Integer semester) {
+        this.semester = semester;
+    }
+
     public Path getPath() {
         return path;
     }
 
     public void setPath(Path path) {
         this.path = path;
+    }
+
+    public Terms getTerms() {
+        return terms;
+    }
+
+    public void setTerms(Terms terms) {
+        this.terms = terms;
     }
 }

@@ -1,7 +1,10 @@
 <script setup>
+    import { onMounted } from 'vue';
     import { institutionLocation } from '../main';
 
-    institutionLocation.value = localStorage.institutionLocation
+    onMounted(async () => {
+        institutionLocation.value = localStorage.institutionLocation;
+    });
 </script>
 
 <template>
@@ -18,18 +21,18 @@
     height: 3.5vw;
     padding: 0 3%;
     background-color: var(--header-footer-color);
-    margin: 0;
+
 }
 
 #establishment_name {
     color: var(--main-theme-secondary-color);
-    text-shadow: 0 0 5px black;
+    text-shadow: 0 0 5px var(--main-theme-tertiary-color);
     font-size: 1.5vw;
 }
 
 #edit_year {
     font-size: 1.5vw;
     color: var(--main-theme-secondary-color);
-    text-shadow: 0 0 5px black;
+    text-shadow: 0 0 5px var(--main-theme-tertiary-color);
 }
 </style>

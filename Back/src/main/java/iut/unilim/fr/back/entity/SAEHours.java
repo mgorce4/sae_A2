@@ -11,19 +11,23 @@ public class SAEHours {
     private Long idSAEHours;
 
     @Column(nullable = false)
-    private Integer hours;
+    private Double hours;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_SAE")
     private SAE sae;
 
+    @Column(name = "has_alternance", nullable = false)
+    private Boolean hasAlternance;
+
     public SAEHours() {
     }
 
-    public SAEHours(Long idSAEHours, Integer hours, SAE sae) {
+    public SAEHours(Long idSAEHours, Double hours, SAE sae) {
         this.idSAEHours = idSAEHours;
         this.hours = hours;
         this.sae = sae;
+        this.hasAlternance = false; // default value
     }
 
     public Long getIdSAEHours() {
@@ -34,11 +38,11 @@ public class SAEHours {
         this.idSAEHours = idSAEHours;
     }
 
-    public Integer getHours() {
+    public Double getHours() {
         return hours;
     }
 
-    public void setHours(Integer hours) {
+    public void setHours(Double hours) {
         this.hours = hours;
     }
 
@@ -48,6 +52,14 @@ public class SAEHours {
 
     public void setSae(SAE sae) {
         this.sae = sae;
+    }
+
+    public Boolean getHasAlternance() {
+        return hasAlternance;
+    }
+
+    public void setHasAlternance(Boolean hasAlternance) {
+        this.hasAlternance = hasAlternance;
     }
 }
 

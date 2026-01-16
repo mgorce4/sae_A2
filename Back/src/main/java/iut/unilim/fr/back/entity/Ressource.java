@@ -31,10 +31,14 @@ public class Ressource {
     @JoinColumn(name = "id_terms")
     private Terms terms;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "path_id")
+    private Path path;
+
     public Ressource() {
     }
 
-    public Ressource(Long idResource, String apogeeCode, String label, String name, Boolean diffMultiCompetences, Integer semester, Terms terms) {
+    public Ressource(Long idResource, String apogeeCode, String label, String name, Boolean diffMultiCompetences, Integer semester, Terms terms, Path path) {
         this.idResource = idResource;
         this.apogeeCode = apogeeCode;
         this.label = label;
@@ -42,6 +46,7 @@ public class Ressource {
         this.diffMultiCompetences = diffMultiCompetences;
         this.semester = semester;
         this.terms = terms;
+        this.path = path;
     }
 
     public Long getIdResource() {
@@ -98,5 +103,13 @@ public class Ressource {
 
     public void setTerms(Terms terms) {
         this.terms = terms;
+    }
+
+    public Path getPath() {
+        return path;
+    }
+
+    public void setPath(Path path) {
+        this.path = path;
     }
 }

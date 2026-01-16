@@ -8,88 +8,124 @@ status.value = "Professeur"
 /* Extract ID from hash URL parameters */
 const getQueryParam = (param) => {
   const hash = window.location.hash
-  console.log('Full hash:', hash)
-
-  // Hash format: #/form-ressource-sheet?id=5
   const queryString = hash.split('?')[1]
-  console.log('Query string:', queryString)
 
   if (!queryString) {
-    console.warn('No query string found in hash')
     return null
   }
 
   const params = new URLSearchParams(queryString)
-  const value = params.get(param)
-  console.log(`Extracted ${param}:`, value)
-  return value
+  return params.get(param)
 }
 
 const resourceSheetId = ref(getQueryParam('id'))
-console.log('Parsed resourceSheetId:', resourceSheetId.value)
 
-/* link with the API */
-const resourceSheet = ref(null)
-const resource = ref(null)
-const ueLabels = ref([])
-const institutionName = ref(null)
-const saeList = ref([]) // List of SAEs from the same semester
-const linkedSaeIds = ref([]) // IDs of SAEs linked to this resource
-const localSaeChanges = ref({}) // Local state to track SAE switch changes
-const nationalProgramObjectives = ref([]) // List of objectives from the database
-const localObjectiveContent = ref('') // Local state for objective textarea
-const nationalProgramSkills = ref([]) // List of skills from the database
-const localSkills = ref([]) // Local state for skills array (with label and description)
-const keywords = ref([]) // List of keywords from the database
-const localKeywords = ref([]) // Local state for keywords array
-const modalities = ref([]) // List of modalities from the database
-const localModalities = ref([]) // Local state for modalities array
-const pedagogicalContent = ref(null) // Pedagogical content from the database
+/* DTO API - Single data source */
+const resourceSheetDTO = ref(null)
+
+/* Local editable states */
+const localObjectiveContent = ref('')
+const localSkills = ref([])
+const localKeywords = ref([])
+const localModalities = ref([])
+const localHours = ref({ cm: '', td: '', tp: '' })
+const localHoursAlternance = ref({ cm: '', td: '', tp: '' })
+const localSaeChanges = ref({})
 const localPedagogicalContent = ref({
-  cm: [], // Array of { number: 1, content: 'text' }
+  cm: [],
   td: [],
   tp: [],
   ds: []
 })
-
-// Resource Tracking variables
-const resourceTracking = ref(null) // Resource tracking from the database
 const localResourceTracking = ref({
   pedagogicalFeedback: '',
   studentFeedback: '',
   improvementSuggestions: ''
 })
 
-// Function to parse CSV string into array of items
-const parseCSVContent = (csvString) => {
-  if (!csvString || csvString.trim() === '') {
-    console.log('⚠️ CSV string is empty or null')
-    return []
-  }
+// SAE list - needs to be a ref to be populated after loading
+const saeList = ref([])
 
-  // Split by comma followed by a number and a space
-  // Format: "1 text,2 text,3 text"
-  const items = []
-  const regex = /(\d+)\s+([^,]+)(?:,|$)/g
-  let match
+// Validation errors for required fields
+const validationErrors = ref({
+  objective: false,
+  skills: false,
+  pedagogicalContent: false
+})
 
-  while ((match = regex.exec(csvString)) !== null) {
-    const item = {
-      number: parseInt(match[1]),
-      content: match[2].replace(/''/g, "'").trim() // Replace double quotes with single
-    }
-    items.push(item)
+// Computed properties from DTO
+const ueLabels = computed(() => {
+  if (!resourceSheetDTO.value?.ueReferences) return []
+  return resourceSheetDTO.value.ueReferences.map(ue => ue.label)
+})
+
+const institutionName = computed(() => resourceSheetDTO.value?.department || '###')
+const resourceName = computed(() => resourceSheetDTO.value?.resourceName || 'Nom de la ressource')
+const resourceLabel = computed(() => resourceSheetDTO.value?.resourceLabel || '###')
+
+const hoursPerStudent = computed(() => resourceSheetDTO.value?.hoursPN || null)
+const hoursPerStudentAlternance = computed(() => resourceSheetDTO.value?.hoursPNAlternance || null)
+
+const hasAlternanceHours = computed(() => {
+  // Check if teacher alternance hours exist and have non-zero values
+  const hasTeacherAlternance = resourceSheetDTO.value?.hoursTeacherAlternance != null &&
+    (resourceSheetDTO.value.hoursTeacherAlternance.cm > 0 ||
+     resourceSheetDTO.value.hoursTeacherAlternance.td > 0 ||
+     resourceSheetDTO.value.hoursTeacherAlternance.tp > 0)
+
+  // Check if PN alternance hours exist and have non-zero values
+  const hasPNAlternance = resourceSheetDTO.value?.hoursPNAlternance != null &&
+    (resourceSheetDTO.value.hoursPNAlternance.cm > 0 ||
+     resourceSheetDTO.value.hoursPNAlternance.td > 0 ||
+     resourceSheetDTO.value.hoursPNAlternance.tp > 0)
+
+  // Check if local alternance hours have been entered
+  const hasLocalAlternance = (localHoursAlternance.value.cm && localHoursAlternance.value.cm > 0) ||
+                              (localHoursAlternance.value.td && localHoursAlternance.value.td > 0) ||
+                              (localHoursAlternance.value.tp && localHoursAlternance.value.tp > 0)
+
+  return hasTeacherAlternance || hasPNAlternance || hasLocalAlternance
+})
+
+const localHoursTotal = computed(() => {
+  const cm = typeof localHours.value.cm === 'number' ? localHours.value.cm : (parseFloat(localHours.value.cm) || 0)
+  const td = typeof localHours.value.td === 'number' ? localHours.value.td : (parseFloat(localHours.value.td) || 0)
+  const tp = typeof localHours.value.tp === 'number' ? localHours.value.tp : (parseFloat(localHours.value.tp) || 0)
+  return cm + td + tp
+})
+
+const localHoursAlternanceTotal = computed(() => {
+  const cm = typeof localHoursAlternance.value.cm === 'number' ? localHoursAlternance.value.cm : (parseFloat(localHoursAlternance.value.cm) || 0)
+  const td = typeof localHoursAlternance.value.td === 'number' ? localHoursAlternance.value.td : (parseFloat(localHoursAlternance.value.td) || 0)
+  const tp = typeof localHoursAlternance.value.tp === 'number' ? localHoursAlternance.value.tp : (parseFloat(localHoursAlternance.value.tp) || 0)
+  return cm + td + tp
+})
+
+const dbHoursTotal = computed(() => {
+  if (!hoursPerStudent.value) return 0
+  return (hoursPerStudent.value.cm || 0) + (hoursPerStudent.value.td || 0) + (hoursPerStudent.value.tp || 0)
+})
+
+const dbHoursTotalAlternance = computed(() => {
+  if (!hoursPerStudentAlternance.value) return 0
+  return (hoursPerStudentAlternance.value.cm || 0) + (hoursPerStudentAlternance.value.td || 0) + (hoursPerStudentAlternance.value.tp || 0)
+})
+
+// Function to check if SAE is linked
+const isSaeLinked = (saeId) => {
+  // Check if there's a local change
+  if (saeId in localSaeChanges.value) {
+    return localSaeChanges.value[saeId]
   }
-  return items
+  // Otherwise use the original value from DTO
+  const sae = saeList.value.find(s => s.id === saeId)
+  return sae?.isLinked || false
 }
 
-// Function to convert array back to CSV string (for saving to database)
-const toCSVContent = (items) => {
-  if (!items || items.length === 0) return ''
-
-  return items
-    .map(item => `${item.number} ${item.content.replace(/'/g, "''")}`)
-    .join(',')
+// Function to toggle SAE link
+const toggleSaeLink = (saeId) => {
+  const currentState = isSaeLinked(saeId)
+  localSaeChanges.value[saeId] = !currentState
 }
 
 // Function to add a new pedagogical content item
@@ -259,21 +295,6 @@ const removeModality = (index) => {
   })
 }
 
-// Function to check if a SAE is linked to the resource (including local changes)
-const isSaeLinked = (saeId) => {
-  // Check if there's a local change, otherwise use the original linked state
-  if (saeId in localSaeChanges.value) {
-    return localSaeChanges.value[saeId]
-  }
-  return linkedSaeIds.value.includes(saeId)
-}
-
-// Function to toggle SAE link state locally
-const toggleSaeLink = (saeId) => {
-  const currentState = isSaeLinked(saeId)
-  localSaeChanges.value[saeId] = !currentState
-}
-
 // Function to update panel max-height after content changes
 const updatePanelHeight = (panelElement) => {
   if (panelElement && panelElement.style.maxHeight) {
@@ -310,283 +331,284 @@ const removeSkillRow = (index) => {
   }
 }
 
-// Computed property to check if objective content has been modified
-const hasObjectiveChanges = computed(() => {
-  if (!nationalProgramObjectives.value || nationalProgramObjectives.value.length === 0) {
-    return localObjectiveContent.value.trim() !== ''
+// Save function - sends data to backend
+const saveResourceSheet = async () => {
+  if (!resourceSheetId.value) {
+    console.error('❌ No resource sheet ID')
+    return
   }
 
-  const originalContent = nationalProgramObjectives.value
-    .map(obj => obj.content)
-    .join('\n\n')
+  // Reset validation errors
+  validationErrors.value = {
+    objective: false,
+    skills: false,
+    pedagogicalContent: false
+  }
 
-  return localObjectiveContent.value !== originalContent
-})
+  // Validate required fields
+  let hasErrors = false
+
+  // Check objective field
+  if (!localObjectiveContent.value || localObjectiveContent.value.trim() === '') {
+    validationErrors.value.objective = true
+    hasErrors = true
+  }
+
+  // Check skills field - at least one skill with both label and description
+  const validSkills = localSkills.value.filter(skill =>
+    skill.label && skill.label.trim() !== '' &&
+    skill.description && skill.description.trim() !== ''
+  )
+
+  if (validSkills.length === 0) {
+    validationErrors.value.skills = true
+    hasErrors = true
+  }
+
+  // Check pedagogical content - at least one item with content in at least one column
+  console.log('🔍 Checking pedagogical content:', localPedagogicalContent.value)
+  const hasValidPedagogicalContent =
+    localPedagogicalContent.value.cm.some(item => item.content && item.content.trim() !== '') ||
+    localPedagogicalContent.value.td.some(item => item.content && item.content.trim() !== '') ||
+    localPedagogicalContent.value.tp.some(item => item.content && item.content.trim() !== '') ||
+    localPedagogicalContent.value.ds.some(item => item.content && item.content.trim() !== '')
+
+  console.log('✅ Has valid pedagogical content:', hasValidPedagogicalContent)
+
+  if (!hasValidPedagogicalContent) {
+    validationErrors.value.pedagogicalContent = true
+    hasErrors = true
+    console.log('❌ Pedagogical content validation failed')
+  }
+
+  // If there are validation errors, stop here and scroll to first error
+  if (hasErrors) {
+    // Scroll to first error
+    nextTick(() => {
+      if (validationErrors.value.objective) {
+        const objectiveSection = document.querySelector('#form')
+        if (objectiveSection) {
+          objectiveSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      } else if (validationErrors.value.skills) {
+        const skillsSection = document.querySelectorAll('#form')[1]
+        if (skillsSection) {
+          skillsSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      } else if (validationErrors.value.pedagogicalContent) {
+        const pedagogicalSection = document.querySelector('#pedagogical_content_section')
+        if (pedagogicalSection) {
+          pedagogicalSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }
+    })
+    return
+  }
+
+  try {
+    // Prepare the update DTO
+    const updateDTO = {
+      objective: localObjectiveContent.value,
+      skills: localSkills.value.map(skill => ({
+        id: skill.id,
+        label: skill.label,
+        description: skill.description
+      })),
+      keywords: localKeywords.value.map(kw => kw.keyword).filter(k => k && k.trim()),
+      modalities: localModalities.value.map(m => m.modality).filter(m => m && m.trim()),
+      linkedSaeIds: Object.entries(localSaeChanges.value)
+        .filter(([, isLinked]) => isLinked)
+        .map(([id]) => parseInt(id))
+        .concat(
+          // Add SAEs that were already linked and not changed
+          saeList.value
+            .filter(sae => sae.isLinked && !(sae.id in localSaeChanges.value))
+            .map(sae => sae.id)
+        ),
+      teacherHours: {
+        cm: String(localHours.value.cm || 0),
+        td: String(localHours.value.td || 0),
+        tp: String(localHours.value.tp || 0)
+      },
+      teacherHoursAlternance: hasAlternanceHours.value ? {
+        cm: String(localHoursAlternance.value.cm || 0),
+        td: String(localHoursAlternance.value.td || 0),
+        tp: String(localHoursAlternance.value.tp || 0)
+      } : null,
+      pedagogicalContent: {
+        cm: localPedagogicalContent.value.cm.map(item => ({ order: item.number, content: item.content })),
+        td: localPedagogicalContent.value.td.map(item => ({ order: item.number, content: item.content })),
+        tp: localPedagogicalContent.value.tp.map(item => ({ order: item.number, content: item.content })),
+        ds: localPedagogicalContent.value.ds.map(item => ({ order: item.number, content: item.content }))
+      },
+      tracking: {
+        pedagogicalFeedback: localResourceTracking.value.pedagogicalFeedback,
+        studentFeedback: localResourceTracking.value.studentFeedback,
+        improvementSuggestions: localResourceTracking.value.improvementSuggestions
+      }
+    }
+
+    console.log('📤 Sending update DTO:', updateDTO)
+    console.log('📊 Teacher hours:', updateDTO.teacherHours)
+    console.log('📊 Teacher hours alternance:', updateDTO.teacherHoursAlternance)
+
+    // Send PUT request
+    await axios.put(
+      `http://localhost:8080/api/v2/resource-sheets/${resourceSheetId.value}`,
+      updateDTO
+    )
+
+
+    // Reload the data to show updated values
+    location.reload()
+
+  } catch (error) {
+    console.error('❌ Error saving resource sheet:', error)
+    console.error('Error details:', error.response?.data || error.message)
+  }
+}
 
 onMounted(async () => {
-  // Get institution name from localStorage
-  const storedInstitution = localStorage.getItem('institutionName')
-  if (storedInstitution) {
-    institutionName.value = storedInstitution
-  } else {
-    console.warn('No institution found in localStorage')
-  }
-
-  /* get the specific resource sheet from the DB using the ID */
+  /* Fetch complete resource sheet using DTO API - ONE REQUEST FOR ALL DATA! */
   if (resourceSheetId.value) {
-    console.log('🔍 Fetching resource sheet with ID:', resourceSheetId.value)
     try {
-      const response = await axios.get(`http://localhost:8080/api/resource-sheets/${resourceSheetId.value}/details`)
-      resourceSheet.value = response.data
-      console.log('✅ Resource sheet loaded:', resourceSheet.value)
-      console.log('🔍 resourceSheet.value.resource:', resourceSheet.value.resource)
-      console.log('🔍 Type of resourceSheet.value:', typeof resourceSheet.value)
-      console.log('🔍 Keys in resourceSheet.value:', Object.keys(resourceSheet.value))
+      const response = await axios.get(`http://localhost:8080/api/v2/resource-sheets/${resourceSheetId.value}`)
+      resourceSheetDTO.value = response.data
 
-      // Get national program objectives for this resource sheet
-      if (resourceSheetId.value) {
-        try {
-          const objectivesResponse = await axios.get(`http://localhost:8080/api/national-program-objectives/ressource-sheet/${resourceSheetId.value}`)
-          nationalProgramObjectives.value = objectivesResponse.data
-          // Set the local content from the first objective (or combine multiple)
-          if (nationalProgramObjectives.value.length > 0) {
-            localObjectiveContent.value = nationalProgramObjectives.value
-              .map(obj => obj.content)
-              .join('\n\n')
-          }
-        } catch (error) {
-          console.error('Error fetching national program objectives:', error)
-        }
-
-        // Get national program skills for this resource sheet
-        try {
-          const skillsResponse = await axios.get(`http://localhost:8080/api/national-program-skills/resource-sheet/${resourceSheetId.value}`)
-          nationalProgramSkills.value = skillsResponse.data
-          // Initialize local skills array from database
-          if (nationalProgramSkills.value.length > 0) {
-            localSkills.value = nationalProgramSkills.value.map(skill => ({ id: skill.idSkill, label: skill.label || '', description: skill.description || '' }))
-          } else {
-            // Start with one empty skill if none exist
-            localSkills.value = [{ id: null, label: '', description: '' }]
-          }
-        } catch (error) {
-          console.error('Error fetching national program skills:', error)
-          // Initialize with one empty skill on error
-          localSkills.value = [{ id: null, label: '', description: '' }]
-        }
-
-        // Get keywords for this resource sheet
-        try {
-          const keywordsResponse = await axios.get(`http://localhost:8080/api/keywords/resource-sheet/${resourceSheetId.value}`)
-          keywords.value = keywordsResponse.data
-
-          // Initialize local keywords array from database
-          localKeywords.value = keywords.value.map(kw => ({ keyword: kw.keyword || '', isNew: false }))
-        } catch (error) {
-          console.error('Error fetching keywords:', error)
-          // Initialize with empty array on error
-          localKeywords.value = []
-        }
-
-        // Get modalities of implementation for this resource sheet
-        try {
-          const modalitiesResponse = await axios.get(`http://localhost:8080/api/modalities-of-implementation/resource-sheet/${resourceSheetId.value}`)
-          modalities.value = modalitiesResponse.data
-
-          // Initialize local modalities array from database
-          localModalities.value = modalities.value.map(mod => ({ modality: mod.modality || '', isNew: false }))
-        } catch (error) {
-          console.error('Error fetching modalities:', error)
-          // Initialize with empty array on error
-          localModalities.value = []
-        }
-
-        // Get pedagogical content for this resource sheet
-        try {
-          const pedagogicalResponse = await axios.get(`http://localhost:8080/api/pedagogical-contents/resource-sheet/${resourceSheetId.value}`)
-
-          if (pedagogicalResponse.data && pedagogicalResponse.data.length > 0) {
-            pedagogicalContent.value = pedagogicalResponse.data[0] // Take the first only
-            // Parse CSV content into arrays
-            localPedagogicalContent.value = {
-              cm: parseCSVContent(pedagogicalContent.value.cm),
-              td: parseCSVContent(pedagogicalContent.value.td),
-              tp: parseCSVContent(pedagogicalContent.value.tp),
-              ds: parseCSVContent(pedagogicalContent.value.ds)
-            }
-          } else {
-            console.log('⚠️ No pedagogical content found in API response')
-            // Initialize with empty arrays
-            localPedagogicalContent.value = {
-              cm: [],
-              td: [],
-              tp: [],
-              ds: []
-            }
-          }
-        } catch (error) {
-          // Initialize with empty arrays on error
-          localPedagogicalContent.value = {
-            cm: [],
-            td: [],
-            tp: [],
-            ds: []
-          }
-        }
-
-        // Get resource tracking for this resource sheet
-        try {
-          console.log('🔍 Fetching resource tracking for resource sheet ID:', resourceSheetId.value)
-          const trackingResponse = await axios.get(`http://localhost:8080/api/resource-trackings/resource-sheet/${resourceSheetId.value}`)
-          console.log('📦 Resource tracking API response:', trackingResponse.data)
-
-          if (trackingResponse.data && trackingResponse.data.length > 0) {
-            resourceTracking.value = trackingResponse.data[0] // Take the first only
-            console.log('✅ Resource tracking loaded:', resourceTracking.value)
-            // Initialize local tracking data from database
-            localResourceTracking.value = {
-              pedagogicalFeedback: resourceTracking.value.pedagogicalFeedback || '',
-              studentFeedback: resourceTracking.value.studentFeedback || '',
-              improvementSuggestions: resourceTracking.value.improvementSuggestions || ''
-            }
-            console.log('✅ Local resource tracking initialized:', localResourceTracking.value)
-          } else {
-            console.log('⚠️ No resource tracking found in API response')
-            // Initialize with empty strings
-            localResourceTracking.value = {
-              pedagogicalFeedback: '',
-              studentFeedback: '',
-              improvementSuggestions: ''
-            }
-          }
-        } catch (error) {
-          console.error('❌ Error fetching resource tracking:', error)
-          console.error('Error details:', error.response?.data || error.message)
-          // Initialize with empty strings on error
-          localResourceTracking.value = {
-            pedagogicalFeedback: '',
-            studentFeedback: '',
-            improvementSuggestions: ''
-          }
-        }
+      // Vérifier immédiatement si le DTO contient des données
+      if (!resourceSheetDTO.value) {
+        console.error('❌ No data in resource sheet DTO')
+        return
       }
 
-      // Extract resource data
-      console.log('🔍 Checking if resourceSheet.value.resource exists...')
-      if (resourceSheet.value && resourceSheet.value.resource) {
-        resource.value = resourceSheet.value.resource
-        console.log('✅ Resource extracted:', resource.value)
-        console.log('✅ Resource name:', resource.value.name)
-        console.log('✅ Resource label:', resource.value.label)
+      // Initialize local states from DTO
 
-        // Get UE labels from all UE coefficients linked to this resource
-        if (resource.value.idResource) {
-          try {
-            // Try the specific endpoint first
-            try {
-              const ueCoeffResponse = await axios.get(`http://localhost:8080/api/ue-coefficients/resource/${resource.value.idResource}`)
-              const ueCoefficients = ueCoeffResponse.data
-              console.log('📋 UE Coefficients loaded:', ueCoefficients)
-              // Extract UE labels from coefficients
-              ueLabels.value = ueCoefficients
-                .filter(coeff => coeff.ue && coeff.ue.label)
-                .map(coeff => coeff.ue.label)
-              console.log('🏷️ UE Labels:', ueLabels.value)
+      // Objective
+      localObjectiveContent.value = resourceSheetDTO.value.objective || ''
 
-            } catch (endpointError) {
-              // Fallback: Get all UE coefficients and filter by resource ID
-              const allUeCoeffsResponse = await axios.get('http://localhost:8080/api/ue-coefficients')
-              const allUeCoefficients = allUeCoeffsResponse.data
+      // Skills
+      if (resourceSheetDTO.value.skills && resourceSheetDTO.value.skills.length > 0) {
+        localSkills.value = resourceSheetDTO.value.skills.map(skill => ({
+          id: skill.id,
+          label: skill.label || '',
+          description: skill.description || ''
+        }))
+      } else {
+        localSkills.value = [{ id: null, label: '', description: '' }]
+      }
 
-              // Filter by resource ID
-              const filteredCoeffs = allUeCoefficients.filter(coeff =>
-                coeff.resource && coeff.resource.idResource === resource.value.idResource
-              )
-              // Extract UE labels
-              ueLabels.value = filteredCoeffs
-                .filter(coeff => coeff.ue && coeff.ue.label)
-                .map(coeff => coeff.ue.label)
+      // Keywords
+      if (resourceSheetDTO.value.keywords && resourceSheetDTO.value.keywords.length > 0) {
+        localKeywords.value = resourceSheetDTO.value.keywords.map(kw => ({ keyword: kw, isNew: false }))
+      } else {
+        localKeywords.value = []
+      }
 
-            }
-          } catch (error) {
-            console.error('Error fetching UE coefficients:', error)
-            console.error('Error details:', error.response?.data || error.message)
-          }
+      // Modalities
+      if (resourceSheetDTO.value.modalities && resourceSheetDTO.value.modalities.length > 0) {
+        localModalities.value = resourceSheetDTO.value.modalities.map(mod => ({ modality: mod, isNew: false }))
+      } else {
+        localModalities.value = []
+      }
+
+      // Hours - si hoursTeacher existe, on affiche ses valeurs, sinon on laisse vide (hoursPN sera en placeholder)
+      console.log('📊 hoursTeacher from DTO:', resourceSheetDTO.value.hoursTeacher)
+      console.log('📊 hoursPN from DTO:', resourceSheetDTO.value.hoursPN)
+
+      if (resourceSheetDTO.value.hoursTeacher) {
+        // Teacher hours exist - use them (convert null or undefined to empty string for display)
+        localHours.value = {
+          cm: resourceSheetDTO.value.hoursTeacher.cm !== null && resourceSheetDTO.value.hoursTeacher.cm !== undefined ? resourceSheetDTO.value.hoursTeacher.cm : '',
+          td: resourceSheetDTO.value.hoursTeacher.td !== null && resourceSheetDTO.value.hoursTeacher.td !== undefined ? resourceSheetDTO.value.hoursTeacher.td : '',
+          tp: resourceSheetDTO.value.hoursTeacher.tp !== null && resourceSheetDTO.value.hoursTeacher.tp !== undefined ? resourceSheetDTO.value.hoursTeacher.tp : ''
         }
+        console.log('✅ Using hoursTeacher:', localHours.value)
+      } else {
+        // No teacher hours - leave empty (will show PN hours in placeholder)
+        localHours.value = { cm: '', td: '', tp: '' }
+        console.log('📝 No hoursTeacher, fields will be empty with hoursPN as placeholder')
+      }
 
-        // Get SAEs from the same semester and institution
-        if (resource.value.semester && resource.value.idResource) {
-          try {
-            // Get all SAEs
-            const allSaeResponse = await axios.get('http://localhost:8080/api/saes')
+      // Hours Alternance
+      console.log('📊 hoursTeacherAlternance from DTO:', resourceSheetDTO.value.hoursTeacherAlternance)
+      console.log('📊 hoursPNAlternance from DTO:', resourceSheetDTO.value.hoursPNAlternance)
 
-            // Get all resources to filter SAEs by semester and institution
-            const allResourcesResponse = await axios.get('http://localhost:8080/api/resources')
-            const allResources = allResourcesResponse.data
-
-            // Filter resources by same semester and same institution
-            const sameSemesterResources = allResources.filter(r =>
-              r.semester === resource.value.semester
-            )
-
-            // Get SAE links for resources in the same semester
-            const saeLinkPromises = sameSemesterResources.map(r =>
-              axios.get(`http://localhost:8080/api/sae-link-resources/resource/${r.idResource}`)
-                .catch(() => ({ data: [] }))
-            )
-            const saeLinkResponses = await Promise.all(saeLinkPromises)
-            const allSaeLinks = saeLinkResponses.flatMap(response => response.data)
-
-            // Get unique SAE IDs from same semester resources
-            const sameSemesterSaeIds = [...new Set(allSaeLinks.map(link => link.idSAE))]
-
-            // Filter SAEs to only include those from the same semester
-            saeList.value = allSaeResponse.data.filter(sae =>
-              sameSemesterSaeIds.includes(sae.idSAE)
-            )
-          } catch (error) {
-            console.error('Error fetching SAEs:', error)
-          }
+      if (resourceSheetDTO.value.hoursTeacherAlternance) {
+        // Teacher hours alternance exist - use them
+        localHoursAlternance.value = {
+          cm: resourceSheetDTO.value.hoursTeacherAlternance.cm !== null && resourceSheetDTO.value.hoursTeacherAlternance.cm !== undefined ? resourceSheetDTO.value.hoursTeacherAlternance.cm : '',
+          td: resourceSheetDTO.value.hoursTeacherAlternance.td !== null && resourceSheetDTO.value.hoursTeacherAlternance.td !== undefined ? resourceSheetDTO.value.hoursTeacherAlternance.td : '',
+          tp: resourceSheetDTO.value.hoursTeacherAlternance.tp !== null && resourceSheetDTO.value.hoursTeacherAlternance.tp !== undefined ? resourceSheetDTO.value.hoursTeacherAlternance.tp : ''
         }
+        console.log('✅ Using hoursTeacherAlternance:', localHoursAlternance.value)
+      } else {
+        // No teacher hours alternance
+        localHoursAlternance.value = { cm: '', td: '', tp: '' }
+        console.log('📝 No hoursTeacherAlternance, fields will be empty')
+      }
 
-        // Get SAE links for this specific resource
-        if (resource.value.idResource) {
-          try {
-            const saeLinkResponse = await axios.get(`http://localhost:8080/api/sae-link-resources/resource/${resource.value.idResource}`)
-            linkedSaeIds.value = saeLinkResponse.data.map(link => link.idSAE)
-          } catch (error) {
-            console.error('Error fetching SAE links:', error)
-          }
+      // Pedagogical content
+      if (resourceSheetDTO.value.pedagogicalContent) {
+        const content = resourceSheetDTO.value.pedagogicalContent
+        // Convert DTO format (order, content) to local format (number, content)
+        localPedagogicalContent.value = {
+          cm: (content.cm || []).map(item => ({ number: item.order, content: item.content })),
+          td: (content.td || []).map(item => ({ number: item.order, content: item.content })),
+          tp: (content.tp || []).map(item => ({ number: item.order, content: item.content })),
+          ds: (content.ds || []).map(item => ({ number: item.order, content: item.content }))
         }
       } else {
-        console.log('No resource found in resourceSheet')
+        localPedagogicalContent.value = { cm: [], td: [], tp: [], ds: [] }
       }
+
+      // Resource tracking
+      if (resourceSheetDTO.value.tracking) {
+        localResourceTracking.value = {
+          pedagogicalFeedback: resourceSheetDTO.value.tracking.pedagogicalFeedback || '',
+          studentFeedback: resourceSheetDTO.value.tracking.studentFeedback || '',
+          improvementSuggestions: resourceSheetDTO.value.tracking.improvementSuggestions || ''
+        }
+      }
+
+      // SAEs list - Use linkedSaes directly from ResourceSheet DTO
+      // The DTO already contains ALL SAEs from the same semester with isLinked flag correctly set
+      if (resourceSheetDTO.value.linkedSaes && resourceSheetDTO.value.linkedSaes.length > 0) {
+        // Use the SAEs from ResourceSheet DTO directly - they already have the correct isLinked flag
+        saeList.value = resourceSheetDTO.value.linkedSaes.map(sae => ({
+          id: sae.id,
+          label: sae.label,
+          apogeeCode: sae.apogeeCode,
+          isLinked: sae.isLinked  // Use the isLinked value from backend - it's already correct!
+        }))
+
+      } else {
+        saeList.value = []
+      }
+
     } catch (error) {
-      console.error('Error fetching resource sheet:', error)
+      console.error('❌ Error loading resource sheet:', error)
       console.error('Error details:', error.response?.data || error.message)
     }
-  } else {
-    console.warn('No resourceSheetId found in URL')
   }
 
   // Wait for DOM to be fully rendered
   await nextTick()
 
   // Initialize accordion after DOM is ready
-  const acc = document.getElementsByClassName("accordion");
+  const acc = document.getElementsByClassName("accordion")
 
   for (let i = 0; i < acc.length; i++) {
     acc[i].addEventListener("click", function() {
-      this.classList.toggle("active");
-      const panel = this.nextElementSibling;
+      this.classList.toggle("active")
+      const panel = this.nextElementSibling
       if (panel.style.maxHeight) {
-        panel.style.maxHeight = null;
-        panel.style.padding = "0 18px";
+        panel.style.maxHeight = null
+        panel.style.padding = "0 18px"
       } else {
-        panel.style.padding = "2vw 18px";
-        panel.style.maxHeight = panel.scrollHeight + "px";
+        panel.style.padding = "2vw 18px"
+        panel.style.maxHeight = panel.scrollHeight + "px"
       }
-    });
+    })
   }
 
   // Auto-resize textareas (only those with specific classes)
@@ -658,18 +680,19 @@ onMounted(async () => {
       <div class="header_Form">
         <p>Réf. UE : </p>
         <p>{{ ueLabels && ueLabels.length > 0 ? ueLabels.join(', ') : '###' }}</p>
-        <p class="title">{{ (resource && resource.name) || (resourceSheet && resourceSheet.name) || 'Nom de la ressource' }}</p>
+        <p class="title">{{ resourceName }}</p>
         <p>Dep : </p>
-        <p>{{ institutionName || '###' }}</p>
+        <p>{{ institutionName }}</p>
       </div>
       <div class="ref_Section">
         <p>Réf. ressource : </p>
-        <p>{{ (resource && resource.label) || '###' }}</p>
+        <p>{{ resourceLabel }}</p>
       </div>
       <div id="form">
         <button class="accordion" id="dark_Bar">Objectif de la ressource *</button>
         <div class="panel">
           <textarea id="text_area_styled" v-model="localObjectiveContent" placeholder="Saisissez les objectifs de la ressource..."></textarea>
+          <span v-if="validationErrors.objective" class="error-message">Merci de remplir ce champ</span>
         </div>
       </div>
       <div id="form">
@@ -689,20 +712,21 @@ onMounted(async () => {
             </div>
             <button @click="addSkillRow" class="btn-add-skill">+ Ajouter une compétence</button>
           </div>
+          <span v-if="validationErrors.skills" class="error-message">Merci de remplir au moins une compétence avec un label et une description</span>
         </div>
       </div>
       <div id="sae_alignement">
-        <p class="section_title">SAE concernée(s)* :</p>
+        <p class="section_title">SAE concernée(s) * :</p>
         <div v-if="saeList.length === 0" class="no_sae_message">
           <p>Aucune SAE trouvée pour ce semestre</p>
         </div>
         <div v-else class="sae_switches_container">
-          <div v-for="sae in saeList" :key="sae.idSAE" class="sae_switch_item">
+          <div v-for="sae in saeList" :key="sae.id" class="sae_switch_item">
             <label class="switch">
-              <input type="checkbox" :checked="isSaeLinked(sae.idSAE)" @change="toggleSaeLink(sae.idSAE)">
+              <input type="checkbox" :checked="isSaeLinked(sae.id)" @change="toggleSaeLink(sae.id)">
               <span class="slider"></span>
             </label>
-            <span class="sae_label" :title="`ID: ${sae.idSAE}, ApogeeCode: ${sae.apogeeCode}, Label: ${sae.label}`">{{  sae.label || 'SAE sans nom' }}</span>
+            <span class="sae_label" :title="`ID: ${sae.id}, ApogeeCode: ${sae.apogeeCode}, Label: ${sae.label}`">{{  sae.label || 'SAE sans nom' }}</span>
           </div>
         </div>
       </div>
@@ -728,18 +752,111 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-      <div>
-        <p class="section_title">Répartition de heures ( volume étudiant ) : </p>
-        <p>CM</p>
-        <textarea class="auto-resize-textarea">1</textarea>
-        <p>TD</p>
-        <textarea class="auto-resize-textarea">1</textarea>
-        <p>TP</p>
-        <textarea class="auto-resize-textarea">1</textarea>
-        <span>Le nombre total d'heure est .../...</span>
+      <div id="hours_section">
+        <p class="section_title">Répartition des heures (volume étudiant) * :</p>
+
+        <!-- Formation Initiale Hours -->
+        <p class="subsection_title" style="color: white; margin-top: 1.5vw; margin-bottom: 0.5vw;">Formation Initiale</p>
+        <div class="hours_container">
+          <div class="hours_row">
+            <div class="hours_item">
+              <label class="hours_label">CM</label>
+              <div class="hours_box">
+                <input
+                  type="number"
+                  v-model.number="localHours.cm"
+                  class="hours_display"
+                  min="0"
+                  step="0.5"
+                  :placeholder="hoursPerStudent?.cm || 0"
+                />
+              </div>
+            </div>
+            <div class="hours_item">
+              <label class="hours_label">TD</label>
+              <div class="hours_box">
+                <input
+                  type="number"
+                  v-model.number="localHours.td"
+                  class="hours_display"
+                  min="0"
+                  step="0.5"
+                  :placeholder="hoursPerStudent?.td || 0"
+                />
+              </div>
+            </div>
+            <div class="hours_item">
+              <label class="hours_label">TP</label>
+              <div class="hours_box">
+                <input
+                  type="number"
+                  v-model.number="localHours.tp"
+                  class="hours_display"
+                  min="0"
+                  step="0.5"
+                  :placeholder="hoursPerStudent?.tp || 0"
+                />
+              </div>
+            </div>
+            <div class="hours_total_display">
+              <p class="hours_total_text">Nombre d'heures total : <span class="hours_total_value">{{ localHoursTotal }}</span> / <span class="hours_total_value">{{ dbHoursTotal }}</span></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alternance Hours (only if exists or has data) -->
+        <template v-if="hasAlternanceHours">
+          <p class="subsection_title" style="color: white; margin-top: 1.5vw; margin-bottom: 0.5vw;">Alternance</p>
+          <div class="hours_container">
+            <div class="hours_row">
+              <div class="hours_item">
+                <label class="hours_label">CM</label>
+                <div class="hours_box">
+                  <input
+                    type="number"
+                    v-model.number="localHoursAlternance.cm"
+                    class="hours_display"
+                    min="0"
+                    step="0.5"
+                    :placeholder="hoursPerStudentAlternance?.cm || 0"
+                  />
+                </div>
+              </div>
+              <div class="hours_item">
+                <label class="hours_label">TD</label>
+                <div class="hours_box">
+                  <input
+                    type="number"
+                    v-model.number="localHoursAlternance.td"
+                    class="hours_display"
+                    min="0"
+                    step="0.5"
+                    :placeholder="hoursPerStudentAlternance?.td || 0"
+                  />
+                </div>
+              </div>
+              <div class="hours_item">
+                <label class="hours_label">TP</label>
+                <div class="hours_box">
+                  <input
+                    type="number"
+                    v-model.number="localHoursAlternance.tp"
+                    class="hours_display"
+                    min="0"
+                    step="0.5"
+                    :placeholder="hoursPerStudentAlternance?.tp || 0"
+                  />
+                </div>
+              </div>
+              <div class="hours_total_display">
+                <p class="hours_total_text">Nombre d'heures total : <span class="hours_total_value">{{ localHoursAlternanceTotal }}</span> / <span class="hours_total_value">{{ dbHoursTotalAlternance }}</span></p>
+              </div>
+            </div>
+          </div>
+        </template>
       </div>
-      <div>
-        <p class="section_title">Contenu pédagogique</p>
+      <div id="pedagogical_content_section">
+        <p class="section_title">Contenu pédagogique *</p>
         <div class="pedagogical-content">
           <!-- CM Section -->
           <div class="pedagogical-section">
@@ -828,6 +945,7 @@ onMounted(async () => {
               </div>
             </div>
           </div>
+          <span v-if="validationErrors.pedagogicalContent" class="error-message">Merci de remplir au moins un contenu dans une des colonnes (CM, TD, TP ou DS)</span>
       </div>
       <div id="form">
         <p class="section_title">Suivi de la ressource / module</p>
@@ -855,7 +973,11 @@ onMounted(async () => {
           ></textarea>
         </div>
       </div>
-        <button>Sauvegarder</button>
+
+      <!-- Save button container -->
+      <div class="save-button-container">
+        <button id="button_save" @click="saveResourceSheet">Sauvegarder</button>
+      </div>
     </div>
   </div>
 </template>
@@ -880,16 +1002,18 @@ onMounted(async () => {
 }
 
 .accordion::after {
-  content: '^';
-  position: absolute;
-  right: 1vw;
-  transition: transform 0.3s ease;
-  font-size: 0.9vw;
+    content: '^';
+    position: absolute;
+    right: 1vw;
+    transition: transform 0.3s ease;
+    font-size: 0.9vw;
 }
 
 .accordion.active::after {
-  transform: rotate(180deg);
+    transform: rotate(180deg);
 }
+
+
 
 .panel {
   width: 90%;
@@ -907,7 +1031,6 @@ onMounted(async () => {
 }
 
 .panel p {
-  margin-top: 0;
   padding-top: 1vw;
 }
 
@@ -920,7 +1043,7 @@ onMounted(async () => {
 #return_Arrow > p{
   font-size: 1.5vw;
   font-weight: bold;
-  color: var(--main-theme-terciary-color);
+  color: var(--main-theme-tertiary-color);
   margin-left: 1.5vw;
 }
 
@@ -928,7 +1051,7 @@ onMounted(async () => {
   font-size: 2vw;
   border: none;
   background-color: var(--main-theme-secondary-color);
-  color: var(--main-theme-terciary-color);
+  color: var(--main-theme-tertiary-color);
   font-weight: bold;
 }
 
@@ -936,7 +1059,7 @@ onMounted(async () => {
   width: 100%;
   min-height: 3em;
   border-radius: 15px;
-  background-color: rgb(117, 117, 117);
+  background-color: var(--div-rect-background-color);
   color: var(--main-theme-secondary-color);
   border: none;
   box-sizing: border-box;
@@ -970,7 +1093,6 @@ onMounted(async () => {
 .title{
   text-align: center;
   padding-top: 1vw;
-  margin: 0;
   font-weight: lighter;
   font-size: 2.5vw;
 }
@@ -997,7 +1119,30 @@ onMounted(async () => {
   display: flex;
   gap: 1vw;
   padding: 1vw;
-  justify-content: space-evenly;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header_Form > p:first-child,
+.header_Form > p:nth-child(2) {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.header_Form > p.title {
+  flex: 1;
+  text-align: center;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  max-width: 50%;
+  margin: auto;
+}
+
+.header_Form > p:nth-child(4),
+.header_Form > p:nth-child(5) {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .ref_Section {
@@ -1032,12 +1177,6 @@ onMounted(async () => {
   height: 26px;
 }
 
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
 .slider {
   position: absolute;
   cursor: pointer;
@@ -1045,10 +1184,11 @@ onMounted(async () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
+  background-color: var(--sub-div-background-color);
   transition: 0.4s;
   border-radius: 26px;
 }
+
 
 .slider::before {
   position: absolute;
@@ -1064,7 +1204,7 @@ onMounted(async () => {
 
 /* ON state */
 input:checked + .slider {
-  background-color: var(--sub-section-background-color);
+  background-color: var(--clickable-background-color);
 }
 
 input:checked + .slider::before {
@@ -1093,7 +1233,7 @@ input:checked + .slider::before {
 
 .sae_label {
   font-size: 1.1vw;
-  color: white;
+  color: var(--main-theme-secondary-color);
 }
 
 .no_sae_message {
@@ -1136,8 +1276,8 @@ input:checked + .slider::before {
 }
 
 .skill-input {
-  background-color: rgb(117, 117, 117);
-  color: white;
+  background-color: var(--div-rect-background-color);
+  color: var(--main-theme-secondary-color);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   padding: 0.8vw;
@@ -1163,8 +1303,8 @@ input:checked + .slider::before {
 
 .btn-remove-skill {
   background-color: transparent;
-  color: #d9534f;
-  border: 1px solid #d9534f;
+  color: var(--error-color);
+  border: 1px solid var(--error-color);
   border-radius: 5px;
   padding: 0.4vw 1vw;
   cursor: pointer;
@@ -1177,20 +1317,20 @@ input:checked + .slider::before {
 }
 
 .btn-remove-skill:hover:not(:disabled) {
-  background-color: #d9534f;
-  color: white;
+  background-color: var(--error-color);
+  color: var(--error-color);
 }
 
 .btn-remove-skill:disabled {
-  color: #6c757d;
-  border-color: #6c757d;
+  color: var(--div-rect-background-color);
+  border-color: var(--div-rect-background-color);
   cursor: not-allowed;
   opacity: 0.5;
 }
 
 .btn-add-skill {
-  background-color: #6c757d;
-  color: white;
+  background-color: var(--div-rect-background-color);
+  color: var(--main-theme-secondary-color);
   border: none;
   border-radius: 8px;
   padding: 0.8vw 1.5vw;
@@ -1202,7 +1342,7 @@ input:checked + .slider::before {
 }
 
 .btn-add-skill:hover {
-  background-color: #2C2C3B;
+  background-color: var(--sub-section-background-color);
 }
 
 #align_items_inline_center{
@@ -1238,8 +1378,8 @@ input:checked + .slider::before {
 
 .keyword-input {
   flex: 1;
-  background-color: rgb(117, 117, 117);
-  color: white;
+  background-color: var(--div-rect-background-color);
+  color: var(--main-theme-secondary-color);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   padding: 0.6vw 3vw 0.6vw 1vw;
@@ -1259,7 +1399,7 @@ input:checked + .slider::before {
   top: 50%;
   transform: translateY(-50%);
   background-color: transparent;
-  color: white;
+  color: var(--main-theme-secondary-color);
   border: none;
   width: 1.5vw;
   height: 1.5vw;
@@ -1270,18 +1410,16 @@ input:checked + .slider::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  padding: 0;
 }
 
 .btn-remove-keyword:hover {
-  color: #ff6b6b;
+  color: var(--error-color);
 }
 
 
 .btn-add-keyword {
-  background-color: #6c757d;
-  color: white;
+  background-color: var(--div-rect-background-color);
+  color: var(--main-theme-secondary-color);
   border: none;
   border-radius: 8px;
   padding: 0.6vw 1.2vw;
@@ -1293,7 +1431,7 @@ input:checked + .slider::before {
 }
 
 .btn-add-keyword:hover {
-  background-color: #2C2C3B;
+  background-color: var(--sub-section-background-color);
 }
 
 /* Modalities styles */
@@ -1312,8 +1450,8 @@ input:checked + .slider::before {
 
 .modality-textarea {
   flex: 1;
-  background-color: rgb(117, 117, 117);
-  color: white;
+  background-color: var(--div-rect-background-color);
+  color: var(--main-theme-secondary-color);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   padding: 0.8vw 3vw 0.8vw 0.8vw;
@@ -1334,7 +1472,7 @@ input:checked + .slider::before {
   right: 0.5vw;
   top: 0.8vw;
   background-color: transparent;
-  color: white;
+  color: var(--main-theme-secondary-color);
   border: none;
   width: 1.5vw;
   height: 1.5vw;
@@ -1345,18 +1483,16 @@ input:checked + .slider::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  padding: 0;
 }
 
 .btn-remove-modality:hover {
-  color: #ff6b6b;
+  color: var(--error-color);
 }
 
 
 .btn-add-modality {
-  background-color: #6c757d;
-  color: white;
+  background-color: var(--div-rect-background-color);
+  color: var(--main-theme-secondary-color);
   border: none;
   border-radius: 8px;
   padding: 0.6vw 1.2vw;
@@ -1368,20 +1504,25 @@ input:checked + .slider::before {
 }
 
 .btn-add-modality:hover {
-  background-color: #2C2C3B;
+  background-color: var(--sub-section-background-color);
 }
 
 /* Pedagogical content styles */
+#pedagogical_content_section {
+  padding: 0 1vw;
+  margin-top: 1.5vw;
+}
+
 .pedagogical-content {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1.2vw;
   margin: 1vw 0;
-  padding: 0 2vw; /* Espaces à gauche et à droite */
+  padding: 0 2vw;
   box-sizing: border-box;
   overflow: visible;
-  align-items: start; /* Permet à chaque section de garder sa propre hauteur */
+  align-items: start;
 }
 
 .pedagogical-section {
@@ -1390,7 +1531,6 @@ input:checked + .slider::before {
   padding: 1.5vw;
   display: flex;
   flex-direction: column;
-  height: auto; /* Hauteur automatique basée sur le contenu */
   max-width: 100%;
   box-sizing: border-box;
   overflow: hidden;
@@ -1407,7 +1547,7 @@ input:checked + .slider::before {
   font-size: 1.3vw;
   font-weight: bold;
   margin: 0;
-  color: white;
+  color: var(--main-theme-secondary-color);
 }
 
 .pedagogical-subtitle {
@@ -1418,10 +1558,10 @@ input:checked + .slider::before {
 }
 
 .pedagogical-items-container {
-  flex: 0 1 auto; /* Ne pas forcer l'expansion, s'adapter au contenu */
-  overflow-y: visible; /* Permettre au contenu de déborder naturellement */
+  flex: 0 1 auto;
+  overflow-y: visible;
   margin-bottom: 1vw;
-  min-height: 5vw; /* Hauteur minimale pour les sections vides */
+  min-height: 5vw;
 }
 
 .pedagogical-item {
@@ -1451,7 +1591,7 @@ input:checked + .slider::before {
   cursor: grabbing;
 }
 
-/* Style visuel pendant le drag */
+
 .pedagogical-item.dragging {
   opacity: 0.5;
   transform: scale(0.95);
@@ -1466,8 +1606,8 @@ input:checked + .slider::before {
 }
 
 .pedagogical-number {
-  background-color: #2C2C3B;
-  color: white;
+  background-color: var(--sub-section-background-color);
+  color: var(--main-theme-secondary-color);
   border-radius: 50%;
   width: 1.8vw;
   height: 1.8vw;
@@ -1476,13 +1616,12 @@ input:checked + .slider::before {
   justify-content: center;
   font-weight: bold;
   font-size: 0.9vw;
-  flex-shrink: 0;
 }
 
 .pedagogical-input {
   flex: 1;
   background-color: transparent;
-  color: white;
+  color: var(--main-theme-secondary-color);
   border: none;
   padding: 0.4vw 2.5vw 0.4vw 0.5vw;
   font-family: inherit;
@@ -1493,10 +1632,10 @@ input:checked + .slider::before {
   min-height: 1.5vw;
   line-height: 1.4;
   width: 100%;
-  word-wrap: break-word; /* Retour à la ligne pour les mots longs */
-  word-break: break-word; /* Force le retour à la ligne même pour les mots très longs */
-  overflow-wrap: break-word; /* Compatibilité moderne */
-  white-space: pre-wrap; /* Préserve les espaces et permet le retour à la ligne */
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .pedagogical-input::placeholder {
@@ -1512,7 +1651,7 @@ input:checked + .slider::before {
   right: 0.5vw;
   top: 0.6vw;
   background-color: transparent;
-  color: white;
+  color: var(--main-theme-secondary-color);
   border: none;
   width: 1.5vw;
   height: 1.5vw;
@@ -1523,12 +1662,10 @@ input:checked + .slider::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  padding: 0;
 }
 
 .btn-remove-pedagogical:hover {
-  color: #ff6b6b;
+  color: var(--error-color);
 }
 
 .pedagogical-footer {
@@ -1542,7 +1679,7 @@ input:checked + .slider::before {
 
 .btn-add-pedagogical {
   background-color: rgba(108, 117, 125, 0.8);
-  color: white;
+  color: var(--main-theme-secondary-color);
   border: none;
   border-radius: 8px;
   padding: 0.6vw 1.2vw;
@@ -1555,5 +1692,149 @@ input:checked + .slider::before {
 
 .btn-add-pedagogical:hover {
   background-color: rgba(108, 117, 125, 1);
+}
+
+/* Hours Section Styles */
+#hours_section {
+  padding: 2vw 1vw;
+  margin-top: 1.5vw;
+  background-color: var(--main-theme-background-color);
+  border-radius: 15px;
+}
+
+.hours_container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.hours_row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5vw;
+  margin: 1.5vw 0;
+  flex-wrap: wrap;
+}
+
+.hours_item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8vw;
+  align-items: center;
+}
+
+.hours_label {
+  font-weight: bold;
+  font-size: 1.1vw;
+  color: var(--main-theme-secondary-color);
+  text-transform: uppercase;
+  letter-spacing: 0.1vw;
+}
+
+.hours_box {
+  background-color: rgba(117, 117, 117, 0.8);
+  border-radius: 12px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  padding: 1vw 1.2vw;
+  min-width: 4.5vw;
+  max-width: 5vw;
+  min-height: 3.5vw;
+  max-height: 4vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+
+.hours_display {
+  background-color: transparent;
+  color: var(--main-theme-secondary-color);
+  border: none;
+  font-size: 2.2vw;
+  font-weight: bold;
+  text-align: center;
+  width: 100%;
+  outline: none;
+}
+
+.hours_display::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+  opacity: 1;
+  font-weight: bold;
+}
+
+.hours_display::-webkit-inner-spin-button,
+.hours_display::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+.hours_display[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.hours_total_display {
+  display: flex;
+  align-items: center;
+  padding: 0.8vw 1.5vw;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  margin-left: 2vw;
+}
+
+.hours_total_text {
+  font-size: 1.1vw;
+  color: var(--main-theme-secondary-color);
+  white-space: nowrap;
+}
+
+.hours_total_value {
+  font-weight: bold;
+  color: var(--main-theme-secondary-color);
+  font-size: 1.3vw;
+}
+
+/* Validation error messages */
+.error-message {
+  color: var(--error-color);
+  font-size: 0.9vw;
+  margin-top: 0.5vw;
+  display: block;
+  font-weight: normal;
+  padding-left: 2vw;
+}
+
+/* Save button container - centers the button with spacing */
+.save-button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 3vw;
+  margin-bottom: 3vw;
+  padding: 2vw 0;
+}
+
+#button_save {
+  background-color: var(--sub-section-background-color);
+  color: var(--main-theme-secondary-color);
+  font-size: 1.2vw;
+  font-weight: 500;
+  padding: 1.2vw 4vw;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+#button_save:hover {
+  background-color: var(--div-rect-background-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+#button_save:active {
+  background-color: var(--sub-section-background-color);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 </style>

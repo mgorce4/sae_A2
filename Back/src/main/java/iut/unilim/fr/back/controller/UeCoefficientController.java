@@ -36,6 +36,11 @@ public class UeCoefficientController {
         return ueCoefficientService.getUeCoefficientsByResourceId(idResource);
     }
 
+    @PostMapping
+    public UeCoefficient createUeCoefficient(@RequestBody UeCoefficient ueCoefficient) {
+        return ueCoefficientService.createUeCoefficient(ueCoefficient);
+    }
+
     @PutMapping("/{id}")
     public UeCoefficient updateUeCoefficient(@PathVariable Long id, @RequestBody UeCoefficient ueCoefficient) {
         return ueCoefficientService.updateUeCoefficient(id, ueCoefficient);
@@ -44,6 +49,12 @@ public class UeCoefficientController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUeCoefficient(@PathVariable Long id) {
         ueCoefficientService.deleteUeCoefficient(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/resource/{idResource}/all")
+    public ResponseEntity<Void> deleteAllUeCoefficientsForResource(@PathVariable Long idResource) {
+        ueCoefficientService.deleteAllByResourceId(idResource);
         return ResponseEntity.noContent().build();
     }
 }

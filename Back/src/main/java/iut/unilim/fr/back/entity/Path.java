@@ -16,13 +16,19 @@ public class Path {
     @Column(nullable = false)
     private String name;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_institution")
+    private Institution institution;
+
+
     public Path() {
     }
 
-    public Path(Long idPath, Integer number, String name) {
+    public Path(Long idPath, Integer number, String name, Institution institution) {
         this.idPath = idPath;
         this.number = number;
         this.name = name;
+        this.institution = institution;
     }
 
     public Long getIdPath() {
@@ -47,5 +53,13 @@ public class Path {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 }

@@ -38,8 +38,14 @@ public class PathController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePath(@PathVariable Long id) {
-        pathService.deletePath(id);
-        return ResponseEntity.noContent().build();
+        try {
+            pathService.deletePath(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            System.err.println("Error deleting path " + id + ": " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }
 

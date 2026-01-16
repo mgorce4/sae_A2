@@ -27,9 +27,26 @@ public class FinalDeliveryDatesController {
             .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/institution/{institutionId}")
+    public ResponseEntity<FinalDeliveryDates> getFinalDeliveryDatesByInstitutionId(@PathVariable Long institutionId) {
+        return finalDeliveryDatesService.getFinalDeliveryDatesByInstitutionId(institutionId)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
+    }
+
     @PostMapping
     public FinalDeliveryDates createFinalDeliveryDates(@RequestBody FinalDeliveryDates finalDeliveryDates) {
         return finalDeliveryDatesService.createFinalDeliveryDates(finalDeliveryDates);
+    }
+
+    @PostMapping("/save-by-institution")
+    public ResponseEntity<FinalDeliveryDates> saveOrUpdateByInstitution(@RequestBody FinalDeliveryDates finalDeliveryDates) {
+        try {
+            FinalDeliveryDates saved = finalDeliveryDatesService.saveOrUpdateByInstitution(finalDeliveryDates);
+            return ResponseEntity.ok(saved);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PutMapping("/{id}")

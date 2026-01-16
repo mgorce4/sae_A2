@@ -14,13 +14,13 @@ public class HoursPerStudent {
     private Boolean hasAlternance;
 
     @Column
-    private Integer cm;
+    private Double cm;
 
     @Column
-    private Integer td;
+    private Double td;
 
     @Column
-    private Integer tp;
+    private Double tp;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_resource")
@@ -29,7 +29,7 @@ public class HoursPerStudent {
     public HoursPerStudent() {
     }
 
-    public HoursPerStudent(Long idHoursPerStudent, Boolean hasAlternance, Integer cm, Integer td, Integer tp, Ressource resource) {
+    public HoursPerStudent(Long idHoursPerStudent, Boolean hasAlternance, Double cm, Double td, Double tp, Ressource resource) {
         this.idHoursPerStudent = idHoursPerStudent;
         this.hasAlternance = hasAlternance;
         this.cm = cm;
@@ -54,27 +54,27 @@ public class HoursPerStudent {
         this.hasAlternance = hasAlternance;
     }
 
-    public Integer getCm() {
+    public Double getCm() {
         return cm;
     }
 
-    public void setCm(Integer cm) {
+    public void setCm(Double cm) {
         this.cm = cm;
     }
 
-    public Integer getTd() {
+    public Double getTd() {
         return td;
     }
 
-    public void setTd(Integer td) {
+    public void setTd(Double td) {
         this.td = td;
     }
 
-    public Integer getTp() {
+    public Double getTp() {
         return tp;
     }
 
-    public void setTp(Integer tp) {
+    public void setTp(Double tp) {
         this.tp = tp;
     }
 

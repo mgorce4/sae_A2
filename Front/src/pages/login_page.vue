@@ -1,5 +1,5 @@
 <script setup>
-    import { status, userName, institutionLocation } from '../main.js'
+    import { status, userName, institutionLocation, removeUser } from '../main.js'
     import { computed, ref, onMounted } from 'vue'
     import axios from 'axios'
 
@@ -12,6 +12,8 @@
     const user_access_rights = ref([])
 
     onMounted(async () => {
+        removeUser()
+
         axios.get('http://localhost:8080/api/users').then(response => (users.value = response.data))
         axios.get('http://localhost:8080/api/access-rights').then(response => (access_rights.value = response.data))
 
@@ -44,12 +46,10 @@
         verifyUser(username.value, password.value)
 
         const accessRights = JSON.parse(localStorage.getItem('access_rights'))
-        console.log(accessRights)
         if (accessRights && accessRights.length === 1) {
             redirect(accessRights[0])
         } else if (accessRights && accessRights.length > 1) {
             // Multiple access rights - could show a selection menu
-            console.log("User has multiple access rights:", accessRights)
             // For now, redirect to the first one
             redirect(accessRights[0])
         }
@@ -71,14 +71,10 @@
             localStorage.idInstitution = user.institution.idInstitution
             localStorage.institutionName = user.institution.name
             localStorage.institutionLocation = user.institution.location
-            console.log("Utilisateur : ", user.username)
             verifyAccessRight()
         } else {
-            console.log("Utilisateur non trouvé")
             loginError.value = true
-            localStorage.removeItem('username')
-            localStorage.removeItem('password')
-            localStorage.removeItem('access_rights')
+            removeUser()
         }
     }
 
@@ -88,12 +84,9 @@
 
     function verifyAccessRight() {
         user_access_rights.value = []
-        console.log(users_access_right.value)
         users_access_right.value.forEach((access_right) => {
             if (localStorage.username === access_right.username) {
-                console.log("nombre d'élements : ", number_of_access_right(access_right))
                 access_right.accessRights.forEach(access_right => {
-                    console.log(access_right)
                     user_access_rights.value.push(access_right.accessRight)
                 });
             }
@@ -103,23 +96,19 @@
     }
 
     function redirect(access_right) {
-        console.log(access_right)
         userName.value = localStorage.lastname + " " + localStorage.firstname
         switch (access_right) {
             case 1:
                 localStorage.status = "Professeur"
                 window.location.hash = '#/teacher-dashboard'
-                console.log("Toi, tu vas dans Professeur")
                 break;
             case 2:
                 localStorage.status = "Administration"
                 window.location.hash = '#/dashboard-administration'
-                console.log("Toi, tu vas dans Administration")
                 break;
             case 3:
                 localStorage.status = "Admin"
                 window.location.hash = '#/'
-                console.log("Toi, tu vas dans Admin")
                 break;
         }
     }
@@ -166,7 +155,6 @@
 
 .label_login {
     padding: 10% 0 5% 0;
-    margin: 0;
     font-size: 1.5vw;
     color: var(--main-theme-secondary-color);
 }
