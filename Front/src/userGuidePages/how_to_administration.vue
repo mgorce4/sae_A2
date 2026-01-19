@@ -118,13 +118,20 @@
       <a class="dark_bar accordion_popup">Dates de rendu des fiches</a>
       <div class="panel_popup">
         <div class="container-fluid">
-          <p>!!! Blabla pouet !!!</p>
+          <p class="popup_text">Les dates de rendu des fiches correspondent à une date avant laquelle toutes les fiches ressource des professeurs doivent être soumises pour l'année scolaire en cours.</p>
+        </div>
+        <div class="container-fluid">
+          <input type="date" v-model="new Date().toISOString().split('T')[0]" name="popup_date"/>
+          <p class="popup_text">
+            En cliquant sur ce champ, un calendrier apparaîtra vous permettant de sélectionner une date.<br>
+            Après avoir sélectionné la date désirée, cliquez sur le bouton <span class="btn_modify btn_how_to">Valider</span> pour appliquer la nouvelle date de rendu des fiches.<br>
+          </p>
         </div>
       </div>
       <a class="dark_bar accordion_popup">Rendu des fiches</a>
       <div class="panel_popup">
         <div class="container-fluid">
-          <p>!!! Blabla pouet !!!</p>
+          <p class="popup_text">!!! Blabla pouet !!!</p>
         </div>
       </div>
     </div>
