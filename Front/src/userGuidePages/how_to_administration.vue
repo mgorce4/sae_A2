@@ -1,6 +1,6 @@
 <script setup>
   import { onMounted, nextTick } from 'vue';
-  
+
   const attachAccordionListeners = () => {
       nextTick(() => {
           const acc = document.querySelectorAll(".popup_administration .accordion_popup");
@@ -21,7 +21,7 @@
           });
       });
   }
-  
+
   onMounted(() => {
       attachAccordionListeners();
   });
@@ -34,7 +34,7 @@
       <a class="dark_bar accordion_popup">Gestion des MCCCs</a>
       <div class="panel_popup">
         <div class="container-fluid">
-          <button type="button" id="MCCC_button" style="width: 10vw; height: 5vh; font-size: 1vw;">MCCC</button>
+          <button type="button" id="button" style="width: 10vw; height: 5vh; font-size: 1vw;">MCCC</button>
           <p class="popup_text">En cliquant sur ce bouton, vous accèderez à une page où sélectionner le parcours</p>
         </div>
         <p class="popup_sub_title">Parcours :</p>

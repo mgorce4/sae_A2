@@ -59,7 +59,7 @@ onMounted(async () => {
         const institutionId = localStorage.idInstitution
         if (institutionId) {
             const pathsResponse = await axios.get('http://localhost:8080/api/paths')
-            paths.value = pathsResponse.data.filter(path => 
+            paths.value = pathsResponse.data.filter(path =>
                 path.institution?.idInstitution === parseInt(institutionId)
             )
         }
@@ -73,7 +73,7 @@ function getResourcesForSemester(semester) {
   let filteredSheets = resource_sheets.value
     .filter((sheet) => sheet.semester === semester)
     .filter((sheet) => sheet.institutionId == localStorage.idInstitution)
-  
+
   // Filtrer par path si un path est sélectionné
   if (pathId.value !== null) {
     const selectedPath = paths.value.find(p => p.idPath === pathId.value)
@@ -81,7 +81,7 @@ function getResourcesForSemester(semester) {
       filteredSheets = filteredSheets.filter((sheet) => sheet.path === selectedPath.name)
     }
   }
-  
+
   return filteredSheets
 }
 
@@ -174,7 +174,7 @@ const goToRessourceSheetDisplay = (url, label) => {
     <div id="sub_div_for_MCCC_and_calender">
       <div id="MCCC_div">
         <!-- link into MCCC page -->
-        <button type="button" id="MCCC_button" onclick="document.location.href='#/mccc-select-path'">MCCC</button>
+        <button type="button" id="button" onclick="document.location.href='#/mccc-select-path'">MCCC</button>
       </div>
       <div id="date_selector_div">
         <p id="title_font">Dates de rendu des fiches ressources</p>
@@ -182,12 +182,14 @@ const goToRessourceSheetDisplay = (url, label) => {
           <p>Date de rendu du 1er semestre</p>
           <input type="date" v-model="firstDeliveryDate" name="first-delivery" :min="new Date().toISOString().split('T')[0]" />
         </div>
-        <div id="inline">                                                                                                                                                 
+        <div id="inline">
           <p>Date de rendu du 2ème semestre</p>
           <input type="date" v-model="secondDeliveryDate" name="second-delivery" :min="new Date().toISOString().split('T')[0]" />
         </div>
         <button class="btn1" @click="saveDeliveryDates">Valider</button>
       </div>
+
+        <button id="button" style="margin-top: 2vw; padding: 1vw; height: 7vw" onclick="window.location.hash = '#/control-center'">Centre de controle</button>
 
     </div>
 
@@ -204,7 +206,7 @@ const goToRessourceSheetDisplay = (url, label) => {
             <option v-for="path in paths" :key="path.idPath" :value="path.idPath">
               {{ path.name }}
             </option>
-          </select>  
+          </select>
         </div>
 
         <div id="semesters_div">
@@ -293,16 +295,16 @@ const goToRessourceSheetDisplay = (url, label) => {
   align-content: center;
 }
 
-#MCCC_button {
+#button {
   color: var(--main-theme-secondary-color);
-  font-size: 50px;
+  font-size: 3vw;
   background-color: var(--sub-section-background-color);
   border-radius: 15px;
   width: 100%;
   height: 120%;
 }
 
-#MCCC_button:hover {
+#button:hover {
   cursor: pointer;
 }
 
