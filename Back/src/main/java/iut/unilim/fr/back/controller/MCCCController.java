@@ -3,15 +3,7 @@ package iut.unilim.fr.back.controller;
 import iut.unilim.fr.back.dto.admin.MCCCResourceDTO;
 import iut.unilim.fr.back.dto.admin.MCCCSaeDTO;
 import iut.unilim.fr.back.dto.admin.MCCCUEDTO;
-import iut.unilim.fr.back.entity.Path;
-import iut.unilim.fr.back.entity.Ressource;
-import iut.unilim.fr.back.entity.SAE;
-import iut.unilim.fr.back.entity.SAEHours;
-import iut.unilim.fr.back.entity.SAELinkResource;
-import iut.unilim.fr.back.entity.Terms;
-import iut.unilim.fr.back.entity.UE;
-import iut.unilim.fr.back.entity.UeCoefficientSAE;
-import iut.unilim.fr.back.entity.UserSyncadia;
+import iut.unilim.fr.back.entity.*;
 import iut.unilim.fr.back.mapper.MCCCMapper;
 import iut.unilim.fr.back.mapper.MCCCSaeMapper;
 import iut.unilim.fr.back.mapper.MCCCUEMapper;
@@ -28,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Optional;
 
 @RestController
@@ -61,6 +54,24 @@ public class MCCCController {
 
     @Autowired
     private iut.unilim.fr.back.repository.SAELinkResourceRepository saeLinkResourceRepository;
+
+    @Autowired
+    private iut.unilim.fr.back.repository.HoursPerStudentRepository hoursPerStudentRepository;
+
+    @Autowired
+    private iut.unilim.fr.back.repository.UeCoefficientRepository ueCoefficientRepository;
+
+    @Autowired
+    private iut.unilim.fr.back.repository.MainTeacherForResourceRepository mainTeacherForResourceRepository;
+
+    @Autowired
+    private iut.unilim.fr.back.repository.TeachersForResourceRepository teachersForResourceRepository;
+
+    @Autowired
+    private iut.unilim.fr.back.repository.RessourceSheetRepository ressourceSheetRepository;
+
+    @Autowired
+    private iut.unilim.fr.back.repository.NationalProgramObjectiveRepository nationalProgramObjectiveRepository;
 
     @Autowired
     private MCCCMapper mcccMapper;
@@ -153,6 +164,342 @@ public class MCCCController {
             return ResponseEntity.ok(dtos);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Create a new Resource with all related entities and ResourceSheet
+     * POST /api/v2/mccc/resources
+     */
+    @PostMapping("/resources")
+    @Transactional
+    public ResponseEntity<?> createMCCCResource(@RequestBody iut.unilim.fr.back.dto.ResourceDTO dto) {
+        try {
+            // Validation
+            if (dto.getPathId() == null) {
+                return ResponseEntity.badRequest().body("pathId is required");
+            }
+            if (dto.getLabel() == null || dto.getLabel().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("label is required");
+            }
+            if (dto.getName() == null || dto.getName().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("name is required");
+            }
+            if (dto.getApogeeCode() == null || dto.getApogeeCode().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("apogeeCode is required");
+            }
+            if (dto.getSemester() == null) {
+                return ResponseEntity.badRequest().body("semester is required");
+            }
+            if (dto.getTermsCode() == null || dto.getTermsCode().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("termsCode is required");
+            }
+
+            // Get path by ID
+            Path path = pathRepository.findById(dto.getPathId())
+                .orElseThrow(() -> new RuntimeException("Path not found with id: " + dto.getPathId()));
+
+            // Find or create Terms
+            Terms terms = termsRepository.findFirstByCode(dto.getTermsCode())
+                .orElseGet(() -> {
+                    Terms newTerms = new Terms();
+                    newTerms.setCode(dto.getTermsCode());
+                    return termsRepository.save(newTerms);
+                });
+
+            // Create Resource entity
+            Ressource resource = new Ressource();
+            resource.setLabel(dto.getLabel());
+            resource.setName(dto.getName());
+            resource.setApogeeCode(dto.getApogeeCode());
+            resource.setSemester(dto.getSemester());
+            resource.setDiffMultiCompetences(false);
+            resource.setTerms(terms);
+            resource.setPath(path);
+
+            Ressource savedResource = ressourceRepository.save(resource);
+
+            // Create ResourceSheet with current date
+            RessourceSheet resourceSheet = new RessourceSheet();
+            resourceSheet.setYear(java.time.LocalDate.now());
+            resourceSheet.setResource(savedResource);
+            ressourceSheetRepository.save(resourceSheet);
+
+            // Create empty NationalProgramObjective to avoid null conflicts
+            NationalProgramObjective objective = new NationalProgramObjective();
+            objective.setContent("");
+            objective.setResourceSheet(resourceSheet);
+            nationalProgramObjectiveRepository.save(objective);
+
+            // Create HoursPerStudent (formation initiale)
+            if (dto.getCmInitial() != null || dto.getTdInitial() != null || dto.getTpInitial() != null) {
+                HoursPerStudent hoursInitial = new HoursPerStudent();
+                hoursInitial.setCm(dto.getCmInitial() != null ? dto.getCmInitial() : 0.0);
+                hoursInitial.setTd(dto.getTdInitial() != null ? dto.getTdInitial() : 0.0);
+                hoursInitial.setTp(dto.getTpInitial() != null ? dto.getTpInitial() : 0.0);
+                hoursInitial.setHasAlternance(false);
+                hoursInitial.setResource(savedResource);
+                hoursPerStudentRepository.save(hoursInitial);
+            }
+
+            // Create HoursPerStudent (alternance) if provided
+            if (dto.getCmAlternance() != null || dto.getTdAlternance() != null || dto.getTpAlternance() != null) {
+                HoursPerStudent hoursAlternance = new HoursPerStudent();
+                hoursAlternance.setCm(dto.getCmAlternance() != null ? dto.getCmAlternance() : 0.0);
+                hoursAlternance.setTd(dto.getTdAlternance() != null ? dto.getTdAlternance() : 0.0);
+                hoursAlternance.setTp(dto.getTpAlternance() != null ? dto.getTpAlternance() : 0.0);
+                hoursAlternance.setHasAlternance(true);
+                hoursAlternance.setResource(savedResource);
+                hoursPerStudentRepository.save(hoursAlternance);
+            }
+
+            // Create Main Teacher if provided
+            if (dto.getMainTeacher() != null && !dto.getMainTeacher().trim().isEmpty()) {
+                String[] parts = dto.getMainTeacher().trim().split(" ", 2);
+                if (parts.length == 2) {
+                    List<UserSyncadia> users = userSyncadiaRepository.findByFirstnameAndLastname(parts[0], parts[1]);
+                    if (!users.isEmpty()) {
+                        MainTeacherForResource mainTeacher = new MainTeacherForResource();
+                        mainTeacher.setUser(users.get(0));
+                        mainTeacher.setResource(savedResource);
+                        mainTeacherForResourceRepository.save(mainTeacher);
+                    }
+                }
+            }
+
+            // Create Associated Teachers if provided
+            if (dto.getTeachers() != null) {
+                for (String teacherName : dto.getTeachers()) {
+                    if (teacherName != null && !teacherName.trim().isEmpty()) {
+                        String[] parts = teacherName.trim().split(" ", 2);
+                        if (parts.length == 2) {
+                            List<UserSyncadia> users = userSyncadiaRepository.findByFirstnameAndLastname(parts[0], parts[1]);
+                            if (!users.isEmpty()) {
+                                TeachersForResource teacher = new TeachersForResource();
+                                teacher.setUser(users.get(0));
+                                teacher.setResource(savedResource);
+                                teachersForResourceRepository.save(teacher);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Create UE Coefficients
+            if (dto.getUeCoefficients() != null) {
+                for (iut.unilim.fr.back.dto.ResourceDTO.UeCoefficientDTO coeffDTO : dto.getUeCoefficients()) {
+                    if (coeffDTO.getUeId() != null) {
+                        Optional<UE> ue = ueRepository.findById(coeffDTO.getUeId());
+                        if (ue.isPresent()) {
+                            UeCoefficient coefficient = new UeCoefficient();
+                            coefficient.setCoefficient(coeffDTO.getCoefficient());
+                            coefficient.setUe(ue.get());
+                            coefficient.setResource(savedResource);
+                            ueCoefficientRepository.save(coefficient);
+                        }
+                    }
+                }
+            }
+
+            // Convert to DTO and return
+            MCCCResourceDTO resultDto = mcccMapper.toDTO(savedResource);
+            return ResponseEntity.ok(resultDto);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error creating Resource: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Update an existing Resource
+     * PUT /api/v2/mccc/resources/{id}
+     */
+    @PutMapping("/resources/{id}")
+    @Transactional
+    public ResponseEntity<?> updateMCCCResource(@PathVariable Long id, @RequestBody iut.unilim.fr.back.dto.ResourceDTO dto) {
+        try {
+            // Find existing resource
+            Ressource resource = ressourceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Resource not found with id: " + id));
+
+            // Update basic fields
+            resource.setLabel(dto.getLabel());
+            resource.setName(dto.getName());
+            resource.setApogeeCode(dto.getApogeeCode());
+            resource.setSemester(dto.getSemester());
+
+            // Update Terms
+            if (dto.getTermsCode() != null) {
+                Terms terms = termsRepository.findFirstByCode(dto.getTermsCode())
+                    .orElseGet(() -> {
+                        Terms newTerms = new Terms();
+                        newTerms.setCode(dto.getTermsCode());
+                        return termsRepository.save(newTerms);
+                    });
+                resource.setTerms(terms);
+            }
+
+            // Update Path
+            if (dto.getPathId() != null) {
+                Path path = pathRepository.findById(dto.getPathId())
+                    .orElseThrow(() -> new RuntimeException("Path not found with id: " + dto.getPathId()));
+                resource.setPath(path);
+            }
+
+            ressourceRepository.save(resource);
+
+            // Update HoursPerStudent
+            List<HoursPerStudent> existingHours = hoursPerStudentRepository.findByResource_IdResource(id);
+
+            // Update or create formation initiale hours
+            HoursPerStudent hoursInitial = existingHours.stream()
+                .filter(h -> !h.getHasAlternance())
+                .findFirst()
+                .orElse(null);
+
+            if (dto.getCmInitial() != null || dto.getTdInitial() != null || dto.getTpInitial() != null) {
+                if (hoursInitial != null) {
+                    hoursInitial.setCm(dto.getCmInitial() != null ? dto.getCmInitial() : 0.0);
+                    hoursInitial.setTd(dto.getTdInitial() != null ? dto.getTdInitial() : 0.0);
+                    hoursInitial.setTp(dto.getTpInitial() != null ? dto.getTpInitial() : 0.0);
+                    hoursPerStudentRepository.save(hoursInitial);
+                } else {
+                    HoursPerStudent newHours = new HoursPerStudent();
+                    newHours.setCm(dto.getCmInitial() != null ? dto.getCmInitial() : 0.0);
+                    newHours.setTd(dto.getTdInitial() != null ? dto.getTdInitial() : 0.0);
+                    newHours.setTp(dto.getTpInitial() != null ? dto.getTpInitial() : 0.0);
+                    newHours.setHasAlternance(false);
+                    newHours.setResource(resource);
+                    hoursPerStudentRepository.save(newHours);
+                }
+            }
+
+            // Update or create alternance hours
+            HoursPerStudent hoursAlternance = existingHours.stream()
+                .filter(HoursPerStudent::getHasAlternance)
+                .findFirst()
+                .orElse(null);
+
+            if (dto.getCmAlternance() != null || dto.getTdAlternance() != null || dto.getTpAlternance() != null) {
+                if (hoursAlternance != null) {
+                    hoursAlternance.setCm(dto.getCmAlternance() != null ? dto.getCmAlternance() : 0.0);
+                    hoursAlternance.setTd(dto.getTdAlternance() != null ? dto.getTdAlternance() : 0.0);
+                    hoursAlternance.setTp(dto.getTpAlternance() != null ? dto.getTpAlternance() : 0.0);
+                    hoursPerStudentRepository.save(hoursAlternance);
+                } else {
+                    HoursPerStudent newHours = new HoursPerStudent();
+                    newHours.setCm(dto.getCmAlternance() != null ? dto.getCmAlternance() : 0.0);
+                    newHours.setTd(dto.getTdAlternance() != null ? dto.getTdAlternance() : 0.0);
+                    newHours.setTp(dto.getTpAlternance() != null ? dto.getTpAlternance() : 0.0);
+                    newHours.setHasAlternance(true);
+                    newHours.setResource(resource);
+                    hoursPerStudentRepository.save(newHours);
+                }
+            } else if (hoursAlternance != null) {
+                // Remove alternance hours if no longer provided
+                hoursPerStudentRepository.delete(hoursAlternance);
+            }
+
+            // Update Main Teacher
+            List<MainTeacherForResource> existingMainTeachers = mainTeacherForResourceRepository.findByIdResource(id);
+            mainTeacherForResourceRepository.deleteAll(existingMainTeachers);
+
+            if (dto.getMainTeacher() != null && !dto.getMainTeacher().trim().isEmpty()) {
+                String[] parts = dto.getMainTeacher().trim().split(" ", 2);
+                if (parts.length == 2) {
+                    List<UserSyncadia> users = userSyncadiaRepository.findByFirstnameAndLastname(parts[0], parts[1]);
+                    if (!users.isEmpty()) {
+                        MainTeacherForResource mainTeacher = new MainTeacherForResource();
+                        mainTeacher.setUser(users.get(0));
+                        mainTeacher.setResource(resource);
+                        mainTeacherForResourceRepository.save(mainTeacher);
+                    }
+                }
+            }
+
+            // Update Associated Teachers
+            List<TeachersForResource> existingTeachers = teachersForResourceRepository.findByIdResource(id);
+            teachersForResourceRepository.deleteAll(existingTeachers);
+
+            if (dto.getTeachers() != null) {
+                for (String teacherName : dto.getTeachers()) {
+                    if (teacherName != null && !teacherName.trim().isEmpty()) {
+                        String[] parts = teacherName.trim().split(" ", 2);
+                        if (parts.length == 2) {
+                            List<UserSyncadia> users = userSyncadiaRepository.findByFirstnameAndLastname(parts[0], parts[1]);
+                            if (!users.isEmpty()) {
+                                TeachersForResource teacher = new TeachersForResource();
+                                teacher.setUser(users.get(0));
+                                teacher.setResource(resource);
+                                teachersForResourceRepository.save(teacher);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Update UE Coefficients
+            List<UeCoefficient> existingCoefficients = ueCoefficientRepository.findByResource_IdResource(id);
+            ueCoefficientRepository.deleteAll(existingCoefficients);
+
+            if (dto.getUeCoefficients() != null) {
+                for (iut.unilim.fr.back.dto.ResourceDTO.UeCoefficientDTO coeffDTO : dto.getUeCoefficients()) {
+                    if (coeffDTO.getUeId() != null) {
+                        Optional<UE> ue = ueRepository.findById(coeffDTO.getUeId());
+                        if (ue.isPresent()) {
+                            UeCoefficient coefficient = new UeCoefficient();
+                            coefficient.setCoefficient(coeffDTO.getCoefficient());
+                            coefficient.setUe(ue.get());
+                            coefficient.setResource(resource);
+                            ueCoefficientRepository.save(coefficient);
+                        }
+                    }
+                }
+            }
+
+            // Note: We don't update the ResourceSheet date - it keeps the original creation date
+
+            // Convert to DTO and return
+            MCCCResourceDTO resultDto = mcccMapper.toDTO(resource);
+            return ResponseEntity.ok(resultDto);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error updating Resource: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Delete a Resource by ID (triggers will handle cascading deletes)
+     * DELETE /api/v2/mccc/resources/{id}
+     */
+    @DeleteMapping("/resources/{id}")
+    @Transactional
+    public ResponseEntity<?> deleteMCCCResource(@PathVariable Long id) {
+        try {
+            // Check if resource exists
+            if (!ressourceRepository.existsById(id)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // The database triggers will handle cascading deletes for:
+            // - ResourceSheet (ON DELETE CASCADE)
+            // - UeCoefficient (ON DELETE CASCADE)
+            // - HoursPerStudent
+            // - MainTeacherForResource
+            // - TeachersForResource
+            // - SAELinkResource
+
+            ressourceRepository.deleteById(id);
+            return ResponseEntity.ok().build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error deleting Resource: " + e.getMessage());
         }
     }
 

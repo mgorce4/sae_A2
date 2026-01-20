@@ -318,6 +318,16 @@ async function deleteResource(resourceId) {
   }
 }
 
+// Helper function to safely set error message
+function setErrorMessage(elementId, message) {
+  const element = document.getElementById(elementId)
+  if (element) {
+    element.innerHTML = message
+  } else {
+    console.warn(`Error element not found: ${elementId}`)
+  }
+}
+
 // Fonction de sauvegarde de ressource - Comme saveSae
 async function saveResource() {
 
@@ -334,27 +344,27 @@ async function saveResource() {
 
   if (!resource_label.value) {
     errors.value.label = true
-    document.getElementById("error_resource_label").innerHTML = "L'intitulé de la ressource est obligatoire"
+    setErrorMessage("error_resource_label", "L'intitulé de la ressource est obligatoire")
     hasErrors = true
   }
   if (!resource_name.value) {
     errors.value.name = true
-    document.getElementById("error_resource_name").innerHTML = "Le nom de la ressource est obligatoire"
+    setErrorMessage("error_resource_name", "Le nom de la ressource est obligatoire")
     hasErrors = true
   }
   if (!apogee_code.value) {
     errors.value.apogeeCode = true
-    document.getElementById("error_apogee_code").innerHTML = "Le code apogée est obligatoire"
+    setErrorMessage("error_apogee_code", "Le code apogée est obligatoire")
     hasErrors = true
   }
   if (terms.value === '') {
     errors.value.terms = true
-    document.getElementById("error_terms").innerHTML = "Les modalités sont obligatoires"
+    setErrorMessage("error_terms", "Les modalités sont obligatoires")
     hasErrors = true
   }
   if (!CM_initial_formation.value && !TD_initial_formation.value && !TP_initial_formation.value) {
     errors.value.hours = true
-    document.getElementById("error_initial_formation").innerHTML = "Les heures de la formation innitiale sont obligatoire"
+    setErrorMessage("error_initial_formation", "Les heures de la formation innitiale sont obligatoire")
     hasErrors = true
   }
 
@@ -362,7 +372,7 @@ async function saveResource() {
   if (checkboxAlternanceStatus.value) {
     if (!CM_work_study.value && !TD_work_study.value && !TP_work_study.value) {
       errors.value.alternanceHours = true
-      document.getElementById("error_work_study").innerHTML = "Les heures de l'alternance sont obligatoire"
+      setErrorMessage("error_work_study", "Les heures de l'alternance sont obligatoire")
       hasErrors = true
     }
   }
@@ -388,7 +398,7 @@ async function saveResource() {
 
   if (!hasValidUE) {
     errors.value.ueCoefficients = true
-    document.getElementById('error_ue').innerHTML = "Au moins une UE avec un coefficient doit être sélectionnée"
+    setErrorMessage('error_ue', "Au moins une UE avec un coefficient doit être sélectionnée")
     hasErrors = true
   }
 
@@ -396,12 +406,12 @@ async function saveResource() {
   for (let i = 0; i < ue_list.value.length; i++) {
     if (ue_list.value[i].ue !== '' && ue_list.value[i].coefficient === '') {
       errors.value.ueCoefficients = true
-      document.getElementById('error_ue').innerHTML = "Le coefficient de chaque UE sélectionnée est obligatoire"
+      setErrorMessage('error_ue', "Le coefficient de chaque UE sélectionnée est obligatoire")
       hasErrors = true
     }
     if (ue_list.value[i].ue === '' && ue_list.value[i].coefficient !== '') {
       errors.value.ueCoefficients = true
-      document.getElementById('error_ue').innerHTML = "Vous devez sélectionner une UE pour chaque coefficient"
+      setErrorMessage('error_ue', "Vous devez sélectionner une UE pour chaque coefficient")
       hasErrors = true
     }
   }
@@ -411,7 +421,7 @@ async function saveResource() {
     for (let index2 = index1 + 1; index2 < ue_list.value.length; index2++) {
       if (ue_list.value[index1].ue === ue_list.value[index2].ue && ue_list.value[index1].ue !== '') {
         errors.value.ueCoefficients = true
-        document.getElementById('error_ue').innerHTML = "Une UE ne peut pas être affectée plusieurs fois"
+        setErrorMessage('error_ue', "Une UE ne peut pas être affectée plusieurs fois")
         hasErrors = true
       }
     }
@@ -423,26 +433,36 @@ async function saveResource() {
     teacher_names.push(teachers_list.value[i].value)
   }
 
-  teacher_names.push(document.getElementById('main_teacher').value)
+    const main_teacher_value = main_teachers_list.value
+        .map(t => t.value)
+        .find(v => v && v.trim() !== '')
+
+    if (main_teacher_value) {
+    teacher_names.push(main_teacher_value)
+  }
 
   // Check for duplicate teacher names
   for (let i = 0; i < teacher_names.length; i++) {
     for (let j = 0; j < teacher_names.length; j++) {
       if (isTeacherNamesEquals(i, j, teacher_names)) {
         errors.value.teacher = true
-        document.getElementById("error_teacher").innerHTML = "Un même professeur ne peut pas être affecté plusieurs fois"
+        setErrorMessage("error_teacher", "Un même professeur ne peut pas être affecté plusieurs fois")
         hasErrors = true
       }
     }
   }
 
-  if (main_teacher.value === '') {
-    errors.value.mainTeacher = true
-    document.getElementById("error_main_teacher").innerHTML = "Le professeur principal est obligatoire"
-    hasErrors = true
-  }
+    if (!main_teacher_value) {
+        errors.value.mainTeacher = true
+        setErrorMessage(
+            "error_main_teacher",
+            "Le professeur référent est obligatoire"
+        )
+        hasErrors = true
+    }
 
-  if (hasErrors) {
+
+    if (hasErrors) {
     console.log('❌ Erreurs de validation')
     return
   }
@@ -467,7 +487,7 @@ async function saveResource() {
     cmAlternance: (checkboxAlternanceStatus.value && CM_work_study.value) ? parseFloat(CM_work_study.value) : null,
     tdAlternance: (checkboxAlternanceStatus.value && TD_work_study.value) ? parseFloat(TD_work_study.value) : null,
     tpAlternance: (checkboxAlternanceStatus.value && TP_work_study.value) ? parseFloat(TP_work_study.value) : null,
-    mainTeacher: main_teacher_input && main_teacher_input.trim() !== '' ? main_teacher_input.trim() : null,
+    mainTeacher: main_teacher_value,
     teachers: teachers_list.value
       .filter(t => t.value && t.value.trim() !== '')
       .map(t => t.value.trim()),
@@ -626,7 +646,7 @@ onMounted(async () => {
     } else if (event.target.id === 'button_ue_plus') {
 
       if (getUEsByInstitution().length <= ue_list.value.length) {
-        document.getElementById("error_ue").innerHTML = "Vous ne pouvez pas ajouter plus d'UEs car vous avez déjà séléctionné toutes les UE disponibles"
+        setErrorMessage("error_ue", "Vous ne pouvez pas ajouter plus d'UEs car vous avez déjà séléctionné toutes les UE disponibles")
         return
       }
 
@@ -644,7 +664,7 @@ onMounted(async () => {
     } else if (event.target.id === 'button_teacher_plus') {
 
       if (access_rights.value.length - main_teachers_list.value.length <= teachers_list.value.length) {
-        document.getElementById("error_teacher").innerHTML = "Vous ne pouvez pas ajouter plus de professeurs car il n'y a plus de professeurs disponibles"
+        setErrorMessage("error_teacher", "Vous ne pouvez pas ajouter plus de professeurs car il n'y a plus de professeurs disponibles")
         return
       }
 
@@ -683,7 +703,7 @@ onMounted(async () => {
      } else if (event.target.id === 'button_main_teacher_plus') {
 
         if (access_rights.value.length - 1 <= main_teachers_list.value.length) {
-            document.getElementById("error_teacher").innerHTML = "Vous ne pouvez pas ajouter plus de professeurs car il n'y a plus de professeurs disponibles"
+            setErrorMessage("error_teacher", "Vous ne pouvez pas ajouter plus de professeurs car il n'y a plus de professeurs disponibles")
             return
         }
 
@@ -994,8 +1014,10 @@ total_work_study.value = computed(() => {
 
                         <button class="button_more" id="button_main_teacher_cross">x</button>
                     </div>
+                    <p id="error_main_teacher" class="error_message"></p>
 
-                  <div class="component" style="justify-content: center">
+
+                    <div class="component" style="justify-content: center">
                     <label for="teacher">Professeur(s) associé(s) : </label>
                     <button class="button_more" id="button_teacher_plus">+</button>
                   </div>
