@@ -27,6 +27,7 @@ const path = ref([])
 const ue_list = ref([{id : 1, ue: '', coefficient: ''}])
 /* value link with the v-model */
 const teachers_list = ref([{ id: 1, value: '' }])
+const main_teachers_list = ref([{ id: 1, value: '' }])
 
 // Errors object for validation
 const errors = ref({
@@ -68,7 +69,7 @@ const access_right_teacher = 1
 * we use an index to see if the list is to be shown or not
 */
 const show_teacher_list = ref([false])
-const show_teacher = ref(false)
+const show_main_teacher_list = ref([false])
 
 /* constant for the form */
 
@@ -93,60 +94,108 @@ const list_of_lesson = ['CM', 'TD', 'TP']
 /* allows to put event on each div selected */
 function addTeacherEvents(div) {
 
-  /* get the input and the list */
-  const input = div.querySelector('.teacher')
-  const list = div.querySelector('.show_teacher')
+    /* get the input and the list */
+    const input = div.querySelector('.teacher')
+    const list = div.querySelector('.show_teacher')
 
-  /* get the index of the div */
-  const get_index = () => Array.from(document.querySelectorAll('.teacher_select_container')).indexOf(div)
+    /* get the index of the div */
+    const get_index = () => Array.from(document.querySelectorAll('.teacher_select_container')).indexOf(div)
 
-  input.addEventListener('focus', () => {
-    const index = get_index()
-    if (index !== -1) {
-      show_teacher_list.value[index] = true
-    }
-  })
+    input.addEventListener('focus', () => {
+        const index = get_index()
+        if (index !== -1) {
+            show_teacher_list.value[index] = true
+        }
+    })
 
-  input.addEventListener('blur', () => {
-    const index = get_index()
-    if (index !== -1) {
-      show_teacher_list.value[index] = false
-    }
-  })
+    input.addEventListener('blur', () => {
+        const index = get_index()
+        if (index !== -1) {
+            show_teacher_list.value[index] = false
+        }
+    })
 
-  list.addEventListener('mouseover', (event) => {
-    if (event.target.classList && event.target.classList.contains('teacher_name')) {
-      input.value = event.target.innerText
-      // keep the reactive source of truth in sync
-      const index = get_index()
-      if (index !== -1 && teachers_list.value[index]) {
-        teachers_list.value[index].value = event.target.innerText
-      }
-    }
-  })
+    list.addEventListener('mouseover', (event) => {
+        if (event.target.classList && event.target.classList.contains('teacher_name')) {
+            input.value = event.target.innerText
+            // keep the reactive source of truth in sync
+            const index = get_index()
+            if (index !== -1 && teachers_list.value[index]) {
+                teachers_list.value[index].value = event.target.innerText
+            }
+        }
+    })
 
-  list.addEventListener('click', (event) => {
-    if (event.target.classList && event.target.classList.contains('teacher_name')) {
-      input.value = event.target.innerText
-      const index = get_index()
-      if (index !== -1 && teachers_list.value[index]) {
-        teachers_list.value[index].value = event.target.innerText
-      }
-      if (index !== -1) {
-        show_teacher_list.value[index] = false
-      }
-    }
-  })
+    list.addEventListener('click', (event) => {
+        if (event.target.classList && event.target.classList.contains('teacher_name')) {
+            input.value = event.target.innerText
+            const index = get_index()
+            if (index !== -1 && teachers_list.value[index]) {
+                teachers_list.value[index].value = event.target.innerText
+            }
+            if (index !== -1) {
+                show_teacher_list.value[index] = false
+            }
+        }
+    })
+}
+
+function addMainTeacherEvents(div) {
+
+    /* get the input and the list */
+    const input = div.querySelector('.main_teacher')
+    const list = div.querySelector('.show_main_teacher')
+
+    /* get the index of the div */
+    const get_index = () => Array.from(document.querySelectorAll('.main_teacher_select_container')).indexOf(div)
+
+    input.addEventListener('focus', () => {
+        const index = get_index()
+        if (index !== -1) {
+            show_main_teacher_list.value[index] = true
+        }
+    })
+
+    input.addEventListener('blur', () => {
+        const index = get_index()
+        if (index !== -1) {
+            show_main_teacher_list.value[index] = false
+        }
+    })
+
+    list.addEventListener('mouseover', (event) => {
+        if (event.target.classList && event.target.classList.contains('main_teacher_name')) {
+            input.value = event.target.innerText
+            // keep the reactive source of truth in sync
+            const index = get_index()
+            if (index !== -1 && main_teachers_list.value[index]) {
+                main_teachers_list.value[index].value = event.target.innerText
+            }
+        }
+    })
+
+    list.addEventListener('click', (event) => {
+        if (event.target.classList && event.target.classList.contains('main_teacher_name')) {
+            input.value = event.target.innerText
+            const index = get_index()
+            if (index !== -1 && main_teachers_list.value[index]) {
+                main_teachers_list.value[index].value = event.target.innerText
+            }
+            if (index !== -1) {
+                show_main_teacher_list.value[index] = false
+            }
+        }
+    })
 }
 
 // Fonction pour modifier une ressource
 async function modifyResource(resource) {
-  console.log('=== MODIFICATION RESSOURCE ===', resource)
+    console.log('=== MODIFICATION RESSOURCE ===', resource)
 
-  // D'abord ouvrir le formulaire et passer en mode modification
-  is_modifying.value = true
-  resource_id_to_modify.value = resource.resourceId
-  display_more_area.value = true
+    // D'abord ouvrir le formulaire et passer en mode modification
+    is_modifying.value = true
+    resource_id_to_modify.value = resource.resourceId
+    display_more_area.value = true
 
   // Attendre que le DOM soit mis à jour
   await nextTick()
@@ -528,6 +577,11 @@ onMounted(async () => {
   access_rights.value = access_rights.value.filter((ar) => ar.user.institution.idInstitution == localStorage.idInstitution).filter((ar) => ar.accessRight == access_right_teacher)
   saes.value = saes.value.filter((saes) => saes.semester == getQueryParam('id'))
 
+    /*test*/
+  access_rights.value.push({ user: { firstname: 'Aucun', lastname: '' } }) // to allow empty teacher
+  access_rights.value.push({ user: { firstname: 'Autre', lastname: '' } }) // to allow "other" teacher
+  access_rights.value.push({ user: { firstname: 'Intervenant externe', lastname: '' } }) // to allow "external" teacher
+
   await nextTick()
 
   document.querySelectorAll('.accordion').forEach((acc) => {
@@ -589,7 +643,7 @@ onMounted(async () => {
 
     } else if (event.target.id === 'button_teacher_plus') {
 
-      if (access_rights.value.length - 1 <= teachers_list.value.length) {
+      if (access_rights.value.length - main_teachers_list.value.length <= teachers_list.value.length) {
         document.getElementById("error_teacher").innerHTML = "Vous ne pouvez pas ajouter plus de professeurs car il n'y a plus de professeurs disponibles"
         return
       }
@@ -604,12 +658,12 @@ onMounted(async () => {
       teachers_list.value.push({ id: id, value: '' })
       show_teacher_list.value.push(false)
 
-      nextTick(() => {
-        const containers = document.querySelectorAll('.teacher_select_container')
-        /* attach events to the last added container */
-        const new_container = containers[containers.length - 1]
-        if (new_container) addTeacherEvents(new_container)
-      })
+        nextTick(() => {
+            const containers = document.querySelectorAll('.teacher_select_container')
+            /* attach events to the last added container */
+            const new_container = containers[containers.length - 1]
+            if (new_container) addTeacherEvents(new_container)
+        })
 
     } else if (event.target.id === 'button_teacher_cross') {
         const teachers = document.querySelectorAll('.teacher_row')
@@ -626,7 +680,46 @@ onMounted(async () => {
         teachers_list.value = teachers_list.value.filter((_, i) => i !== index_to_remove)
         show_teacher_list.value = show_teacher_list.value.filter((_, i) => i !== index_to_remove)
       }
-     }
+     } else if (event.target.id === 'button_main_teacher_plus') {
+
+        if (access_rights.value.length - 1 <= main_teachers_list.value.length) {
+            document.getElementById("error_teacher").innerHTML = "Vous ne pouvez pas ajouter plus de professeurs car il n'y a plus de professeurs disponibles"
+            return
+        }
+
+        // add a new teacher entry
+        let id
+        if (main_teachers_list.value.length > 0) {
+            id = Math.max(...main_teachers_list.value.map(t => t.id)) + 1
+        } else {
+            id = 1
+        }
+        main_teachers_list.value.push({ id: id, value: '' })
+        show_main_teacher_list.value.push(false)
+
+        nextTick(() => {
+            const containers = document.querySelectorAll('.main_teacher_select_container')
+            /* attach events to the last added container */
+            const new_container = containers[containers.length - 1]
+            if (new_container) addMainTeacherEvents(new_container)
+        })
+
+    } else if (event.target.id === 'button_main_teacher_cross') {
+        const teachers = document.querySelectorAll('.main_teacher_row')
+
+        let index_to_remove = -1
+
+        teachers.forEach((div, index) => {
+            if (div.contains(event.target)) {
+                index_to_remove = index
+            }
+        })
+
+        if (index_to_remove !== -1 && main_teachers_list.value.length > 1) {
+            main_teachers_list.value = main_teachers_list.value.filter((_, i) => i !== index_to_remove)
+            show_main_teacher_list.value = show_main_teacher_list.value.filter((_, i) => i !== index_to_remove)
+        }
+    }
   })
 
   /* wait for the update of the DOM */
@@ -638,35 +731,15 @@ onMounted(async () => {
     addTeacherEvents(div)
   })
 
-  /* main teacher input */
-
-  const main_teacher = document.getElementById('main_teacher')
-  const list = document.querySelector('.show_teacher')
-
-  main_teacher.addEventListener('focus', () => {
-    show_teacher.value = true
-  })
-
-  main_teacher.addEventListener('blur', () => {
-    show_teacher.value = false
-  })
-
-  list.addEventListener('mouseover', (event) => {
-    if (event.target.classList && event.target.classList.contains('teacher_name')) {
-      main_teacher.value = event.target.innerText
-    }
-  })
-
-  list.addEventListener('click', (event) => {
-    if (event.target.classList && event.target.classList.contains('teacher_name')) {
-      main_teacher.value = event.target.innerText
-      show_teacher.value = false
-    }
+  const div_main_teacher_container = document.querySelectorAll('.main_teacher_select_container')
+  div_main_teacher_container.forEach((div) => {
+    /* add event to the new div */
+      addMainTeacherEvents(div)
   })
 })
 
 function getUEsByInstitution() {
-  return UEs.value.filter((ue) => ue.institutionId == localStorage.idInstitution)
+    return UEs.value.filter((ue) => ue.institutionId == localStorage.idInstitution)
 }
 
 function getResourcesBySemester() {
@@ -900,23 +973,27 @@ total_work_study.value = computed(() => {
 
                 <div style="margin-top: 5px">
 
-                  <div class="component" style="justify-content: center; flex-direction: column">
-                    <label>Professeur principal de la ressource : </label>
-
-                    <div>
-                      <input type="text" class="input" v-model="main_teacher" id="main_teacher" required />
-
-                      <div class="show_teacher" v-show="show_teacher">
-                        <div v-if="access_rights.length > 0">
-                          <div class="teacher_name" v-for="acr in access_rights" :key="acr">
-                            {{acr.user.firstname}} {{acr.user.lastname}}
-                          </div>
-                        </div>
-                        <p v-else >Aucun professeur ne peut être sélectionné</p>
-                      </div>
+                    <div class="component" style="justify-content: center">
+                        <label for="teacher">Professeur(s) référent(s) : </label>
+                        <button class="button_more" id="button_main_teacher_plus">+</button>
                     </div>
-                    <p id="error_main_teacher" class="error_message"></p>
-                  </div>
+
+                    <div v-for="(main_teacher, t_index) in main_teachers_list" :key="main_teacher.id" class="component main_teacher_row" style="justify-content: center">
+                        <div class="main_teacher_select_container">
+                            <input type="text" class="input main_teacher" required v-model="main_teacher.value" />
+
+                            <div class="show_main_teacher" v-show="show_main_teacher_list[t_index]">
+                                <div v-if="access_rights.length > 0">
+                                    <div class="main_teacher_name" v-for="acr in access_rights" :key="acr">
+                                        {{acr.user.firstname}} {{acr.user.lastname}}
+                                    </div>
+                                </div>
+                                <p v-else >Aucun professeur ne peut être sélectionné</p>
+                            </div>
+                        </div>
+
+                        <button class="button_more" id="button_main_teacher_cross">x</button>
+                    </div>
 
                   <div class="component" style="justify-content: center">
                     <label for="teacher">Professeur(s) associé(s) : </label>
@@ -1279,6 +1356,45 @@ total_work_study.value = computed(() => {
   padding: 0.3vw;
   margin: 0.3vw;
 }
+
+.show_main_teacher {
+    background-color: rgba(0, 0, 0, 0.35);
+    border-left: white 1px solid;
+    border-bottom: white 1px solid;
+    border-right: white 1px solid;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    max-height: 8vw;
+    max-width: 8vw;
+    overflow-y: auto;
+    padding: 0.2vw;
+}
+
+
+.show_main_teacher::-webkit-scrollbar {
+    width: 12px;
+}
+
+.show_main_teacher::-webkit-scrollbar-track {
+    margin: 1em;
+    background: var(--main-theme-secondary-background-color);
+    box-shadow: inset 0 0 5px var(--sub-scrollbar-color);
+    border-radius: 10px;
+}
+
+.show_main_teacher::-webkit-scrollbar-thumb {
+    background: var(--main-theme-secondary-color);
+    border-radius: 10px;
+}
+
+.main_teacher_name {
+    cursor : pointer;
+    background-color: rgba(117, 117, 117, 100);
+    border-radius: 2px;
+    padding: 0.3vw;
+    margin: 0.3vw;
+}
+
 
 .error_message {
   color: var(--error-color);
