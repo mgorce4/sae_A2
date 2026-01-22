@@ -5,6 +5,8 @@ import axios from 'axios'
 
 status.value = 'Administration'
 
+
+
 let display_more_area = ref(false)
 let is_modifying = ref(false)
 let resource_id_to_modify = ref(null)
@@ -19,8 +21,6 @@ const UEs = ref([])
 const resource_name = ref('')
 
 const access_rights = ref([])
-
-const main_teacher = ref('')
 
 const path = ref([])
 
@@ -52,14 +52,26 @@ watch(checkboxAlternanceStatus, (newValue) => {
 })
 // Extract ID from hash URL parameters
 const getQueryParam = (param) => {
-  const hash = window.location.hash
-  const queryString = hash.split('?')[1]
-  if (!queryString) return null
-  const params = new URLSearchParams(queryString)
-  return params.get(param)
+    const hash = window.location.hash
+    const queryString = hash.split('?')[1]
+    if (!queryString) return null
+    const params = new URLSearchParams(queryString)
+    return params.get(param)
 }
 
+const pathId = ref(null)
+const semesterNumber = ref(null)
+const institutionId = ref(null)
+
+
 const access_right_teacher = 1
+
+// UE filtrées par semestre (comme pour les SAE)
+const filteredUeTableV2 = computed(() => {
+    return UEs.value.filter(
+        ue => ue.semester == semesterNumber.value
+    )
+})
 
 /*
 * to show or hide the list of teachers
@@ -430,14 +442,15 @@ async function saveResource() {
   let teacher_names = []
 
   for (let i = 0; i < teachers_list.value.length; i++) {
-    teacher_names.push(teachers_list.value[i].value)
+    if (teachers_list.value[i].value && teachers_list.value[i].value.trim() !== '') {
+      teacher_names.push(teachers_list.value[i].value.trim())
+    }
   }
 
-    const main_teacher_value = main_teachers_list.value
-        .map(t => t.value)
-        .find(v => v && v.trim() !== '')
+  const main_teacher_input = document.getElementById('main_teacher')
+  const main_teacher_value = main_teacher_input ? main_teacher_input.value.trim() : ''
 
-    if (main_teacher_value) {
+  if (main_teacher_value) {
     teacher_names.push(main_teacher_value)
   }
 
@@ -452,17 +465,16 @@ async function saveResource() {
     }
   }
 
-    if (!main_teacher_value) {
-        errors.value.mainTeacher = true
-        setErrorMessage(
-            "error_main_teacher",
-            "Le professeur référent est obligatoire"
-        )
-        hasErrors = true
-    }
+  if (!main_teacher_value) {
+    errors.value.mainTeacher = true
+    setErrorMessage(
+      "error_main_teacher",
+      "Le professeur référent est obligatoire"
+    )
+    hasErrors = true
+  }
 
-
-    if (hasErrors) {
+  if (hasErrors) {
     console.log('❌ Erreurs de validation')
     return
   }
@@ -470,8 +482,6 @@ async function saveResource() {
   // Prepare DTO
   const pathId = parseInt(getQueryParam('pathId'))
   const institutionId = parseInt(localStorage.idInstitution)
-
-    const main_teacher_input = document.getElementById('main_teacher')?.value
 
   const resourceDTO = {
     label: resource_label.value,
@@ -493,14 +503,18 @@ async function saveResource() {
       .map(t => t.value.trim()),
     ueCoefficients: ue_list.value
       .filter(u => u.ue !== '' && u.coefficient !== '')
-      .map(u => {
-        const ueObject = UEs.value.find(ueItem => ueItem.label === u.ue)
-        return {
-          ueId: ueObject ? ueObject.ueNumber : null,
-          ueLabel: u.ue,
-          coefficient: parseFloat(u.coefficient)
-        }
-      })
+        .map(u => {
+            const ueObject = filteredUeTableV2.value.find(
+                ueItem => ueItem.label === u.ue
+            )
+
+            return {
+                ueId: ueObject ? ueObject.ueNumber : null,
+                ueLabel: u.ue,
+                coefficient: parseFloat(u.coefficient)
+            }
+        })
+
   }
 
   console.log('📤 Envoi du DTO ressource:', resourceDTO)
@@ -515,8 +529,29 @@ async function saveResource() {
       const response = await axios.post('http://localhost:8080/api/v2/mccc/resources', resourceDTO)
       console.log('✅ Ressource créée:', response.data)
     }
+    // 🔁 Recharge la liste des ressources pour affichage immédiat
+    const pathIdReload = parseInt(getQueryParam('pathId'))
 
-    // Reload resource sheets
+    const resourcesResponse = await axios.get(
+       `http://localhost:8080/api/v2/mccc/resources/path/${pathIdReload}`
+    )
+
+    resources.value = resourcesResponse.data
+
+    console.log(
+          '📦 Resources brutes:',
+          resources.value.map(r => ({
+              id: r.resource?.idResource,
+              label: r.resource?.label,
+              semester: r.resource?.semester,
+              pathId: r.resource?.path?.idPath
+          }))
+      )
+
+
+
+
+      // Reload resource sheets
     const reloadResponse = await axios.get('http://localhost:8080/api/v2/resource-sheets')
     resource_sheets.value = reloadResponse.data
 
@@ -553,38 +588,43 @@ async function saveResource() {
 }
 
 onMounted(async () => {
-  const pathId = parseInt(getQueryParam('pathId'));
-  const institutionId = parseInt(localStorage.idInstitution);
+    pathId.value = parseInt(getQueryParam('pathId'))
+    semesterNumber.value = parseInt(getQueryParam('id'))
+    institutionId.value = parseInt(localStorage.idInstitution)
 
-  if (!pathId || isNaN(pathId)) {
-    console.error('PathId manquant ou invalide');
-    alert('Erreur: Parcours non spécifié. Retour à la sélection des parcours.');
-    window.location.hash = '#/mccc-select-path';
-    return;
-  }
+    if (!pathId.value || isNaN(pathId.value)) {
+        alert("Erreur : pathId manquant")
+        return
+    }
 
-  if (!institutionId || isNaN(institutionId)) {
-    console.error('Institution ID manquant ou invalide');
-    alert('Erreur: Institution non définie. Veuillez vous reconnecter.');
-    return;
-  }
+    if (!semesterNumber.value || isNaN(semesterNumber.value)) {
+        alert("Erreur : semestre manquant")
+        return
+    }
+
+    if (!institutionId.value || isNaN(institutionId.value)) {
+        alert("Erreur : institution manquante")
+        return
+    }
+
+
 
   await Promise.all([
     axios
       .get('http://localhost:8080/api/v2/resource-sheets')
       .then((reponse) => (resource_sheets.value = reponse.data)),
     axios
-      .get(`http://localhost:8080/api/v2/mccc/resources/path/${pathId}`)
+      .get(`http://localhost:8080/api/v2/mccc/resources/path/${pathId.value}`)
       .then((response) => (resources.value = response.data)),
     axios
-      .get(`http://localhost:8080/api/v2/mccc/saes/path/${pathId}`)
+      .get(`http://localhost:8080/api/v2/mccc/saes/path/${pathId.value}`)
       .then((response) => saes.value = response.data),
     axios
-      .get(`http://localhost:8080/api/v2/mccc/ues/path/${pathId}`)
+      .get(`http://localhost:8080/api/v2/mccc/ues/path/${pathId.value}`)
       .then((response) => {
         // Filtrer par institution pour sécurité supplémentaire
-        UEs.value = response.data.filter(ue => ue.institutionId === institutionId);
-        console.log(`UEs chargées pour institution ${institutionId} et path ${pathId}:`, UEs.value.length);
+        UEs.value = response.data.filter(ue => ue.institutionId === institutionId.value);
+        console.log(`UEs chargées pour institution ${institutionId.value} et path ${pathId.value}:`, UEs.value.length);
       }),
     axios
       .get('http://localhost:8080/api/access-rights')
@@ -825,6 +865,17 @@ total_work_study.value = computed(() => {
   const tp = parseFloat(TP_work_study.value) || 0
   return cm + td + tp
 })
+async function reloadResources() {
+    const response = await axios.get(
+        `http://localhost:8080/api/v2/mccc/resources/path/${pathId.value}`
+    )
+
+    resources.value = response.data.filter(
+        r => r.institutionId === institutionId.value
+    )
+}
+
+
 
 </script>
 
@@ -920,7 +971,14 @@ total_work_study.value = computed(() => {
 
             <div id="btn">
               <input class="btn1" type="reset" value="Annuler" />
-              <input class="btn1" type="submit" value="Sauvegarder" id="save" />
+                <input
+                    id="save"
+                    class="btn1"
+                    type="button"
+                    value="Sauvegarder"
+                    @click="saveResource"
+                />
+
             </div>
           </div>
 
