@@ -128,6 +128,27 @@
           </p>
         </div>
       </div>
+
+      <a class="dark_bar accordion_popup">Centre de contrôle</a>
+      <div class="panel_popup">
+        <div class="container-fluid">
+          <p class="popup_text">
+            Le centre de contrôle permet de reseigner les dates de début et de fin de l'année scolaire en cours, de contacter le support technique, et gérer l'ajout et la suppression de professeurs.
+          </p>
+        </div>
+        <p class="popup_sub_title">Dates de l'année scolaire en cours : </p>
+        <div class="container-fluid">
+          <input type="date" v-model="new Date().toISOString().split('T')[0]" name="popup_date"/>
+          <p class="popup_text">
+            En cliquant sur ce champ, un calendrier apparaîtra vous permettant de sélectionner une date.<br>
+            Après avoir sélectionné la date désirée, cliquez sur le bouton <span class="btn_modify btn_how_to">Sauvegarder</span> pour appliquer les nouvelles dates de l'année scolaire.<br>
+          </p>
+        </div>
+        <p class="popup_sub_title">Centre d'aide : </p>
+        <p class="popup_sub_title">Vues professeur : </p>
+      </div>
+
+
       <a class="dark_bar accordion_popup">Rendu des fiches</a>
       <div class="panel_popup">
         <div class="container-fluid">
