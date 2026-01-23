@@ -637,11 +637,6 @@ onMounted(async () => {
   access_rights.value = access_rights.value.filter((ar) => ar.user.institution.idInstitution == localStorage.idInstitution).filter((ar) => ar.accessRight == access_right_teacher)
   saes.value = saes.value.filter((saes) => saes.semester == getQueryParam('id'))
 
-    /*test*/
-  access_rights.value.push({ user: { firstname: 'Aucun', lastname: '' } }) // to allow empty teacher
-  access_rights.value.push({ user: { firstname: 'Autre', lastname: '' } }) // to allow "other" teacher
-  access_rights.value.push({ user: { firstname: 'Intervenant externe', lastname: '' } }) // to allow "external" teacher
-
   await nextTick()
 
   document.querySelectorAll('.accordion').forEach((acc) => {
@@ -875,7 +870,11 @@ async function reloadResources() {
     )
 }
 
+const show_popup = ref(false)
 
+function toggleShowPopUp() {
+    show_popup.value = !show_popup.value
+}
 
 </script>
 
@@ -984,13 +983,19 @@ async function reloadResources() {
 
           <div id="right">
             <div id="work_study">
-              <div class="component">
+              <div class="component" style="gap: 5px">
                 <label class="switch" id="work_study_slider">
                   <input type="checkbox" v-model="checkboxAlternanceStatus" />
                   <span class="slider"></span>
                 </label>
 
                 <p>Nombre d'heures (alternance) :</p>
+
+                  <p v-if="status" class="btn_how_to" style="margin-right: 0" @click="toggleShowPopUp">ⓘ</p>
+
+                  <div v-show="show_popup" id="popup_work_study">
+                      Appuyer sur le slider pour pouvoir entrer les heures liées à l'alternance
+                  </div>
               </div>
 
               <div id="work_study_hours">
@@ -1498,5 +1503,27 @@ input[readonly].input {
   color: white !important;
   cursor: not-allowed;
   opacity: 1;
+}
+
+#popup_work_study {
+    z-index: 10;
+    color: white;
+    background-color: var(--sub-div-background-color);
+    border-radius: 15px;
+    padding: 0.5vw;
+    font-size: 0.7vw;
+    max-width: 5vw;
+    max-height: 3.5vw;
+}
+
+#popup_work_study::after {
+    content: "";
+    position: absolute;
+    top: 35.4vw;
+    right: 25.6vw;
+    rotate: 90deg;
+    border-left: 0.8vw solid transparent;
+    border-right: 0.8vw solid transparent;
+    border-top: 0.8vw solid var(--sub-div-background-color);
 }
 </style>

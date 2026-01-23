@@ -10,7 +10,7 @@ import axios from 'axios'
 status.value = 'Administration'
 institutionLocation.value = localStorage.institutionLocation
 
-
+const show_popup = ref(false)
 
 const list_semesters = [1, 2, 3, 4, 5, 6]
 
@@ -167,6 +167,10 @@ const goToRessourceSheetDisplay = (url, label) => {
   window.location.hash = `${url}?label=${label}`
 }
 
+function toggleShowPopUp() {
+    show_popup.value = !show_popup.value
+}
+
 </script>
 
 <template>
@@ -196,8 +200,15 @@ const goToRessourceSheetDisplay = (url, label) => {
     <div id="return_sheets_div">
       <div id="return_sheets_div_header">
         <div id="top">
-          <p>Rendu des fiches</p>
-          <img id="download" src="../../media/download.webp" width="35" height="35" alt="download" @click="downloadSheets"/>
+          <p style="font-size: 1.8vw">Rendu des fiches</p>
+          <div style="display: flex; align-items: center">
+              <div v-show="show_popup" id="popup">
+                Vous pouvez séléctionnez les fiches ressource en cochant le carré et cliquer sur l'image de la fléche
+                pour télécharger la version PDF de la fiche ressource
+              </div>
+              <p v-if="status" class="btn_how_to" @click="toggleShowPopUp">ⓘ</p>
+              <img id="download" src="../../media/download.webp" width="35" height="35" alt="download" @click="downloadSheets"/>
+          </div>
         </div>
 
         <div id="option_path">
@@ -380,6 +391,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 #top {
   display: flex;
   justify-content: space-between;
+    align-items: center;
+    padding-top: 1vw;
 }
 
 #list-of-ressources {
@@ -447,5 +460,28 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   border: none;
   text-align: center;
   font-size: 1.3vw;
+}
+
+#popup {
+    z-index: 10;
+    color: white;
+    background-color: var(--sub-div-background-color);
+    border-radius: 15px;
+    padding: 0.6vw;
+    font-size: 0.7vw;
+    max-width: 10vw;
+    max-height: 5vw;
+    text-align: justify;
+}
+
+#popup::after {
+    content: "";
+    position: absolute;
+    top: 3.5vw;
+    right: 5.1vw;
+    rotate: -90deg;
+    border-left: 0.8vw solid transparent;
+    border-right: 0.8vw solid transparent;
+    border-top: 0.8vw solid var(--sub-div-background-color);
 }
 </style>

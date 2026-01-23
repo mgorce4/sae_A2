@@ -249,7 +249,7 @@ main {
     align-content: center;
     text-align: center;
     color: var(--main-theme-secondary-color);
-    margin-right: 1vw;
+    margin-right: 0.5vw;
     cursor: pointer;
 }
 

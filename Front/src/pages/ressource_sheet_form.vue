@@ -669,6 +669,13 @@ onMounted(async () => {
   // Initialize all textarea heights for pedagogical content
   initializeTextareaHeights();
 })
+
+const show_popup = ref(false)
+
+function toggleShowPopUp() {
+    show_popup.value = !show_popup.value
+}
+
 </script>
 <template>
   <div id="Ressource_Sheet">
@@ -716,7 +723,13 @@ onMounted(async () => {
         </div>
       </div>
       <div id="sae_alignement">
-        <p class="section_title">SAE concernée(s) * :</p>
+          <div style="display: flex; align-items: center">
+              <p class="section_title">SAE(s) concérnée(s) *</p>
+              <p v-if="status" class="btn_how_to" @click="toggleShowPopUp">ⓘ</p>
+              <div v-show="show_popup" id="popup_sae">
+                  Cliquer sur l'interrupteur pour lier une SAE à cette ressource
+              </div>
+        </div>
         <div v-if="saeList.length === 0" class="no_sae_message">
           <p>Aucune SAE trouvée pour ce semestre</p>
         </div>
@@ -856,7 +869,14 @@ onMounted(async () => {
         </template>
       </div>
       <div id="pedagogical_content_section">
-        <p class="section_title">Contenu pédagogique *</p>
+
+          <div style="display: flex; align-items: center">
+              <p class="section_title">Contenu pédagogique *</p>
+              <p v-if="status" class="btn_how_to" @click="toggleShowPopUp">ⓘ</p>
+              <div v-show="show_popup" id="popup_pedago">
+                  Ici, vous devez décrire les séances éffectuées
+              </div>
+          </div>
         <div class="pedagogical-content">
           <!-- CM Section -->
           <div class="pedagogical-section">
@@ -1836,5 +1856,49 @@ input:checked + .slider::before {
 #button_save:active {
   background-color: var(--sub-section-background-color);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+#popup_pedago {
+    z-index: 10;
+    color: white;
+    background-color: var(--sub-div-background-color);
+    border-radius: 15px;
+    padding: 0.6vw;
+    font-size: 0.8vw;
+    max-width: 14.5vw;
+    text-align: justify;
+}
+
+#popup_pedago::after {
+    content: "";
+    position: absolute;
+    top: 90.35vw;
+    right: 60.89vw;
+    rotate: 90deg;
+    border-left: 0.8vw solid transparent;
+    border-right: 0.8vw solid transparent;
+    border-top: 0.8vw solid var(--sub-div-background-color);
+}
+
+#popup_sae {
+    z-index: 10;
+    color: white;
+    background-color: var(--sub-div-background-color);
+    border-radius: 15px;
+    padding: 0.6vw;
+    font-size: 0.8vw;
+    max-width: 14.5vw;
+    text-align: justify;
+}
+
+#popup_sae::after {
+    content: "";
+    position: absolute;
+    top: 35.35vw;
+    right: 61vw;
+    rotate: 90deg;
+    border-left: 0.8vw solid transparent;
+    border-right: 0.8vw solid transparent;
+    border-top: 0.8vw solid var(--sub-div-background-color);
 }
 </style>
