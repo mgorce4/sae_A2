@@ -1,6 +1,6 @@
 <script setup>
   import { onMounted, nextTick } from 'vue';
-
+  
   const attachAccordionListeners = () => {
       nextTick(() => {
           const acc = document.querySelectorAll(".popup_administration .accordion_popup");
@@ -21,7 +21,7 @@
           });
       });
   }
-
+  
   onMounted(() => {
       attachAccordionListeners();
   });
@@ -131,7 +131,50 @@
       <a class="dark_bar accordion_popup">Rendu des fiches</a>
       <div class="panel_popup">
         <div class="container-fluid">
-          <p class="popup_text">!!! Blabla pouet !!!</p>
+          <p class="popup_text">
+            Cette section permet de visualiser les fiches ressources soumises par les professeurs et de les télecharger.
+          </p>
+        </div>
+
+        <div class="container-fluid">
+          <div id="return_sheets_div" style="height: 6vw; width: 30vw;">
+            <div id="return_sheets_div_header">
+
+              <div id="option_path">
+                <select name="paths" class="paths">
+                  <option :value="'selection_parcours'">Sélectionner un parcours</option>
+                  <option :value="'Parcours 1'">Parcours 1</option>
+                  <option :value="'Parcours 2'">Parcours 2</option>
+                </select>  
+              </div>
+
+              <div id="semesters_div">
+                <select name="semesters" class="semesters" :value="'S1'">
+                  <option :value="'S1'">S1</option>
+                  <option :value="'S2'">S2</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <p class="popup_text">
+            Utilisez les menus déroulants pour sélectionner le parcours et le semestre souhaités.<br>
+            Les fiches ressources soumises par les professeurs pour le parcours et le semestre sélectionnés seront affichées ci-dessous.<br>
+          </p>
+        </div>
+
+        <div class="container-fluid">
+          <button class="btn1">Visualiser</button>
+          <p class="popup_text">
+            En cliquant sur ce bouton, une nouvelle fenêtre s'ouvrira affichant la fiche ressource soumise par le professeur.<br>
+            Vous pourrez ainsi examiner la fiche avant de décider de la télecharger.<br>
+          </p>
+        </div>
+        <div class="container-fluid">
+          <input type="checkbox"/>
+          <p class="popup_text">
+            En cochant cette case, vous sélectionnez la fiche ressource soumise par le professeur.<br>
+            Vous pourrez ensuite cliquer sur le bouton <span><img src="../../media/download.webp" width="35" height="35" alt="download"/></span> pour télecharger toutes les fiches sélectionnées.<br>
+          </p>
         </div>
       </div>
     </div>
