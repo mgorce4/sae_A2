@@ -145,7 +145,48 @@
           </p>
         </div>
         <p class="popup_sub_title">Centre d'aide : </p>
+        <p class="popup_text">
+          Si vous rencontrez des problèmes techniques ou avez des questions concernant l'utilisation de la plateforme, vous pouvez contacter le support technique via le centre d'aide.<br>
+        </p>
         <p class="popup_sub_title">Vues professeur : </p>
+        <p class="popup_text">
+          Cette section permet de gérer l'ajout et la suppression des professeurs ayant accès à la plateforme.<br>
+        </p>
+        <div class="container-fluid">
+          <button class="button_more">+</button>
+          <p class="popup_text">
+            En cliquant sur ce bouton, une zone d'ajout de professeur apparaîtra.<br>
+            Il vous suffira de renseigner les informations demandées, puis de cliquer sur <span class="btn_modify btn_how_to">Ajouter</span> pour créer un nouveau compte professeur.<br>
+          </p>
+        </div>
+        <div class="container-fluid">
+          <button class="btn_modify">Modifier</button>
+          <p class="popup_text">
+            En cliquant sur ce bouton, une zone de modification des informations du professeur apparaîtra.<br>
+            Il vous suffira de renseigner les nouvelles informations, puis de cliquer sur <span class="btn_modify btn_how_to">Sauvegarder</span> pour appliquer les changements au compte professeur sélectionné.<br>
+          </p>
+        </div>
+        <div class="container-fluid">
+          <button class="btn_modify">Supprimer</button>
+          <p class="popup_text">
+            En cliquant sur ce bouton, le compte du professeur sélectionné sera supprimé de la plateforme.<br>
+            Veuillez confirmer la suppression lorsque vous y êtes invité.<br>
+          </p>
+        </div>
+        <p class="popup_sub_title">Importation/Exportation CSV : </p>
+        <div class="container-fluid">
+          <button class="btn1">Importer CSV</button>
+          <p class="popup_text">
+            En cliquant sur ce bouton, vous pourrez sélectionner un fichier CSV contenant les informations des professeurs à ajouter.<br>
+            Après avoir sélectionné le fichier, cliquez sur <span class="btn_modify btn_how_to">Importer</span> pour ajouter les professeurs à la plateforme.<br>
+          </p>
+        </div>
+        <div class="container-fluid">
+          <button class="btn1">Exporter CSV</button>
+          <p class="popup_text">
+            En cliquant sur ce bouton, un fichier CSV contenant les informations de tous les professeurs actuellement inscrits sur la plateforme sera généré et téléchargé sur votre ordinateur.<br>
+          </p>
+        </div>
       </div>
 
 
