@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import axios from 'axios'
+import { status } from '@/main.js'
 
 const afficherBoutons = ref([
     [false, false],
@@ -97,13 +98,27 @@ const goToRessourceSheet = (url, semester, pathId) => {
   localStorage.pathId = pathId
   window.location.hash = `${url}?id=${semester}&pathId=${pathId}`
 }
+
+const show_popup = ref(false)
+
+function toggleShowPopUp() {
+    show_popup.value = !show_popup.value
+}
 </script>
 
 <template>
     <div id="form_select_page">
-      <div style="display: flex; align-items: center; height: 1vw;">
-        <button class="back_arrow" onclick="document.location.href='#/mccc-select-path'">←</button>
-        <p class="back" >Retour</p>
+      <div style="display: flex; align-items: center; height: 1vw;justify-content: space-between; margin-bottom: 3vw">
+        <div style="display: flex">
+            <button class="back_arrow" onclick="document.location.href='#/mccc-select-path'">←</button>
+            <p class="back" >Retour</p>
+        </div>
+        <div style="display: flex">
+            <div v-show="show_popup" id="popup_years" style="width: 60vw; height: 4vw">
+                Vous ne pouvez pas créer de ressources ou de SAE tant qu'une UE n'a pas été créée pour le semestre correspondant.
+            </div>
+            <p v-if="status" class="btn_how_to" @click="toggleShowPopUp" style="color: black">ⓘ</p>
+        </div>
       </div>
       <div v-for="(year, index) in afficherBoutons" v-bind:key="index" class="blue_rect">
         <p class="semester_display">Année {{ index+1 }} :</p>
@@ -186,5 +201,28 @@ const goToRessourceSheet = (url, semester, pathId) => {
 
 .btn_form_acces:hover {
   cursor: pointer;
+}
+
+#popup_years {
+    z-index: 10;
+    color: white;
+    background-color: var(--sub-div-background-color);
+    border-radius: 15px;
+    padding: 0.6vw;
+    font-size: 0.7vw;
+    max-width: 10vw;
+    max-height: 5vw;
+    text-align: justify;
+}
+
+#popup_years::after {
+    content: "";
+    position: absolute;
+    top: 11vw;
+    right: 17vw;
+    rotate: -90deg;
+    border-left: 0.8vw solid transparent;
+    border-right: 0.8vw solid transparent;
+    border-top: 0.8vw solid var(--sub-div-background-color);
 }
 </style>

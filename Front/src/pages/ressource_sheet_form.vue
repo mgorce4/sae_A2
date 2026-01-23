@@ -670,10 +670,16 @@ onMounted(async () => {
   initializeTextareaHeights();
 })
 
-const show_popup = ref(false)
+const show_popup_pedago = ref(false)
 
-function toggleShowPopUp() {
-    show_popup.value = !show_popup.value
+function toggleShowPopUpPedago() {
+    show_popup_pedago.value = !show_popup_pedago.value
+}
+
+const show_popup_sae = ref(false)
+
+function toggleShowPopUpSae() {
+    show_popup_sae.value = !show_popup_sae.value
 }
 
 </script>
@@ -725,8 +731,8 @@ function toggleShowPopUp() {
       <div id="sae_alignement">
           <div style="display: flex; align-items: center">
               <p class="section_title">SAE(s) concérnée(s) *</p>
-              <p v-if="status" class="btn_how_to" @click="toggleShowPopUp">ⓘ</p>
-              <div v-show="show_popup" id="popup_sae">
+              <p v-if="status" class="btn_how_to" @click="toggleShowPopUpSae">ⓘ</p>
+              <div v-show="show_popup_sae" id="popup_sae">
                   Cliquer sur l'interrupteur pour lier une SAE à cette ressource
               </div>
         </div>
@@ -872,8 +878,8 @@ function toggleShowPopUp() {
 
           <div style="display: flex; align-items: center">
               <p class="section_title">Contenu pédagogique *</p>
-              <p v-if="status" class="btn_how_to" @click="toggleShowPopUp">ⓘ</p>
-              <div v-show="show_popup" id="popup_pedago">
+              <p v-if="status" class="btn_how_to" @click="toggleShowPopUpPedago">ⓘ</p>
+              <div v-show="show_popup_pedago" id="popup_pedago">
                   Ici, vous devez décrire les séances éffectuées
               </div>
           </div>

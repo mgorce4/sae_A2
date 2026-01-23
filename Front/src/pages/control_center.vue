@@ -1,5 +1,14 @@
 <script setup>
 
+import { ref } from 'vue'
+import { status } from '@/main.js'
+
+const show_popup = ref(false)
+
+function toggleShowPopUp() {
+    show_popup.value = !show_popup.value
+}
+
 </script>
 
 <template>
@@ -13,19 +22,28 @@
 
         <div style="display: flex; gap: 50px; margin-top: 1vw">
             <div id="left_component">
-                <div id="date" style="justify-items: center">
-                    <p class="title">Date de l'année scolaire en cours</p>
-
-                    <div>
-                        <p>Date de début : </p>
-                        <input type="date" id="start_date" name="start_date">
-
-                        <p>Date de fin : </p>
-                        <input type="date" id="end_date" name="end_date">
+                <div id="date">
+                    <div style="display: flex">
+                        <p v-if="status" class="btn_how_to" @click="toggleShowPopUp">ⓘ</p>
+                        <div v-show="show_popup" id="popup_date">
+                            Vous pouvez remplir les dates de début et de fin d'année scolaire.
+                            À la fin de l'année scolaire, la date de fin devindra la date de début de la nouvelle année scolaire.
+                        </div>
                     </div>
+                    <div style="justify-items: center">
+                        <p class="title" style="margin-top: 0">Date de l'année scolaire en cours</p>
 
-                    <div id="button_help">
-                        <button id="button" style="margin-top: 2vw; padding: 1vw; height: 5vw; font-size: 2.5vw;">Sauvegarder</button>
+                        <div>
+                            <p>Date de début : </p>
+                            <input type="date" id="start_date" name="start_date">
+
+                            <p>Date de fin : </p>
+                            <input type="date" id="end_date" name="end_date">
+                        </div>
+
+                        <div id="button_help">
+                            <button id="button" style="margin-top: 2vw; padding: 1vw; height: 5vw; font-size: 2.5vw;">Sauvegarder</button>
+                        </div>
                     </div>
                 </div>
 
@@ -65,4 +83,26 @@
     border-radius: 1vw;
 }
 
+#popup_date {
+    z-index: 10;
+    color: white;
+    background-color: var(--sub-div-background-color);
+    border-radius: 15px;
+    padding: 0.6vw;
+    font-size: 0.7vw;
+    max-width: 10vw;
+    max-height: 5vw;
+    text-align: justify;
+}
+
+#popup_date::after {
+    content: "";
+    position: absolute;
+    top: 16.5vw;
+    right: 79vw;
+    rotate: 90deg;
+    border-left: 0.8vw solid transparent;
+    border-right: 0.8vw solid transparent;
+    border-top: 0.8vw solid var(--sub-div-background-color);
+}
 </style>
