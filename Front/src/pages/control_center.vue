@@ -12,7 +12,7 @@
         </div>
 
         <div style="display: flex; gap: 50px; margin-top: 1vw">
-            <div id="rigth_component">
+            <div id="left_component">
                 <div id="date" style="justify-items: center">
                     <p class="title">Date de l'année scolaire en cours</p>
 
@@ -25,17 +25,17 @@
                     </div>
 
                     <div id="button_help">
-                        <button id="button" style="margin-top: 2vw; padding: 1vw; height: 7vw">Sauvegarder</button>
+                        <button id="button" style="margin-top: 2vw; padding: 1vw; height: 5vw; font-size: 2.5vw;">Sauvegarder</button>
                     </div>
                 </div>
 
                 <div id="button_help">
-                    <button id="button" style="margin-top: 2vw; padding: 1vw; height: 7vw">Centre d'aide</button>
+                    <button id="button" style="margin-top: 2vw; padding: 1vw; height: 5vw; font-size: 2.5vw;">Centre d'aide</button>
                 </div>
             </div>
 
-            <div id="left_component">
-
+            <div id="right_component">
+                <button id="button" style=" width: 31.5vw; margin: 3vh 1vw;">Vues professeur</button>
             </div>
         </div>
     </div>
@@ -43,7 +43,7 @@
 
 <style scoped>
 
-#rigth_component {
+#left_component {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -58,10 +58,10 @@
     padding: 1.5vw;
 }
 
-#left_component {
+#right_component {
     width: 50%;
     background-color: var(--main-theme-background-color);
-    height: 43.5vw;
+    height: 40vw;
     border-radius: 1vw;
 }
 

@@ -193,7 +193,7 @@ function toggleShowPopUp() {
         <button class="btn1" @click="saveDeliveryDates">Valider</button>
       </div>
 
-        <button id="button" style="margin-top: 2vw; padding: 1vw; height: 7vw" onclick="window.location.hash = '#/control-center'">Centre de controle</button>
+        <button id="button" style="margin-top: 1.5vw; margin-bottom: 1vw;" onclick="window.location.hash = '#/control-center'">Centre de controle</button>
 
     </div>
 
@@ -312,7 +312,7 @@ function toggleShowPopUp() {
   background-color: var(--sub-section-background-color);
   border-radius: 15px;
   width: 100%;
-  height: 120%;
+  height: 8vw;
 }
 
 #button:hover {
