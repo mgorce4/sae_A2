@@ -133,7 +133,7 @@
       <div class="panel_popup">
         <div class="container-fluid">
           <p class="popup_text">
-            Le centre de contrôle permet de reseigner les dates de début et de fin de l'année scolaire en cours, de contacter le support technique, et gérer l'ajout et la suppression de professeurs.
+            Le centre de contrôle permet de renseigner les dates de début et de fin de l'année scolaire en cours, de contacter le support technique, et gérer l'ajout et la suppression de professeurs.
           </p>
         </div>
         <p class="popup_sub_title">Dates de l'année scolaire en cours : </p>
