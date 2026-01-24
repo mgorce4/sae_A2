@@ -53,6 +53,12 @@ public class MCCCMapper {
         // Institution ID from main teacher
         dto.setInstitutionId(getInstitutionId(resource.getIdResource()));
 
+        // Path information
+        if (resource.getPath() != null) {
+            dto.setPathId(resource.getPath().getIdPath());
+            dto.setPathName(resource.getPath().getName());
+        };
+
         // PN hours (National Program)
         setPNHours(dto, resource.getIdResource());
 

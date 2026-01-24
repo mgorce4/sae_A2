@@ -900,7 +900,7 @@ function toggleShowPopUp() {
           <button id="button_more" v-on:click="display_more_area = !display_more_area">{{ display_more_area ? '-' : '+' }}</button>
         </div>
 
-        <a class="accordion_mccc" id="dark_bar" style="width: 97%" v-show="display_more_area" method="post" v-on:submit.prevent="">
+        <a class="accordion" id="dark_bar" style="width: 97%" v-show="display_more_area" method="post" v-on:submit.prevent="">
           {{ is_modifying ? 'Modification de la ressource :' : 'Ajout d\'une ressource :' }}
         </a>
 

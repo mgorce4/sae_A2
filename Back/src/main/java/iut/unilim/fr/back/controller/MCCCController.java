@@ -301,9 +301,12 @@ public class MCCCController {
                 }
             }
 
-            // Convert to DTO and return
-            MCCCResourceDTO resultDto = mcccMapper.toDTO(savedResource);
+            Ressource reloadedResource = ressourceRepository.findById(savedResource.getIdResource())
+                    .orElseThrow(() -> new RuntimeException("Failed to reload resource"));
+
+            MCCCResourceDTO resultDto = mcccMapper.toDTO(reloadedResource);
             return ResponseEntity.ok(resultDto);
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -640,6 +643,7 @@ public class MCCCController {
             sae.setSemester(dto.getSemester());
             sae.setTerms(terms);
             sae.setPath(path);
+
 
             SAE savedSAE = saeRepository.save(sae);
 
