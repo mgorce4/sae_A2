@@ -487,41 +487,52 @@ async function saveResource() {
     console.log(institutionId)
 
 
-  const resourceDTO = {
-    label: resource_label.value,
-    name: resource_name.value,
-    apogeeCode: apogee_code.value,
-    semester: parseInt(getQueryParam('id')),
-    institutionId: institutionId,
-    termsCode: terms.value,
-    pathId: pathId,
-    cmInitial: parseFloat(CM_initial_formation.value) || 0,
-    tdInitial: parseFloat(TD_initial_formation.value) || 0,
-    tpInitial: parseFloat(TP_initial_formation.value) || 0,
-    cmAlternance: (checkboxAlternanceStatus.value && CM_work_study.value) ? parseFloat(CM_work_study.value) : null,
-    tdAlternance: (checkboxAlternanceStatus.value && TD_work_study.value) ? parseFloat(TD_work_study.value) : null,
-    tpAlternance: (checkboxAlternanceStatus.value && TP_work_study.value) ? parseFloat(TP_work_study.value) : null,
-    mainTeacher: main_teacher_value,
-    teachers: teachers_list.value
-      .filter(t => t.value && t.value.trim() !== '')
-      .map(t => t.value.trim()),
-    ueCoefficients: ue_list.value
-      .filter(u => u.ue !== '' && u.coefficient !== '')
-        .map(u => {
-            const ueObject = filteredUeTableV2.value.find(
-                ueItem => ueItem.label === u.ue
-            )
+    const resourceDTO = {
+        label: resource_label.value,
+        name: resource_name.value,
+        apogeeCode: apogee_code.value,
+        semester: parseInt(getQueryParam('id')),
+        institutionId: institutionId,
+        termsCode: terms.value,
+        pathId: pathId,
 
-            return {
-                ueId: ueObject ? ueObject.ueNumber : null,
-                ueLabel: u.ue,
-                coefficient: parseFloat(u.coefficient)
-            }
-        })
+        // 🔥 INITIAL = PN (duplication supprimée)
+        initialCm: parseFloat(CM_initial_formation.value) || 0,
+        initialTd: parseFloat(TD_initial_formation.value) || 0,
+        initialTp: parseFloat(TP_initial_formation.value) || 0,
 
-  }
+        alternanceCm: checkboxAlternanceStatus.value
+            ? parseFloat(CM_work_study.value) || 0
+            : 0,
+        alternanceTd: checkboxAlternanceStatus.value
+            ? parseFloat(TD_work_study.value) || 0
+            : 0,
+        alternanceTp: checkboxAlternanceStatus.value
+            ? parseFloat(TP_work_study.value) || 0
+            : 0,
 
-  console.log('📤 Envoi du DTO ressource:', resourceDTO)
+        mainTeacher: main_teacher_value,
+
+        teachers: teachers_list.value
+            .filter(t => t.value && t.value.trim() !== '')
+            .map(t => t.value.trim()),
+
+        ueCoefficients: ue_list.value
+            .filter(u => u.ue && u.coefficient)
+            .map(u => {
+                const ueObject = filteredUeTableV2.value.find(
+                    ueItem => ueItem.label === u.ue
+                )
+                return {
+                    ueId: ueObject?.ueNumber,
+                    coefficient: parseFloat(u.coefficient)
+                }
+            })
+    }
+
+
+
+    console.log('📤 Envoi du DTO ressource:', resourceDTO)
 
   try {
     if (is_modifying.value && resource_id_to_modify.value) {
@@ -584,6 +595,7 @@ async function saveResource() {
     display_more_area.value = false
 
     console.log('✅ Ressource sauvegardée avec succès')
+      location.reload()
 
   } catch (error) {
     console.error('❌ Erreur lors de la sauvegarde:', error)
@@ -656,7 +668,6 @@ onMounted(async () => {
   })
 
   // Lier la fonction de sauvegarde au bouton save
-  document.getElementById('save').addEventListener('click', saveResource)
 
   // Le switch est géré par v-model et watch, pas besoin d'écouteur manuel
 
@@ -838,10 +849,6 @@ const preventInvalidChars = (event) => {
   }
 }
 
-function getPath() {
-  return path.value.filter((p) => p.idPath == getQueryParam('pathId'))
-}
-
 const goBack = () => {
   const pathId = parseInt(getQueryParam('pathId'));
   if (pathId && !isNaN(pathId)) {
@@ -864,15 +871,6 @@ total_work_study.value = computed(() => {
   const tp = parseFloat(TP_work_study.value) || 0
   return cm + td + tp
 })
-async function reloadResources() {
-    const response = await axios.get(
-        `http://localhost:8080/api/v2/mccc/resources/path/${pathId.value}`
-    )
-
-    resources.value = response.data.filter(
-        r => r.institutionId === institutionId.value
-    )
-}
 
 const show_popup = ref(false)
 
@@ -1152,7 +1150,12 @@ function toggleShowPopUp() {
                 <p>Total : {{resource.initialTotal || 0}}</p>
               </div>
 
-              <div v-if="resources.alternanceCm == 0 && resources.alternanceTd == 0 && resources.alternanceTp == 0 && resources.alternanceTotal == 0">
+                <div v-if="
+                  resource.alternanceCm > 0 ||
+                  resource.alternanceTd > 0 ||
+                  resource.alternanceTp > 0
+                ">
+
                 <p>Nombre d'heures (alternance) : </p>
 
                 <div class="container-fluid">

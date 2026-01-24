@@ -106,62 +106,34 @@ public class MCCCMapper {
      * We need to find all resource sheets for this resource
      */
     private void setTeacherHours(MCCCResourceDTO dto, Long resourceId) {
-        // Get teacher hours - we'll aggregate from all resource sheets
-        List<TeacherHours> allTeacherHours = teacherHoursRepository.findAll().stream()
-            .filter(th -> th.getResourceSheet() != null &&
-                         th.getResourceSheet().getResource() != null &&
-                         th.getResourceSheet().getResource().getIdResource().equals(resourceId))
-            .collect(Collectors.toList());
 
-        // Initial training hours (not alternance)
-        List<TeacherHours> initialHours = allTeacherHours.stream()
-            .filter(th -> !th.getIsAlternance())
-            .collect(Collectors.toList());
+        List<TeacherHours> hoursList = teacherHoursRepository.findAll().stream()
+                .filter(th -> th.getResourceSheet() != null
+                        && th.getResourceSheet().getResource() != null
+                        && th.getResourceSheet().getResource().getIdResource().equals(resourceId))
+                .toList();
 
-        if (!initialHours.isEmpty()) {
-            TeacherHours hours = initialHours.get(0);
-            // Parse String hours to Double
-            dto.setInitialCm(parseHoursString(hours.getCm()));
-            dto.setInitialTd(parseHoursString(hours.getTd()));
-            dto.setInitialTp(parseHoursString(hours.getTp()));
-            // Project hours would come from another field if it exists
-            dto.setInitialProject(0);
-            dto.setInitialTotal((dto.getInitialCm() != null ? dto.getInitialCm() : 0.0) +
-                               (dto.getInitialTd() != null ? dto.getInitialTd() : 0.0) +
-                               (dto.getInitialTp() != null ? dto.getInitialTp() : 0.0) +
-                               (dto.getInitialProject() != null ? dto.getInitialProject() : 0));
-        } else {
-            dto.setInitialCm(0.0);
-            dto.setInitialTd(0.0);
-            dto.setInitialTp(0.0);
-            dto.setInitialProject(0);
-            dto.setInitialTotal(0.0);
-        }
-
-        // Alternance hours
-        List<TeacherHours> alternanceHours = allTeacherHours.stream()
-            .filter(TeacherHours::getIsAlternance)
-            .collect(Collectors.toList());
-
-        if (!alternanceHours.isEmpty()) {
-            TeacherHours hours = alternanceHours.get(0);
-            // Parse String hours to Double
-            dto.setAlternanceCm(parseHoursString(hours.getCm()));
-            dto.setAlternanceTd(parseHoursString(hours.getTd()));
-            dto.setAlternanceTp(parseHoursString(hours.getTp()));
-            dto.setAlternanceProject(0);
-            dto.setAlternanceTotal((dto.getAlternanceCm() != null ? dto.getAlternanceCm() : 0.0) +
-                                  (dto.getAlternanceTd() != null ? dto.getAlternanceTd() : 0.0) +
-                                  (dto.getAlternanceTp() != null ? dto.getAlternanceTp() : 0.0) +
-                                  (dto.getAlternanceProject() != null ? dto.getAlternanceProject() : 0));
-        } else {
-            dto.setAlternanceCm(0.0);
-            dto.setAlternanceTd(0.0);
-            dto.setAlternanceTp(0.0);
-            dto.setAlternanceProject(0);
-            dto.setAlternanceTotal(0.0);
+        for (TeacherHours th : hoursList) {
+            if (Boolean.TRUE.equals(th.getIsAlternance())) {
+                dto.setAlternanceCm(parseHoursString(th.getCm()));
+                dto.setAlternanceTd(parseHoursString(th.getTd()));
+                dto.setAlternanceTp(parseHoursString(th.getTp()));
+                dto.setAlternanceProject(0);
+                dto.setAlternanceTotal(
+                        dto.getAlternanceCm() + dto.getAlternanceTd() + dto.getAlternanceTp()
+                );
+            } else {
+                dto.setInitialCm(parseHoursString(th.getCm()));
+                dto.setInitialTd(parseHoursString(th.getTd()));
+                dto.setInitialTp(parseHoursString(th.getTp()));
+                dto.setInitialProject(0);
+                dto.setInitialTotal(
+                        dto.getInitialCm() + dto.getInitialTd() + dto.getInitialTp()
+                );
+            }
         }
     }
+
 
     /**
      * Get institution ID from main teacher
@@ -181,59 +153,59 @@ public class MCCCMapper {
      * Get main teacher name
      */
     private String getMainTeacher(Long resourceId) {
-        List<MainTeacherForResource> mainTeachers = mainTeacherForResourceRepository.findByIdResource(resourceId);
-        if (!mainTeachers.isEmpty() && mainTeachers.get(0).getUser() != null) {
-            UserSyncadia user = mainTeachers.get(0).getUser();
-            return user.getFirstname() + " " + user.getLastname();
-        }
-        return "Non assigné";
+        return mainTeacherForResourceRepository.findByIdResource(resourceId).stream()
+                .findFirst()
+                .map(MainTeacherForResource::getUser)
+                .map(u -> u.getFirstname() + " " + u.getLastname())
+                .orElse("Non assigné");
     }
+
 
     /**
      * Get all teachers for this resource
      */
-    private List<TeacherInfoDTO> getTeachers(Long resourceId) {
-        List<TeachersForResource> teachers = teachersForResourceRepository.findByIdResource(resourceId);
-        return teachers.stream()
-            .filter(t -> t.getUser() != null)
-            .map(t -> {
-                UserSyncadia user = t.getUser();
-                return new TeacherInfoDTO(
-                    user.getIdUser(),
-                    user.getFirstname() + " " + user.getLastname()
-                );
-            })
-            .collect(Collectors.toList());
+    private List<MCCCResourceDTO.TeacherInfoDTO> getTeachers(Long resourceId) {
+        return teachersForResourceRepository.findByIdResource(resourceId).stream()
+                .filter(t -> t.getUser() != null)
+                .map(t -> new MCCCResourceDTO.TeacherInfoDTO(
+                        t.getUser().getIdUser(),
+                        t.getUser().getFirstname() + " " + t.getUser().getLastname()
+                ))
+                .toList();
     }
+
 
     /**
      * Get UE coefficients
      */
-    private List<UECoefficientDTO> getUECoefficients(Long resourceId) {
-        List<UeCoefficient> coefficients = ueCoefficientRepository.findByResource_IdResource(resourceId);
-        return coefficients.stream()
-            .filter(c -> c.getUe() != null)
-            .map(c -> {
-                UE ue = c.getUe();
-                return new UECoefficientDTO(
-                    ue.getLabel(),
-                    ue.getName(),
-                    c.getCoefficient()
-                );
-            })
-            .collect(Collectors.toList());
+    private List<MCCCResourceDTO.UECoefficientDTO> getUECoefficients(Long resourceId) {
+        return ueCoefficientRepository.findByResource_IdResource(resourceId).stream()
+                .filter(c -> c.getUe() != null)
+                .map(c -> {
+                    UE ue = c.getUe();
+                    MCCCResourceDTO.UECoefficientDTO dto =
+                            new MCCCResourceDTO.UECoefficientDTO(
+                                    ue.getLabel(),
+                                    ue.getName(),
+                                    c.getCoefficient()
+                            );
+                    dto.setUeId(ue.getUeNumber()); // 🔥 FIX ICI
+                    return dto;
+                })
+                .toList();
     }
+
 
     /**
      * Get linked SAEs labels
      */
     private List<String> getLinkedSaes(Long resourceId) {
-        List<SAELinkResource> links = saeLinkResourceRepository.findByIdResource(resourceId);
-        return links.stream()
-            .filter(link -> link.getSae() != null)
-            .map(link -> link.getSae().getLabel())
-            .collect(Collectors.toList());
+        return saeLinkResourceRepository.findByIdResource(resourceId).stream()
+                .filter(link -> link.getSae() != null)
+                .map(link -> link.getSae().getLabel())
+                .toList();
     }
+
 
     /**
      * Convert multiple resources to DTOs
