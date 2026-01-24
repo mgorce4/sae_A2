@@ -301,9 +301,6 @@ public class MCCCResourceDTO {
         private String ueName;         // e.g., "Understanding organizations"
         private Double coefficient;
 
-        public UECoefficientDTO() {
-        }
-
         public UECoefficientDTO(String ueLabel, String ueName, Double coefficient) {
             this.ueLabel = ueLabel;
             this.ueName = ueName;

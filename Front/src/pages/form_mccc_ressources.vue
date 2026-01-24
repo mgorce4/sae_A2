@@ -448,7 +448,7 @@ async function saveResource() {
   }
 
   const main_teacher_input = document.getElementById('main_teacher')
-  const main_teacher_value = main_teacher_input ? main_teacher_input.value.trim() : ''
+  const main_teacher_value = main_teachers_list.value[0]?.value?.trim() || (main_teacher_input ? main_teacher_input.value.trim() : '')
 
   if (main_teacher_value) {
     teacher_names.push(main_teacher_value)
@@ -479,9 +479,13 @@ async function saveResource() {
     return
   }
 
+
   // Prepare DTO
   const pathId = parseInt(getQueryParam('pathId'))
+    console.log(pathId)
   const institutionId = parseInt(localStorage.idInstitution)
+    console.log(institutionId)
+
 
   const resourceDTO = {
     label: resource_label.value,
@@ -896,7 +900,7 @@ function toggleShowPopUp() {
           <button id="button_more" v-on:click="display_more_area = !display_more_area">{{ display_more_area ? '-' : '+' }}</button>
         </div>
 
-        <a class="accordion" id="dark_bar" style="width: 97%" v-show="display_more_area" method="post" v-on:submit.prevent="">
+        <a class="accordion_mccc" id="dark_bar" style="width: 97%" v-show="display_more_area" method="post" v-on:submit.prevent="">
           {{ is_modifying ? 'Modification de la ressource :' : 'Ajout d\'une ressource :' }}
         </a>
 
