@@ -634,7 +634,7 @@ const goBack = () => {
                                     type="reset"
                                     value="Annuler"
                                     @click="
-                                        display_add_modify_area = false
+                                        display_add_modify_area = false,
                                         display_add_ue = false
                                     "
                                 />

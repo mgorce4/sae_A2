@@ -496,40 +496,54 @@ async function saveResource() {
     const institutionId = parseInt(localStorage.idInstitution)
     console.log(institutionId)
 
-    const resourceDTO = {
-        label: resource_label.value,
-        name: resource_name.value,
-        apogeeCode: apogee_code.value,
-        semester: parseInt(getQueryParam('id')),
-        institutionId: institutionId,
-        termsCode: terms.value,
-        pathId: pathId,
+    const resourceDTO = {}
+    resourceDTO.label = resource_label.value;
+    console.log('Set label:', resourceDTO.label);
+    resourceDTO.name = resource_name.value;
+    console.log('Set name:', resourceDTO.name);
+    resourceDTO.apogeeCode = apogee_code.value;
+    console.log('Set apogeeCode:', resourceDTO.apogeeCode);
+    resourceDTO.semester = parseInt(getQueryParam('id'));
+    console.log('Set semester:', resourceDTO.semester);
+    resourceDTO.institutionId = institutionId;
+    console.log('Set institutionId:', resourceDTO.institutionId);
+    resourceDTO.termsCode = terms.value;
+    console.log('Set termsCode:', resourceDTO.termsCode);
+    resourceDTO.pathId = pathId;
+    console.log('Set pathId:', resourceDTO.pathId);
 
-        // 🔥 INITIAL = PN (duplication supprimée)
-        initialCm: parseFloat(CM_initial_formation.value) || 0,
-        initialTd: parseFloat(TD_initial_formation.value) || 0,
-        initialTp: parseFloat(TP_initial_formation.value) || 0,
+    resourceDTO.initialCm = parseFloat(CM_initial_formation.value) || 0;
+    console.log('Set initialCm:', resourceDTO.initialCm);
+    resourceDTO.initialTd = parseFloat(TD_initial_formation.value) || 0;
+    console.log('Set initialTd:', resourceDTO.initialTd);
+    resourceDTO.initialTp = parseFloat(TP_initial_formation.value) || 0;
+    console.log('Set initialTp:', resourceDTO.initialTp);
 
-        alternanceCm: checkboxAlternanceStatus.value ? parseFloat(CM_work_study.value) || 0 : 0,
-        alternanceTd: checkboxAlternanceStatus.value ? parseFloat(TD_work_study.value) || 0 : 0,
-        alternanceTp: checkboxAlternanceStatus.value ? parseFloat(TP_work_study.value) || 0 : 0,
+    resourceDTO.alternanceCm = checkboxAlternanceStatus.value ? parseFloat(CM_work_study.value) || 0 : 0;
+    console.log('Set alternanceCm:', resourceDTO.alternanceCm);
+    resourceDTO.alternanceTd = checkboxAlternanceStatus.value ? parseFloat(TD_work_study.value) || 0 : 0;
+    console.log('Set alternanceTd:', resourceDTO.alternanceTd);
+    resourceDTO.alternanceTp = checkboxAlternanceStatus.value ? parseFloat(TP_work_study.value) || 0 : 0;
+    console.log('Set alternanceTp:', resourceDTO.alternanceTp);
 
-        mainTeacher: main_teacher_value,
+    resourceDTO.mainTeacher = main_teacher_value;
+    console.log('Set mainTeacher:', resourceDTO.mainTeacher);
 
-        teachers: teachers_list.value
-            .filter((t) => t.value && t.value.trim() !== '')
-            .map((t) => t.value.trim()),
+    resourceDTO.teachers = teachers_list.value
+        .filter((t) => t.value && t.value.trim() !== '')
+        .map((t) => t.value.trim());
+    console.log('Set teachers:', resourceDTO.teachers);
 
-        ueCoefficients: ue_list.value
-            .filter((u) => u.ue && u.coefficient)
-            .map((u) => {
-                const ueObject = filteredUeTableV2.value.find((ueItem) => ueItem.label === u.ue)
-                return {
-                    ueId: ueObject?.ueNumber,
-                    coefficient: parseFloat(u.coefficient),
-                }
-            }),
-    }
+    resourceDTO.ueCoefficients = ue_list.value
+        .filter((u) => u.ue && u.coefficient)
+        .map((u) => {
+            const ueObject = filteredUeTableV2.value.find((ueItem) => ueItem.label === u.ue)
+            return {
+                ueId: ueObject?.ueNumber,
+                coefficient: parseFloat(u.coefficient),
+            }
+        });
+    console.log('Set ueCoefficients:', resourceDTO.ueCoefficients);
 
     console.log('📤 Envoi du DTO ressource:', resourceDTO)
 
@@ -597,7 +611,7 @@ async function saveResource() {
         display_more_area.value = false
 
         console.log('✅ Ressource sauvegardée avec succès')
-        location.reload()
+        // location.reload()
     } catch (error) {
         console.error('❌ Erreur lors de la sauvegarde:', error)
         alert(

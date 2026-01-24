@@ -176,48 +176,63 @@ public class MCCCController {
     public ResponseEntity<?> createMCCCResource(@RequestBody iut.unilim.fr.back.dto.ResourceDTO dto) {
         try {
             // Validation
+            System.out.println("[DTO-DEBUG] getPathId=" + dto.getPathId());
             if (dto.getPathId() == null) {
                 return ResponseEntity.badRequest().body("pathId is required");
             }
+            System.out.println("[DTO-DEBUG] getLabel=" + dto.getLabel());
             if (dto.getLabel() == null || dto.getLabel().trim().isEmpty()) {
                 return ResponseEntity.badRequest().body("label is required");
             }
+            System.out.println("[DTO-DEBUG] getName=" + dto.getName());
             if (dto.getName() == null || dto.getName().trim().isEmpty()) {
                 return ResponseEntity.badRequest().body("name is required");
             }
+            System.out.println("[DTO-DEBUG] getApogeeCode=" + dto.getApogeeCode());
             if (dto.getApogeeCode() == null || dto.getApogeeCode().trim().isEmpty()) {
                 return ResponseEntity.badRequest().body("apogeeCode is required");
             }
+            System.out.println("[DTO-DEBUG] getSemester=" + dto.getSemester());
             if (dto.getSemester() == null) {
                 return ResponseEntity.badRequest().body("semester is required");
             }
+            System.out.println("[DTO-DEBUG] getTermsCode=" + dto.getTermsCode());
             if (dto.getTermsCode() == null || dto.getTermsCode().trim().isEmpty()) {
                 return ResponseEntity.badRequest().body("termsCode is required");
             }
 
+
             // Get path by ID
+            System.out.println("[DTO-DEBUG] getPathId (for path lookup)=" + dto.getPathId());
             Path path = pathRepository.findById(dto.getPathId())
                 .orElseThrow(() -> new RuntimeException("Path not found with id: " + dto.getPathId()));
 
             // Find or create Terms
+            System.out.println("[DTO-DEBUG] getTermsCode (for terms lookup)=" + dto.getTermsCode());
             Terms terms = termsRepository.findFirstByCode(dto.getTermsCode())
                 .orElseGet(() -> {
                     Terms newTerms = new Terms();
+                    System.out.println("[DTO-DEBUG] setCode=" + dto.getTermsCode());
                     newTerms.setCode(dto.getTermsCode());
                     return termsRepository.save(newTerms);
                 });
 
             // Create Resource entity
             Ressource resource = new Ressource();
+            System.out.println("[DTO-DEBUG] setLabel=" + dto.getLabel());
             resource.setLabel(dto.getLabel());
+            System.out.println("[DTO-DEBUG] setName=" + dto.getName());
             resource.setName(dto.getName());
+            System.out.println("[DTO-DEBUG] setApogeeCode=" + dto.getApogeeCode());
             resource.setApogeeCode(dto.getApogeeCode());
+            System.out.println("[DTO-DEBUG] setSemester=" + dto.getSemester());
             resource.setSemester(dto.getSemester());
             resource.setDiffMultiCompetences(false);
             resource.setTerms(terms);
             resource.setPath(path);
 
             Ressource savedResource = ressourceRepository.save(resource);
+
 
             // Create ResourceSheet with current date
             RessourceSheet resourceSheet = new RessourceSheet();
@@ -232,10 +247,16 @@ public class MCCCController {
             nationalProgramObjectiveRepository.save(objective);
 
             // Create HoursPerStudent (formation initiale)
+            System.out.println("[DTO-DEBUG] getCmInitial=" + dto.getCmInitial());
+            System.out.println("[DTO-DEBUG] getTdInitial=" + dto.getTdInitial());
+            System.out.println("[DTO-DEBUG] getTpInitial=" + dto.getTpInitial());
             if (dto.getCmInitial() != null || dto.getTdInitial() != null || dto.getTpInitial() != null) {
                 HoursPerStudent hoursInitial = new HoursPerStudent();
+                System.out.println("[DTO-DEBUG] setCm (initial)=" + (dto.getCmInitial() != null ? dto.getCmInitial() : 0.0));
                 hoursInitial.setCm(dto.getCmInitial() != null ? dto.getCmInitial() : 0.0);
+                System.out.println("[DTO-DEBUG] setTd (initial)=" + (dto.getTdInitial() != null ? dto.getTdInitial() : 0.0));
                 hoursInitial.setTd(dto.getTdInitial() != null ? dto.getTdInitial() : 0.0);
+                System.out.println("[DTO-DEBUG] setTp (initial)=" + (dto.getTpInitial() != null ? dto.getTpInitial() : 0.0));
                 hoursInitial.setTp(dto.getTpInitial() != null ? dto.getTpInitial() : 0.0);
                 hoursInitial.setHasAlternance(false);
                 hoursInitial.setResource(savedResource);
@@ -243,23 +264,32 @@ public class MCCCController {
             }
 
             // Create HoursPerStudent (alternance) if provided
+            System.out.println("[DTO-DEBUG] getCmAlternance=" + dto.getCmAlternance());
+            System.out.println("[DTO-DEBUG] getTdAlternance=" + dto.getTdAlternance());
+            System.out.println("[DTO-DEBUG] getTpAlternance=" + dto.getTpAlternance());
             if (dto.getCmAlternance() != null || dto.getTdAlternance() != null || dto.getTpAlternance() != null) {
                 HoursPerStudent hoursAlternance = new HoursPerStudent();
+                System.out.println("[DTO-DEBUG] setCm (alternance)=" + (dto.getCmAlternance() != null ? dto.getCmAlternance() : 0.0));
                 hoursAlternance.setCm(dto.getCmAlternance() != null ? dto.getCmAlternance() : 0.0);
+                System.out.println("[DTO-DEBUG] setTd (alternance)=" + (dto.getTdAlternance() != null ? dto.getTdAlternance() : 0.0));
                 hoursAlternance.setTd(dto.getTdAlternance() != null ? dto.getTdAlternance() : 0.0);
+                System.out.println("[DTO-DEBUG] setTp (alternance)=" + (dto.getTpAlternance() != null ? dto.getTpAlternance() : 0.0));
                 hoursAlternance.setTp(dto.getTpAlternance() != null ? dto.getTpAlternance() : 0.0);
                 hoursAlternance.setHasAlternance(true);
                 hoursAlternance.setResource(savedResource);
                 hoursPerStudentRepository.save(hoursAlternance);
             }
 
+
             // Create Main Teacher if provided
+            System.out.println("[DTO-DEBUG] getMainTeacher=" + dto.getMainTeacher());
             if (dto.getMainTeacher() != null && !dto.getMainTeacher().trim().isEmpty()) {
                 String[] parts = dto.getMainTeacher().trim().split(" ", 2);
                 if (parts.length == 2) {
                     List<UserSyncadia> users = userSyncadiaRepository.findByFirstnameAndLastname(parts[0], parts[1]);
                     if (!users.isEmpty()) {
                         MainTeacherForResource mainTeacher = new MainTeacherForResource();
+                        System.out.println("[DTO-DEBUG] setUser (mainTeacher)=" + users.get(0));
                         mainTeacher.setUser(users.get(0));
                         mainTeacher.setResource(savedResource);
                         mainTeacherForResourceRepository.save(mainTeacher);
@@ -268,14 +298,17 @@ public class MCCCController {
             }
 
             // Create Associated Teachers if provided
+            System.out.println("[DTO-DEBUG] getTeachers=" + dto.getTeachers());
             if (dto.getTeachers() != null) {
                 for (String teacherName : dto.getTeachers()) {
+                    System.out.println("[DTO-DEBUG] teacherName=" + teacherName);
                     if (teacherName != null && !teacherName.trim().isEmpty()) {
                         String[] parts = teacherName.trim().split(" ", 2);
                         if (parts.length == 2) {
                             List<UserSyncadia> users = userSyncadiaRepository.findByFirstnameAndLastname(parts[0], parts[1]);
                             if (!users.isEmpty()) {
                                 TeachersForResource teacher = new TeachersForResource();
+                                System.out.println("[DTO-DEBUG] setUser (teacher)=" + users.get(0));
                                 teacher.setUser(users.get(0));
                                 teacher.setResource(savedResource);
                                 teachersForResourceRepository.save(teacher);
@@ -285,13 +318,18 @@ public class MCCCController {
                 }
             }
 
+
             // Create UE Coefficients
+            System.out.println("[DTO-DEBUG] getUeCoefficients=" + dto.getUeCoefficients());
             if (dto.getUeCoefficients() != null) {
                 for (iut.unilim.fr.back.dto.ResourceDTO.UeCoefficientDTO coeffDTO : dto.getUeCoefficients()) {
+                    System.out.println("[DTO-DEBUG] coeffDTO.getUeId=" + coeffDTO.getUeId());
+                    System.out.println("[DTO-DEBUG] coeffDTO.getCoefficient=" + coeffDTO.getCoefficient());
                     if (coeffDTO.getUeId() != null) {
                         Optional<UE> ue = ueRepository.findById(coeffDTO.getUeId());
                         if (ue.isPresent()) {
                             UeCoefficient coefficient = new UeCoefficient();
+                            System.out.println("[DTO-DEBUG] setCoefficient (UE)=" + coeffDTO.getCoefficient());
                             coefficient.setCoefficient(coeffDTO.getCoefficient());
                             coefficient.setUe(ue.get());
                             coefficient.setResource(savedResource);
