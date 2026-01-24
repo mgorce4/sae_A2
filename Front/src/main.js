@@ -4,9 +4,9 @@ import App from './App.vue'
 import Header from './pages/header_app.vue'
 import Footer from './pages/footer_app.vue'
 
-export const status = ref("")
-export const userName = ref("")
-export const institutionLocation = ref("")
+export const status = ref('')
+export const userName = ref('')
+export const institutionLocation = ref('')
 
 export function removeUser() {
     localStorage.removeItem('access_rights')
@@ -30,6 +30,5 @@ app.component('header-application', Header)
 app.component('footer-application', Footer)
 app.component('VCalendar', Calendar)
 app.component('VDatePicker', DatePicker)
-
 
 app.mount('#app')

@@ -1,12 +1,15 @@
-<script setup>
-
-</script>
+<script setup></script>
 
 <template>
     <div id="main">
-        <div style="display: flex; align-items: center; height: 1vw;">
+        <div style="display: flex; align-items: center; height: 1vw">
             <div id="return_arrow">
-                <button id="back_arrow"  onclick="window.location.hash = '#/dashboard-administration'">←</button>
+                <button
+                    id="back_arrow"
+                    onclick="window.location.hash = '#/dashboard-administration'"
+                >
+                    ←
+                </button>
                 <p>Retour</p>
             </div>
         </div>
@@ -17,32 +20,41 @@
                     <p class="title">Date de l'année scolaire en cours</p>
 
                     <div>
-                        <p>Date de début : </p>
-                        <input type="date" id="start_date" name="start_date">
+                        <p>Date de début :</p>
+                        <input type="date" id="start_date" name="start_date" />
 
-                        <p>Date de fin : </p>
-                        <input type="date" id="end_date" name="end_date">
+                        <p>Date de fin :</p>
+                        <input type="date" id="end_date" name="end_date" />
                     </div>
 
                     <div id="button_help">
-                        <button id="button" style="margin-top: 2vw; padding: 1vw; height: 5vw; font-size: 2.5vw;">Sauvegarder</button>
+                        <button
+                            id="button"
+                            style="margin-top: 2vw; padding: 1vw; height: 5vw; font-size: 2.5vw"
+                        >
+                            Sauvegarder
+                        </button>
                     </div>
                 </div>
 
                 <div id="button_help">
-                    <button id="button" style="margin-top: 2vw; padding: 1vw; height: 5vw; font-size: 2.5vw;">Centre d'aide</button>
+                    <button
+                        id="button"
+                        style="margin-top: 2vw; padding: 1vw; height: 5vw; font-size: 2.5vw"
+                    >
+                        Centre d'aide
+                    </button>
                 </div>
             </div>
 
             <div id="right_component">
-                <button id="button" style=" width: 31.5vw; margin: 3vh 1vw;">Vues professeur</button>
+                <button id="button" style="width: 31.5vw; margin: 3vh 1vw">Vues professeur</button>
             </div>
         </div>
     </div>
 </template>
 
 <style scoped>
-
 #left_component {
     display: flex;
     flex-direction: column;
@@ -64,5 +76,4 @@
     height: 40vw;
     border-radius: 1vw;
 }
-
 </style>
