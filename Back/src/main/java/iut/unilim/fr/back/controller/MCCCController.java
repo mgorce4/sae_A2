@@ -283,6 +283,8 @@ public class MCCCController {
                 SAELinkResource link = new SAELinkResource();
                 link.setResource(savedResource);
                 link.setSae(sae);
+                link.setIdResource(savedResource.getIdResource());
+                link.setIdSAE(sae.getIdSAE());
                 saeLinkResourceRepository.save(link);
             }
             Ressource reloadedResource = ressourceRepository.findById(savedResource.getIdResource())
