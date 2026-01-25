@@ -1,3 +1,4 @@
+
 package iut.unilim.fr.back.controller;
 
 import iut.unilim.fr.back.dto.ResourceDTO;
@@ -104,7 +105,20 @@ public class MCCCController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
+        /**
+     * Get MCCC resources by path ID and semester
+     * GET /api/v2/mccc/resources/path/{pathId}/semester/{semester}
+     */
+    @GetMapping("/resources/path/{pathId}/semester/{semester}")
+    public ResponseEntity<List<MCCCResourceDTO>> getMCCCResourcesByPathAndSemester(@PathVariable Long pathId, @PathVariable Integer semester) {
+        try {
+            List<Ressource> resources = ressourceRepository.findByPathIdAndSemester(pathId, semester);
+            List<MCCCResourceDTO> dtos = mcccMapper.toDTOList(resources);
+            return ResponseEntity.ok(dtos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
     /**
      * Get MCCC resources by semester
      * GET /api/v2/mccc/resources/semester/{semester}

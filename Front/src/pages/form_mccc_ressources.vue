@@ -630,7 +630,7 @@ onMounted(async () => {
             .get('http://localhost:8080/api/v2/resource-sheets')
             .then((reponse) => (resource_sheets.value = reponse.data)),
         axios
-            .get(`http://localhost:8080/api/v2/mccc/resources/path/${pathId.value}`)
+            .get(`http://localhost:8080/api/v2/mccc/resources/path/${pathId.value}/semester/${semesterNumber.value}`)
             .then((response) => (resources.value = response.data)),
         axios
             .get(`http://localhost:8080/api/v2/mccc/saes/path/${pathId.value}`)
@@ -828,8 +828,6 @@ function getUEsByInstitution() {
 
 function getResourcesBySemester() {
     return resources.value
-        .filter((res) => res.semester == getQueryParam('id'))
-        .filter((res) => res.pathId == getQueryParam('pathId'))
 }
 
 function getUEFromResource(resource) {
@@ -1349,19 +1347,18 @@ function toggleShowPopUp() {
 
                             <div id="sae_container">
                                 <p>SAE liées :</p>
-                                <div v-if="(resource.saeResources || []).length === 0">
+                                <div v-if="!resource.linkedSaes || resource.linkedSaes.length === 0">
                                     <p style="color: #888; font-style: italic">Aucune SAE liée</p>
                                 </div>
-                                <div
-                                    v-for="saeResource in resource.saeResources || []"
-                                    :key="saeResource.saeId"
-                                >
-                                    <input
-                                        type="text"
-                                        class="input"
-                                        :value="saeResource.label"
-                                        readonly
-                                    />
+                                <div v-else>
+                                    <div v-for="(saeLabel, idx) in resource.linkedSaes" :key="idx">
+                                        <input
+                                            type="text"
+                                            class="input"
+                                            :value="saeLabel"
+                                            readonly
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
@@ -1375,18 +1372,20 @@ function toggleShowPopUp() {
                                 />
 
                                 <p>Professeur(s) associé(s) :</p>
-                                <div v-if="(resource.teachers || []).length === 0">
+                                <div v-if="!resource.teachers || resource.teachers.length === 0">
                                     <p style="color: #888; font-style: italic">
                                         Aucun professeur associé
                                     </p>
                                 </div>
-                                <div v-for="teacher in resource.teachers || []" :key="teacher">
-                                    <input
-                                        type="text"
-                                        class="input"
-                                        :value="teacherName"
-                                        readonly
-                                    />
+                                <div v-else>
+                                    <div v-for="(teacher, idx) in resource.teachers" :key="idx">
+                                        <input
+                                            type="text"
+                                            class="input"
+                                            :value="teacher.teacherName"
+                                            readonly
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
