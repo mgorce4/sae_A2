@@ -19,7 +19,6 @@ public class ResourceDTO {
     private String mainTeacher;  // "Firstname Lastname"
     private List<String> teachers;  // ["Firstname Lastname", ...]
     private List<UeCoefficientDTO> ueCoefficients;
-    private List<SaeInfoDTO> linkedSaes;
 
     public static class UeCoefficientDTO {
         private Long ueId;
@@ -178,14 +177,6 @@ public class ResourceDTO {
 
     public void setUeCoefficients(List<UeCoefficientDTO> ueCoefficients) {
         this.ueCoefficients = ueCoefficients;
-    }
-
-    public List<SaeInfoDTO> getLinkedSaes() {
-        return linkedSaes;
-    }
-
-    public void setLinkedSaes(List<SaeInfoDTO> linkedSaes) {
-        this.linkedSaes = linkedSaes;
     }
 }
 

@@ -569,7 +569,7 @@ async function saveResource() {
         display_more_area.value = false
 
         console.log('✅ Ressource sauvegardée avec succès')
-        location.reload()
+        //location.reload()
     } catch (error) {
         console.error('❌ Erreur lors de la sauvegarde:', error)
         alert(
