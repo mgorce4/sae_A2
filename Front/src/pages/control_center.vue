@@ -20,19 +20,30 @@
                     <div style="display: flex">
                         <p v-if="status" class="btn_how_to" @click="toggleShowPopUp">ⓘ</p>
                         <div v-show="show_popup" id="popup_date">
-                            Vous pouvez remplir les dates de début et de fin d'année scolaire.
-                            À la fin de l'année scolaire, la date de fin devindra la date de début de la nouvelle année scolaire.
+                            Vous pouvez remplir les dates de début et de fin d'année scolaire. À la
+                            fin de l'année scolaire, la date de fin devindra la date de début de la
+                            nouvelle année scolaire.
                         </div>
                     </div>
                     <div style="justify-items: center">
                         <p class="title" style="margin-top: 0">Date de l'année scolaire en cours</p>
 
-                    <div>
-                        <p>Date de début :</p>
-                        <input type="date" id="start_date" name="start_date" />
+                        <div>
+                            <p>Date de début :</p>
+                            <input type="date" id="start_date" name="start_date" />
 
-                        <p>Date de fin :</p>
-                        <input type="date" id="end_date" name="end_date" />
+                            <p>Date de fin :</p>
+                            <input type="date" id="end_date" name="end_date" />
+                        </div>
+
+                        <div id="button_help">
+                            <button
+                                id="button"
+                                style="margin-top: 2vw; padding: 1vw; height: 5vw; font-size: 2.5vw"
+                            >
+                                Sauvegarder
+                            </button>
+                        </div>
                     </div>
 
                     <div id="button_help">
@@ -40,26 +51,18 @@
                             id="button"
                             style="margin-top: 2vw; padding: 1vw; height: 5vw; font-size: 2.5vw"
                         >
-                            Sauvegarder
+                            Centre d'aide
                         </button>
                     </div>
                 </div>
 
-                <div id="button_help">
-                    <button
-                        id="button"
-                        style="margin-top: 2vw; padding: 1vw; height: 5vw; font-size: 2.5vw"
-                    >
-                        Centre d'aide
+                <div id="right_component">
+                    <button id="button" style="width: 31.5vw; margin: 3vh 1vw">
+                        Vues professeur
                     </button>
                 </div>
             </div>
-
-            <div id="right_component">
-                <button id="button" style="width: 31.5vw; margin: 3vh 1vw">Vues professeur</button>
-            </div>
         </div>
-    </div>
     </div>
 </template>
 

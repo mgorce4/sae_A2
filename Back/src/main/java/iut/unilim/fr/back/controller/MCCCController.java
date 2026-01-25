@@ -2,6 +2,7 @@ package iut.unilim.fr.back.controller;
 
 import iut.unilim.fr.back.dto.ResourceDTO;
 import iut.unilim.fr.back.dto.ResourceSheetDTO;
+import iut.unilim.fr.back.dto.ResourceDTO.UeCoefficientDTO;
 import iut.unilim.fr.back.dto.admin.MCCCResourceDTO;
 import iut.unilim.fr.back.dto.admin.MCCCSaeDTO;
 import iut.unilim.fr.back.dto.admin.MCCCUEDTO;
@@ -191,11 +192,81 @@ public class MCCCController {
             }
             dto.setLinkedSaes(linkedSaes);
             System.out.println("Creating MCCC Resource with DTO: " + dto);
-            ResourceSheetDTO resourceSheet = new ResourceSheetDTO();
+
+            Path path = pathRepository.findById(dto.getPathId())
+                .orElseThrow(() -> new RuntimeException("Path not found with id: " + dto.getPathId()));
+
+            Terms terms = termsRepository.findFirstByCode(dto.getTermsCode())
+            .orElseGet(() -> {
+                Terms newTerms = new Terms();
+                newTerms.setCode(dto.getTermsCode());
+                return termsRepository.save(newTerms);
+            });
+
+            Ressource resource = new Ressource();
+            resource.setLabel(dto.getLabel());
+            resource.setName(dto.getName());
+            resource.setApogeeCode(dto.getApogeeCode());
+            resource.setSemester(dto.getSemester());
+            resource.setDiffMultiCompetences(false);
+            resource.setTerms(terms);
+            resource.setPath(path);
+
+            Ressource savedResource = ressourceRepository.save(resource);
+
+
+            RessourceSheet resourceSheet = new RessourceSheet();
+            resourceSheet.setResource(savedResource);
             resourceSheet.setYear(LocalDate.now());
-            resourceSheet.setResource
+            ressourceSheetRepository.save(resourceSheet);
+
+            NationalProgramObjective nationalProgramObjective = new NationalProgramObjective();
+            nationalProgramObjective.setContent("" );
+            nationalProgramObjective.setResourceSheet(resourceSheet);
+            nationalProgramObjectiveRepository.save(nationalProgramObjective);
+
+            HoursPerStudent hoursInitial = new HoursPerStudent();
+            // implémenter get id ressource pour le ste dans les hoursPerStudent
+            hoursInitial.setCm(dto.getInitialCm() != null ? dto.getInitialCm() : 0.0);
+            hoursInitial.setTd(dto.getInitialTd() != null ? dto.getInitialTd() : 0.0);
+            hoursInitial.setTp(dto.getInitialTp() != null ? dto.getInitialTp() : 0.0);
+            hoursInitial.setHasAlternance(false);
+            hoursInitial.setResource(savedResource);
+
+            HoursPerStudent hoursAlternance = new HoursPerStudent();
+            hoursAlternance.setCm(dto.getAlternanceCm() != null ? dto.getAlternanceCm() : 0.0);
+            hoursAlternance.setTd(dto.getAlternanceTd() != null ? dto.getAlternanceTd() : 0.0);
+            hoursAlternance.setTp(dto.getAlternanceTp() != null ? dto.getAlternanceTp() : 0.0);
+            hoursAlternance.setHasAlternance(true);
+            hoursAlternance.setResource(savedResource);
+
+            hoursPerStudentRepository.save(hoursInitial);
+            hoursPerStudentRepository.save(hoursAlternance);
+
+            for (String mainTeacher : dto.getMainTeachers()) {
+                MainTeacherForResource mainTeacherEntity = new MainTeacherForResource();
+                mainTeacherEntity.setResource(savedResource);
+                // récupérer les id des teachers à partir de leur nom ?
+            }
+
+            // pareil pour les enseignants associés
+
+            for (UeCoefficientDTO ueco: dto.getUeCoefficients()) {
+                UeCoefficient coefficient = new UeCoefficient();
+                coefficient.setCoefficient(ueco.getCoefficient());
+                coefficient.setResource(savedResource);
+                Optional<UE> ueOpt = ueRepository.findById(ueco.getUeId());
+                coefficient.setUe(ueOpt.orElseThrow(() -> new RuntimeException("UE not found with id: " + ueco.getUeId())));
+            }
+
+            for (SAE sae : dto.getLinkedSaes()) {
+                SAELinkResource link = new SAELinkResource();
+                link.setResource(savedResource);
+                link.setSae(sae);
+                saeLinkResourceRepository.save(link);
+            }
             
-            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not implemented yet");
+            return ResponseEntity.ok("Création réussie !");
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e);

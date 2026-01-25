@@ -222,7 +222,7 @@ public class ResourceDTO {
                 ", alternanceCm=" + alternanceCm +
                 ", alternanceTd=" + alternanceTd +
                 ", alternanceTp=" + alternanceTp +
-                ", mainTeacher='" + mainTeachers + '\'' +
+                ", mainTeachers=" + mainTeachers +
                 ", teachers=" + teachers +
                 ", ueCoefficients=" + ueCoefficients +
                 ", linkedSaesIds=" + linkedSaesIds +

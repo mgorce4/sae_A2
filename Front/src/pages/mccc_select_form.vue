@@ -256,7 +256,7 @@ function toggleShowPopUp() {
 }
 
 #popup_years::after {
-    content: "";
+    content: '';
     position: absolute;
     top: 11vw;
     right: 17vw;

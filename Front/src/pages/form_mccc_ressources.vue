@@ -510,7 +510,9 @@ async function saveResource() {
         alternanceCm: checkboxAlternanceStatus.value ? parseFloat(CM_work_study.value) || 0 : 0,
         alternanceTd: checkboxAlternanceStatus.value ? parseFloat(TD_work_study.value) || 0 : 0,
         alternanceTp: checkboxAlternanceStatus.value ? parseFloat(TP_work_study.value) || 0 : 0,
-        mainTeachers: main_teachers_list,
+        mainTeachers: main_teachers_list.value
+            .map((t) => t.value?.trim())
+            .filter((v) => v && v !== ''),
         teachers: teachers_list.value
             .filter((t) => t.value && t.value.trim() !== '')
             .map((t) => t.value.trim()),
@@ -524,7 +526,7 @@ async function saveResource() {
                     coefficient: parseFloat(u.coefficient),
                 }
             }),
-        linkedSaesIds: saes.value.filter(sae => sae.checked).map(sae => sae.saeId),
+        linkedSaesIds: saes.value.filter((sae) => sae.checked).map((sae) => sae.saeId),
     }
 
     console.log('📤 Envoi du DTO ressource:', resourceDTO)
@@ -631,7 +633,7 @@ onMounted(async () => {
         .filter((ar) => ar.user.institution.idInstitution == localStorage.idInstitution)
         .filter((ar) => ar.accessRight == access_right_teacher)
     saes.value = saes.value.filter((saes) => saes.semester == getQueryParam('id'))
-    saes.value = saes.value.map(sae => ({ ...sae, checked: false }))
+    saes.value = saes.value.map((sae) => ({ ...sae, checked: false }))
 
     await nextTick()
 
