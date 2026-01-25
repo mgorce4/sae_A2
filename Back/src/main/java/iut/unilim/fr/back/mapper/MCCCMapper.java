@@ -51,7 +51,6 @@ public class MCCCMapper {
         }
 
         // Institution ID from main teacher
-        /*dto.setInstitutionId(getInstitutionId(resource.getIdResource()));*/
         dto.setInstitutionId(getInstitutionIdFromPath(resource));
         // Path information
         if (resource.getPath() != null) {
@@ -169,16 +168,6 @@ public class MCCCMapper {
     /**
      * Get institution ID from main teacher
      */
-    private Long getInstitutionId(Long resourceId) {
-        List<MainTeacherForResource> mainTeachers = mainTeacherForResourceRepository.findByIdResource(resourceId);
-        if (!mainTeachers.isEmpty() && mainTeachers.get(0).getUser() != null) {
-            UserSyncadia user = mainTeachers.get(0).getUser();
-            if (user.getInstitution() != null) {
-                return user.getInstitution().getIdInstitution();
-            }
-        }
-        return null;
-    }
 
     private Long getInstitutionIdFromPath(Ressource resource) {
     if (resource.getPath() != null && resource.getPath().getInstitution() != null) {
@@ -212,6 +201,12 @@ public class MCCCMapper {
                 .toList();
     }
 
+    private List<Long> getTeacherIds(Long resourceId) {
+    return teachersForResourceRepository.findByIdResource(resourceId).stream()
+        .filter(t -> t.getUser() != null)
+        .map(t -> t.getUser().getIdUser())
+        .toList();
+    }
 
     /**
      * Get UE coefficients

@@ -124,21 +124,23 @@ function addTeacherEvents(div) {
 
     list.addEventListener('mouseover', (event) => {
         if (event.target.classList && event.target.classList.contains('teacher_name')) {
-            input.value = event.target.innerText
+            input.value = event.target.getAttribute('data-fullname')
             // keep the reactive source of truth in sync
             const index = get_index()
             if (index !== -1 && teachers_list.value[index]) {
-                teachers_list.value[index].value = event.target.innerText
+                teachers_list.value[index].value = event.target.getAttribute('data-fullname')
+                teachers_list.value[index].idUser = parseInt(event.target.getAttribute('data-iduser'))
             }
         }
     })
 
     list.addEventListener('click', (event) => {
         if (event.target.classList && event.target.classList.contains('teacher_name')) {
-            input.value = event.target.innerText
+            input.value = event.target.getAttribute('data-fullname')
             const index = get_index()
             if (index !== -1 && teachers_list.value[index]) {
-                teachers_list.value[index].value = event.target.innerText
+                teachers_list.value[index].value = event.target.getAttribute('data-fullname')
+                teachers_list.value[index].idUser = parseInt(event.target.getAttribute('data-iduser'))
             }
             if (index !== -1) {
                 show_teacher_list.value[index] = false
@@ -172,21 +174,23 @@ function addMainTeacherEvents(div) {
 
     list.addEventListener('mouseover', (event) => {
         if (event.target.classList && event.target.classList.contains('main_teacher_name')) {
-            input.value = event.target.innerText
+            input.value = event.target.getAttribute('data-fullname')
             // keep the reactive source of truth in sync
             const index = get_index()
             if (index !== -1 && main_teachers_list.value[index]) {
-                main_teachers_list.value[index].value = event.target.innerText
+                main_teachers_list.value[index].value = event.target.getAttribute('data-fullname')
+                main_teachers_list.value[index].idUser = parseInt(event.target.getAttribute('data-iduser'))
             }
         }
     })
 
     list.addEventListener('click', (event) => {
         if (event.target.classList && event.target.classList.contains('main_teacher_name')) {
-            input.value = event.target.innerText
+            input.value = event.target.getAttribute('data-fullname')
             const index = get_index()
             if (index !== -1 && main_teachers_list.value[index]) {
-                main_teachers_list.value[index].value = event.target.innerText
+                main_teachers_list.value[index].value = event.target.getAttribute('data-fullname')
+                main_teachers_list.value[index].idUser = parseInt(event.target.getAttribute('data-iduser'))
             }
             if (index !== -1) {
                 show_main_teacher_list.value[index] = false
@@ -347,6 +351,9 @@ function setErrorMessage(elementId, message) {
 // Fonction de sauvegarde de ressource - Comme saveSae
 async function saveResource() {
     /* display errors messages */
+    // DEBUG: Log teachers_list and access_rights before mapping
+    console.log('DEBUG teachers_list:', JSON.parse(JSON.stringify(teachers_list.value)))
+    console.log('DEBUG access_rights:', JSON.parse(JSON.stringify(access_rights.value)))
 
     console.log('=== SAUVEGARDE RESSOURCE ===')
 
@@ -467,29 +474,20 @@ async function saveResource() {
 
     const mainTeachersIds = computed(() =>
         main_teachers_list.value
-            .map((t) => {
-                const found = access_rights.value.find(
-                    (ar) =>
-                        `${ar.user.firstname} ${ar.user.lastname}`.trim().toLowerCase() ===
-                        (t.value || '').trim().toLowerCase(),
-                )
-                return found ? found.user.idUser : null
-            })
-            .filter((id) => id !== null),
+            .map((t) => t.idUser)
+            .filter((id) => typeof id === 'number' && !isNaN(id)),
     )
 
-    const teachersIds = computed(() =>
-        teachers_list.value
-            .map((t) => {
-                const found = access_rights.value.find(
-                    (ar) =>
-                        `${ar.user.firstname} ${ar.user.lastname}`.trim().toLowerCase() ===
-                        (t.value || '').trim().toLowerCase(),
-                )
-                return found ? found.user.idUser : null
-            })
-            .filter((id) => id !== null),
-    )
+    // Correction : pour teachersIds, même logique que mainTeachersIds, mais on ne prend que les champs non vides et on évite d'envoyer [] si un prof est sélectionné
+    const teachersIds = computed(() => {
+        // Si un seul champ et il est vide, retourne []
+        if (teachers_list.value.length === 1 && (!teachers_list.value[0].idUser || isNaN(teachers_list.value[0].idUser))) {
+            return [];
+        }
+        return teachers_list.value
+            .map((t) => t.idUser)
+            .filter((id) => typeof id === 'number' && !isNaN(id));
+    });
 
     // Check for duplicate teacher names
     for (let i = 0; i < teacher_names.length; i++) {
@@ -589,6 +587,8 @@ async function saveResource() {
         if (mainTeacherInput) {
             mainTeacherInput.value = ''
         }
+        console.log('mainTeachersIds:', mainTeachersIds.value)
+        console.log('teachersIds:', teachersIds.value)
 
         is_modifying.value = false
         resource_id_to_modify.value = null
@@ -1196,10 +1196,11 @@ function toggleShowPopUp() {
                                                     <div
                                                         class="main_teacher_name"
                                                         v-for="acr in access_rights"
-                                                        :key="acr"
+                                                        :key="acr.idUser"
+                                                        :data-iduser="acr.user.idUser"
+                                                        :data-fullname="`${acr.user.firstname} ${acr.user.lastname}`"
                                                     >
-                                                        {{ acr.user.firstname }}
-                                                        {{ acr.user.lastname }}
+                                                        {{ acr.user.firstname }} {{ acr.user.lastname }}
                                                     </div>
                                                 </div>
                                                 <p v-else>
@@ -1243,10 +1244,11 @@ function toggleShowPopUp() {
                                                     <div
                                                         class="teacher_name"
                                                         v-for="acr in access_rights"
-                                                        :key="acr"
+                                                        :key="acr.idUser"
+                                                        :data-iduser="acr.user.idUser"
+                                                        :data-fullname="`${acr.user.firstname} ${acr.user.lastname}`"
                                                     >
-                                                        {{ acr.user.firstname }}
-                                                        {{ acr.user.lastname }}
+                                                        {{ acr.user.firstname }} {{ acr.user.lastname }}
                                                     </div>
                                                 </div>
                                                 <p v-else>

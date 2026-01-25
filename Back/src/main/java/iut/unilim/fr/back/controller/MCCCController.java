@@ -243,18 +243,30 @@ public class MCCCController {
             hoursPerStudentRepository.save(hoursInitial);
             hoursPerStudentRepository.save(hoursAlternance);
 
-            for (Long mainTeacher : dto.getMainTeachers()) {
-                MainTeacherForResource mainTeacherEntity = new MainTeacherForResource();
-                mainTeacherEntity.setResource(savedResource);
-                mainTeacherEntity.setIdUser(mainTeacher);
-                mainTeacherForResourceRepository.save(mainTeacherEntity);
+            for (Long mainTeacherId : dto.getMainTeachers()) {
+                if (mainTeacherId != null) {
+                    UserSyncadia user = userSyncadiaRepository.findById(mainTeacherId)
+                        .orElseThrow(() -> new RuntimeException("User not found with id: " + mainTeacherId));
+                    MainTeacherForResource mainTeacherEntity = new MainTeacherForResource();
+                    mainTeacherEntity.setUser(user);
+                    mainTeacherEntity.setResource(savedResource);
+                    mainTeacherEntity.setIdUser(user.getIdUser());
+                    mainTeacherEntity.setIdResource(savedResource.getIdResource());
+                    mainTeacherForResourceRepository.save(mainTeacherEntity);
+                }
             }
 
             for (Long teacherId : dto.getTeachers()) {
-                TeachersForResource teacherEntity = new TeachersForResource();
-                teacherEntity.setResource(savedResource);
-                teacherEntity.setIdUser(teacherId);
-                teachersForResourceRepository.save(teacherEntity);
+                if (teacherId != null) {
+                    UserSyncadia user = userSyncadiaRepository.findById(teacherId)
+                        .orElseThrow(() -> new RuntimeException("User not found with id: " + teacherId));
+                    TeachersForResource teacherEntity = new TeachersForResource();
+                    teacherEntity.setResource(savedResource);
+                    teacherEntity.setUser(user);
+                    teacherEntity.setIdUser(user.getIdUser());
+                    teacherEntity.setIdResource(savedResource.getIdResource());
+                    teachersForResourceRepository.save(teacherEntity);
+                }
             }
 
 
