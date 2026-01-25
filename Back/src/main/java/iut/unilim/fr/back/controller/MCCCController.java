@@ -243,13 +243,20 @@ public class MCCCController {
             hoursPerStudentRepository.save(hoursInitial);
             hoursPerStudentRepository.save(hoursAlternance);
 
-            for (String mainTeacher : dto.getMainTeachers()) {
+            for (Long mainTeacher : dto.getMainTeachers()) {
                 MainTeacherForResource mainTeacherEntity = new MainTeacherForResource();
                 mainTeacherEntity.setResource(savedResource);
-                // récupérer les id des teachers à partir de leur nom ?
+                mainTeacherEntity.setIdUser(mainTeacher);
+                mainTeacherForResourceRepository.save(mainTeacherEntity);
             }
 
-            // pareil pour les enseignants associés
+            for (Long teacherId : dto.getTeachers()) {
+                TeachersForResource teacherEntity = new TeachersForResource();
+                teacherEntity.setResource(savedResource);
+                teacherEntity.setIdUser(teacherId);
+                teachersForResourceRepository.save(teacherEntity);
+            }
+
 
             for (UeCoefficientDTO ueco: dto.getUeCoefficients()) {
                 UeCoefficient coefficient = new UeCoefficient();

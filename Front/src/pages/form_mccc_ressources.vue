@@ -465,6 +465,32 @@ async function saveResource() {
         teacher_names.push(main_teacher_value)
     }
 
+    const mainTeachersIds = computed(() =>
+        main_teachers_list.value
+            .map((t) => {
+                const found = access_rights.value.find(
+                    (ar) =>
+                        `${ar.user.firstname} ${ar.user.lastname}`.trim().toLowerCase() ===
+                        (t.value || '').trim().toLowerCase(),
+                )
+                return found ? found.user.idUser : null
+            })
+            .filter((id) => id !== null),
+    )
+
+    const teachersIds = computed(() =>
+        teachers_list.value
+            .map((t) => {
+                const found = access_rights.value.find(
+                    (ar) =>
+                        `${ar.user.firstname} ${ar.user.lastname}`.trim().toLowerCase() ===
+                        (t.value || '').trim().toLowerCase(),
+                )
+                return found ? found.user.idUser : null
+            })
+            .filter((id) => id !== null),
+    )
+
     // Check for duplicate teacher names
     for (let i = 0; i < teacher_names.length; i++) {
         for (let j = 0; j < teacher_names.length; j++) {
@@ -510,12 +536,8 @@ async function saveResource() {
         alternanceCm: checkboxAlternanceStatus.value ? parseFloat(CM_work_study.value) || 0 : 0,
         alternanceTd: checkboxAlternanceStatus.value ? parseFloat(TD_work_study.value) || 0 : 0,
         alternanceTp: checkboxAlternanceStatus.value ? parseFloat(TP_work_study.value) || 0 : 0,
-        mainTeachers: main_teachers_list.value
-            .map((t) => t.value?.trim())
-            .filter((v) => v && v !== ''),
-        teachers: teachers_list.value
-            .filter((t) => t.value && t.value.trim() !== '')
-            .map((t) => t.value.trim()),
+        mainTeachers: mainTeachersIds.value,
+        teachers: teachersIds.value,
         ueCoefficients: ue_list.value
             .filter((u) => u.ue && u.coefficient)
             .map((u) => {

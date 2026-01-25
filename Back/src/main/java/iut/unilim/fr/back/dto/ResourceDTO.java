@@ -18,8 +18,8 @@ public class ResourceDTO {
     private Double alternanceCm;
     private Double alternanceTd;
     private Double alternanceTp;
-    private List<String> mainTeachers;  // "Firstname Lastname"
-    private List<String> teachers;  // ["Firstname Lastname", ...]
+    private List<Long> mainTeachers;  // "Firstname Lastname"
+    private List<Long> teachers;  // ["Firstname Lastname", ...]
     private List<UeCoefficientDTO> ueCoefficients;
     private List<Long> linkedSaesIds;
     private List<SAE> linkedSaes;
@@ -167,19 +167,19 @@ public class ResourceDTO {
         this.alternanceTp = tpAlternance;
     }
 
-    public List<String> getMainTeachers() {
+    public List<Long> getMainTeachers() {
         return mainTeachers;
     }
 
-    public void setMainTeachers(List<String> mainTeachers) {
+    public void setMainTeachers(List<Long> mainTeachers) {
         this.mainTeachers = mainTeachers;
     }
 
-    public List<String> getTeachers() {
+    public List<Long> getTeachers() {
         return teachers;
     }
 
-    public void setTeachers(List<String> teachers) {
+    public void setTeachers(List<Long> teachers) {
         this.teachers = teachers;
     }
 
