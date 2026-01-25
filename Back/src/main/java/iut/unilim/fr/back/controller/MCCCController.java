@@ -276,6 +276,7 @@ public class MCCCController {
                 coefficient.setResource(savedResource);
                 Optional<UE> ueOpt = ueRepository.findById(ueco.getUeId());
                 coefficient.setUe(ueOpt.orElseThrow(() -> new RuntimeException("UE not found with id: " + ueco.getUeId())));
+                ueCoefficientRepository.save(coefficient);
             }
 
             for (SAE sae : dto.getLinkedSaes()) {

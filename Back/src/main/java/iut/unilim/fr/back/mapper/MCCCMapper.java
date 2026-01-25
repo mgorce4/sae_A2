@@ -212,20 +212,22 @@ public class MCCCMapper {
      * Get UE coefficients
      */
     private List<MCCCResourceDTO.UECoefficientDTO> getUECoefficients(Long resourceId) {
-        return ueCoefficientRepository.findByResource_IdResource(resourceId).stream()
-                .filter(c -> c.getUe() != null)
-                .map(c -> {
-                    UE ue = c.getUe();
-                    MCCCResourceDTO.UECoefficientDTO dto =
-                            new MCCCResourceDTO.UECoefficientDTO(
-                                    ue.getLabel(),
-                                    ue.getName(),
-                                    c.getCoefficient()
-                            );
-                    dto.setUeId(ue.getUeNumber()); // 🔥 FIX ICI
-                    return dto;
-                })
-                .toList();
+        var coeffs = ueCoefficientRepository.findByResource_IdResource(resourceId);
+        System.out.println("--------------------------------------------------------------------------------------------------------------------------[DEBUG] UE coefficients for resourceId=" + resourceId + ": " + coeffs);
+        return coeffs.stream()
+            .filter(c -> c.getUe() != null)
+            .map(c -> {
+                UE ue = c.getUe();
+                MCCCResourceDTO.UECoefficientDTO dto =
+                    new MCCCResourceDTO.UECoefficientDTO(
+                        ue.getLabel(),
+                        ue.getName(),
+                        c.getCoefficient()
+                    );
+                dto.setUeId(ue.getUeNumber());
+                return dto;
+            })
+            .toList();
     }
 
 
