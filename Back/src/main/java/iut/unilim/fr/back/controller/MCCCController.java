@@ -1,5 +1,7 @@
 package iut.unilim.fr.back.controller;
 
+import iut.unilim.fr.back.dto.ResourceDTO;
+import iut.unilim.fr.back.dto.ResourceSheetDTO;
 import iut.unilim.fr.back.dto.admin.MCCCResourceDTO;
 import iut.unilim.fr.back.dto.admin.MCCCSaeDTO;
 import iut.unilim.fr.back.dto.admin.MCCCUEDTO;
@@ -13,12 +15,17 @@ import iut.unilim.fr.back.repository.SAERepository;
 import iut.unilim.fr.back.repository.TermsRepository;
 import iut.unilim.fr.back.repository.UERepository;
 import iut.unilim.fr.back.repository.UserSyncadiaRepository;
+import iut.unilim.fr.back.service.SAEService;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties.Http;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Optional;
@@ -175,181 +182,23 @@ public class MCCCController {
     @Transactional
     public ResponseEntity<?> createMCCCResource(@RequestBody iut.unilim.fr.back.dto.ResourceDTO dto) {
         try {
-            // Validation
-            System.out.println("[DTO-DEBUG] getPathId=" + dto.getPathId());
-            if (dto.getPathId() == null) {
-                return ResponseEntity.badRequest().body("pathId is required");
-            }
-            System.out.println("[DTO-DEBUG] getLabel=" + dto.getLabel());
-            if (dto.getLabel() == null || dto.getLabel().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("label is required");
-            }
-            System.out.println("[DTO-DEBUG] getName=" + dto.getName());
-            if (dto.getName() == null || dto.getName().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("name is required");
-            }
-            System.out.println("[DTO-DEBUG] getApogeeCode=" + dto.getApogeeCode());
-            if (dto.getApogeeCode() == null || dto.getApogeeCode().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("apogeeCode is required");
-            }
-            System.out.println("[DTO-DEBUG] getSemester=" + dto.getSemester());
-            if (dto.getSemester() == null) {
-                return ResponseEntity.badRequest().body("semester is required");
-            }
-            System.out.println("[DTO-DEBUG] getTermsCode=" + dto.getTermsCode());
-            if (dto.getTermsCode() == null || dto.getTermsCode().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("termsCode is required");
-            }
-
-
-            // Get path by ID
-            System.out.println("[DTO-DEBUG] getPathId (for path lookup)=" + dto.getPathId());
-            Path path = pathRepository.findById(dto.getPathId())
-                .orElseThrow(() -> new RuntimeException("Path not found with id: " + dto.getPathId()));
-
-            // Find or create Terms
-            System.out.println("[DTO-DEBUG] getTermsCode (for terms lookup)=" + dto.getTermsCode());
-            Terms terms = termsRepository.findFirstByCode(dto.getTermsCode())
-                .orElseGet(() -> {
-                    Terms newTerms = new Terms();
-                    System.out.println("[DTO-DEBUG] setCode=" + dto.getTermsCode());
-                    newTerms.setCode(dto.getTermsCode());
-                    return termsRepository.save(newTerms);
-                });
-
-            // Create Resource entity
-            Ressource resource = new Ressource();
-            System.out.println("[DTO-DEBUG] setLabel=" + dto.getLabel());
-            resource.setLabel(dto.getLabel());
-            System.out.println("[DTO-DEBUG] setName=" + dto.getName());
-            resource.setName(dto.getName());
-            System.out.println("[DTO-DEBUG] setApogeeCode=" + dto.getApogeeCode());
-            resource.setApogeeCode(dto.getApogeeCode());
-            System.out.println("[DTO-DEBUG] setSemester=" + dto.getSemester());
-            resource.setSemester(dto.getSemester());
-            resource.setDiffMultiCompetences(false);
-            resource.setTerms(terms);
-            resource.setPath(path);
-
-            Ressource savedResource = ressourceRepository.save(resource);
-
-
-            // Create ResourceSheet with current date
-            RessourceSheet resourceSheet = new RessourceSheet();
-            resourceSheet.setYear(java.time.LocalDate.now());
-            resourceSheet.setResource(savedResource);
-            ressourceSheetRepository.save(resourceSheet);
-
-            // Create empty NationalProgramObjective to avoid null conflicts
-            NationalProgramObjective objective = new NationalProgramObjective();
-            objective.setContent("");
-            objective.setResourceSheet(resourceSheet);
-            nationalProgramObjectiveRepository.save(objective);
-
-            // Create HoursPerStudent (formation initiale)
-            System.out.println("[DTO-DEBUG] getCmInitial=" + dto.getInitialCm());
-            System.out.println("[DTO-DEBUG] getTdInitial=" + dto.getInitialTd());
-            System.out.println("[DTO-DEBUG] getTpInitial=" + dto.getInitialTp());
-            if (dto.getInitialCm() != null || dto.getInitialTd() != null || dto.getInitialTp() != null) {
-                HoursPerStudent hoursInitial = new HoursPerStudent();
-                System.out.println("[DTO-DEBUG] setCm (initial)=" + (dto.getInitialCm() != null ? dto.getInitialCm() : 0.0));
-                hoursInitial.setCm(dto.getInitialCm() != null ? dto.getInitialCm() : 0.0);
-                System.out.println("[DTO-DEBUG] setTd (initial)=" + (dto.getInitialTd() != null ? dto.getInitialTd() : 0.0));
-                hoursInitial.setTd(dto.getInitialTd() != null ? dto.getInitialTd() : 0.0);
-                System.out.println("[DTO-DEBUG] setTp (initial)=" + (dto.getInitialTp() != null ? dto.getInitialTp() : 0.0));
-                hoursInitial.setTp(dto.getInitialTp() != null ? dto.getInitialTp() : 0.0);
-                hoursInitial.setHasAlternance(false);
-                hoursInitial.setResource(savedResource);
-                hoursPerStudentRepository.save(hoursInitial);
-            }
-
-            // Create HoursPerStudent (alternance) if provided
-            System.out.println("[DTO-DEBUG] getCmAlternance=" + dto.getAlternanceCm());
-            System.out.println("[DTO-DEBUG] getTdAlternance=" + dto.getAlternanceTd());
-            System.out.println("[DTO-DEBUG] getTpAlternance=" + dto.getAlternanceTp());
-            if (dto.getAlternanceCm() != null || dto.getAlternanceTd() != null || dto.getAlternanceTp() != null) {
-                HoursPerStudent hoursAlternance = new HoursPerStudent();
-                System.out.println("[DTO-DEBUG] setCm (alternance)=" + (dto.getAlternanceCm() != null ? dto.getAlternanceCm() : 0.0));
-                hoursAlternance.setCm(dto.getAlternanceCm() != null ? dto.getAlternanceCm() : 0.0);
-                System.out.println("[DTO-DEBUG] setTd (alternance)=" + (dto.getAlternanceTd() != null ? dto.getAlternanceTd() : 0.0));
-                hoursAlternance.setTd(dto.getAlternanceTd() != null ? dto.getAlternanceTd() : 0.0);
-                System.out.println("[DTO-DEBUG] setTp (alternance)=" + (dto.getAlternanceTp() != null ? dto.getAlternanceTp() : 0.0));
-                hoursAlternance.setTp(dto.getAlternanceTp() != null ? dto.getAlternanceTp() : 0.0);
-                hoursAlternance.setHasAlternance(true);
-                hoursAlternance.setResource(savedResource);
-                hoursPerStudentRepository.save(hoursAlternance);
-            }
-
-
-            // Create Main Teacher if provided
-            System.out.println("[DTO-DEBUG] getMainTeacher=" + dto.getMainTeacher());
-            if (dto.getMainTeacher() != null && !dto.getMainTeacher().trim().isEmpty()) {
-                String[] parts = dto.getMainTeacher().trim().split(" ", 2);
-                if (parts.length == 2) {
-                    List<UserSyncadia> users = userSyncadiaRepository.findByFirstnameAndLastname(parts[0], parts[1]);
-                    if (!users.isEmpty()) {
-                        MainTeacherForResource mainTeacher = new MainTeacherForResource();
-                        System.out.println("[DTO-DEBUG] setUser (mainTeacher)=" + users.get(0));
-                        mainTeacher.setUser(users.get(0));
-                        mainTeacher.setResource(savedResource);
-                        mainTeacherForResourceRepository.save(mainTeacher);
-                    }
+            List<SAE> linkedSaes = new ArrayList<>();
+            if (dto.getLinkedSaesIds() != null) {
+                for (Long id : dto.getLinkedSaesIds()) {
+                    Optional<SAE> saeOpt = saeRepository.findById(id);
+                    saeOpt.ifPresent(linkedSaes::add);
                 }
             }
-
-            // Create Associated Teachers if provided
-            System.out.println("[DTO-DEBUG] getTeachers=" + dto.getTeachers());
-            if (dto.getTeachers() != null) {
-                for (String teacherName : dto.getTeachers()) {
-                    System.out.println("[DTO-DEBUG] teacherName=" + teacherName);
-                    if (teacherName != null && !teacherName.trim().isEmpty()) {
-                        String[] parts = teacherName.trim().split(" ", 2);
-                        if (parts.length == 2) {
-                            List<UserSyncadia> users = userSyncadiaRepository.findByFirstnameAndLastname(parts[0], parts[1]);
-                            if (!users.isEmpty()) {
-                                TeachersForResource teacher = new TeachersForResource();
-                                System.out.println("[DTO-DEBUG] setUser (teacher)=" + users.get(0));
-                                teacher.setUser(users.get(0));
-                                teacher.setResource(savedResource);
-                                teachersForResourceRepository.save(teacher);
-                            }
-                        }
-                    }
-                }
-            }
-
-
-            // Create UE Coefficients
-            System.out.println("[DTO-DEBUG] getUeCoefficients=" + dto.getUeCoefficients());
-            if (dto.getUeCoefficients() != null) {
-                for (iut.unilim.fr.back.dto.ResourceDTO.UeCoefficientDTO coeffDTO : dto.getUeCoefficients()) {
-                    System.out.println("[DTO-DEBUG] coeffDTO.getUeId=" + coeffDTO.getUeId());
-                    System.out.println("[DTO-DEBUG] coeffDTO.getCoefficient=" + coeffDTO.getCoefficient());
-                    if (coeffDTO.getUeId() != null) {
-                        Optional<UE> ue = ueRepository.findById(coeffDTO.getUeId());
-                        if (ue.isPresent()) {
-                            UeCoefficient coefficient = new UeCoefficient();
-                            System.out.println("[DTO-DEBUG] setCoefficient (UE)=" + coeffDTO.getCoefficient());
-                            coefficient.setCoefficient(coeffDTO.getCoefficient());
-                            coefficient.setUe(ue.get());
-                            coefficient.setResource(savedResource);
-                            ueCoefficientRepository.save(coefficient);
-                        }
-                    }
-                }
-            }
-
-            Ressource reloadedResource = ressourceRepository.findById(savedResource.getIdResource())
-                    .orElseThrow(() -> new RuntimeException("Failed to reload resource"));
-
-            MCCCResourceDTO resultDto = mcccMapper.toDTO(reloadedResource);
-            return ResponseEntity.ok(resultDto);
-
-
+            dto.setLinkedSaes(linkedSaes);
+            System.out.println("Creating MCCC Resource with DTO: " + dto);
+            ResourceSheetDTO resourceSheet = new ResourceSheetDTO();
+            resourceSheet.setYear(LocalDate.now());
+            resourceSheet.setResource
+            
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not implemented yet");
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error creating Resource: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e);
         }
     }
 

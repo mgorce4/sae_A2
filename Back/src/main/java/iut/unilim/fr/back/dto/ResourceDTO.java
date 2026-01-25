@@ -2,6 +2,8 @@ package iut.unilim.fr.back.dto;
 
 import java.util.List;
 
+import iut.unilim.fr.back.entity.SAE;
+
 public class ResourceDTO {
     private String label;
     private String name;
@@ -16,9 +18,11 @@ public class ResourceDTO {
     private Double alternanceCm;
     private Double alternanceTd;
     private Double alternanceTp;
-    private String mainTeacher;  // "Firstname Lastname"
+    private List<String> mainTeachers;  // "Firstname Lastname"
     private List<String> teachers;  // ["Firstname Lastname", ...]
     private List<UeCoefficientDTO> ueCoefficients;
+    private List<Long> linkedSaesIds;
+    private List<SAE> linkedSaes;
 
     public static class UeCoefficientDTO {
         private Long ueId;
@@ -47,6 +51,14 @@ public class ResourceDTO {
 
         public void setCoefficient(Double coefficient) {
             this.coefficient = coefficient;
+        }
+
+        public String toString() {
+            return "UeCoefficientDTO{" +
+                    "ueId=" + ueId +
+                    ", ueLabel='" + ueLabel + '\'' +
+                    ", coefficient=" + coefficient +
+                    '}';
         }
     }
 
@@ -155,12 +167,12 @@ public class ResourceDTO {
         this.alternanceTp = tpAlternance;
     }
 
-    public String getMainTeacher() {
-        return mainTeacher;
+    public List<String> getMainTeachers() {
+        return mainTeachers;
     }
 
-    public void setMainTeacher(String mainTeacher) {
-        this.mainTeacher = mainTeacher;
+    public void setMainTeachers(List<String> mainTeachers) {
+        this.mainTeachers = mainTeachers;
     }
 
     public List<String> getTeachers() {
@@ -177,6 +189,45 @@ public class ResourceDTO {
 
     public void setUeCoefficients(List<UeCoefficientDTO> ueCoefficients) {
         this.ueCoefficients = ueCoefficients;
+    }
+
+    public List<SAE> getLinkedSaes() {
+        return linkedSaes;
+    }
+
+    public void setLinkedSaes(List<SAE> linkedSaes) {
+        this.linkedSaes = linkedSaes;
+    }
+
+    public List<Long> getLinkedSaesIds() {
+        return linkedSaesIds;
+    }
+
+    public void setLinkedSaesIds(List<Long> linkedSaesIds) {
+        this.linkedSaesIds = linkedSaesIds;
+    }
+
+    public String toString() {
+        return "ResourceDTO{" +
+                "label='" + label + '\'' +
+                ", name='" + name + '\'' +
+                ", apogeeCode='" + apogeeCode + '\'' +
+                ", semester=" + semester +
+                ", institutionId=" + institutionId +
+                ", termsCode='" + termsCode + '\'' +
+                ", pathId=" + pathId +
+                ", initialCm=" + initialCm +
+                ", initialTd=" + initialTd +
+                ", initialTp=" + initialTp +
+                ", alternanceCm=" + alternanceCm +
+                ", alternanceTd=" + alternanceTd +
+                ", alternanceTp=" + alternanceTp +
+                ", mainTeacher='" + mainTeachers + '\'' +
+                ", teachers=" + teachers +
+                ", ueCoefficients=" + ueCoefficients +
+                ", linkedSaesIds=" + linkedSaesIds +
+                ", linkedSaes=" + linkedSaes +
+                '}';
     }
 }
 

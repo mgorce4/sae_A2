@@ -510,7 +510,7 @@ async function saveResource() {
         alternanceCm: checkboxAlternanceStatus.value ? parseFloat(CM_work_study.value) || 0 : 0,
         alternanceTd: checkboxAlternanceStatus.value ? parseFloat(TD_work_study.value) || 0 : 0,
         alternanceTp: checkboxAlternanceStatus.value ? parseFloat(TP_work_study.value) || 0 : 0,
-        mainTeacher: main_teacher_value,
+        mainTeachers: main_teachers_list,
         teachers: teachers_list.value
             .filter((t) => t.value && t.value.trim() !== '')
             .map((t) => t.value.trim()),
@@ -520,9 +520,11 @@ async function saveResource() {
                 const ueObject = filteredUeTableV2.value.find((ueItem) => ueItem.label === u.ue)
                 return {
                     ueId: ueObject?.ueNumber,
+                    ueLabel: u.ue,
                     coefficient: parseFloat(u.coefficient),
                 }
             }),
+        linkedSaesIds: saes.value.filter(sae => sae.checked).map(sae => sae.saeId),
     }
 
     console.log('📤 Envoi du DTO ressource:', resourceDTO)
@@ -629,6 +631,7 @@ onMounted(async () => {
         .filter((ar) => ar.user.institution.idInstitution == localStorage.idInstitution)
         .filter((ar) => ar.accessRight == access_right_teacher)
     saes.value = saes.value.filter((saes) => saes.semester == getQueryParam('id'))
+    saes.value = saes.value.map(sae => ({ ...sae, checked: false }))
 
     await nextTick()
 
@@ -998,7 +1001,7 @@ function toggleShowPopUp() {
                                     class="component sae_item"
                                 >
                                     <label class="switch">
-                                        <input type="checkbox" />
+                                        <input type="checkbox" v-model="sae.checked" />
                                         <span class="slider"></span>
                                     </label>
                                     <label>{{ sae.label }}</label>
