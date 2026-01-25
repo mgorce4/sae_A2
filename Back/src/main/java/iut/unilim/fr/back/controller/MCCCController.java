@@ -482,14 +482,14 @@ public class MCCCController {
                 return ResponseEntity.notFound().build();
             }
 
-            // The database triggers will handle cascading deletes for:
-            // - ResourceSheet (ON DELETE CASCADE)
-            // - UeCoefficient (ON DELETE CASCADE)
-            // - HoursPerStudent
-            // - MainTeacherForResource
-            // - TeachersForResource
-            // - SAELinkResource
+            // Delete all NationalProgramObjective entries referencing RessourceSheets of this resource
+            List<iut.unilim.fr.back.entity.RessourceSheet> sheets = ressourceSheetRepository.findByResource_IdResource(id);
+            for (iut.unilim.fr.back.entity.RessourceSheet sheet : sheets) {
+                List<iut.unilim.fr.back.entity.NationalProgramObjective> objectives = nationalProgramObjectiveRepository.findByResourceSheet_IdResourceSheet(sheet.getIdResourceSheet());
+                nationalProgramObjectiveRepository.deleteAll(objectives);
+            }
 
+            // Now delete the resource (and other cascading deletes as before)
             ressourceRepository.deleteById(id);
             return ResponseEntity.ok().build();
 
