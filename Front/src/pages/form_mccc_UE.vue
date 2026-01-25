@@ -271,7 +271,6 @@ const save = async () => {
         }
 
         await axios.post('http://localhost:8080/api/v2/mccc/ues', payload)
-
         ;[nb_UE, apogee_code, name_comp, comp_level, terms].forEach((f) => (f.value = ''))
         display_more_area.value = false
 

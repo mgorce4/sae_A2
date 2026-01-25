@@ -247,34 +247,34 @@ public class MCCCController {
             nationalProgramObjectiveRepository.save(objective);
 
             // Create HoursPerStudent (formation initiale)
-            System.out.println("[DTO-DEBUG] getCmInitial=" + dto.getCmInitial());
-            System.out.println("[DTO-DEBUG] getTdInitial=" + dto.getTdInitial());
-            System.out.println("[DTO-DEBUG] getTpInitial=" + dto.getTpInitial());
-            if (dto.getCmInitial() != null || dto.getTdInitial() != null || dto.getTpInitial() != null) {
+            System.out.println("[DTO-DEBUG] getCmInitial=" + dto.getInitialCm());
+            System.out.println("[DTO-DEBUG] getTdInitial=" + dto.getInitialTd());
+            System.out.println("[DTO-DEBUG] getTpInitial=" + dto.getInitialTp());
+            if (dto.getInitialCm() != null || dto.getInitialTd() != null || dto.getInitialTp() != null) {
                 HoursPerStudent hoursInitial = new HoursPerStudent();
-                System.out.println("[DTO-DEBUG] setCm (initial)=" + (dto.getCmInitial() != null ? dto.getCmInitial() : 0.0));
-                hoursInitial.setCm(dto.getCmInitial() != null ? dto.getCmInitial() : 0.0);
-                System.out.println("[DTO-DEBUG] setTd (initial)=" + (dto.getTdInitial() != null ? dto.getTdInitial() : 0.0));
-                hoursInitial.setTd(dto.getTdInitial() != null ? dto.getTdInitial() : 0.0);
-                System.out.println("[DTO-DEBUG] setTp (initial)=" + (dto.getTpInitial() != null ? dto.getTpInitial() : 0.0));
-                hoursInitial.setTp(dto.getTpInitial() != null ? dto.getTpInitial() : 0.0);
+                System.out.println("[DTO-DEBUG] setCm (initial)=" + (dto.getInitialCm() != null ? dto.getInitialCm() : 0.0));
+                hoursInitial.setCm(dto.getInitialCm() != null ? dto.getInitialCm() : 0.0);
+                System.out.println("[DTO-DEBUG] setTd (initial)=" + (dto.getInitialTd() != null ? dto.getInitialTd() : 0.0));
+                hoursInitial.setTd(dto.getInitialTd() != null ? dto.getInitialTd() : 0.0);
+                System.out.println("[DTO-DEBUG] setTp (initial)=" + (dto.getInitialTp() != null ? dto.getInitialTp() : 0.0));
+                hoursInitial.setTp(dto.getInitialTp() != null ? dto.getInitialTp() : 0.0);
                 hoursInitial.setHasAlternance(false);
                 hoursInitial.setResource(savedResource);
                 hoursPerStudentRepository.save(hoursInitial);
             }
 
             // Create HoursPerStudent (alternance) if provided
-            System.out.println("[DTO-DEBUG] getCmAlternance=" + dto.getCmAlternance());
-            System.out.println("[DTO-DEBUG] getTdAlternance=" + dto.getTdAlternance());
-            System.out.println("[DTO-DEBUG] getTpAlternance=" + dto.getTpAlternance());
-            if (dto.getCmAlternance() != null || dto.getTdAlternance() != null || dto.getTpAlternance() != null) {
+            System.out.println("[DTO-DEBUG] getCmAlternance=" + dto.getAlternanceCm());
+            System.out.println("[DTO-DEBUG] getTdAlternance=" + dto.getAlternanceTd());
+            System.out.println("[DTO-DEBUG] getTpAlternance=" + dto.getAlternanceTp());
+            if (dto.getAlternanceCm() != null || dto.getAlternanceTd() != null || dto.getAlternanceTp() != null) {
                 HoursPerStudent hoursAlternance = new HoursPerStudent();
-                System.out.println("[DTO-DEBUG] setCm (alternance)=" + (dto.getCmAlternance() != null ? dto.getCmAlternance() : 0.0));
-                hoursAlternance.setCm(dto.getCmAlternance() != null ? dto.getCmAlternance() : 0.0);
-                System.out.println("[DTO-DEBUG] setTd (alternance)=" + (dto.getTdAlternance() != null ? dto.getTdAlternance() : 0.0));
-                hoursAlternance.setTd(dto.getTdAlternance() != null ? dto.getTdAlternance() : 0.0);
-                System.out.println("[DTO-DEBUG] setTp (alternance)=" + (dto.getTpAlternance() != null ? dto.getTpAlternance() : 0.0));
-                hoursAlternance.setTp(dto.getTpAlternance() != null ? dto.getTpAlternance() : 0.0);
+                System.out.println("[DTO-DEBUG] setCm (alternance)=" + (dto.getAlternanceCm() != null ? dto.getAlternanceCm() : 0.0));
+                hoursAlternance.setCm(dto.getAlternanceCm() != null ? dto.getAlternanceCm() : 0.0);
+                System.out.println("[DTO-DEBUG] setTd (alternance)=" + (dto.getAlternanceTd() != null ? dto.getAlternanceTd() : 0.0));
+                hoursAlternance.setTd(dto.getAlternanceTd() != null ? dto.getAlternanceTd() : 0.0);
+                System.out.println("[DTO-DEBUG] setTp (alternance)=" + (dto.getAlternanceTp() != null ? dto.getAlternanceTp() : 0.0));
+                hoursAlternance.setTp(dto.getAlternanceTp() != null ? dto.getAlternanceTp() : 0.0);
                 hoursAlternance.setHasAlternance(true);
                 hoursAlternance.setResource(savedResource);
                 hoursPerStudentRepository.save(hoursAlternance);
@@ -400,17 +400,17 @@ public class MCCCController {
                 .findFirst()
                 .orElse(null);
 
-            if (dto.getCmInitial() != null || dto.getTdInitial() != null || dto.getTpInitial() != null) {
+            if (dto.getInitialCm() != null || dto.getInitialTd() != null || dto.getInitialTp() != null) {
                 if (hoursInitial != null) {
-                    hoursInitial.setCm(dto.getCmInitial() != null ? dto.getCmInitial() : 0.0);
-                    hoursInitial.setTd(dto.getTdInitial() != null ? dto.getTdInitial() : 0.0);
-                    hoursInitial.setTp(dto.getTpInitial() != null ? dto.getTpInitial() : 0.0);
+                    hoursInitial.setCm(dto.getInitialCm() != null ? dto.getInitialCm() : 0.0);
+                    hoursInitial.setTd(dto.getInitialTd() != null ? dto.getInitialTd() : 0.0);
+                    hoursInitial.setTp(dto.getInitialTp() != null ? dto.getInitialTp() : 0.0);
                     hoursPerStudentRepository.save(hoursInitial);
                 } else {
                     HoursPerStudent newHours = new HoursPerStudent();
-                    newHours.setCm(dto.getCmInitial() != null ? dto.getCmInitial() : 0.0);
-                    newHours.setTd(dto.getTdInitial() != null ? dto.getTdInitial() : 0.0);
-                    newHours.setTp(dto.getTpInitial() != null ? dto.getTpInitial() : 0.0);
+                    newHours.setCm(dto.getInitialCm() != null ? dto.getInitialCm() : 0.0);
+                    newHours.setTd(dto.getInitialTd() != null ? dto.getInitialTd() : 0.0);
+                    newHours.setTp(dto.getInitialTp() != null ? dto.getInitialTp() : 0.0);
                     newHours.setHasAlternance(false);
                     newHours.setResource(resource);
                     hoursPerStudentRepository.save(newHours);
@@ -423,17 +423,17 @@ public class MCCCController {
                 .findFirst()
                 .orElse(null);
 
-            if (dto.getCmAlternance() != null || dto.getTdAlternance() != null || dto.getTpAlternance() != null) {
+            if (dto.getAlternanceCm() != null || dto.getAlternanceTd() != null || dto.getAlternanceTp() != null) {
                 if (hoursAlternance != null) {
-                    hoursAlternance.setCm(dto.getCmAlternance() != null ? dto.getCmAlternance() : 0.0);
-                    hoursAlternance.setTd(dto.getTdAlternance() != null ? dto.getTdAlternance() : 0.0);
-                    hoursAlternance.setTp(dto.getTpAlternance() != null ? dto.getTpAlternance() : 0.0);
+                    hoursAlternance.setCm(dto.getAlternanceCm() != null ? dto.getAlternanceCm() : 0.0);
+                    hoursAlternance.setTd(dto.getAlternanceTd() != null ? dto.getAlternanceTd() : 0.0);
+                    hoursAlternance.setTp(dto.getAlternanceTp() != null ? dto.getAlternanceTp() : 0.0);
                     hoursPerStudentRepository.save(hoursAlternance);
                 } else {
                     HoursPerStudent newHours = new HoursPerStudent();
-                    newHours.setCm(dto.getCmAlternance() != null ? dto.getCmAlternance() : 0.0);
-                    newHours.setTd(dto.getTdAlternance() != null ? dto.getTdAlternance() : 0.0);
-                    newHours.setTp(dto.getTpAlternance() != null ? dto.getTpAlternance() : 0.0);
+                    newHours.setCm(dto.getAlternanceCm() != null ? dto.getAlternanceCm() : 0.0);
+                    newHours.setTd(dto.getAlternanceTd() != null ? dto.getAlternanceTd() : 0.0);
+                    newHours.setTp(dto.getAlternanceTp() != null ? dto.getAlternanceTp() : 0.0);
                     newHours.setHasAlternance(true);
                     newHours.setResource(resource);
                     hoursPerStudentRepository.save(newHours);

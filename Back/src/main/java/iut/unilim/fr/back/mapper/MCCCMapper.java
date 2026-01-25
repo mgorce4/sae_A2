@@ -104,14 +104,17 @@ public class MCCCMapper {
     /**
      * Set teacher hours (Initial and Alternance)
      * We need to find all resource sheets for this resource
+     * Fallback: if no TeacherHours, use HoursPerStudent
      */
     private void setTeacherHours(MCCCResourceDTO dto, Long resourceId) {
-
         List<TeacherHours> hoursList = teacherHoursRepository.findAll().stream()
                 .filter(th -> th.getResourceSheet() != null
                         && th.getResourceSheet().getResource() != null
                         && th.getResourceSheet().getResource().getIdResource().equals(resourceId))
                 .toList();
+
+        boolean foundInitial = false;
+        boolean foundAlternance = false;
 
         for (TeacherHours th : hoursList) {
             if (Boolean.TRUE.equals(th.getIsAlternance())) {
@@ -122,6 +125,7 @@ public class MCCCMapper {
                 dto.setAlternanceTotal(
                         dto.getAlternanceCm() + dto.getAlternanceTd() + dto.getAlternanceTp()
                 );
+                foundAlternance = true;
             } else {
                 dto.setInitialCm(parseHoursString(th.getCm()));
                 dto.setInitialTd(parseHoursString(th.getTd()));
@@ -130,9 +134,36 @@ public class MCCCMapper {
                 dto.setInitialTotal(
                         dto.getInitialCm() + dto.getInitialTd() + dto.getInitialTp()
                 );
+                foundInitial = true;
+            }
+        }
+
+        if (!foundInitial || !foundAlternance) {
+            List<HoursPerStudent> hpsList = hoursPerStudentRepository.findByResource_IdResource(resourceId);
+            for (HoursPerStudent hps : hpsList) {
+                if (Boolean.TRUE.equals(hps.getHasAlternance()) && !foundAlternance) {
+                    dto.setAlternanceCm(hps.getCm() != null ? hps.getCm() : 0.0);
+                    dto.setAlternanceTd(hps.getTd() != null ? hps.getTd() : 0.0);
+                    dto.setAlternanceTp(hps.getTp() != null ? hps.getTp() : 0.0);
+                    dto.setAlternanceProject(0);
+                    dto.setAlternanceTotal(
+                            dto.getAlternanceCm() + dto.getAlternanceTd() + dto.getAlternanceTp()
+                    );
+                    foundAlternance = true;
+                } else if (!Boolean.TRUE.equals(hps.getHasAlternance()) && !foundInitial) {
+                    dto.setInitialCm(hps.getCm() != null ? hps.getCm() : 0.0);
+                    dto.setInitialTd(hps.getTd() != null ? hps.getTd() : 0.0);
+                    dto.setInitialTp(hps.getTp() != null ? hps.getTp() : 0.0);
+                    dto.setInitialProject(0);
+                    dto.setInitialTotal(
+                            dto.getInitialCm() + dto.getInitialTd() + dto.getInitialTp()
+                    );
+                    foundInitial = true;
+                }
             }
         }
     }
+
 
 
     /**

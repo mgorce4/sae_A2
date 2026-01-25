@@ -84,14 +84,14 @@ const resource_label = ref('')
 const apogee_code = ref('')
 const terms = ref('')
 
-const CM_initial_formation = ref()
-const TD_initial_formation = ref()
-const TP_initial_formation = ref()
+const CM_initial_formation = ref(0)
+const TD_initial_formation = ref(0)
+const TP_initial_formation = ref(0)
 const total_initial_formation = ref(0)
 
-const CM_work_study = ref()
-const TD_work_study = ref()
-const TP_work_study = ref()
+const CM_work_study = ref(0)
+const TD_work_study = ref(0)
+const TP_work_study = ref(0)
 const total_work_study = ref(0)
 
 /* list of lesson to use for the v-for */
@@ -496,54 +496,34 @@ async function saveResource() {
     const institutionId = parseInt(localStorage.idInstitution)
     console.log(institutionId)
 
-    const resourceDTO = {}
-    resourceDTO.label = resource_label.value;
-    console.log('Set label:', resourceDTO.label);
-    resourceDTO.name = resource_name.value;
-    console.log('Set name:', resourceDTO.name);
-    resourceDTO.apogeeCode = apogee_code.value;
-    console.log('Set apogeeCode:', resourceDTO.apogeeCode);
-    resourceDTO.semester = parseInt(getQueryParam('id'));
-    console.log('Set semester:', resourceDTO.semester);
-    resourceDTO.institutionId = institutionId;
-    console.log('Set institutionId:', resourceDTO.institutionId);
-    resourceDTO.termsCode = terms.value;
-    console.log('Set termsCode:', resourceDTO.termsCode);
-    resourceDTO.pathId = pathId;
-    console.log('Set pathId:', resourceDTO.pathId);
-
-    resourceDTO.initialCm = parseFloat(CM_initial_formation.value) || 0;
-    console.log('Set initialCm:', resourceDTO.initialCm);
-    resourceDTO.initialTd = parseFloat(TD_initial_formation.value) || 0;
-    console.log('Set initialTd:', resourceDTO.initialTd);
-    resourceDTO.initialTp = parseFloat(TP_initial_formation.value) || 0;
-    console.log('Set initialTp:', resourceDTO.initialTp);
-
-    resourceDTO.alternanceCm = checkboxAlternanceStatus.value ? parseFloat(CM_work_study.value) || 0 : 0;
-    console.log('Set alternanceCm:', resourceDTO.alternanceCm);
-    resourceDTO.alternanceTd = checkboxAlternanceStatus.value ? parseFloat(TD_work_study.value) || 0 : 0;
-    console.log('Set alternanceTd:', resourceDTO.alternanceTd);
-    resourceDTO.alternanceTp = checkboxAlternanceStatus.value ? parseFloat(TP_work_study.value) || 0 : 0;
-    console.log('Set alternanceTp:', resourceDTO.alternanceTp);
-
-    resourceDTO.mainTeacher = main_teacher_value;
-    console.log('Set mainTeacher:', resourceDTO.mainTeacher);
-
-    resourceDTO.teachers = teachers_list.value
-        .filter((t) => t.value && t.value.trim() !== '')
-        .map((t) => t.value.trim());
-    console.log('Set teachers:', resourceDTO.teachers);
-
-    resourceDTO.ueCoefficients = ue_list.value
-        .filter((u) => u.ue && u.coefficient)
-        .map((u) => {
-            const ueObject = filteredUeTableV2.value.find((ueItem) => ueItem.label === u.ue)
-            return {
-                ueId: ueObject?.ueNumber,
-                coefficient: parseFloat(u.coefficient),
-            }
-        });
-    console.log('Set ueCoefficients:', resourceDTO.ueCoefficients);
+    const resourceDTO = {
+        label: resource_label.value,
+        name: resource_name.value,
+        apogeeCode: apogee_code.value,
+        semester: parseInt(getQueryParam('id')),
+        institutionId: institutionId,
+        termsCode: terms.value,
+        pathId: pathId,
+        initialCm: parseFloat(CM_initial_formation.value) || 0,
+        initialTd: parseFloat(TD_initial_formation.value) || 0,
+        initialTp: parseFloat(TP_initial_formation.value) || 0,
+        alternanceCm: checkboxAlternanceStatus.value ? parseFloat(CM_work_study.value) || 0 : 0,
+        alternanceTd: checkboxAlternanceStatus.value ? parseFloat(TD_work_study.value) || 0 : 0,
+        alternanceTp: checkboxAlternanceStatus.value ? parseFloat(TP_work_study.value) || 0 : 0,
+        mainTeacher: main_teacher_value,
+        teachers: teachers_list.value
+            .filter((t) => t.value && t.value.trim() !== '')
+            .map((t) => t.value.trim()),
+        ueCoefficients: ue_list.value
+            .filter((u) => u.ue && u.coefficient)
+            .map((u) => {
+                const ueObject = filteredUeTableV2.value.find((ueItem) => ueItem.label === u.ue)
+                return {
+                    ueId: ueObject?.ueNumber,
+                    coefficient: parseFloat(u.coefficient),
+                }
+            }),
+    }
 
     console.log('📤 Envoi du DTO ressource:', resourceDTO)
 
@@ -563,28 +543,6 @@ async function saveResource() {
             )
             console.log('✅ Ressource créée:', response.data)
         }
-        // 🔁 Recharge la liste des ressources pour affichage immédiat
-        const pathIdReload = parseInt(getQueryParam('pathId'))
-
-        const resourcesResponse = await axios.get(
-            `http://localhost:8080/api/v2/mccc/resources/path/${pathIdReload}`,
-        )
-
-        resources.value = resourcesResponse.data
-
-        console.log(
-            '📦 Resources brutes:',
-            resources.value.map((r) => ({
-                id: r.resource?.idResource,
-                label: r.resource?.label,
-                semester: r.resource?.semester,
-                pathId: r.resource?.path?.idPath,
-            })),
-        )
-
-        // Reload resource sheets
-        const reloadResponse = await axios.get('http://localhost:8080/api/v2/resource-sheets')
-        resource_sheets.value = reloadResponse.data
 
         // Reset form
         resource_label.value = ''
@@ -611,7 +569,7 @@ async function saveResource() {
         display_more_area.value = false
 
         console.log('✅ Ressource sauvegardée avec succès')
-        // location.reload()
+        location.reload()
     } catch (error) {
         console.error('❌ Erreur lors de la sauvegarde:', error)
         alert(
@@ -1292,108 +1250,45 @@ function toggleShowPopUp() {
 
                     <div class="panel_resource">
                         <div id="left_resource">
-                            <div class="container-fluid">
-                                <p>Code Apogee :</p>
-                                <input
-                                    type="text"
-                                    class="input"
-                                    :value="resource.apogeeCode || ''"
-                                    readonly
-                                />
-                            </div>
-
-                            <div class="container-fluid">
-                                <p>Modalités :</p>
-                                <input
-                                    type="text"
-                                    class="input"
-                                    :value="resource.termsCode || ''"
-                                    readonly
-                                />
-                            </div>
-
-                            <p>Nombre d'heures (formation initiale) :</p>
-
-                            <div class="container-fluid">
-                                <p>CM :</p>
-                                <input
-                                    type="text"
-                                    class="input"
-                                    :value="resource.initialCm"
-                                    readonly
-                                />
-                            </div>
-
-                            <div class="container-fluid">
-                                <p>TD :</p>
-                                <input
-                                    type="text"
-                                    class="input"
-                                    :value="resource.initialTd"
-                                    readonly
-                                />
-                            </div>
-
-                            <div class="container-fluid">
-                                <p>TP :</p>
-                                <input
-                                    type="text"
-                                    class="input"
-                                    :value="resource.initialTp"
-                                    readonly
-                                />
-                            </div>
-
-                            <div class="container-fluid">
-                                <p>Total : {{ resource.initialTotal || 0 }}</p>
-                            </div>
-
-                            <div
-                                v-if="
-                                    resource.alternanceCm > 0 ||
-                                    resource.alternanceTd > 0 ||
-                                    resource.alternanceTp > 0
-                                "
-                            >
-                                <p>Nombre d'heures (alternance) :</p>
-
-                                <div class="container-fluid">
-                                    <p>CM :</p>
-                                    <input
-                                        type="text"
-                                        class="input"
-                                        :value="resource.alternanceCm || ''"
-                                        readonly
-                                    />
+                            <div class="info_row">
+                                <div class="info_item">
+                                    <span class="info_label">Code Apogée :</span>
+                                    <span class="info_value">{{ resource.apogeeCode || '' }}</span>
                                 </div>
-
-                                <div class="container-fluid">
-                                    <p>TD :</p>
-                                    <input
-                                        type="text"
-                                        class="input"
-                                        :value="resource.alternanceTd || ''"
-                                        readonly
-                                    />
-                                </div>
-
-                                <div class="container-fluid">
-                                    <p>TP :</p>
-                                    <input
-                                        type="text"
-                                        class="input"
-                                        :value="resource.alternanceTp || ''"
-                                        readonly
-                                    />
-                                </div>
-
-                                <div class="container-fluid">
-                                    <p>Total : {{ resource.alternanceCm || 0 }}</p>
+                                <div class="info_item">
+                                    <span class="info_label">Modalités :</span>
+                                    <span class="info_value">{{ resource.termsCode || '' }}</span>
                                 </div>
                             </div>
-
-                            <div v-else>
-                                <p>La ressource n'est pas en alternance</p>
+                            <p>Nombre d'heures</p>
+                            <div class="hours_grid">
+                                <div>
+                                    <h3>Formation initiale</h3>
+                                    <div>
+                                        <p>CM : {{ resource.initialCm || 0 }}</p>
+                                        <p>TD : {{ resource.initialTd || 0 }}</p>
+                                        <p>TP : {{ resource.initialTp || 0 }}</p>
+                                        <p>Total : {{ resource.initialTotal || 0 }}</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3>Alternance</h3>
+                                    <div
+                                        v-if="
+                                            resource.alternanceCm > 0 ||
+                                            resource.alternanceTd > 0 ||
+                                            resource.alternanceTp > 0
+                                        "
+                                    >
+                                        <p>CM : {{ resource.alternanceCm || 0 }}</p>
+                                        <p>TD : {{ resource.alternanceTd || 0 }}</p>
+                                        <p>TP : {{ resource.alternanceTp || 0 }}</p>
+                                        <p>Total : {{ resource.alternanceTotal || 0 }}</p>
+                                    </div>
+                                    <div v-else>
+                                        <p>La ressource n'est pas en alternance</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -1783,5 +1678,58 @@ input[readonly].input {
     border-left: 0.8vw solid transparent;
     border-right: 0.8vw solid transparent;
     border-top: 0.8vw solid var(--sub-div-background-color);
+}
+
+.hours_grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+.hours_grid > div {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.hours_grid h3 {
+    margin: 0;
+    font-size: 1.2vw;
+    color: var(--main-theme-secondary-color);
+}
+
+.hours_grid p {
+    margin: 5px 0;
+    font-size: 1vw;
+    color: white;
+}
+
+.info_row {
+    display: flex;
+    gap: 40px;
+    margin: 10px 0 20px 0;
+    flex-wrap: wrap;
+}
+.info_item {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 12px 22px;
+    display: flex;
+    align-items: center;
+    min-width: 220px;
+}
+.info_label {
+    font-weight: bold;
+    color: var(--main-theme-secondary-color);
+    margin-right: 10px;
+    font-size: 1.1vw;
+}
+.info_value {
+    color: white;
+    font-size: 1.1vw;
+    word-break: break-all;
 }
 </style>
