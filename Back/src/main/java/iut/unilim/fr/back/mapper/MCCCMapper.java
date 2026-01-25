@@ -51,8 +51,8 @@ public class MCCCMapper {
         }
 
         // Institution ID from main teacher
-        dto.setInstitutionId(getInstitutionId(resource.getIdResource()));
-
+        /*dto.setInstitutionId(getInstitutionId(resource.getIdResource()));*/
+        dto.setInstitutionId(getInstitutionIdFromPath(resource));
         // Path information
         if (resource.getPath() != null) {
             dto.setPathId(resource.getPath().getIdPath());
@@ -179,6 +179,13 @@ public class MCCCMapper {
         }
         return null;
     }
+
+    private Long getInstitutionIdFromPath(Ressource resource) {
+    if (resource.getPath() != null && resource.getPath().getInstitution() != null) {
+        return resource.getPath().getInstitution().getIdInstitution();
+    }
+    return null;
+}
 
     /**
      * Get main teacher name

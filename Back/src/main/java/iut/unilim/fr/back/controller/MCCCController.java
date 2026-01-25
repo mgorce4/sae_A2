@@ -272,8 +272,10 @@ public class MCCCController {
                 link.setSae(sae);
                 saeLinkResourceRepository.save(link);
             }
-            
-            return ResponseEntity.ok("Création réussie !");
+            Ressource reloadedResource = ressourceRepository.findById(savedResource.getIdResource())
+            .orElseThrow(() -> new RuntimeException("Failed to reload saved resource"));
+            MCCCResourceDTO resultDto = mcccMapper.toDTO(reloadedResource);
+            return ResponseEntity.ok(resultDto);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e);
@@ -374,15 +376,16 @@ public class MCCCController {
             List<MainTeacherForResource> existingMainTeachers = mainTeacherForResourceRepository.findByIdResource(id);
             mainTeacherForResourceRepository.deleteAll(existingMainTeachers);
 
-            if (dto.getMainTeacher() != null && !dto.getMainTeacher().trim().isEmpty()) {
-                String[] parts = dto.getMainTeacher().trim().split(" ", 2);
-                if (parts.length == 2) {
-                    List<UserSyncadia> users = userSyncadiaRepository.findByFirstnameAndLastname(parts[0], parts[1]);
-                    if (!users.isEmpty()) {
-                        MainTeacherForResource mainTeacher = new MainTeacherForResource();
-                        mainTeacher.setUser(users.get(0));
-                        mainTeacher.setResource(resource);
-                        mainTeacherForResourceRepository.save(mainTeacher);
+            if (dto.getMainTeachers() != null) {
+                for (Long mainTeacherId : dto.getMainTeachers()) {
+                    if (mainTeacherId != null) {
+                        Optional<UserSyncadia> userOpt = userSyncadiaRepository.findById(mainTeacherId);
+                        if (userOpt.isPresent()) {
+                            MainTeacherForResource mainTeacher = new MainTeacherForResource();
+                            mainTeacher.setUser(userOpt.get());
+                            mainTeacher.setResource(resource);
+                            mainTeacherForResourceRepository.save(mainTeacher);
+                        }
                     }
                 }
             }
@@ -392,17 +395,14 @@ public class MCCCController {
             teachersForResourceRepository.deleteAll(existingTeachers);
 
             if (dto.getTeachers() != null) {
-                for (String teacherName : dto.getTeachers()) {
-                    if (teacherName != null && !teacherName.trim().isEmpty()) {
-                        String[] parts = teacherName.trim().split(" ", 2);
-                        if (parts.length == 2) {
-                            List<UserSyncadia> users = userSyncadiaRepository.findByFirstnameAndLastname(parts[0], parts[1]);
-                            if (!users.isEmpty()) {
-                                TeachersForResource teacher = new TeachersForResource();
-                                teacher.setUser(users.get(0));
-                                teacher.setResource(resource);
-                                teachersForResourceRepository.save(teacher);
-                            }
+                for (Long teacherId : dto.getTeachers()) {
+                    if (teacherId != null) {
+                        Optional<UserSyncadia> userOpt = userSyncadiaRepository.findById(teacherId);
+                        if (userOpt.isPresent()) {
+                            TeachersForResource teacher = new TeachersForResource();
+                            teacher.setUser(userOpt.get());
+                            teacher.setResource(resource);
+                            teachersForResourceRepository.save(teacher);
                         }
                     }
                 }
