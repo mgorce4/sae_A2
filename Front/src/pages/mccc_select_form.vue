@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import axios from 'axios'
+import { status } from '@/main.js'
 
 const afficherBoutons = ref([
     [false, false],
@@ -96,6 +97,12 @@ const getQueryParam = (param) => {
 const goToRessourceSheet = (url, semester, pathId) => {
     localStorage.pathId = pathId
     window.location.hash = `${url}?id=${semester}&pathId=${pathId}`
+}
+
+const show_popup = ref(false)
+
+function toggleShowPopUp() {
+    show_popup.value = !show_popup.value
 }
 </script>
 
@@ -234,5 +241,28 @@ const goToRessourceSheet = (url, semester, pathId) => {
 
 .btn_form_acces:hover {
     cursor: pointer;
+}
+
+#popup_years {
+    z-index: 10;
+    color: white;
+    background-color: var(--sub-div-background-color);
+    border-radius: 15px;
+    padding: 0.6vw;
+    font-size: 0.7vw;
+    max-width: 10vw;
+    max-height: 5vw;
+    text-align: justify;
+}
+
+#popup_years::after {
+    content: "";
+    position: absolute;
+    top: 11vw;
+    right: 17vw;
+    rotate: -90deg;
+    border-left: 0.8vw solid transparent;
+    border-right: 0.8vw solid transparent;
+    border-top: 0.8vw solid var(--sub-div-background-color);
 }
 </style>

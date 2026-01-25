@@ -770,10 +770,10 @@ onMounted(async () => {
     initializeTextareaHeights()
 })
 
-const show_popup = ref(false)
+const show_popup_pedago = ref(false)
 
-function toggleShowPopUp() {
-    show_popup.value = !show_popup.value
+function toggleShowPopUpPedago() {
+    show_popup_pedago.value = !show_popup_pedago.value
 }
 </script>
 <template>

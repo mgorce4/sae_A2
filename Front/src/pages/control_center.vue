@@ -16,8 +16,16 @@
 
         <div style="display: flex; gap: 50px; margin-top: 1vw">
             <div id="left_component">
-                <div id="date" style="justify-items: center">
-                    <p class="title">Date de l'année scolaire en cours</p>
+                <div id="date">
+                    <div style="display: flex">
+                        <p v-if="status" class="btn_how_to" @click="toggleShowPopUp">ⓘ</p>
+                        <div v-show="show_popup" id="popup_date">
+                            Vous pouvez remplir les dates de début et de fin d'année scolaire.
+                            À la fin de l'année scolaire, la date de fin devindra la date de début de la nouvelle année scolaire.
+                        </div>
+                    </div>
+                    <div style="justify-items: center">
+                        <p class="title" style="margin-top: 0">Date de l'année scolaire en cours</p>
 
                     <div>
                         <p>Date de début :</p>
