@@ -19,7 +19,7 @@
                     <p>Par mail : svp-dsi@unilim.fr</p>
                 </li>
                 <li>
-                    <p>Ou via cette <a href="https://rt4.unilim.fr/SelfService">adresse</a></p>
+                    <p>Ou via cette <a href="https://rt4.unilim.fr/SelfService" style="color: white">adresse</a></p>
                 </li>
             </ul>
         </div>

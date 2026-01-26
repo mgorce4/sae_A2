@@ -1074,7 +1074,7 @@ function toggleShowPopUp() {
                         </div>
 
                         <div id="btn">
-                            <input class="btn1" type="reset" value="Annuler" />
+                            <input class="btn1" type="reset" value="Annuler" v-on:click="display_more_area = !display_more_area" />
                             <input
                                 id="save"
                                 class="btn1"
