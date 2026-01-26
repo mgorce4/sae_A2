@@ -48,6 +48,37 @@ watch(checkboxAlternanceStatus, (newValue) => {
         TP_work_study.value = undefined
     }
 })
+
+// Watchers to sync SAE switches with resource being modified
+watch([
+    () => saes.value,
+    () => resource_id_to_modify.value,
+    () => is_modifying.value,
+    () => resources.value
+], ([, resourceId, isModifying, resourcesVal]) => {
+    if (!isModifying || !resourceId) return;
+    // Find the resource being modified
+    const resource = resourcesVal.find(r => r.resourceId === resourceId);
+    if (!resource) return;
+    // Debug log
+    console.log('[SYNC SAE CHECKED] resource.linkedSaes:', resource.linkedSaes);
+    console.log('[SYNC SAE CHECKED] saes.value before:', JSON.parse(JSON.stringify(saes.value)));
+    // If resource.linkedSaes is a list of labels, map to ids
+    // Try to match by label (if that's what backend returns)
+    saes.value = saes.value.map(sae => {
+        let checked = false;
+        if (Array.isArray(resource.linkedSaes)) {
+            // Try by label
+            checked = resource.linkedSaes.includes(sae.label);
+            // If backend returns objects with saeId, adjust here
+            if (!checked && resource.linkedSaes.length > 0 && typeof resource.linkedSaes[0] === 'object' && resource.linkedSaes[0].saeId) {
+                checked = resource.linkedSaes.some(ls => ls.saeId === sae.saeId);
+            }
+        }
+        return { ...sae, checked };
+    });
+    console.log('[SYNC SAE CHECKED] saes.value after:', JSON.parse(JSON.stringify(saes.value)));
+}, { immediate: true });
 // Extract ID from hash URL parameters
 const getQueryParam = (param) => {
     const hash = window.location.hash
@@ -218,15 +249,7 @@ async function modifyResource(resource) {
     apogee_code.value = resource.apogeeCode ?? ''
     terms.value = resource.termsCode ?? ''
 
-    // Charger les SAE liées (cocher les bonnes cases)
-    if (resource.linkedSaes && Array.isArray(resource.linkedSaes)) {
-        saes.value = saes.value.map((sae) => ({
-            ...sae,
-            checked: resource.linkedSaes.includes(sae.label)
-        }))
-    } else {
-        saes.value = saes.value.map((sae) => ({ ...sae, checked: false }))
-    }
+        // La synchronisation des cases SAE liées se fait via les watchers (saes et resource_id_to_modify)
 
     // Charger les heures (il faut récupérer depuis l'API car resource n'a pas toutes les données)
     try {
@@ -697,7 +720,10 @@ onMounted(async () => {
         .filter((ar) => ar.user.institution.idInstitution == localStorage.idInstitution)
         .filter((ar) => ar.accessRight == access_right_teacher)
     saes.value = saes.value.filter((saes) => saes.semester == getQueryParam('id'))
-    saes.value = saes.value.map((sae) => ({ ...sae, checked: false }))
+    // Ne reset les checked que si on n'est PAS en modification
+    if (!is_modifying.value) {
+        saes.value = saes.value.map((sae) => ({ ...sae, checked: false }))
+    }
 
     await nextTick()
 

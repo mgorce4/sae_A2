@@ -292,7 +292,8 @@ public class MCCCController {
                 coefficient.setUe(ueOpt.orElseThrow(() -> new RuntimeException("UE not found with id: " + ueco.getUeId())));
                 ueCoefficientRepository.save(coefficient);
             }
-
+            List<SAELinkResource> existingLinks = saeLinkResourceRepository.findByIdResource(savedResource.getIdResource());
+            saeLinkResourceRepository.deleteAll(existingLinks);
             for (SAE sae : dto.getLinkedSaes()) {
                 SAELinkResource link = new SAELinkResource();
                 link.setResource(savedResource);
@@ -439,6 +440,7 @@ public class MCCCController {
                 }
             }
 
+
             // Update UE Coefficients
             List<UeCoefficient> existingCoefficients = ueCoefficientRepository.findByResource_IdResource(id);
             ueCoefficientRepository.deleteAll(existingCoefficients);
@@ -455,6 +457,31 @@ public class MCCCController {
                             ueCoefficientRepository.save(coefficient);
                         }
                     }
+                }
+            }
+
+            // Supprimer les anciens liens SAE avant de recréer les nouveaux
+            List<SAELinkResource> existingLinks = saeLinkResourceRepository.findByIdResource(id);
+            saeLinkResourceRepository.deleteAll(existingLinks);
+
+            // Reconstruire la liste des SAE à partir des IDs envoyés
+            List<SAE> linkedSaes = new ArrayList<>();
+            if (dto.getLinkedSaesIds() != null) {
+                for (Long idSae : dto.getLinkedSaesIds()) {
+                    Optional<SAE> saeOpt = saeRepository.findById(idSae);
+                    saeOpt.ifPresent(linkedSaes::add);
+                }
+            }
+            dto.setLinkedSaes(linkedSaes);
+
+            if (dto.getLinkedSaes() != null) {
+                for (SAE sae : dto.getLinkedSaes()) {
+                    SAELinkResource link = new SAELinkResource();
+                    link.setResource(resource);
+                    link.setSae(sae);
+                    link.setIdResource(resource.getIdResource());
+                    link.setIdSAE(sae.getIdSAE());
+                    saeLinkResourceRepository.save(link);
                 }
             }
 
