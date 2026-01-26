@@ -9,11 +9,13 @@ const resourceList = ref([])
 const saeList = ref([])
 const semester = parseInt(localStorage.semester)
 
+const ueSelected = ref(false)
 const selectedUeCodeApogee = ref(null)
 const selectedUeIntitule = ref(null)
 const selectedUeCompetenceLevel = ref(null)
 
 function selectUe(ue) {
+    ueSelected.value = true
     selectedUeCodeApogee.value = ue.euApogeeCode
     selectedUeIntitule.value = ue.label
     selectedUeCompetenceLevel.value = ue.competenceLevel
@@ -123,6 +125,15 @@ onMounted(async () => {
 
     attachAccordionListeners()
 })
+
+const goBack = () => {
+    const pathId = parseInt(getQueryParam('pathId'))
+    if (pathId && !isNaN(pathId)) {
+        window.location.hash = `#/mccc-select-form?pathId=${pathId}`
+    } else {
+        window.location.hash = '#/mccc-select-form'
+    }
+}
 </script>
 
 <template>
@@ -137,9 +148,10 @@ onMounted(async () => {
         </div>
         <div class="container-fluid" style="gap: 0px; width: 100%; align-items: start;">
             <div class="container-fluid cfh" style="width: fit-content;">
-                <div v-for="(value, index) in getUESemesterInstitution()" :key="index" class="container-fluid">
+                <div v-for="(value, index) in getUESemesterInstitution()" :key="index" class="container-fluid" style="gap: 0;">
                     <div class="ue_selection_button" @click="selectUe(value)">{{ value.label }}</div>
-                    <div class="display_mccc_triangle"></div>
+                    <div class="display_mccc_triangle" v-show="ueSelected"></div>
+                    <div style="width: 2.5vw;" v-show="!ueSelected"></div>
                 </div>
             </div>
 
@@ -176,6 +188,7 @@ onMounted(async () => {
 .display_mccc_triangle {
     width: 0;
     height: 0;
+    margin-left: 0.5vw;
     border-top: 1vw solid transparent;
     border-right: 2vw solid var(--main-theme-background-color);
     border-bottom: 1vw solid transparent;
