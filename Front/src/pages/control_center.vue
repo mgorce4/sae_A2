@@ -52,7 +52,7 @@ function toggleShowPopUp() {
                 </div>
 
                 <div id="button_help">
-                    <button id="button" style="margin-top: 2vw; padding: 1vw;" onclick="window.location.hash = ''">Centre d'aide</button>
+                    <button id="button" style="margin-top: 2vw; padding: 1vw;" onclick="window.location.hash = '#/help-center'">Centre d'aide</button>
                 </div>
             </div>
 
