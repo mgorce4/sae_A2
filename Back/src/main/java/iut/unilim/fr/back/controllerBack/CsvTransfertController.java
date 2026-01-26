@@ -5,15 +5,15 @@ import iut.unilim.fr.back.dto.*;
 import iut.unilim.fr.back.entity.Ressource;
 import iut.unilim.fr.back.repository.RessourceRepository;
 import iut.unilim.fr.back.repository.RessourceSheetRepository;
+import iut.unilim.fr.back.service.TeacherImportCsvService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ public class CsvTransfertController {
     @Autowired
     private RessourceRepository ressourceRepository;
     @Autowired
-    private RessourceSheetRepository ressourceSheetRepository;
+    private TeacherImportCsvService teacherImportCsvService;
 
     @Autowired
     private ResourceSheetDTOController rsDTOController;
@@ -85,6 +85,16 @@ public class CsvTransfertController {
                 .contentType(MediaType.parseMediaType("text/csv"))
                 .contentLength(csvBytes.length)
                 .body(resource);
+    }
+
+    @PostMapping("/import")
+    public ResponseEntity<?> importTeachers(@RequestParam("file") MultipartFile file, @RequestParam("institutionId") Long institutionId) {
+        try {
+            teacherImportCsvService.importTeachers(file, institutionId);
+            return ResponseEntity.ok("");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur: " + e.getMessage());
+        }
     }
 
     private ExportCsvDTO getExportCsvDTO(String resourceRef, ResourceSheetDTO res) {
@@ -182,7 +192,7 @@ public class CsvTransfertController {
         return pedagoContentBuilder;
     }
 
-    private String cleanCsv(String content) {
+    public static String cleanCsv(String content) {
         String returnValue = content;
         if (content==null) {
             returnValue = "";
