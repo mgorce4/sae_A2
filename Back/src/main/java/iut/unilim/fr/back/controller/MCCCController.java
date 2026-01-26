@@ -408,13 +408,14 @@ public class MCCCController {
             if (dto.getMainTeachers() != null) {
                 for (Long mainTeacherId : dto.getMainTeachers()) {
                     if (mainTeacherId != null) {
-                        Optional<UserSyncadia> userOpt = userSyncadiaRepository.findById(mainTeacherId);
-                        if (userOpt.isPresent()) {
-                            MainTeacherForResource mainTeacher = new MainTeacherForResource();
-                            mainTeacher.setUser(userOpt.get());
-                            mainTeacher.setResource(resource);
-                            mainTeacherForResourceRepository.save(mainTeacher);
-                        }
+                        UserSyncadia user = userSyncadiaRepository.findById(mainTeacherId)
+                            .orElseThrow(() -> new RuntimeException("User not found with id: " + mainTeacherId));
+                        MainTeacherForResource mainTeacherEntity = new MainTeacherForResource();
+                        mainTeacherEntity.setUser(user);
+                        mainTeacherEntity.setResource(resource);
+                        mainTeacherEntity.setIdUser(user.getIdUser());
+                        mainTeacherEntity.setIdResource(resource.getIdResource());
+                        mainTeacherForResourceRepository.save(mainTeacherEntity);
                     }
                 }
             }
@@ -426,13 +427,14 @@ public class MCCCController {
             if (dto.getTeachers() != null) {
                 for (Long teacherId : dto.getTeachers()) {
                     if (teacherId != null) {
-                        Optional<UserSyncadia> userOpt = userSyncadiaRepository.findById(teacherId);
-                        if (userOpt.isPresent()) {
-                            TeachersForResource teacher = new TeachersForResource();
-                            teacher.setUser(userOpt.get());
-                            teacher.setResource(resource);
-                            teachersForResourceRepository.save(teacher);
-                        }
+                        UserSyncadia user = userSyncadiaRepository.findById(teacherId)
+                            .orElseThrow(() -> new RuntimeException("User not found with id: " + teacherId));
+                        TeachersForResource teacherEntity = new TeachersForResource();
+                        teacherEntity.setResource(resource);
+                        teacherEntity.setUser(user);
+                        teacherEntity.setIdUser(user.getIdUser());
+                        teacherEntity.setIdResource(resource.getIdResource());
+                        teachersForResourceRepository.save(teacherEntity);
                     }
                 }
             }

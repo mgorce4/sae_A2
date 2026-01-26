@@ -212,10 +212,21 @@ async function modifyResource(resource) {
     await nextTick()
 
     // Charger les données de la ressource dans le formulaire
-    resource_label.value = resource.resourceLabel || ''
-    resource_name.value = resource.resourceName || ''
-    apogee_code.value = resource.resourceApogeeCode || ''
-    terms.value = resource.terms || ''
+    await nextTick();
+    resource_label.value = resource.label ?? ''
+    resource_name.value = resource.name ?? ''
+    apogee_code.value = resource.apogeeCode ?? ''
+    terms.value = resource.termsCode ?? ''
+
+    // Charger les SAE liées (cocher les bonnes cases)
+    if (resource.linkedSaes && Array.isArray(resource.linkedSaes)) {
+        saes.value = saes.value.map((sae) => ({
+            ...sae,
+            checked: resource.linkedSaes.includes(sae.label)
+        }))
+    } else {
+        saes.value = saes.value.map((sae) => ({ ...sae, checked: false }))
+    }
 
     // Charger les heures (il faut récupérer depuis l'API car resource n'a pas toutes les données)
     try {
@@ -234,7 +245,8 @@ async function modifyResource(resource) {
 
         // Trouver les heures alternance (has_alternance = true)
         const hoursAlt = hours.find((h) => h.hasAlternance === true)
-        if (hoursAlt) {
+        await nextTick();
+        if (hoursAlt && (hoursAlt.cm > 0 || hoursAlt.td > 0 || hoursAlt.tp > 0)) {
             checkboxAlternanceStatus.value = true
             CM_work_study.value = hoursAlt.cm
             TD_work_study.value = hoursAlt.td
@@ -245,6 +257,13 @@ async function modifyResource(resource) {
             TD_work_study.value = undefined
             TP_work_study.value = undefined
         }
+        await nextTick();
+        // Désactiver le switch si aucune alternance possible
+        const alternanceSwitch = document.querySelector('#work_study_slider input[type="checkbox"]')
+        if (alternanceSwitch) {
+            alternanceSwitch.disabled = !hoursAlt
+            if (!hoursAlt) alternanceSwitch.checked = false
+        }
 
         // Charger le professeur principal (maintenant que le DOM est prêt)
         const mainTeacherResponse = await axios.get(
@@ -252,15 +271,15 @@ async function modifyResource(resource) {
         )
         if (mainTeacherResponse.data && mainTeacherResponse.data.length > 0) {
             const mainTeacher = mainTeacherResponse.data[0]
-            const mainTeacherInput = document.getElementById('main_teacher')
-            if (mainTeacherInput) {
-                mainTeacherInput.value = `${mainTeacher.user.firstname} ${mainTeacher.user.lastname}`
-            }
+            main_teachers_list.value = [{
+                id: 1,
+                value: mainTeacher.user ? `${mainTeacher.user.firstname} ${mainTeacher.user.lastname}` : '',
+                idUser: mainTeacher.user ? mainTeacher.user.idUser : null
+            }]
+            show_main_teacher_list.value = [false]
         } else {
-            const mainTeacherInput = document.getElementById('main_teacher')
-            if (mainTeacherInput) {
-                mainTeacherInput.value = ''
-            }
+            main_teachers_list.value = [{ id: 1, value: '', idUser: null }]
+            show_main_teacher_list.value = [false]
         }
 
         // Charger les professeurs associés
@@ -268,14 +287,20 @@ async function modifyResource(resource) {
             `http://localhost:8080/api/teachers-for-resource/resource/${resource.resourceId}`,
         )
         if (teachersResponse.data && teachersResponse.data.length > 0) {
-            teachers_list.value = teachersResponse.data.map((t, index) => ({
-                id: index + 1,
-                value: `${t.user.firstname} ${t.user.lastname}`,
-            }))
-            // Réinitialiser show_teacher_list avec la même taille
-            show_teacher_list.value = teachersResponse.data.map(() => false)
+            teachers_list.value = teachersResponse.data
+                .filter((t) => t.user)
+                .map((t, index) => ({
+                    id: index + 1,
+                    value: t.user ? `${t.user.firstname} ${t.user.lastname}` : '',
+                    idUser: t.user ? t.user.idUser : null
+                }))
+            show_teacher_list.value = teachers_list.value.map(() => false)
+            if (teachers_list.value.length === 0) {
+                teachers_list.value = [{ id: 1, value: '', idUser: null }]
+                show_teacher_list.value = [false]
+            }
         } else {
-            teachers_list.value = [{ id: 1, value: '' }]
+            teachers_list.value = [{ id: 1, value: '', idUser: null }]
             show_teacher_list.value = [false]
         }
 
@@ -478,16 +503,29 @@ async function saveResource() {
             .filter((id) => typeof id === 'number' && !isNaN(id)),
     )
 
-    // Correction : pour teachersIds, même logique que mainTeachersIds, mais on ne prend que les champs non vides et on évite d'envoyer [] si un prof est sélectionné
+    // Correction : pour teachersIds, on prend tous les idUser valides présents dans teachers_list (le prof principal est déjà exclu dans teachers_list lors du mapping)
     const teachersIds = computed(() => {
-        // Si un seul champ et il est vide, retourne []
-        if (teachers_list.value.length === 1 && (!teachers_list.value[0].idUser || isNaN(teachers_list.value[0].idUser))) {
-            return [];
-        }
         return teachers_list.value
             .map((t) => t.idUser)
             .filter((id) => typeof id === 'number' && !isNaN(id));
     });
+
+    // Validation stricte : chaque professeur associé doit avoir un idUser valide
+    for (let i = 0; i < teachers_list.value.length; i++) {
+        if (teachers_list.value[i].value && (typeof teachers_list.value[i].idUser !== 'number' || isNaN(teachers_list.value[i].idUser))) {
+            errors.value.teacher = true;
+            setErrorMessage('error_teacher', 'Vous devez sélectionner un professeur associé dans la liste déroulante.');
+            hasErrors = true;
+        }
+    }
+    // Validation stricte : chaque professeur référent doit avoir un idUser valide
+    for (let i = 0; i < main_teachers_list.value.length; i++) {
+        if (main_teachers_list.value[i].value && (typeof main_teachers_list.value[i].idUser !== 'number' || isNaN(main_teachers_list.value[i].idUser))) {
+            errors.value.mainTeacher = true;
+            setErrorMessage('error_main_teacher', 'Vous devez sélectionner un professeur référent dans la liste déroulante.');
+            hasErrors = true;
+        }
+    }
 
     // Check for duplicate teacher names
     for (let i = 0; i < teacher_names.length; i++) {
@@ -534,8 +572,12 @@ async function saveResource() {
         alternanceCm: checkboxAlternanceStatus.value ? parseFloat(CM_work_study.value) || 0 : 0,
         alternanceTd: checkboxAlternanceStatus.value ? parseFloat(TD_work_study.value) || 0 : 0,
         alternanceTp: checkboxAlternanceStatus.value ? parseFloat(TP_work_study.value) || 0 : 0,
-        mainTeachers: mainTeachersIds.value,
-        teachers: teachersIds.value,
+        mainTeachers: main_teachers_list.value
+            .map((t) => t.idUser)
+            .filter((id) => typeof id === 'number' && !isNaN(id)),
+        teachers: teachers_list.value
+            .map((t) => t.idUser)
+            .filter((id) => typeof id === 'number' && !isNaN(id)),
         ueCoefficients: ue_list.value
             .filter((u) => u.ue && u.coefficient)
             .map((u) => {
@@ -1184,6 +1226,7 @@ function toggleShowPopUp() {
                                                 class="input main_teacher"
                                                 required
                                                 v-model="main_teacher.value"
+                                                readonly
                                             />
 
                                             <div
@@ -1232,6 +1275,7 @@ function toggleShowPopUp() {
                                                 class="input teacher"
                                                 required
                                                 v-model="teacher.value"
+                                                readonly
                                             />
 
                                             <div
