@@ -6,7 +6,7 @@ import { status } from '@/main.js'
 const afficherBoutons = ref([
     [false, false],
     [false, false],
-    [false, false],
+    [false, false]
 ])
 
 const saeTable = ref([])
@@ -20,7 +20,7 @@ onMounted(async () => {
     const institutionId = parseInt(localStorage.idInstitution)
 
     if (!pathId.value || isNaN(pathId.value)) {
-        console.error("PathId manquant ou invalide dans l'URL")
+        console.error('PathId manquant ou invalide dans l\'URL')
         alert('Erreur: Parcours non spécifié. Retour à la sélection des parcours.')
         window.location.hash = '#/mccc-select-path'
         return
@@ -36,28 +36,27 @@ onMounted(async () => {
         // Charger les données filtrées par path
         const saes = await axios.get(`http://localhost:8080/api/v2/mccc/saes/path/${pathId.value}`)
         // Filtrer par institution pour sécurité supplémentaire
-        saeTable.value = saes.data.filter((sae) => sae.institutionId === institutionId)
+        saeTable.value = saes.data.filter(sae =>
+            sae.institutionId === institutionId
+        )
 
         const ues = await axios.get(`http://localhost:8080/api/v2/mccc/ues/path/${pathId.value}`)
         // Filtrer par institution pour sécurité supplémentaire
-        ueTable.value = ues.data.filter((ue) => ue.institutionId === institutionId)
-
-        const resources = await axios.get(
-            `http://localhost:8080/api/v2/mccc/resources/path/${pathId.value}`,
+        ueTable.value = ues.data.filter(ue =>
+            ue.institutionId === institutionId
         )
+
+        const resources = await axios.get(`http://localhost:8080/api/v2/mccc/resources/path/${pathId.value}`)
         // Filtrer par institution pour sécurité supplémentaire
-        resourceTable.value = resources.data.filter(
-            (resource) => resource.institutionId === institutionId,
+        resourceTable.value = resources.data.filter(resource =>
+            resource.institutionId === institutionId
         )
 
-        console.log(
-            `Données chargées pour le parcours ${pathId.value} et institution ${institutionId}:`,
-            {
-                saes: saeTable.value.length,
-                ues: ueTable.value.length,
-                resources: resourceTable.value.length,
-            },
-        )
+        console.log(`Données chargées pour le parcours ${pathId.value} et institution ${institutionId}:`, {
+            saes: saeTable.value.length,
+            ues: ueTable.value.length,
+            resources: resourceTable.value.length
+        })
     } catch (error) {
         console.error('Erreur lors du chargement des données:', error)
         alert('Erreur lors du chargement des données du parcours')
@@ -65,16 +64,17 @@ onMounted(async () => {
 })
 
 const hasSAEInSemester = (semester) => {
-    return saeTable.value.some((sae) => sae.semester === semester)
+    return saeTable.value.some(sae => sae.semester === semester)
 }
 
 const hasResourceInSemester = (semester) => {
-    return resourceTable.value.some((resource) => resource.semester === semester)
+    return resourceTable.value.some(resource => resource.semester === semester)
 }
 
 const hasUEInSemester = (semester) => {
-    return ueTable.value.some((ue) => Number(ue.semester) === Number(semester))
+    return ueTable.value.some(ue => Number(ue.semester) === Number(semester))
 }
+
 
 const getStatusForSemester = (semester) => {
     const hasResource = hasResourceInSemester(semester)
@@ -108,68 +108,28 @@ function toggleShowPopUp() {
 
 <template>
     <div id="form_select_page">
-        <div style="display: flex; align-items: center; height: 1vw">
-            <button class="back_arrow" onclick="document.location.href='#/mccc-select-path'">
-                ←
-            </button>
-            <p class="back">Retour</p>
+        <div style="display: flex; align-items: center; height: 1vw;justify-content: space-between; margin-bottom: 3vw">
+            <div style="display: flex">
+                <button class="back_arrow" onclick="document.location.href='#/mccc-select-path'">←</button>
+                <p class="back" >Retour</p>
+            </div>
+            <div style="display: flex">
+                <div v-show="show_popup" id="popup_years" style="width: 60vw; height: 4vw">
+                    Vous ne pouvez pas créer de ressources ou de SAE tant qu'une UE n'a pas été créée pour le semestre correspondant.
+                </div>
+                <p v-if="status" class="btn_how_to" @click="toggleShowPopUp" style="color: black">ⓘ</p>
+            </div>
         </div>
         <div v-for="(year, index) in afficherBoutons" v-bind:key="index" class="blue_rect">
-            <p class="semester_display">Année {{ index + 1 }} :</p>
-            <div class="container-fluid spe" style="align-items: normal">
-                <div
-                    class="semester_rect"
-                    v-for="(btn, index2) in year"
-                    v-bind:key="index2"
-                    v-on:mouseover="afficherBoutons[index][index2] = true"
-                    v-on:mouseout="afficherBoutons[index][index2] = false"
-                >
-                    <p class="semester_display">Semestre {{ 2 * index + index2 + 1 }}</p>
-                    <p class="status_display" v-show="!btn">
-                        {{ getStatusForSemester(2 * index + index2 + 1) }}
-                    </p>
+            <p class="semester_display">Année {{ index+1 }} :</p>
+            <div class="container-fluid spe" style="align-items: normal;">
+                <div class="semester_rect" v-for="(btn, index2) in year" v-bind:key="index2" v-on:mouseover="afficherBoutons[index][index2] = true" v-on:mouseout="afficherBoutons[index][index2] = false">
+                    <p class="semester_display">Semestre {{ 2*index+index2+1 }}</p>
+                    <p class="status_display" v-show="!btn">{{ getStatusForSemester(2*index+index2+1) }}</p>
                     <div v-show="btn" class="container-fluid spe">
-                        <button
-                            v-show="btn"
-                            class="btn_form_acces"
-                            @click="
-                                goToRessourceSheet('#/form-mccc-UE', 2 * index + index2 + 1, pathId)
-                            "
-                        >
-                            UE
-                        </button>
-                        <button
-                            v-show="
-                                hasResourceInSemester(2 * index + index2 + 1) ||
-                                hasUEInSemester(2 * index + index2 + 1)
-                            "
-                            class="btn_form_acces"
-                            @click="
-                                goToRessourceSheet(
-                                    '#/form-mccc-ressources',
-                                    2 * index + index2 + 1,
-                                    pathId,
-                                )
-                            "
-                        >
-                            Ressource
-                        </button>
-                        <button
-                            v-show="
-                                hasSAEInSemester(2 * index + index2 + 1) ||
-                                hasUEInSemester(2 * index + index2 + 1)
-                            "
-                            class="btn_form_acces"
-                            @click="
-                                goToRessourceSheet(
-                                    '#/form-mccc-sae',
-                                    2 * index + index2 + 1,
-                                    pathId,
-                                )
-                            "
-                        >
-                            SAÉ
-                        </button>
+                        <button v-show="btn" class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-UE', (2*index+index2+1), pathId)">UE</button>
+                        <button v-show="hasResourceInSemester(2*index+index2+1) || hasUEInSemester(2*index+index2+1)" class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-ressources', (2*index+index2+1), pathId)">Ressource</button>
+                        <button v-show="hasSAEInSemester(2*index+index2+1) || hasUEInSemester(2*index+index2+1)" class="btn_form_acces" @click="goToRessourceSheet('#/form-mccc-sae', (2*index+index2+1), pathId)">SAÉ</button>
                     </div>
                 </div>
             </div>
@@ -250,13 +210,13 @@ function toggleShowPopUp() {
     border-radius: 15px;
     padding: 0.6vw;
     font-size: 0.7vw;
-    max-width: 10vw;
+    max-width: 12vw;
     max-height: 5vw;
     text-align: justify;
 }
 
 #popup_years::after {
-    content: '';
+    content: "";
     position: absolute;
     top: 11vw;
     right: 17vw;

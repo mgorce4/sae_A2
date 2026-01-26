@@ -1,17 +1,18 @@
 <script setup>
-import { ref, computed } from 'vue'
-import Login from './pages/login_page.vue'
-import AdministrationDashboard from './pages/administration_dashboard.vue'
-import MCCCSelectForm from './pages/mccc_select_form.vue'
-import NotFound from './pages/not_found.vue'
-import DsbrProf from './pages/teacher_dashboard.vue'
-import FormSae from './pages/form_mccc_sae.vue'
-import FormUE from './pages/form_mccc_UE.vue'
-import FormRessources from './pages/form_mccc_ressources.vue'
-import FormRessourceSheet from './pages/ressource_sheet_form.vue'
-import MCCCSelectPath from './pages/mccc_select_path.vue'
-import ResourceSheetDisplay from './pages/resource_sheet_display.vue'
-import ControlCenter from './pages/control_center.vue'
+  import { ref, computed } from 'vue'
+  import Login from './pages/login_page.vue'
+  import AdministrationDashboard from './pages/administration_dashboard.vue'
+  import MCCCSelectForm from './pages/mccc_select_form.vue'
+  import NotFound from './pages/not_found.vue'
+  import DsbrProf from './pages/teacher_dashboard.vue'
+  import FormSae from './pages/form_mccc_sae.vue'
+  import FormUE from './pages/form_mccc_UE.vue'
+  import FormRessources from './pages/form_mccc_ressources.vue'
+  import FormRessourceSheet from './pages/ressource_sheet_form.vue'
+  import MCCCSelectPath from './pages/mccc_select_path.vue'
+  import ResourceSheetDisplay from './pages/resource_sheet_display.vue'
+  import ControlCenter from './pages/control_center.vue'
+  import HelpCenter from './pages/help_center.vue'
 
 const routes = {
     '/': Login,
@@ -24,8 +25,9 @@ const routes = {
     '/form-ressource-sheet': FormRessourceSheet,
     '/mccc-select-path': MCCCSelectPath,
     '/resource-sheet-display': ResourceSheetDisplay,
-    '/control-center': ControlCenter,
-}
+    '/control-center' : ControlCenter,
+    '/help-center' : HelpCenter
+  }
 
 const currentPath = ref(window.location.hash)
 

@@ -521,7 +521,7 @@ input[type='date']::-webkit-calendar-picker-indicator {
     border-radius: 15px;
     padding: 0.6vw;
     font-size: 0.7vw;
-    max-width: 10vw;
+    max-width: 11vw;
     max-height: 5vw;
     text-align: justify;
 }

@@ -1,15 +1,20 @@
-<script setup></script>
+<script setup>
+import { ref } from 'vue'
+import { status } from '@/main.js'
+
+const show_popup = ref(false)
+
+function toggleShowPopUp() {
+    show_popup.value = !show_popup.value
+}
+
+</script>
 
 <template>
     <div id="main">
         <div style="display: flex; align-items: center; height: 1vw">
             <div id="return_arrow">
-                <button
-                    id="back_arrow"
-                    onclick="window.location.hash = '#/dashboard-administration'"
-                >
-                    ←
-                </button>
+                <button id="back_arrow" onclick="window.location.hash = '#/dashboard-administration'">←</button>
                 <p>Retour</p>
             </div>
         </div>
@@ -26,41 +31,33 @@
                         </div>
                     </div>
                     <div style="justify-items: center">
-                        <p class="title" style="margin-top: 0">Date de l'année scolaire en cours</p>
+                        <p class="title" style="margin-top: 0; font-size: 2vw">Date de l'année scolaire en cours</p>
 
-                        <div>
-                            <p>Date de début :</p>
-                            <input type="date" id="start_date" name="start_date" />
+                        <div style="margin-bottom: 1vw">
+                            <div style="display: flex; gap: 1vw; margin-top: 1vw">
+                                <p>Date de début : </p>
+                                <input type="date" id="start_date" name="start_date">
+                            </div>
 
-                            <p>Date de fin :</p>
-                            <input type="date" id="end_date" name="end_date" />
+                            <div style="display: flex; gap: 2.5vw; margin-top: 1vw">
+                                <p>Date de fin : </p>
+                                <input type="date" id="end_date" name="end_date">
+                            </div>
                         </div>
 
                         <div id="button_help">
-                            <button
-                                id="button"
-                                style="margin-top: 2vw; padding: 1vw; height: 5vw; font-size: 2.5vw"
-                            >
-                                Sauvegarder
-                            </button>
+                            <button class="btn1">Sauvegarder</button>
                         </div>
                     </div>
-
-                    <div id="button_help">
-                        <button
-                            id="button"
-                            style="margin-top: 2vw; padding: 1vw; height: 5vw; font-size: 2.5vw"
-                        >
-                            Centre d'aide
-                        </button>
-                    </div>
                 </div>
 
-                <div id="right_component">
-                    <button id="button" style="width: 31.5vw; margin: 3vh 1vw">
-                        Vues professeur
-                    </button>
+                <div id="button_help">
+                    <button id="button" style="margin-top: 2vw; padding: 1vw;" onclick="window.location.hash = ''">Centre d'aide</button>
                 </div>
+            </div>
+
+            <div id="right_component">
+                <button id="button" style=" width: 31.5vw; margin: 3vh 1vw;">Vues professeur</button>
             </div>
         </div>
     </div>
@@ -79,7 +76,7 @@
 #date {
     background-color: var(--main-theme-background-color);
     border-radius: 1vw;
-    padding: 1.5vw;
+    padding: 0.5vw;
 }
 
 #right_component {
@@ -87,5 +84,28 @@
     background-color: var(--main-theme-background-color);
     height: 40vw;
     border-radius: 1vw;
+}
+
+#popup_date {
+    z-index: 10;
+    color: white;
+    background-color: var(--sub-div-background-color);
+    border-radius: 15px;
+    padding: 0.6vw;
+    font-size: 0.7vw;
+    max-width: 15vw;
+    max-height: 4vw;
+    text-align: justify;
+}
+
+#popup_date::after {
+    content: "";
+    position: absolute;
+    top: 15.5vw;
+    right: 77.7vw;
+    rotate: 90deg;
+    border-left: 0.8vw solid transparent;
+    border-right: 0.8vw solid transparent;
+    border-top: 0.8vw solid var(--sub-div-background-color);
 }
 </style>
