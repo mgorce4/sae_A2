@@ -17,15 +17,29 @@ onMounted(async () => {
             return
         }
 
-        // Charger uniquement les fiches où l'utilisateur est professeur principal
-        const response = await axios.get(
-            `http://localhost:8080/api/v2/resource-sheets/teacher/${userId}`,
-        )
-        resourceSheetsDTO.value = response.data
+        const firstName = localStorage.firstName || localStorage.firstname || ''
+        const lastName = localStorage.lastName || localStorage.lastname || ''
+        const userName = `${firstName} ${lastName}`.trim()
 
-        console.log(
-            `✅ Loaded ${resourceSheetsDTO.value.length} resource sheets for teacher ${userId}`,
-        )
+        console.log('userId:', userId, '| userName:', userName)
+
+        //all the resources-sheets
+        const response = await axios.get('http://localhost:8080/api/v2/resource-sheets')
+        
+        console.log('Total fiches:', response.data.length)
+        
+        //To get the mainTeacher and the teacher
+        resourceSheetsDTO.value = response.data.filter(sheet => {
+            const isMainTeacher = sheet.mainTeacher === userName
+            const isInTeachers = sheet.teachers && sheet.teachers.includes(userName)
+            
+            if (isMainTeacher || isInTeachers) {
+                console.log('Match:', sheet.resourceLabel, '| mainTeacher:', sheet.mainTeacher, '| teachers:', sheet.teachers)
+            }
+            return isMainTeacher || isInTeachers
+        })
+
+        console.log(`${resourceSheetsDTO.value.length} fiche(s) pour ${userName}`)
     } catch (error) {
         console.error('Error loading resource sheets:', error)
     }
@@ -45,12 +59,7 @@ const goToRessourceSheet = (id) => {
                 <p v-if="resourceSheetsDTO.length === 0" style="color: white; padding: 1vw">
                     Aucune ressource trouvée. Vous n'êtes professeur principal d'aucune ressource.
                 </p>
-                <button
-                    v-for="sheet in resourceSheetsDTO"
-                    :key="sheet.id"
-                    id="sheets"
-                    @click="goToRessourceSheet(sheet.id)"
-                >
+                <button v-for="sheet in resourceSheetsDTO" :key="sheet.id" id="sheets" @click="goToRessourceSheet(sheet.id)">
                     <p>{{ sheet.resourceLabel }}</p>
                 </button>
             </div>

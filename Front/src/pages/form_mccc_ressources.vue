@@ -670,7 +670,7 @@ onMounted(async () => {
     await Promise.all([
         axios
             .get('http://localhost:8080/api/v2/resource-sheets')
-            .then((reponse) => (resource_sheets.value = reponse.data)),
+            .then((response) => (resource_sheets.value = response.data)),
         axios
             .get(`http://localhost:8080/api/v2/mccc/resources/path/${pathId.value}/semester/${semesterNumber.value}`)
             .then((response) => (resources.value = response.data)),
