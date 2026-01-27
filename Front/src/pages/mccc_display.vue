@@ -160,9 +160,51 @@ const goBack = () => {
                 <p>Code apogee : {{ selectedUeCodeApogee }}</p>
                 <p>Intitulé de la compétence : {{ selectedUeIntitule }}</p>
                 <p>Niveau de la compétence : {{ selectedUeCompetenceLevel }}</p>
-                <a class="dark_bar accordion_mccc" data-accordion="add-modify-sae">Test afficher</a>
-                <div class="panel_form_mccc container-fluid">
-                    <p>Contenu de la compétence</p>
+                <div v-for="(value, index) in selectedUeLinkedResources" :key="index">
+                    <a class="dark_bar accordion_mccc" data-accordion="add-modify-resource">{{ value.label }} : {{ value.name }}</a>
+                    <div class="panel_form_mccc container-fluid cfh">
+                        <div class="container-fluid">
+                            <p>Code apogee : </p>
+                            <p class="mccc_input">{{ value.apogeeCode }}</p>
+                        </div>
+                        <div class="container-fluid">
+                            <p>Nombre d'heures (initiale) : </p>
+                            <div class="container-fluid cfh mccc_input">
+                                <p>CM : {{ value.initialCm }}</p>
+                                <p>TD : {{ value.initialTd }}</p>
+                                <p>TP : {{ value.initialTp }}</p>
+                                <p>Projet : {{ value.initialProject }}</p>
+                                <p>Total : {{ value.initialTotal }}</p>
+                            </div>
+                        </div>
+                        <div class="container-fluid" v-show="value.alternanceCm != null && value.alternanceTd != null && value.alternanceTp != null && value.alternanceProject != null && value.alternanceTotal > 0">
+                            <p>Nombre d'heures (alternance) : </p>
+                            <div class="container-fluid cfh mccc_input">
+                                <p>CM : {{ value.alternanceCm }}</p>
+                                <p>TD : {{ value.alternanceTd }}</p>
+                                <p>TP : {{ value.alternanceTp }}</p>
+                                <p>Projet : {{ value.alternanceProject }}</p>
+                                <p>Total : {{ value.alternanceTotal }}</p>
+                            </div>
+                        </div>
+                        <div class="container-fluid">
+                            <p>Coefficient : </p>
+                            <p class="mccc_input">{{ value.ueCoefficients[0].coefficient }}</p>
+                        </div>
+                        <div class="container-fluid">
+                            <p>Autres UE reliées : </p>
+                            <p class="mccc_input">{{ value.apogeeCode }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div v-for="(value, index) in selectedUeLinkedSaes" :key="index">
+                    <a class="dark_bar accordion_mccc" data-accordion="add-modify-sae">{{ value.label }} : {{ value.name }}</a>
+                    <div class="panel_form_mccc container-fluid">
+                        <div class="container-fluid">
+                            <p>Code apogee : </p>
+                            <p>{{ value.apogeeCode }}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -193,5 +235,10 @@ const goBack = () => {
     border-top: 1vw solid transparent;
     border-right: 2vw solid var(--main-theme-background-color);
     border-bottom: 1vw solid transparent;
+}
+
+.mccc_input > p {
+    font-size: 1vw;
+    margin: 0vw 1vw;
 }
 </style>

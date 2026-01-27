@@ -839,6 +839,7 @@ const goBack = () => {
     width: fit-content;
     min-width: 10vw;
     text-align: center;
+    font-size: 1vw;
     color: var(--main-theme-secondary-color);
 }
 
