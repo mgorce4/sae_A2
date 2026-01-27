@@ -178,10 +178,114 @@ onMounted(() => {
                     </p>
                 </div>
             </div>
+
+            <a class="dark_bar accordion_popup">Centre de contrôle</a>
+            <div class="panel_popup">
+                <div class="container-fluid">
+                <p class="popup_text">
+                    Le centre de contrôle permet de renseigner les dates de début et de fin de l'année scolaire en cours, de contacter le support technique, et gérer l'ajout et la suppression de professeurs.
+                </p>
+                </div>
+                <p class="popup_sub_title">Dates de l'année scolaire en cours : </p>
+                <div class="container-fluid">
+                <input type="date" v-model="new Date().toISOString().split('T')[0]" name="popup_date"/>
+                <p class="popup_text">
+                    En cliquant sur ce champ, un calendrier apparaîtra vous permettant de sélectionner une date.<br>
+                    Après avoir sélectionné la date désirée, cliquez sur le bouton <span class="btn_modify btn_how_to">Sauvegarder</span> pour appliquer les nouvelles dates de l'année scolaire.<br>
+                </p>
+                </div>
+                <p class="popup_sub_title">Centre d'aide : </p>
+                <p class="popup_text">
+                    Si vous rencontrez des problèmes techniques ou avez des questions concernant l'utilisation de la plateforme, vous pouvez contacter le support technique via le centre d'aide.<br>
+                </p>
+                <p class="popup_sub_title">Vues professeur : </p>
+                <p class="popup_text">
+                    Cette section permet de gérer l'ajout et la suppression des professeurs ayant accès à la plateforme.<br>
+                </p>
+                <div class="container-fluid">
+                <button class="button_more">+</button>
+                <p class="popup_text">
+                    En cliquant sur ce bouton, une zone d'ajout de professeur apparaîtra.<br>
+                    Il vous suffira de renseigner les informations demandées, puis de cliquer sur <span class="btn_modify btn_how_to">Ajouter</span> pour créer un nouveau compte professeur.<br>
+                </p>
+                </div>
+                <div class="container-fluid">
+                <button class="btn_modify">Modifier</button>
+                <p class="popup_text">
+                    En cliquant sur ce bouton, une zone de modification des informations du professeur apparaîtra.<br>
+                    Il vous suffira de renseigner les nouvelles informations, puis de cliquer sur <span class="btn_modify btn_how_to">Sauvegarder</span> pour appliquer les changements au compte professeur sélectionné.<br>
+                </p>
+                </div>
+                <div class="container-fluid">
+                <button class="btn_modify">Supprimer</button>
+                <p class="popup_text">
+                    En cliquant sur ce bouton, le compte du professeur sélectionné sera supprimé de la plateforme.<br>
+                    Veuillez confirmer la suppression lorsque vous y êtes invité.<br>
+                </p>
+                </div>
+                <p class="popup_sub_title">Importation/Exportation CSV : </p>
+                <div class="container-fluid">
+                <button class="btn1">Importer CSV</button>
+                <p class="popup_text">
+                    En cliquant sur ce bouton, vous pourrez sélectionner un fichier CSV contenant les informations des professeurs à ajouter.<br>
+                    Après avoir sélectionné le fichier, cliquez sur <span class="btn_modify btn_how_to">Importer</span> pour ajouter les professeurs à la plateforme.<br>
+                </p>
+                </div>
+                <div class="container-fluid">
+                <button class="btn1">Exporter CSV</button>
+                <p class="popup_text">
+                    En cliquant sur ce bouton, un fichier CSV contenant les informations de tous les professeurs actuellement inscrits sur la plateforme sera généré et téléchargé sur votre ordinateur.<br>
+                </p>
+                </div>
+            </div>
+
             <a class="dark_bar accordion_popup">Rendu des fiches</a>
             <div class="panel_popup">
                 <div class="container-fluid">
-                    <p class="popup_text">!!! Blabla pouet !!!</p>
+                    <p class="popup_text">
+                        Cette section permet de visualiser les fiches ressources soumises par les professeurs et de les télecharger.
+                    </p>
+                    </div>
+
+                    <div class="container-fluid">
+                    <div id="return_sheets_div" style="height: 6vw; width: 30vw;">
+                        <div id="return_sheets_div_header">
+
+                        <div id="option_path">
+                            <select name="paths" class="paths">
+                            <option :value="'selection_parcours'">Sélectionner un parcours</option>
+                            <option :value="'Parcours 1'">Parcours 1</option>
+                            <option :value="'Parcours 2'">Parcours 2</option>
+                            </select>  
+                        </div>
+
+                        <div id="semesters_div">
+                            <select name="semesters" class="semesters" :value="'S1'">
+                            <option :value="'S1'">S1</option>
+                            <option :value="'S2'">S2</option>
+                            </select>
+                        </div>
+                        </div>
+                    </div>
+                    <p class="popup_text">
+                        Utilisez les menus déroulants pour sélectionner le parcours et le semestre souhaités.<br>
+                        Les fiches ressources soumises par les professeurs pour le parcours et le semestre sélectionnés seront affichées ci-dessous.<br>
+                    </p>
+                    </div>
+
+                    <div class="container-fluid">
+                    <button class="btn1">Visualiser</button>
+                    <p class="popup_text">
+                        En cliquant sur ce bouton, une nouvelle fenêtre s'ouvrira affichant la fiche ressource soumise par le professeur.<br>
+                        Vous pourrez ainsi examiner la fiche avant de décider de la télecharger.<br>
+                    </p>
+                    </div>
+                    <div class="container-fluid">
+                    <input type="checkbox"/>
+                    <p class="popup_text">
+                        En cochant cette case, vous sélectionnez la fiche ressource soumise par le professeur.<br>
+                        Vous pourrez ensuite cliquer sur le bouton <span><img src="../../media/download.webp" width="35" height="35" alt="download"/></span> pour télecharger toutes les fiches sélectionnées.<br>
+                    </p>
                 </div>
             </div>
         </div>
