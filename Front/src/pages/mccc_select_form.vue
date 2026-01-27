@@ -205,8 +205,8 @@ function toggleShowPopUp() {
 }
 
 .btn_display_mccc {
-    width: 90%;
-    margin: 0.8vw 0 0 5%;
+    width: 80%;
+    margin: 0.8vw 0 0 10%;
 }
 
 #popup_years {
