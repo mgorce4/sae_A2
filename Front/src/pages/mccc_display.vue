@@ -7,19 +7,36 @@ const institutionId = parseInt(localStorage.idInstitution)
 const ueList = ref([])
 const resourceList = ref([])
 const saeList = ref([])
-const semester = parseInt(localStorage.semester)
 
 const ueSelected = ref(false)
+const selectedUeId = ref(null)
 const selectedUeCodeApogee = ref(null)
 const selectedUeIntitule = ref(null)
 const selectedUeCompetenceLevel = ref(null)
+const selectedUeLinkedResources = ref([])
+const selectedUeLinkedSaes = ref([])
 
 function selectUe(ue) {
     ueSelected.value = true
+    selectedUeId.value = ue.ueNumber
     selectedUeCodeApogee.value = ue.euApogeeCode
     selectedUeIntitule.value = ue.label
     selectedUeCompetenceLevel.value = ue.competenceLevel
+
+    selectedUeLinkedResources.value = resourceList.value.filter(
+        (resource) => resource.ueCoefficients && resource.ueCoefficients.some(
+            (coef) => coef.ueId === selectedUeId.value
+        )
+    )
+    selectedUeLinkedSaes.value = saeList.value.filter(
+        (sae) => sae.ueCoefficients && sae.ueCoefficients.some(
+            (coef) => coef.ueId === selectedUeId.value
+        )
+    )
     console.log('Selected UE:', ue)
+    console.log('Linked Resources:', selectedUeLinkedResources.value)
+    console.log('Linked SAEs:', selectedUeLinkedSaes.value)
+    attachAccordionListeners()
 }
 
 const getQueryParam = (param) => {
@@ -29,6 +46,8 @@ const getQueryParam = (param) => {
     const params = new URLSearchParams(queryString)
     return params.get(param)
 }
+
+const semester = parseInt(getQueryParam('id'))
 
 function getUESemesterInstitution() {
     const pathId = parseInt(getQueryParam('pathId'))
@@ -67,34 +86,20 @@ const attachAccordionListeners = () => {
     nextTick(() => {
         const acc = document.getElementsByClassName('accordion_mccc')
         for (let i = 0; i < acc.length; i++) {
-            // Skip cloning for add-modify-sae to preserve Vue reactivity
-            if (acc[i].getAttribute('data-accordion') === 'add-modify-sae') {
-                acc[i].addEventListener('click', function () {
-                    this.classList.toggle('active')
-                    const panel = this.nextElementSibling
-                    if (panel.style.maxHeight) {
-                        panel.style.maxHeight = null
-                    } else {
-                        panel.style.maxHeight = panel.scrollHeight + 'vw'
-                        panel.style.padding = '0vw 0vw 0vw'
-                    }
-                })
-            } else {
-                const newElement = acc[i].cloneNode(true)
-                acc[i].parentNode.replaceChild(newElement, acc[i])
+            const newElement = acc[i].cloneNode(true)
+            acc[i].parentNode.replaceChild(newElement, acc[i])
 
-                newElement.addEventListener('click', function () {
-                    this.classList.toggle('active')
-                    const panel = this.nextElementSibling
-                    if (panel.style.maxHeight) {
-                        panel.style.maxHeight = null
-                    } else {
-                        // Calculate the actual height including error messages
-                        panel.style.maxHeight = panel.scrollHeight + 'vw'
-                        panel.style.padding = '0vw 0vw 0vw'
-                    }
-                })
-            }
+            newElement.addEventListener('click', function () {
+                this.classList.toggle('active')
+                const panel = this.nextElementSibling
+                if (panel.style.maxHeight) {
+                    panel.style.maxHeight = null
+                } else {
+                    // Calculate the actual height including error messages
+                    panel.style.maxHeight = panel.scrollHeight + 'vw'
+                    panel.style.padding = '0vw 0vw 0vw'
+                }
+            })
         }
     })
 }
@@ -137,10 +142,6 @@ const goBack = () => {
 </script>
 
 <template>
-    {{ getUESemesterInstitution() }}<br><br>
-    {{ resourceList }}<br><br>
-    {{ saeList }}<br><br>
-    {{ mccc_table }}
     <div id="display_mccc_page">
         <div id="return_arrow">
             <button id="back_arrow" @click="goBack">←</button>
@@ -148,7 +149,7 @@ const goBack = () => {
         </div>
         <div class="container-fluid" style="gap: 0px; width: 100%; align-items: start;">
             <div class="container-fluid cfh" style="width: fit-content;">
-                <div v-for="(value, index) in getUESemesterInstitution()" :key="index" class="container-fluid" style="gap: 0;">
+                <div v-for="(value, index) in getUESemesterInstitution()" :key="index" v-show="resourceList.length >= 1" class="container-fluid" style="gap: 0;">
                     <div class="ue_selection_button" @click="selectUe(value)">{{ value.label }}</div>
                     <div class="display_mccc_triangle" v-show="ueSelected"></div>
                     <div style="width: 2.5vw;" v-show="!ueSelected"></div>
