@@ -17,6 +17,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+import static iut.unilim.fr.back.controllerBack.LogController.writeInCsvLogs;
+
 @Service
 public class TeacherImportCsvService {
 
@@ -32,91 +34,95 @@ public class TeacherImportCsvService {
     @Transactional
     public void importTeachers(MultipartFile file, Long institutionId) throws IOException {
 
-        Institution institution = institutionRepository.findById(institutionId)
-                .orElseThrow(() -> new RuntimeException("Institution introuvable avec l'ID : " + institutionId));
+        Optional<Institution> institution_o = institutionRepository.findById(institutionId);
+        if (institution_o.isPresent()) {
+            Institution institution = institution_o.get();
 
-        List<UserSyncadia> teachersToSave = new ArrayList<>();
-        String pathDelimitator = ";";
+            List<UserSyncadia> teachersToSave = new ArrayList<>();
+            String pathDelimitator = ";";
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
-            String headerLine = reader.readLine();
-            if (headerLine == null) return;
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+                String headerLine = reader.readLine();
+                if (headerLine == null) return;
 
-            Map<String, Integer> headerMap = new HashMap<>();
-            String[] headers = headerLine.split(pathDelimitator);
+                Map<String, Integer> headerMap = new HashMap<>();
+                String[] headers = headerLine.split(pathDelimitator);
 
-            for (int i = 0; i < headers.length; i++) {
-                String headerName = removeUTF8BOM(headers[i].trim());
-                headerMap.put(headerName.toLowerCase(), i);
-            }
+                for (int i = 0; i < headers.length; i++) {
+                    String headerName = removeUTF8BOM(headers[i].trim());
+                    headerMap.put(headerName.toLowerCase(), i);
+                }
 
-            if (!headerMap.containsKey("prenom") || !headerMap.containsKey("nom") || !headerMap.containsKey("username")){
-                throw new IOException("Le fichier CSV doit contenir les colonnes 'Nom', 'Prenom' et 'username");
-            }
+                if (!headerMap.containsKey("prenom") || !headerMap.containsKey("nom") || !headerMap.containsKey("username")){
+                    writeInCsvLogs("{User} attempt to import teachers from a CSV file, but the file is invalid.");
+                }
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] data = line.split(pathDelimitator);
-                String name = getValue(data, headerMap, "nom");
-                String firstName = getValue(data, headerMap, "prenom");
-                String username = getValue(data, headerMap, "username");
-
-                Optional<UserSyncadia> userAlreadyImported = teacherRepository.findByUsername(username);
-
-                System.out.println();
-                System.out.println("toto1");
-                System.out.println("name :" + name);
-                System.out.println("First name :" + firstName);
-                System.out.println("Username" + username);
-                System.out.println(userAlreadyImported.isEmpty());
-                System.out.println();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] data = line.split(pathDelimitator);
+                    String name = getValue(data, headerMap, "nom");
+                    String firstName = getValue(data, headerMap, "prenom");
+                    String username = getValue(data, headerMap, "username");
+                    Optional<UserSyncadia> userAlreadyImported = teacherRepository.findByUsername(username);
 
 
-
-                if (data.length != 0 && userAlreadyImported.isEmpty()) {
-                    System.out.println("\ntoto2");
-                    UserSyncadia teacher = new UserSyncadia();
+                    if (data.length != 0 && userAlreadyImported.isEmpty()) {
+                        UserSyncadia teacher = new UserSyncadia();
 
 
-                    teacher.setLastname(name);
-                    teacher.setFirstname(firstName);
-                    teacher.setUsername(username);
-                    teacher.setPassword(username + "1234");
+                        teacher.setLastname(name);
+                        teacher.setFirstname(firstName);
+                        teacher.setUsername(username);
+                        teacher.setPassword(username + "1234");
 
 
-                    teacher.setInstitution(institution);
+                        teacher.setInstitution(institution);
 
-                    teachersToSave.add(teacher);
-                    System.out.println(teachersToSave.getLast().getUsername());
-                    System.out.println("Un user a ete enregistree\n");
+                        teachersToSave.add(teacher);
+                        writeInCsvLogs("Teacher imported : \n" +
+                                "   - Name : " + name + "\n" +
+                                "   - First name : " + firstName + "\n" +
+                                "   - Username : " + username);
+                        writeInCsvLogs("{User} import a teacher from a csv file.");
+                    } else {
+                        if (data.length == 0) {
+                            writeInCsvLogs("{User} attempt to import teachers from a csv file, but the csv file is empty");
+                        } else {
+                            writeInCsvLogs("{User} attempt to import teachers from a csv file, but the user is already in the data base.");
+                        }
+                    }
+                }
+                if (!teachersToSave.isEmpty()) {
+                    List<UserSyncadia> savedUsers = teacherRepository.saveAll(teachersToSave);
+                    writeInCsvLogs("{User} saved " + savedUsers.size() + " teacher from a csv file.");
+
+                    List<AccessRight> accessRightsToSave = new ArrayList<>();
+
+                    for (UserSyncadia savedUser : savedUsers) {
+                        AccessRight right = new AccessRight();
+
+                        right.setAccessRight(1);
+
+                        right.setIdUser(savedUser.getIdUser());
+                        right.setUser(savedUser);
+
+                        accessRightsToSave.add(right);
+                        writeInCsvLogs("Access right saved for user : " + savedUser.getUsername() + ". It is a teacher.");
+                    }
+
+                    accessRightRepository.saveAll(accessRightsToSave);
+                    writeInCsvLogs("{User} add access right ( teacher ) for " +  accessRightsToSave.size() + " users.");
                 }
             }
+
             if (!teachersToSave.isEmpty()) {
-                List<UserSyncadia> savedUsers = teacherRepository.saveAll(teachersToSave);
-                System.out.println(savedUsers.size() + " utilisateurs sauvegardés.");
-
-                List<AccessRight> accessRightsToSave = new ArrayList<>();
-
-                for (UserSyncadia savedUser : savedUsers) {
-                    AccessRight right = new AccessRight();
-
-                    right.setAccessRight(1);
-
-                    right.setIdUser(savedUser.getIdUser());
-                    right.setUser(savedUser);
-
-                    accessRightsToSave.add(right);
-                    System.out.println("Access right" + accessRightsToSave.getLast().getUser());
-                }
-
-                accessRightRepository.saveAll(accessRightsToSave);
-                System.out.println("Droits d'accès ajoutés pour " + accessRightsToSave.size() + " utilisateurs.");
+                teacherRepository.saveAll(teachersToSave);
             }
+        } else {
+            writeInCsvLogs("{User} attempt to import professors from a csv file, but their institution is invalid.");
         }
 
-        if (!teachersToSave.isEmpty()) {
-            teacherRepository.saveAll(teachersToSave);
-        }
+
     }
 
     private String getValue(String[] data, Map<String, Integer> map, String colName) {
