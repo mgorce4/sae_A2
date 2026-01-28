@@ -3,8 +3,10 @@ package iut.unilim.fr.back.controllerBack;
 import iut.unilim.fr.back.controller.ResourceSheetDTOController;
 import iut.unilim.fr.back.dto.*;
 import iut.unilim.fr.back.entity.Ressource;
+import iut.unilim.fr.back.entity.UserSyncadia;
 import iut.unilim.fr.back.repository.RessourceRepository;
 import iut.unilim.fr.back.repository.RessourceSheetRepository;
+import iut.unilim.fr.back.repository.UserSyncadiaRepository;
 import iut.unilim.fr.back.service.TeacherImportCsvService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.charset.StandardCharsets;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -26,11 +29,14 @@ import static iut.unilim.fr.back.service.ResourceGetterService.*;
 
 @RestController
 @RequestMapping("/api/csv")
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"}, allowCredentials = "true")
 public class CsvTransfertController {
     @Autowired
     private RessourceRepository ressourceRepository;
     @Autowired
     private TeacherImportCsvService teacherImportCsvService;
+    @Autowired
+    private UserSyncadiaRepository userSyncadiaRepository;
 
     @Autowired
     private ResourceSheetDTOController rsDTOController;
@@ -88,12 +94,35 @@ public class CsvTransfertController {
     }
 
     @PostMapping("/import")
-    public ResponseEntity<?> importTeachers(@RequestParam("file") MultipartFile file, @RequestParam("institutionId") Long institutionId) {
+    public ResponseEntity<?> importTeachers(
+            @RequestParam("file") MultipartFile file
+            // Principal principal
+    ) {
+        /*if (principal == null) {
+            System.out.println("toto");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session expirée ou invalide.");
+        }
+        */
         try {
+            /*String userEmail = principal.getName();
+
+            UserSyncadia currentUser = userSyncadiaRepository.findByUsername(userEmail)
+                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé en base"));
+
+            if (currentUser.getInstitution() == null) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Vous n'êtes rattaché à aucune institution.");
+            }*/
+
+            Long institutionId = 1L;
             teacherImportCsvService.importTeachers(file, institutionId);
-            return ResponseEntity.ok("");
+
+            return ResponseEntity.ok("Import RÉUSSI (Mode Bypass Sécurité - Institution " + institutionId + ")");
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur : " + e.getMessage());
         }
     }
 
