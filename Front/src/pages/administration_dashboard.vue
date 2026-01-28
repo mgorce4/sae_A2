@@ -184,7 +184,7 @@ function toggleShowPopUp() {
                 <!-- link into MCCC page -->
                 <button
                     type="button"
-                    id="button"
+                    class="button"
                     onclick="document.location.href='#/mccc-select-path'"
                 >
                     MCCC
@@ -214,7 +214,7 @@ function toggleShowPopUp() {
             </div>
 
             <button
-                id="button"
+                class="button"
                 style="margin-top: 1.5vw; margin-bottom: 1vw"
                 onclick="window.location.hash = '#/control-center'"
             >
@@ -274,7 +274,7 @@ function toggleShowPopUp() {
                     v-for="sheet in getResourcesForSemester(selected_semester_sheets)"
                     :key="sheet.id"
                 >
-                    <p>{{ sheet.resourceLabel }}</p>
+                    <p class="ressource_label">{{ sheet.resourceLabel }}</p>
                     <div style="gap: 5px">
                         <button
                             class="btn1"
@@ -358,7 +358,7 @@ function toggleShowPopUp() {
     align-content: center;
 }
 
-#button {
+.button {
     color: var(--main-theme-secondary-color);
     font-size: 3vw;
     background-color: var(--sub-section-background-color);
@@ -367,7 +367,7 @@ function toggleShowPopUp() {
     height: 8vw;
 }
 
-#button:hover {
+.button:hover {
     cursor: pointer;
 }
 
@@ -487,6 +487,29 @@ input[type='date']::-webkit-calendar-picker-indicator {
     align-items: center;
     margin-left: 1.5vw;
     margin-right: 1vw;
+}
+
+.ressource_label {
+    max-width: 23vw;
+    overflow: auto;
+}
+
+.ressource_label::-webkit-scrollbar {
+    width: 0.8vw;
+    height: 0.6vw;
+}
+
+.ressource_label::-webkit-scrollbar-track {
+    margin: 1vw 0.5vw 1vw 0; /* Marge à droite */
+    background: var(--main-theme-secondary-background-color);
+    box-shadow: inset 0 0 1vw var(--sub-scrollbar-color);
+    border-radius: 15px;
+}
+
+.ressource_label::-webkit-scrollbar-thumb {
+    background: var(--main-theme-secondary-color);
+    border-radius: 15px;
+    border: 0.2vw var(--main-theme-tertiary-color) solid;
 }
 
 .semesters {

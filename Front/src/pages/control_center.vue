@@ -52,12 +52,12 @@ function toggleShowPopUp() {
                 </div>
 
                 <div id="button_help">
-                    <button id="button" style="margin-top: 2vw; padding: 1vw;" onclick="window.location.hash = '#/help-center'">Centre d'aide</button>
+                    <button class="button" style="margin-top: 2vw; padding: 1vw;" onclick="window.location.hash = '#/help-center'">Centre d'aide</button>
                 </div>
             </div>
 
             <div id="right_component">
-                <button id="button" style=" width: 31.5vw; margin: 3vh 1vw;">Vues professeur</button>
+                <button class="button" style=" width: 31.5vw; margin: 3vh 1vw;" onclick="window.location.hash = '#/add-teacher-page'">Ajout professeur</button>
             </div>
         </div>
     </div>
@@ -101,8 +101,8 @@ function toggleShowPopUp() {
 #popup_date::after {
     content: "";
     position: absolute;
-    top: 15.5vw;
-    right: 77.7vw;
+    top: 19.2vw;
+    right: 78.5vw;
     rotate: 90deg;
     border-left: 0.8vw solid transparent;
     border-right: 0.8vw solid transparent;

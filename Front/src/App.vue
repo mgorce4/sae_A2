@@ -14,6 +14,7 @@ import MCCCSelectPath from './pages/mccc_select_path.vue'
 import ResourceSheetDisplay from './pages/resource_sheet_display.vue'
 import ControlCenter from './pages/control_center.vue'
   import HelpCenter from './pages/help_center.vue'
+    import addTeacherPage from './pages/add_teacher_page.vue'
 
 const routes = {
     '/': Login,
@@ -28,7 +29,8 @@ const routes = {
     '/mccc-select-path': MCCCSelectPath,
     '/resource-sheet-display': ResourceSheetDisplay,
     '/control-center' : ControlCenter,
-    '/help-center' : HelpCenter
+    '/help-center' : HelpCenter,
+    '/add-teacher-page' : addTeacherPage
   }
 
 const currentPath = ref(window.location.hash)
