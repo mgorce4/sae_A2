@@ -852,8 +852,8 @@ function toggleShowPopUpPedago() {
             <div id="sae_alignement">
                 <div style="display: flex; align-items: center">
                     <p class="section_title">SAE(s) concérnée(s) *</p>
-                    <p v-if="status" class="btn_how_to" @click="toggleShowPopUp">ⓘ</p>
-                    <div v-show="show_popup" id="popup_sae">
+                    <p v-if="status" class="btn_how_to" @click="toggleShowPopUpPedago">ⓘ</p>
+                    <div v-show="show_popup_pedago" id="popup_sae">
                         Cliquer sur l'interrupteur pour lier une SAE à cette ressource
                     </div>
                 </div>
@@ -1064,8 +1064,8 @@ function toggleShowPopUpPedago() {
             <div id="pedagogical_content_section">
                 <div style="display: flex; align-items: center">
                     <p class="section_title">Contenu pédagogique *</p>
-                    <p v-if="status" class="btn_how_to" @click="toggleShowPopUp">ⓘ</p>
-                    <div v-show="show_popup" id="popup_pedago">
+                    <p v-if="status" class="btn_how_to" @click="toggleShowPopUpPedago">ⓘ</p>
+                    <div v-show="show_popup_pedago" id="popup_pedago">
                         Ici, vous devez décrire les séances éffectuées
                     </div>
                 </div>
@@ -2170,17 +2170,6 @@ input:checked + .slider::before {
     text-align: justify;
 }
 
-#popup_pedago::after {
-    content: '';
-    position: absolute;
-    top: 90.35vw;
-    right: 60.89vw;
-    rotate: 90deg;
-    border-left: 0.8vw solid transparent;
-    border-right: 0.8vw solid transparent;
-    border-top: 0.8vw solid var(--sub-div-background-color);
-}
-
 #popup_sae {
     z-index: 10;
     color: white;
@@ -2190,16 +2179,5 @@ input:checked + .slider::before {
     font-size: 0.8vw;
     max-width: 14.5vw;
     text-align: justify;
-}
-
-#popup_sae::after {
-    content: '';
-    position: absolute;
-    top: 35.35vw;
-    right: 61vw;
-    rotate: 90deg;
-    border-left: 0.8vw solid transparent;
-    border-right: 0.8vw solid transparent;
-    border-top: 0.8vw solid var(--sub-div-background-color);
 }
 </style>
