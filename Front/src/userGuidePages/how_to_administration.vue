@@ -63,7 +63,7 @@ onMounted(() => {
                         Il vous suffira de renseigner le nouveau nom du parcours et le nouveau
                         nombre associé, <br />
                         puis de cliquer sur
-                        <span class="btn_modify btn_how_to">Sauvegarder</span> pour appliquer les
+                        <span class="btn_modify btn_how_to_admini">Sauvegarder</span> pour appliquer les
                         changements au parcours sélectionné.<br />
                     </p>
                 </div>
@@ -99,7 +99,7 @@ onMounted(() => {
                     <p class="popup_text">
                         En cliquant sur ce bouton, une zone d'ajout d'UE apparaîtra.<br />
                         Il vous suffira de renseigner les informations demandées, puis de cliquer
-                        sur <span class="btn_modify btn_how_to">Sauvegarder</span> pour créer une
+                        sur <span class="btn_modify btn_how_to_admini">Sauvegarder</span> pour créer une
                         nouvelle UE.<br />
                     </p>
                 </div>
@@ -107,7 +107,7 @@ onMounted(() => {
                     <p class="popup_text">
                         Vous pouvez modifier les informations d'une UE directement dans la partie
                         "UE créées", et cliquer sur
-                        <span class="btn_modify btn_how_to">Modifier</span> pour appliquer les
+                        <span class="btn_modify btn_how_to_admini">Modifier</span> pour appliquer les
                         changements.<br />
                     </p>
                 </div>
@@ -117,18 +117,18 @@ onMounted(() => {
                     <p class="popup_text">
                         En cliquant sur ce bouton, une zone d'ajout de ressource apparaîtra.<br />
                         Il vous suffira de renseigner les informations demandées, puis de cliquer
-                        sur <span class="btn_modify btn_how_to">Sauvegarder</span> pour créer une
+                        sur <span class="btn_modify btn_how_to_admini">Sauvegarder</span> pour créer une
                         nouvelle ressource.<br />
                     </p>
                 </div>
                 <div class="container-fluid">
                     <p class="popup_text">
                         Pour modifier les informations d'une ressource, cliquez sur le bouton
-                        <span class="btn_modify btn_how_to">Modifier</span> correspondant à la
+                        <span class="btn_modify btn_how_to_admini">Modifier</span> correspondant à la
                         ressource.<br />
                         Une zone de modification apparaîtra, il vous suffira de renseigner les
                         nouvelles informations, puis de cliquer sur
-                        <span class="btn_modify btn_how_to">Sauvegarder</span> pour appliquer les
+                        <span class="btn_modify btn_how_to_admini">Sauvegarder</span> pour appliquer les
                         changements.<br />
                     </p>
                 </div>
@@ -138,18 +138,18 @@ onMounted(() => {
                     <p class="popup_text">
                         En cliquant sur ce bouton, une zone d'ajout de SAÉ apparaîtra.<br />
                         Il vous suffira de renseigner les informations demandées, puis de cliquer
-                        sur <span class="btn_modify btn_how_to">Sauvegarder</span> pour créer une
+                        sur <span class="btn_modify btn_how_to_admini">Sauvegarder</span> pour créer une
                         nouvelle SAÉ.<br />
                     </p>
                 </div>
                 <div class="container-fluid">
                     <p class="popup_text">
                         Pour modifier les informations d'une SAÉ, cliquez sur le bouton
-                        <span class="btn_modify btn_how_to">Modifier</span> correspondant à la
+                        <span class="btn_modify btn_how_to_admini">Modifier</span> correspondant à la
                         SAÉ.<br />
                         Une zone de modification apparaîtra, il vous suffira de renseigner les
                         nouvelles informations, puis de cliquer sur
-                        <span class="btn_modify btn_how_to">Sauvegarder</span> pour appliquer les
+                        <span class="btn_modify btn_how_to_admini">Sauvegarder</span> pour appliquer les
                         changements.<br />
                     </p>
                 </div>
@@ -173,7 +173,7 @@ onMounted(() => {
                         En cliquant sur ce champ, un calendrier apparaîtra vous permettant de
                         sélectionner une date.<br />
                         Après avoir sélectionné la date désirée, cliquez sur le bouton
-                        <span class="btn_modify btn_how_to">Valider</span> pour appliquer la
+                        <span class="btn_modify btn_how_to_admini">Valider</span> pour appliquer la
                         nouvelle date de rendu des fiches.<br />
                     </p>
                 </div>
@@ -191,7 +191,7 @@ onMounted(() => {
                 <input type="date" v-model="new Date().toISOString().split('T')[0]" name="popup_date"/>
                 <p class="popup_text">
                     En cliquant sur ce champ, un calendrier apparaîtra vous permettant de sélectionner une date.<br>
-                    Après avoir sélectionné la date désirée, cliquez sur le bouton <span class="btn_modify btn_how_to">Sauvegarder</span> pour appliquer les nouvelles dates de l'année scolaire.<br>
+                    Après avoir sélectionné la date désirée, cliquez sur le bouton <span class="btn_modify btn_how_to_admini">Sauvegarder</span> pour appliquer les nouvelles dates de l'année scolaire.<br>
                 </p>
                 </div>
                 <p class="popup_sub_title">Centre d'aide : </p>
@@ -206,14 +206,14 @@ onMounted(() => {
                 <button class="button_more">+</button>
                 <p class="popup_text">
                     En cliquant sur ce bouton, une zone d'ajout de professeur apparaîtra.<br>
-                    Il vous suffira de renseigner les informations demandées, puis de cliquer sur <span class="btn_modify btn_how_to">Ajouter</span> pour créer un nouveau compte professeur.<br>
+                    Il vous suffira de renseigner les informations demandées, puis de cliquer sur <span class="btn_modify btn_how_to_admini">Ajouter</span> pour créer un nouveau compte professeur.<br>
                 </p>
                 </div>
                 <div class="container-fluid">
                 <button class="btn_modify">Modifier</button>
                 <p class="popup_text">
                     En cliquant sur ce bouton, une zone de modification des informations du professeur apparaîtra.<br>
-                    Il vous suffira de renseigner les nouvelles informations, puis de cliquer sur <span class="btn_modify btn_how_to">Sauvegarder</span> pour appliquer les changements au compte professeur sélectionné.<br>
+                    Il vous suffira de renseigner les nouvelles informations, puis de cliquer sur <span class="btn_modify btn_how_to_admini">Sauvegarder</span> pour appliquer les changements au compte professeur sélectionné.<br>
                 </p>
                 </div>
                 <div class="container-fluid">
@@ -228,7 +228,7 @@ onMounted(() => {
                 <button class="btn1">Importer CSV</button>
                 <p class="popup_text">
                     En cliquant sur ce bouton, vous pourrez sélectionner un fichier CSV contenant les informations des professeurs à ajouter.<br>
-                    Après avoir sélectionné le fichier, cliquez sur <span class="btn_modify btn_how_to">Importer</span> pour ajouter les professeurs à la plateforme.<br>
+                    Après avoir sélectionné le fichier, cliquez sur <span class="btn_modify btn_how_to_admini">Importer</span> pour ajouter les professeurs à la plateforme.<br>
                 </p>
                 </div>
                 <div class="container-fluid">
