@@ -10,5 +10,6 @@ import java.util.Optional;
 public interface UserSyncadiaRepository extends JpaRepository<UserSyncadia, Long> {
     Optional<UserSyncadia> findByUsername(String username);
     List<UserSyncadia> findByFirstnameAndLastname(String firstname, String lastname);
+    void deleteByUsername(String username);
 }
 

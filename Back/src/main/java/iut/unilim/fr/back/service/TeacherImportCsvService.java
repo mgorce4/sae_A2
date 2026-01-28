@@ -1,9 +1,12 @@
 package iut.unilim.fr.back.service;
 
+import iut.unilim.fr.back.entity.AccessRight;
 import iut.unilim.fr.back.entity.Institution;
 import iut.unilim.fr.back.entity.UserSyncadia;
+import iut.unilim.fr.back.repository.AccessRightRepository;
 import iut.unilim.fr.back.repository.InstitutionRepository;
 import iut.unilim.fr.back.repository.UserSyncadiaRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,10 +15,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class TeacherImportCsvService {
@@ -26,6 +26,10 @@ public class TeacherImportCsvService {
     @Autowired
     private InstitutionRepository institutionRepository;
 
+    @Autowired
+    private AccessRightRepository accessRightRepository;
+
+    @Transactional
     public void importTeachers(MultipartFile file, Long institutionId) throws IOException {
 
         Institution institution = institutionRepository.findById(institutionId)
@@ -35,7 +39,6 @@ public class TeacherImportCsvService {
         String pathDelimitator = ";";
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
-
             String headerLine = reader.readLine();
             if (headerLine == null) return;
 
@@ -54,19 +57,60 @@ public class TeacherImportCsvService {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] data = line.split(pathDelimitator);
+                String name = getValue(data, headerMap, "nom");
+                String firstName = getValue(data, headerMap, "prenom");
+                String username = getValue(data, headerMap, "username");
 
-                if (data.length == 0) {
+                Optional<UserSyncadia> userAlreadyImported = teacherRepository.findByUsername(username);
+
+                System.out.println();
+                System.out.println("toto1");
+                System.out.println("name :" + name);
+                System.out.println("First name :" + firstName);
+                System.out.println("Username" + username);
+                System.out.println(userAlreadyImported.isEmpty());
+                System.out.println();
+
+
+
+                if (data.length != 0 && userAlreadyImported.isEmpty()) {
+                    System.out.println("\ntoto2");
                     UserSyncadia teacher = new UserSyncadia();
 
-                    teacher.setLastname(getValue(data, headerMap, "nom"));
-                    teacher.setFirstname(getValue(data, headerMap, "prenom"));
-                    teacher.setUsername(getValue(data, headerMap, "username"));
+
+                    teacher.setLastname(name);
+                    teacher.setFirstname(firstName);
+                    teacher.setUsername(username);
+                    teacher.setPassword(username + "1234");
+
 
                     teacher.setInstitution(institution);
 
                     teachersToSave.add(teacher);
+                    System.out.println(teachersToSave.getLast().getUsername());
+                    System.out.println("Un user a ete enregistree\n");
+                }
+            }
+            if (!teachersToSave.isEmpty()) {
+                List<UserSyncadia> savedUsers = teacherRepository.saveAll(teachersToSave);
+                System.out.println(savedUsers.size() + " utilisateurs sauvegardés.");
+
+                List<AccessRight> accessRightsToSave = new ArrayList<>();
+
+                for (UserSyncadia savedUser : savedUsers) {
+                    AccessRight right = new AccessRight();
+
+                    right.setAccessRight(1);
+
+                    right.setIdUser(savedUser.getIdUser());
+                    right.setUser(savedUser);
+
+                    accessRightsToSave.add(right);
+                    System.out.println("Access right" + accessRightsToSave.getLast().getUser());
                 }
 
+                accessRightRepository.saveAll(accessRightsToSave);
+                System.out.println("Droits d'accès ajoutés pour " + accessRightsToSave.size() + " utilisateurs.");
             }
         }
 
