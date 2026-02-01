@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref, nextTick, watch, computed } from 'vue'
 import axios from 'axios'
+import { router } from '@/router'
 
 const display_more_area = ref(false)
 const coursName = ref('')
@@ -13,12 +14,16 @@ const errors = ref({
     coursNb: false,
 })
 
-const navigateToDashboard = () => {
-    document.location.href = '#/dashboard-administration'
-}
+
 
 const goToRessourceSheet = (url, pathId) => {
-    window.location.hash = `${url}?pathId=${pathId}`
+    localStorage.pathId = pathId
+    router.push({
+        path: url,
+        query: {
+            pathId: pathId
+        }
+    })
 }
 
 const attachAccordionListeners = () => {
@@ -249,7 +254,7 @@ const del = async (id) => {
 <template>
     <div id="form_select_page">
         <div style="display: flex; align-items: center; height: 1vw">
-            <button class="back_arrow" @click="navigateToDashboard">←</button>
+            <RouterLink class="back_arrow" to="/dashboard-administration">←</RouterLink>
             <p class="back">Retour à l'accueil</p>
         </div>
         <div id="background_path">
@@ -318,7 +323,7 @@ const del = async (id) => {
                         class="path"
                         v-on:mouseover="cours.show = true"
                         v-on:mouseout="!cours.edit ? (cours.show = false) : null"
-                        @click="goToRessourceSheet('#/mccc-select-form', cours.idPath)"
+                        @click="goToRessourceSheet('/mccc-select-form', cours.idPath)"
                     >
                         <p>{{ cours.name }}</p>
                         <div v-show="cours.show || cours.edit" @click.stop>

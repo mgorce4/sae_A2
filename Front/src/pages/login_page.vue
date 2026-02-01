@@ -2,6 +2,7 @@
 import { status, userName, institutionLocation, removeUser } from '../main.js'
 import { computed, ref, onMounted } from 'vue'
 import axios from 'axios'
+import { router } from '@/router'
 
 status.value = ''
 institutionLocation.value = ''
@@ -19,9 +20,9 @@ onMounted(async () => {
         .get('http://localhost:8080/api/access-rights')
         .then((response) => (access_rights.value = response.data))
 
-    if (localStorage.getItem('access_rights')) {
+    if (window.localStorage.getItem('access_rights')) {
         try {
-            user_access_rights.value = JSON.parse(localStorage.getItem('access_rights'))
+            user_access_rights.value = JSON.parse(window.localStorage.getItem('access_rights'))
         } catch {
             localStorage.removeItem('access_rights')
         }
@@ -49,13 +50,15 @@ function addItem() {
     loginError.value = false
     verifyUser(username.value, password.value)
 
-    const accessRights = JSON.parse(localStorage.getItem('access_rights'))
+    const accessRights = JSON.parse(window.localStorage.getItem('access_rights'))
     if (accessRights && accessRights.length === 1) {
         redirect(accessRights[0])
+        router.push(redirectlink.value)
     } else if (accessRights && accessRights.length > 1) {
         // Multiple access rights - could show a selection menu
         // For now, redirect to the first one
         redirect(accessRights[0])
+        router.push(redirectlink.value)
     }
 }
 
@@ -98,21 +101,22 @@ function verifyAccessRight() {
     const parsed = JSON.stringify(user_access_rights.value)
     localStorage.setItem('access_rights', parsed)
 }
+const redirectlink = ref("")
 
 function redirect(access_right) {
     userName.value = localStorage.lastname + ' ' + localStorage.firstname
     switch (access_right) {
         case 1:
             localStorage.status = 'Professeur'
-            window.location.hash = '#/teacher-dashboard'
+            redirectlink.value = '/teacher-dashboard'
             break
         case 2:
             localStorage.status = 'Administration'
-            window.location.hash = '#/dashboard-administration'
+            redirectlink.value = '/dashboard-administration'
             break
         case 3:
             localStorage.status = 'Admin'
-            window.location.hash = '#/'
+            redirectlink.value = '/'
             break
     }
 }
@@ -123,7 +127,7 @@ function redirect(access_right) {
         <div id="login_top" class="container-fluid spe">
             <img
                 id="profile_picture"
-                src="./../../media/no_profile_picture.webp"
+                src="/media/no_profile_picture.webp"
                 alt="profile_picture"
             />
             <div id="login_fill_infos">

@@ -7,7 +7,7 @@
     <div id="main">
         <div style="display: flex; align-items: center; height: 1vw">
             <div id="return_arrow">
-                <button id="back_arrow" onclick="window.location.hash = '#/control-center'">←</button>
+                <RouterLink id="back_arrow" to="/control-center">←</RouterLink>
                 <p>Retour</p>
             </div>
         </div>

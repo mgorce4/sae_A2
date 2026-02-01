@@ -14,7 +14,7 @@ function toggleShowPopUp() {
     <div id="main">
         <div style="display: flex; align-items: center; height: 1vw">
             <div id="return_arrow">
-                <button id="back_arrow" onclick="window.location.hash = '#/dashboard-administration'">←</button>
+                <RouterLink id="back_arrow" to="/dashboard-administration">←</RouterLink>
                 <p>Retour</p>
             </div>
         </div>
@@ -52,12 +52,12 @@ function toggleShowPopUp() {
                 </div>
 
                 <div id="button_help">
-                    <button class="button" style="margin-top: 2vw; padding: 1vw;" onclick="window.location.hash = '#/help-center'">Centre d'aide</button>
+                    <RouterLink class="button" style="margin-top: 2vw; padding: 1vw;" to="/help-center">Centre d'aide</RouterLink>
                 </div>
             </div>
 
             <div id="right_component">
-                <button class="button" style=" width: 31.5vw; margin: 3vh 1vw;" onclick="window.location.hash = '#/add-teacher-page'">Ajout professeur</button>
+                <RouterLink class="button" style=" width: 31.5vw; margin: 3vh 1vw;" to="/add-teacher-page">Ajout professeur</RouterLink>
             </div>
         </div>
     </div>

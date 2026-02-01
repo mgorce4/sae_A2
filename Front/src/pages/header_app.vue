@@ -3,6 +3,7 @@ import { status, userName, removeUser } from '../main'
 import { ref, computed } from 'vue'
 import how_to_administration from '../userGuidePages/how_to_administration.vue'
 import how_to_teacher from '../userGuidePages/how_to_teacher.vue'
+import { router } from '@/router'
 
 status.value = localStorage.status
 userName.value = localStorage.lastname + ' ' + localStorage.firstname
@@ -19,8 +20,8 @@ const routes_how_to = {
 }
 
 const routes = {
-    Administration: '#/dashboard-administration',
-    Professeur: '#/teacher-dashboard',
+    Administration: '/dashboard-administration',
+    Professeur: '/teacher-dashboard',
 }
 
 const current_how_to = computed(() => {
@@ -28,7 +29,12 @@ const current_how_to = computed(() => {
 })
 
 const goToDashboard = () => {
-    document.location.href = routes[status.value] || '#/'
+    router.push(routes[status.value] || '/')
+}
+
+const handleDisconnect = () => {
+    removeUser()
+    router.push('/')
 }
 </script>
 
@@ -38,7 +44,7 @@ const goToDashboard = () => {
             <div id="app_name_and_logo" class="container-fluid">
                 <a id="unilim_logo" @click="goToDashboard">
                     <img
-                        src="./../../media/unilim_logo.webp"
+                        src="/media/unilim_logo.webp"
                         style="margin: 0; padding: 0; width: 100%; height: 100%"
                         alt="logo"
                     />
@@ -50,7 +56,7 @@ const goToDashboard = () => {
                 <p v-if="userName" id="user_name">{{ userName }}</p>
                 <img
                     id="profile_picture"
-                    src="./../../media/no_profile_picture.webp"
+                    src="/media/no_profile_picture.webp"
                     alt="profile_picture"
                 />
             </div>
@@ -60,7 +66,7 @@ const goToDashboard = () => {
 
             <div style="display: flex; align-items: center">
                 <p v-if="status" class="btn_how_to" @click="togglePopup">ⓘ</p>
-                <a v-if="status" id="btn_disconnect" v-on:click="removeUser()" href="#/"
+                <a v-if="status" id="btn_disconnect" v-on:click="handleDisconnect"
                     >Déconnexion</a
                 >
             </div>

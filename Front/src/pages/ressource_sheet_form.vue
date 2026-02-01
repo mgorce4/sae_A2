@@ -2,23 +2,14 @@
 import axios from 'axios'
 import { status } from '../main'
 import { onMounted, ref, nextTick, computed } from 'vue'
+import { router } from '@/router'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
 
 status.value = 'Professeur'
 
-/* Extract ID from hash URL parameters */
-const getQueryParam = (param) => {
-    const hash = window.location.hash
-    const queryString = hash.split('?')[1]
-
-    if (!queryString) {
-        return null
-    }
-
-    const params = new URLSearchParams(queryString)
-    return params.get(param)
-}
-
-const resourceSheetId = ref(getQueryParam('id'))
+const resourceSheetId = ref(route.query.id)
 
 /* DTO API - Single data source */
 const resourceSheetDTO = ref(null)
@@ -254,7 +245,7 @@ const onDragEnd = () => {
 
 // Function for return button
 const goBack = () => {
-    window.location.hash = '#/teacher-dashboard'
+    router.push('/teacher-dashboard')
 }
 
 // Function to auto-resize textarea
@@ -779,7 +770,7 @@ function toggleShowPopUpPedago() {
 <template>
     <div id="Ressource_Sheet">
         <div id="return_Arrow" @click="goBack">
-            <button id="back_arrow">←</button>
+            <RouterLink id="back_arrow" to="/teacher-dashboard">←</RouterLink>
             <p>Retour</p>
         </div>
         <div id="background_Form">

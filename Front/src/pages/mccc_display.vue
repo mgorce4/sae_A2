@@ -1,6 +1,10 @@
 <script setup>
 import axios from 'axios';
 import { ref, nextTick, onMounted, computed } from 'vue';
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+
 const pathId = parseInt(localStorage.pathId)
 console.log('path ID from localStorage:', pathId)
 const institutionId = parseInt(localStorage.idInstitution)
@@ -39,19 +43,11 @@ function selectUe(ue) {
     attachAccordionListeners()
 }
 
-const getQueryParam = (param) => {
-    const hash = window.location.hash
-    const queryString = hash.split('?')[1]
-    if (!queryString) return null
-    const params = new URLSearchParams(queryString)
-    return params.get(param)
-}
-
-const semester = parseInt(getQueryParam('id'))
+const semester = parseInt(route.query.id)
 
 function getUESemesterInstitution() {
-    const pathId = parseInt(getQueryParam('pathId'))
-    const semester = parseInt(getQueryParam('id'))
+    const pathId = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
+    const semester = parseInt(route.query.id)
     const institutionId = parseInt(localStorage.idInstitution)
 
     console.log('=== FILTRAGE UE POUR AFFICHAGE ===')
@@ -131,20 +127,12 @@ onMounted(async () => {
     attachAccordionListeners()
 })
 
-const goBack = () => {
-    const pathId = parseInt(getQueryParam('pathId'))
-    if (pathId && !isNaN(pathId)) {
-        window.location.hash = `#/mccc-select-form?pathId=${pathId}`
-    } else {
-        window.location.hash = '#/mccc-select-form'
-    }
-}
 </script>
 
 <template>
     <div id="display_mccc_page">
         <div id="return_arrow">
-            <button id="back_arrow" @click="goBack">←</button>
+            <RouterLink id="back_arrow" :to="`/mccc-select-form?pathId=${pathId}`">←</RouterLink>
             <p>Retour</p>
         </div>
         <div class="container-fluid" style="gap: 0px; width: 100%; align-items: start;">
@@ -242,3 +230,5 @@ const goBack = () => {
     margin: 0vw 1vw;
 }
 </style>
+
+
