@@ -1,56 +1,11 @@
 <script setup>
-import { ref, computed } from 'vue'
-import Login from './pages/login_page.vue'
-import AdministrationDashboard from './pages/administration_dashboard.vue'
-import MCCCSelectForm from './pages/mccc_select_form.vue'
-import MCCCDisplay from './pages/mccc_display.vue'
-import NotFound from './pages/not_found.vue'
-import DsbrProf from './pages/teacher_dashboard.vue'
-import FormSae from './pages/form_mccc_sae.vue'
-import FormUE from './pages/form_mccc_UE.vue'
-import FormRessources from './pages/form_mccc_ressources.vue'
-import FormRessourceSheet from './pages/ressource_sheet_form.vue'
-import MCCCSelectPath from './pages/mccc_select_path.vue'
-import ResourceSheetDisplay from './pages/resource_sheet_display.vue'
-import ControlCenter from './pages/control_center.vue'
-  import HelpCenter from './pages/help_center.vue'
-    import addTeacherPage from './pages/add_teacher_page.vue'
-
-const routes = {
-    '/': Login,
-    '/dashboard-administration': AdministrationDashboard,
-    '/teacher-dashboard': DsbrProf,
-    '/mccc-select-form': MCCCSelectForm,
-    '/mccc-display': MCCCDisplay,
-    '/form-mccc-sae': FormSae,
-    '/form-mccc-UE': FormUE,
-    '/form-mccc-ressources': FormRessources,
-    '/form-ressource-sheet': FormRessourceSheet,
-    '/mccc-select-path': MCCCSelectPath,
-    '/resource-sheet-display': ResourceSheetDisplay,
-    '/control-center' : ControlCenter,
-    '/help-center' : HelpCenter,
-    '/add-teacher-page' : addTeacherPage
-  }
-
-const currentPath = ref(window.location.hash)
-
-window.addEventListener('hashchange', () => {
-    currentPath.value = window.location.hash
-})
-
-const currentView = computed(() => {
-    // Extract only the path part, ignoring query parameters
-    const pathWithoutHash = currentPath.value.slice(1) || '/'
-    const pathWithoutQuery = pathWithoutHash.split('?')[0]
-    return routes[pathWithoutQuery] || NotFound
-})
+import Header_app from './pages/header_app.vue'
+import Footer_app from './pages/footer_app.vue'
 </script>
-
 <template>
-    <header-application />
+    <Header_app />
     <main>
-        <component :is="currentView" />
+        <RouterView />
     </main>
-    <footer-application />
+    <Footer_app />
 </template>

@@ -2,6 +2,9 @@
 import { status } from '../main'
 import { onMounted, ref, nextTick, watch, computed } from 'vue'
 import axios from 'axios'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
 
 status.value = 'Administration'
 
@@ -79,14 +82,6 @@ watch([
     });
     console.log('[SYNC SAE CHECKED] saes.value after:', JSON.parse(JSON.stringify(saes.value)));
 }, { immediate: true });
-// Extract ID from hash URL parameters
-const getQueryParam = (param) => {
-    const hash = window.location.hash
-    const queryString = hash.split('?')[1]
-    if (!queryString) return null
-    const params = new URLSearchParams(queryString)
-    return params.get(param)
-}
 
 const pathId = ref(null)
 const semesterNumber = ref(null)
@@ -576,7 +571,7 @@ async function saveResource() {
     }
 
     // Prepare DTO
-    const pathId = parseInt(getQueryParam('pathId'))
+    const pathId = parseInt(route.query.pathId)
     console.log(pathId)
     const institutionId = parseInt(localStorage.idInstitution)
     console.log(institutionId)
@@ -585,7 +580,7 @@ async function saveResource() {
         label: resource_label.value,
         name: resource_name.value,
         apogeeCode: apogee_code.value,
-        semester: parseInt(getQueryParam('id')),
+        semester: parseInt(route.query.id),
         institutionId: institutionId,
         termsCode: terms.value,
         pathId: pathId,
@@ -671,8 +666,8 @@ async function saveResource() {
 }
 
 onMounted(async () => {
-    pathId.value = parseInt(getQueryParam('pathId'))
-    semesterNumber.value = parseInt(getQueryParam('id'))
+    pathId.value = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
+    semesterNumber.value = parseInt(route.query.id)
     institutionId.value = parseInt(localStorage.idInstitution)
 
     if (!pathId.value || isNaN(pathId.value)) {
@@ -719,7 +714,7 @@ onMounted(async () => {
     access_rights.value = access_rights.value
         .filter((ar) => ar.user.institution.idInstitution == localStorage.idInstitution)
         .filter((ar) => ar.accessRight == access_right_teacher)
-    saes.value = saes.value.filter((saes) => saes.semester == getQueryParam('id'))
+    saes.value = saes.value.filter((saes) => saes.semester == route.query.id)
     // Ne reset les checked que si on n'est PAS en modification
     if (!is_modifying.value) {
         saes.value = saes.value.map((sae) => ({ ...sae, checked: false }))
@@ -934,15 +929,6 @@ const preventInvalidChars = (event) => {
     }
 }
 
-const goBack = () => {
-    const pathId = parseInt(getQueryParam('pathId'))
-    if (pathId && !isNaN(pathId)) {
-        window.location.hash = `#/mccc-select-form?pathId=${pathId}`
-    } else {
-        window.location.hash = '#/mccc-select-form'
-    }
-}
-
 total_initial_formation.value = computed(() => {
     const cm = parseFloat(CM_initial_formation.value) || 0
     const td = parseFloat(TD_initial_formation.value) || 0
@@ -967,7 +953,7 @@ function toggleShowPopUp() {
 <template>
     <div id="ressource">
         <div id="return_arrow">
-            <button id="back_arrow" @click="goBack">←</button>
+            <RouterLink id="back_arrow" to="/mccc-select-form">←</RouterLink>
             <p>Retour</p>
         </div>
 
@@ -1831,3 +1817,4 @@ input[readonly].input {
     word-break: break-all;
 }
 </style>
+

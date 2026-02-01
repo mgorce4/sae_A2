@@ -4,6 +4,7 @@ import { ref } from 'vue'
 import { status, institutionLocation } from '../main'
 import { onMounted } from 'vue'
 import axios from 'axios'
+import { router } from '@/router'
 
 /* constantes */
 
@@ -28,9 +29,15 @@ const paths = ref([]) // Liste des parcours pour l'institution
 const pathId = ref(null) // ID du parcours sélectionné
 
 onMounted(async () => {
+    console.log('=== ADMINISTRATION DASHBOARD - ONMOUNTED DEBUT ===')
+    console.log('status:', status.value)
+    console.log('localStorage.idInstitution:', localStorage.idInstitution)
+    
     try {
+        console.log('Chargement des resource sheets...')
         const response = await axios.get('http://localhost:8080/api/v2/resource-sheets')
         resource_sheets.value = response.data
+        console.log('Resource sheets chargées:', resource_sheets.value.length)
     } catch (error) {
         console.error('Error loading resource sheets:', error)
         resource_sheets.value = []
@@ -59,11 +66,18 @@ onMounted(async () => {
     // Load paths for the current institution
     try {
         const institutionId = localStorage.idInstitution
+        console.log('=== CHARGEMENT PARCOURS ADMIN DASHBOARD ===')
+        console.log('institutionId:', institutionId)
+        
         if (institutionId) {
             const pathsResponse = await axios.get('http://localhost:8080/api/paths')
+            console.log('Tous les parcours reçus:', pathsResponse.data)
+            
             paths.value = pathsResponse.data.filter(
                 (path) => path.institution?.idInstitution === parseInt(institutionId),
             )
+            
+            console.log('Parcours filtrés pour institution', institutionId, ':', paths.value)
         }
     } catch (error) {
         console.error('Error loading paths:', error)
@@ -72,6 +86,11 @@ onMounted(async () => {
 })
 
 function getResourcesForSemester(semester) {
+    // Ne rien afficher si aucun parcours n'est sélectionné
+    if (pathId.value === null) {
+        return []
+    }
+
     let filteredSheets = resource_sheets.value
         .filter((sheet) => sheet.semester === semester)
         .filter((sheet) => sheet.institutionId == localStorage.idInstitution)
@@ -131,18 +150,27 @@ function isSheetSelected(sheetId) {
 }
 
 async function downloadSheets() {
+    console.log('=== DOWNLOAD SHEETS ===')
+    console.log('selectedSheets:', selectedSheets.value)
+    
     if (selectedSheets.value.length === 0) {
         console.log('Aucune fiche sélectionnée')
+        alert('Veuillez sélectionner au moins une fiche à télécharger')
         return
     }
 
     const userName = localStorage.username || 'user'
+    console.log('userName:', userName)
 
     try {
         // Download each selected sheet
         for (const sheetId of selectedSheets.value) {
             const sheet = resource_sheets.value.find((s) => s.id === sheetId)
+            console.log('Sheet trouvée:', sheet)
+            
             if (sheet && sheet.resourceLabel) {
+                console.log('Téléchargement du PDF pour:', sheet.resourceLabel)
+                
                 // Call the PDF generation endpoint
                 const response = await axios.get('http://localhost:8080/api/pdf/generate', {
                     params: {
@@ -151,6 +179,8 @@ async function downloadSheets() {
                     },
                     responseType: 'blob',
                 })
+
+                console.log('Réponse reçue, création du lien de téléchargement...')
 
                 // Create a download link
                 const url = window.URL.createObjectURL(new Blob([response.data]))
@@ -161,15 +191,41 @@ async function downloadSheets() {
                 link.click()
                 link.remove()
                 window.URL.revokeObjectURL(url)
+                
+                console.log('PDF téléchargé avec succès')
+            } else {
+                console.error('Fiche introuvable ou sans label:', sheetId)
             }
         }
+        
+        alert(`${selectedSheets.value.length} PDF(s) téléchargé(s) avec succès`)
     } catch (error) {
         console.error('Error downloading PDFs:', error)
+        console.error('Error response:', error.response)
+        console.error('Error status:', error.response?.status)
+        console.error('Error data type:', typeof error.response?.data)
+        
+        // Si c'est un blob, le lire
+        if (error.response?.data instanceof Blob) {
+            const reader = new FileReader()
+            reader.onload = () => {
+                console.error('Error message from server:', reader.result)
+                alert(`Erreur lors de la génération du PDF:\n${reader.result}`)
+            }
+            reader.readAsText(error.response.data)
+        } else {
+            alert(`Erreur lors du téléchargement des PDF: ${error.message}`)
+        }
     }
 }
 
 const goToRessourceSheetDisplay = (url, label) => {
-    window.location.hash = `${url}?label=${label}`
+    router.push({
+        path: url,
+        query: {
+            label: label
+        }
+    })
 }
 
 function toggleShowPopUp() {
@@ -182,13 +238,13 @@ function toggleShowPopUp() {
         <div id="sub_div_for_MCCC_and_calender">
             <div id="MCCC_div">
                 <!-- link into MCCC page -->
-                <button
+                <RouterLink
                     type="button"
                     class="button"
-                    onclick="document.location.href='#/mccc-select-path'"
+                    to="/mccc-select-path"
                 >
                     MCCC
-                </button>
+                </RouterLink>
             </div>
             <div id="date_selector_div">
                 <p id="title_font">Dates de rendu des fiches ressources</p>
@@ -213,13 +269,13 @@ function toggleShowPopUp() {
                 <button class="btn1" @click="saveDeliveryDates">Valider</button>
             </div>
 
-            <button
+            <RouterLink
                 class="button"
                 style="margin-top: 1.5vw; margin-bottom: 1vw"
-                onclick="window.location.hash = '#/control-center'"
+                to="/control-center"
             >
                 Centre de controle
-            </button>
+            </RouterLink>
         </div>
 
         <div id="return_sheets_div">
@@ -235,7 +291,7 @@ function toggleShowPopUp() {
                         <p v-if="status" class="btn_how_to" @click="toggleShowPopUp">ⓘ</p>
                         <img
                             id="download"
-                            src="../../media/download.webp"
+                            src="/media/download.webp"
                             width="35"
                             height="35"
                             alt="download"
@@ -281,7 +337,7 @@ function toggleShowPopUp() {
                             style="width: 5vw"
                             @click="
                                 goToRessourceSheetDisplay(
-                                    '#/resource-sheet-display',
+                                    '/resource-sheet-display',
                                     sheet.resourceLabel,
                                 )
                             "

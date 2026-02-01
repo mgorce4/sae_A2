@@ -243,9 +243,23 @@ public class ResourceSheetMapper {
             allSaes = saeRepository.findBySemester(resource.getSemester());
         }
 
+        // Filter SAEs by same institution, path, and semester
         // Create DTOs with isLinked property
         // isLinked = true only if the SAE is in linkedSaeIds for THIS resource
         return allSaes.stream()
+            .filter(sae -> {
+                // Filter by institution (department)
+                boolean sameInstitution = (resource.getDepartment() != null && sae.getDepartment() != null) 
+                    ? resource.getDepartment().getIdDepartment().equals(sae.getDepartment().getIdDepartment())
+                    : false;
+                
+                // Filter by path
+                boolean samePath = (resource.getPath() != null && sae.getPath() != null)
+                    ? resource.getPath().getIdPath().equals(sae.getPath().getIdPath())
+                    : false;
+                
+                return sameInstitution && samePath;
+            })
             .map(sae -> new SaeInfoDTO(
                 sae.getIdSAE(),
                 sae.getLabel(),

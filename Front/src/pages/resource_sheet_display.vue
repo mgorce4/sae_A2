@@ -1,16 +1,11 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import axios from 'axios'
+import { useRoute } from 'vue-router'
 
-const getQueryParam = (param) => {
-    const hash = window.location.hash
-    const queryString = hash.split('?')[1]
-    if (!queryString) return null
-    const params = new URLSearchParams(queryString)
-    return params.get(param)
-}
+const route = useRoute()
 
-const resource_label = getQueryParam('label')
+const resource_label = route.query.label
 const resource_sheet = ref([])
 
 function ue_labels() {
@@ -119,10 +114,26 @@ function is_improvement_suggestions_defined() {
     return is_tracking_defined() && resource_sheet.value.tracking.improvementSuggestions !== null
 }
 
-onMounted(() => {
-    axios.get('http://localhost:8080/api/v2/resource-sheets').then((response) => {
+onMounted(async () => {
+    console.log('=== RESOURCE SHEET DISPLAY - ONMOUNTED ===')
+    console.log('resource_label from query:', resource_label)
+    
+    try {
+        const response = await axios.get('http://localhost:8080/api/v2/resource-sheets')
+        console.log('Resource sheets reçues:', response.data.length)
+        
         resource_sheet.value = response.data.find((sheet) => sheet.resourceLabel === resource_label)
-    })
+        
+        if (resource_sheet.value) {
+            console.log('Fiche trouvée:', resource_sheet.value)
+        } else {
+            console.error('Aucune fiche trouvée avec le label:', resource_label)
+            alert(`Aucune fiche de ressource trouvée avec le label: ${resource_label}`)
+        }
+    } catch (error) {
+        console.error('Erreur lors du chargement des fiches:', error)
+        alert('Erreur lors du chargement de la fiche de ressource')
+    }
 })
 </script>
 
@@ -130,12 +141,12 @@ onMounted(() => {
     <div id="main">
         <div class="component spb">
             <div id="return_arrow">
-                <button
+                <RouterLink
                     id="back_arrow"
-                    onclick="document.location.href='#/dashboard-administration'"
+                    to="/dashboard-administration"
                 >
                     ←
-                </button>
+                </RouterLink>
                 <p>Retour</p>
             </div>
 
