@@ -284,7 +284,7 @@ onMounted(() => {
                     <input type="checkbox"/>
                     <p class="popup_text">
                         En cochant cette case, vous sélectionnez la fiche ressource soumise par le professeur.<br>
-                        Vous pourrez ensuite cliquer sur le bouton <span><img src="../../media/download.webp" width="35" height="35" alt="download"/></span> pour télecharger toutes les fiches sélectionnées.<br>
+                        Vous pourrez ensuite cliquer sur le bouton <span><img src="/media/download.webp" width="35" height="35" alt="download"/></span> pour télecharger toutes les fiches sélectionnées.<br>
                     </p>
                 </div>
             </div>

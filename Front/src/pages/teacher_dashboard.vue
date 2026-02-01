@@ -45,10 +45,7 @@ onMounted(async () => {
     }
 })
 
-const goToRessourceSheet = (id) => {
-    if (!id) return
-    window.location.hash = `#/form-ressource-sheet?id=${id}`
-}
+
 </script>
 
 <template>
@@ -59,9 +56,9 @@ const goToRessourceSheet = (id) => {
                 <p v-if="resourceSheetsDTO.length === 0" style="color: white; padding: 1vw">
                     Aucune ressource trouvée. Vous n'êtes professeur principal d'aucune ressource.
                 </p>
-                <button v-for="sheet in resourceSheetsDTO" :key="sheet.id" id="sheets" @click="goToRessourceSheet(sheet.id)">
+                <RouterLink v-for="sheet in resourceSheetsDTO" :key="sheet.id" id="sheets" :to="`/form-ressource-sheet?id=${sheet.id}`">
                     <p>{{ sheet.resourceLabel }}</p>
-                </button>
+                </RouterLink>
             </div>
         </div>
     </div>

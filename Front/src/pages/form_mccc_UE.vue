@@ -2,6 +2,10 @@
 import { status } from '../main'
 import { onMounted, ref, nextTick, watch } from 'vue'
 import axios from 'axios'
+import { router } from '@/router'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
 
 status.value = 'Administration'
 
@@ -71,14 +75,6 @@ watch(
     { deep: true },
 )
 
-const getQueryParam = (param) => {
-    const hash = window.location.hash
-    const queryString = hash.split('?')[1]
-    if (!queryString) return null
-    const params = new URLSearchParams(queryString)
-    return params.get(param)
-}
-
 // Prevent typing invalid characters in number inputs
 const preventInvalidChars = (event) => {
     const invalidChars = ['e', 'E', '+', '-', '.', ',']
@@ -88,8 +84,8 @@ const preventInvalidChars = (event) => {
 }
 
 function getUESemesterInstitution() {
-    const pathId = parseInt(getQueryParam('pathId'))
-    const semester = parseInt(getQueryParam('id'))
+    const pathId = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
+    const semester = parseInt(route.query.id)
     const institutionId = parseInt(localStorage.idInstitution)
 
     console.log('=== FILTRAGE UE POUR AFFICHAGE ===')
@@ -127,13 +123,19 @@ watch([ueList, display_more_area], () => {
 
 const reloadUEs = async () => {
     try {
-        const pathId = parseInt(getQueryParam('pathId'))
+        const pathId = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
         const institutionId = parseInt(localStorage.idInstitution)
+
+        console.log('=== DEBUG RELOAD UEs ===')
+        console.log('route.query.pathId:', route.query.pathId)
+        console.log('localStorage.pathId:', localStorage.pathId)
+        console.log('pathId final:', pathId)
+        console.log('institutionId:', institutionId)
 
         if (!pathId || isNaN(pathId)) {
             console.error('PathId manquant ou invalide')
             alert('Erreur: Parcours non spécifié. Retour à la sélection des parcours.')
-            window.location.hash = '#/mccc-select-path'
+            router.push('/mccc-select-path')
             return
         }
 
@@ -170,6 +172,16 @@ const reloadUEs = async () => {
 }
 
 onMounted(async () => {
+    console.log('=== FORM MCCC UE - ONMOUNTED ===')
+    console.log('route.query:', route.query)
+    console.log('localStorage.pathId:', localStorage.pathId)
+    
+    // S'assurer que le pathId est dans localStorage si disponible dans query
+    if (route.query.pathId && !localStorage.pathId) {
+        localStorage.pathId = route.query.pathId
+        console.log('PathId stocké dans localStorage:', route.query.pathId)
+    }
+    
     await reloadUEs()
     attachAccordionListeners()
 })
@@ -222,8 +234,8 @@ const save = async () => {
         return
     }
 
-    const semester = parseInt(getQueryParam('id'))
-    const pathId = parseInt(getQueryParam('pathId'))
+    const semester = parseInt(route.query.id)
+    const pathId = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
     const ueLabel = `UE${semester}.${nb_UE.value}`
 
     // Vérifier si une UE avec le même numéro existe déjà dans ce semestre ET ce path
@@ -245,10 +257,10 @@ const save = async () => {
             return
         }
 
-        const pathId = parseInt(getQueryParam('pathId'))
+        const pathId = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
 
         console.log('=== CRÉATION UE - DEBUG ===')
-        console.log('PathId from URL:', getQueryParam('pathId'))
+        console.log('PathId from URL:', route.query.pathId)
         console.log('PathId parsed:', pathId)
         console.log('PathId isNaN:', isNaN(pathId))
 
@@ -296,7 +308,7 @@ const updateUE = async (ue) => {
             return
         }
 
-        const pathId = parseInt(getQueryParam('pathId'))
+        const pathId = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
 
         // Préparer les données pour la mise à jour via l'API MCCC
         const payload = {
@@ -347,20 +359,12 @@ const del = async (id) => {
     }
 }
 
-const goBack = () => {
-    const pathId = parseInt(getQueryParam('pathId'))
-    if (pathId && !isNaN(pathId)) {
-        window.location.hash = `#/mccc-select-form?pathId=${pathId}`
-    } else {
-        window.location.hash = '#/mccc-select-form'
-    }
-}
 </script>
 
 <template>
     <div id="UE">
         <div id="return_arrow">
-            <button id="back_arrow" @click="goBack">←</button>
+            <RouterLink id="back_arrow" :to="`/mccc-select-form?pathId=${pathId}`">←</RouterLink>
             <p>Retour</p>
         </div>
         <div id="background_form_UE">
@@ -662,3 +666,5 @@ input[type='number'] {
     appearance: textfield;
 }
 </style>
+
+

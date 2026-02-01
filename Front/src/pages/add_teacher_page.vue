@@ -33,13 +33,7 @@ const attachAccordionListeners = () => {
 
 attachAccordionListeners()
 
-const getQueryParam = (param) => {
-    const hash = window.location.hash
-    const queryString = hash.split('?')[1]
-    if (!queryString) return null
-    const params = new URLSearchParams(queryString)
-    return params.get(param)
-}
+
 
 onMounted(async () => {
     const response = await axios.get('http://localhost:8080/api/access-rights')
@@ -53,7 +47,7 @@ onMounted(async () => {
 <template>
     <div id="main">
         <div id="return_arrow">
-            <button id="back_arrow" onclick="window.location.hash = '#/control-center'">←</button>
+            <RouterLink id="back_arrow" to="/control-center">←</RouterLink>
             <p>Retour</p>
         </div>
 

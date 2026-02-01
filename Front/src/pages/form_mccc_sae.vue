@@ -2,6 +2,10 @@
 import { onMounted, ref, computed, nextTick, watch } from 'vue'
 import axios from 'axios'
 import { status } from '../main'
+import { router } from '@/router'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
 
 status.value = 'Administration'
 
@@ -41,16 +45,7 @@ const ueTableV2 = ref([])
 console.log('SAE TABLE V2 : ', saeTableV2)
 console.log('UE TABLE V2 : ', ueTableV2)
 
-/* Extract ID from hash URL parameters */
-const getQueryParam = (param) => {
-    const hash = window.location.hash
-    const queryString = hash.split('?')[1]
-    if (!queryString) return null
-    const params = new URLSearchParams(queryString)
-    return params.get(param)
-}
-
-const semesterNumber = ref(getQueryParam('id'))
+const semesterNumber = ref(route.query.id)
 console.log('semestre saé : ', semesterNumber.value)
 
 // Filter SAE data by semester
@@ -112,13 +107,13 @@ const preventInvalidChars = (event) => {
 }
 
 onMounted(async () => {
-    const pathId = parseInt(getQueryParam('pathId'))
+    const pathId = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
     const institutionId = parseInt(localStorage.idInstitution)
 
     if (!pathId || isNaN(pathId)) {
         console.error('PathId manquant ou invalide')
         alert('Erreur: Parcours non spécifié. Retour à la sélection des parcours.')
-        window.location.hash = '#/mccc-select-path'
+        router.push('/mccc-select-path')
         return
     }
 
@@ -334,7 +329,7 @@ function saveSae() {
     }
 
     // Prepare DTO
-    const pathId = parseInt(getQueryParam('pathId'))
+    const pathId = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
     const institutionId = parseInt(localStorage.idInstitution)
 
     const saeDTO = {
@@ -444,7 +439,7 @@ async function deleteSae(saeId) {
         console.log('SAE supprimée:', saeId)
 
         // Reload SAEs
-        const pathId = parseInt(getQueryParam('pathId'))
+        const pathId = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
         const institutionId = parseInt(localStorage.idInstitution)
         const responseReload = await axios.get(
             `http://localhost:8080/api/v2/mccc/saes/path/${pathId}`,
@@ -537,20 +532,13 @@ function modifySae(sae) {
     initAddModifyArea()
 }
 
-const goBack = () => {
-    const pathId = parseInt(getQueryParam('pathId'))
-    if (pathId && !isNaN(pathId)) {
-        window.location.hash = `#/mccc-select-form?pathId=${pathId}`
-    } else {
-        window.location.hash = '#/mccc-select-form'
-    }
-}
+
 </script>
 
 <template>
     <div id="form_mccc_sae">
         <div class="return_arrow">
-            <button class="back_arrow" @click="goBack">←</button>
+            <RouterLink class="back_arrow" :to="`/mccc-select-form?pathId=${pathId}`">←</RouterLink>
             <p>Retour</p>
         </div>
         <div class="background_form_mccc">
@@ -892,3 +880,5 @@ const goBack = () => {
     margin: 0 auto;
 }
 </style>
+
+
