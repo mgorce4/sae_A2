@@ -51,9 +51,7 @@ function toggleShowPopUp() {
                     </div>
                 </div>
 
-                <div id="button_help">
-                    <RouterLink class="button" style="margin-top: 2vw; padding: 1vw;" to="/help-center">Centre d'aide</RouterLink>
-                </div>
+                <RouterLink class="button button-full-width" to="/help-center">Centre d'aide</RouterLink>
             </div>
 
             <div id="right_component">
@@ -77,6 +75,20 @@ function toggleShowPopUp() {
     background-color: var(--main-theme-background-color);
     border-radius: 1vw;
     padding: 0.5vw;
+    width: 30vw;
+}
+
+#button_help {
+    margin-top: 2vw;
+}
+
+.button-full-width {
+    padding: 1vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2vw;
+    width: 30vw;
 }
 
 #right_component {
