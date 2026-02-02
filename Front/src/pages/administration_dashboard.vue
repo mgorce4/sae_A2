@@ -269,12 +269,11 @@ function toggleShowPopUp() {
                 <button class="btn1" @click="saveDeliveryDates">Valider</button>
             </div>
 
-            <RouterLink
-                class="button"
-                to="/control-center"
-            >
+            <!-- work in progress
+            <RouterLink class="button" to="/control-center">
                 Centre de controle
             </RouterLink>
+            -->
         </div>
 
         <div id="return_sheets_div">
@@ -404,6 +403,7 @@ function toggleShowPopUp() {
     width: 30%;
     display: flex;
     flex-direction: column;
+    margin-top: 5vw;
 }
 
 /* -- MCCC -- */
@@ -488,6 +488,8 @@ input[type='date']::-webkit-calendar-picker-indicator {
     max-height: calc(6vw + 1.5vw + var(--date-panel-height, 20vw) + 1.5vw + 6vw);
     width: 35%;
     padding: 0 1vw 1vw 1vw;
+    margin-bottom: 1vw;
+    margin-top: -1.5vw;
     overflow-y: auto; /* Scrollbar si contenu dépasse */
     font-size: 2vw;
     display: flex;
