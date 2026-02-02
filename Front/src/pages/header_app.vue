@@ -1,36 +1,41 @@
 <script setup>
-    import { status, userName, removeUser } from '../main'
-    import { ref, computed } from 'vue'
-    import how_to_administration from '../userGuidePages/how_to_administration.vue'
-    import how_to_teacher from '../userGuidePages/how_to_teacher.vue'
+import { status, userName, removeUser } from '../main'
+import { ref, computed } from 'vue'
+import how_to_administration from '../userGuidePages/how_to_administration.vue'
+import how_to_teacher from '../userGuidePages/how_to_teacher.vue'
+import { router } from '@/router'
 
-    status.value = localStorage.status
-    userName.value = localStorage.lastname + " " + localStorage.firstname
+status.value = localStorage.status
+userName.value = localStorage.lastname + ' ' + localStorage.firstname
 
-    const show_how_to_popup = ref(false)
+const show_how_to_popup = ref(false)
 
-    const togglePopup = () => {
-      show_how_to_popup.value = !show_how_to_popup.value
-    }
+const togglePopup = () => {
+    show_how_to_popup.value = !show_how_to_popup.value
+}
 
-    const routes_how_to = {
-      'Administration': how_to_administration,
-      'Professeur' : how_to_teacher
-    }
+const routes_how_to = {
+    Administration: how_to_administration,
+    Professeur: how_to_teacher,
+}
 
-    const routes = {
-        'Administration': '#/dashboard-administration',
-        'Professeur' : '#/teacher-dashboard'
-    }
+const routes = {
+    Administration: '/dashboard-administration',
+    Professeur: '/teacher-dashboard',
+}
 
-    const current_how_to = computed(() => {
-      return routes_how_to[status.value] || null
-    })
+const current_how_to = computed(() => {
+    return routes_how_to[status.value] || null
+})
 
-    const goToDashboard = () => {
-        document.location.href = routes[status.value] || '#/'
-    }
+const goToDashboard = () => {
+    router.push(routes[status.value] || '/')
+}
 
+const handleDisconnect = () => {
+    removeUser()
+    router.push('/')
+}
 </script>
 
 <template>
@@ -38,33 +43,42 @@
         <div id="header_top" class="container-fluid spb">
             <div id="app_name_and_logo" class="container-fluid">
                 <a id="unilim_logo" @click="goToDashboard">
-                    <img src="./../../media/unilim_logo.webp" style="margin: 0; padding: 0; width: 100%; height: 100%;" alt="logo">
+                    <img
+                        src="/media/unilim_logo.webp"
+                        style="margin: 0; padding: 0; width: 100%; height: 100%"
+                        alt="logo"
+                    />
                 </a>
                 <div id="dividing_line"></div>
                 <p id="app_name">Syncadia</p>
             </div>
             <div v-show="status" id="user_name_and_pp" class="container-fluid">
                 <p v-if="userName" id="user_name">{{ userName }}</p>
-                <img id="profile_picture" src="./../../media/no_profile_picture.webp" alt="profile_picture">
+                <img
+                    id="profile_picture"
+                    src="/media/no_profile_picture.webp"
+                    alt="profile_picture"
+                />
             </div>
         </div>
         <div id="red_rect" class="container-fluid spb">
             <p v-if="status" id="user_status">Statut : {{ status }}</p>
 
             <div style="display: flex; align-items: center">
-              <p v-if="status" class="btn_how_to" @click="togglePopup">ⓘ</p>
-              <a v-if="status" id="btn_disconnect" v-on:click="removeUser()" href="#/">Déconnexion</a>
+                <p v-if="status" class="btn_how_to" @click="togglePopup">ⓘ</p>
+                <a v-if="status" id="btn_disconnect" v-on:click="handleDisconnect"
+                    >Déconnexion</a
+                >
             </div>
-
         </div>
     </header>
 
-  <div v-if="show_how_to_popup" class="popup-overlay">
-    <div class="popup-content" @click.stop>
-      <button class="popup-close" @click="togglePopup">&times;</button>
-      <component :is="current_how_to" />
+    <div v-if="show_how_to_popup" class="popup-overlay">
+        <div class="popup-content" @click.stop>
+            <button class="popup-close" @click="togglePopup">&times;</button>
+            <component :is="current_how_to" />
+        </div>
     </div>
-  </div>
 </template>
 
 <style>

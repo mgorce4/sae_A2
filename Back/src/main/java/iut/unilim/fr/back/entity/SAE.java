@@ -88,5 +88,10 @@ public class SAE {
     public void setPath(Path path) {
         this.path = path;
     }
+
+    public String toString() {
+        return "SAE [idSAE=" + idSAE + ", label=" + label + ", apogeeCode=" + apogeeCode + ", semester=" + semester
+                + ", terms=" + terms + ", path=" + path + "]";
+    }
 }
 

@@ -11,6 +11,9 @@ import java.util.Optional;
 
 @Repository
 public interface RessourceRepository extends JpaRepository<Ressource, Long> {
+
+        @Query("SELECT DISTINCT r FROM Ressource r WHERE r.path.idPath = :pathId AND r.semester = :semester")
+        List<Ressource> findByPathIdAndSemester(@Param("pathId") Long pathId, @Param("semester") Integer semester);
     Optional<Ressource> findFirstByLabelStartingWith(String ressourceName);
     List<Ressource> findBySemester(Integer semester);
 

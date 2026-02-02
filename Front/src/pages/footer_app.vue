@@ -1,16 +1,16 @@
 <script setup>
-    import { onMounted } from 'vue';
-    import { institutionLocation } from '../main';
+import { onMounted } from 'vue'
+import { institutionLocation } from '../main'
 
-    onMounted(async () => {
-        institutionLocation.value = localStorage.institutionLocation;
-    });
+onMounted(async () => {
+    institutionLocation.value = localStorage.institutionLocation
+})
 </script>
 
 <template>
     <footer id="footer_red_rect" class="container-fluid spb">
         <p v-if="institutionLocation" id="establishment_name">{{ institutionLocation }}</p>
-        <p id="edit_year">{{new Date().getFullYear()}}</p>
+        <p id="edit_year">{{ new Date().getFullYear() }}</p>
     </footer>
 </template>
 
@@ -21,7 +21,6 @@
     height: 3.5vw;
     padding: 0 3%;
     background-color: var(--header-footer-color);
-
 }
 
 #establishment_name {

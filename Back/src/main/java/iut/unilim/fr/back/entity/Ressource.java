@@ -112,4 +112,10 @@ public class Ressource {
     public void setPath(Path path) {
         this.path = path;
     }
+
+    public String toString() {
+        return "Ressource [idResource=" + idResource + ", apogeeCode=" + apogeeCode + ", label=" + label + ", name="
+                + name + ", diffMultiCompetences=" + diffMultiCompetences + ", semester=" + semester + ", terms="
+                + terms + ", path=" + path + "]";
+    }
 }

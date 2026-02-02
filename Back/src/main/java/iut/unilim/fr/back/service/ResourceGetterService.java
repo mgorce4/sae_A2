@@ -106,16 +106,17 @@ public class ResourceGetterService {
 
     @Transactional
     public void setValuesFromResource(String resourceName) {
-        this.resourceName = "";
-        initializePlaceHolderValues();
-        int multi_skill_limit = 1;
+        try {
+            this.resourceName = "";
+            initializePlaceHolderValues();
+            int multi_skill_limit = 1;
 
-        Optional<RessourceSheet> resultResourceSheet = Optional.empty();
-        Long id;
-        String label;
+            Optional<RessourceSheet> resultResourceSheet = Optional.empty();
+            Long id;
+            String label;
 
 
-        Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(resourceName);
+            Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(resourceName);
 
         if (resultResource.isPresent()) {
             resultResourceSheet = ressourceSheetRepository.findFirstByResource_IdResource(resultResource.get().getIdResource());
@@ -129,6 +130,10 @@ public class ResourceGetterService {
             id = resource.getIdResource();
 
             List<ResourceSheetDTO> resourcesSheets = rsDTOController.getResourceSheetsByResourceId(id);
+            if (resourcesSheets.isEmpty()) {
+                writeInPdfLog("No resource sheets found for resource id: " + id);
+                return;
+            }
             ResourceSheetDTO resourceSheetDTO = resourcesSheets.getLast();
             label = resourceSheetDTO.getResourceName();
             department = resourceSheetDTO.getDepartment();
@@ -139,8 +144,12 @@ public class ResourceGetterService {
             qualityReference = "IU EN FOR 001";
 
             List<UeInfoDTO> UeReferences = resourceSheetDTO.getUeReferences();
-            UeInfoDTO ue = UeReferences.getFirst();
-            refUE = ue.getLabel();
+            if (!UeReferences.isEmpty()) {
+                UeInfoDTO ue = UeReferences.getFirst();
+                refUE = ue.getLabel();
+            } else {
+                writeInPdfLog("No UE references found for resource: " + resourceName);
+            }
 
             writeInPdfLog("Get resource \n"
                     + "     - id : " + id + "\n"
@@ -157,7 +166,7 @@ public class ResourceGetterService {
                 for (SkillDTO programSkill : npSkill) {
                     skills.add(programSkill.getDescription());
                 }
-            }else {
+            } else if (!npSkill.isEmpty()) {
                 skills.add(npSkill.getFirst().getDescription());
             }
 
@@ -200,29 +209,44 @@ public class ResourceGetterService {
 
             HoursDTO hoursDTOPN = resourceSheetDTO.getHoursPN();
             HoursDTO hoursDTOStudent = resourceSheetDTO.getHoursTeacher();
-            setHoursDTO(hoursDTOPN, hoursPN);
-            setHoursDTO(hoursDTOStudent, hoursStudent);
+            if (hoursDTOPN != null) {
+                setHoursDTO(hoursDTOPN, hoursPN);
+            } else {
+                writeInPdfLog("HoursPN is null for resource: " + resourceName);
+            }
+            if (hoursDTOStudent != null) {
+                setHoursDTO(hoursDTOStudent, hoursStudent);
+            } else {
+                writeInPdfLog("HoursStudent is null for resource: " + resourceName);
+            }
 
             PedagogicalContentDTO pedagogicalContent = resourceSheetDTO.getPedagogicalContent();
             StringBuilder pedagoContentBuilder;
 
+            if (pedagogicalContent != null) {
+                pedagoContentBuilder = createPedagoContent(pedagogicalContent.getCm());
+                pedagoContentCm = pedagoContentBuilder.toString();
 
-            pedagoContentBuilder = createPedagoContent(pedagogicalContent.getCm());
-            pedagoContentCm = pedagoContentBuilder.toString();
+                pedagoContentBuilder = createPedagoContent(pedagogicalContent.getTd());
+                pedagoContentTd = pedagoContentBuilder.toString();
 
-            pedagoContentBuilder = createPedagoContent(pedagogicalContent.getTd());
-            pedagoContentTd = pedagoContentBuilder.toString();
+                pedagoContentBuilder = createPedagoContent(pedagogicalContent.getTp());
+                pedagoContentTp = pedagoContentBuilder.toString();
 
-            pedagoContentBuilder = createPedagoContent(pedagogicalContent.getTp());
-            pedagoContentTp = pedagoContentBuilder.toString();
-
-            pedagoContentBuilder = createPedagoContent(pedagogicalContent.getDs());
-            pedagoContentDs = pedagoContentBuilder.toString();
+                pedagoContentBuilder = createPedagoContent(pedagogicalContent.getDs());
+                pedagoContentDs = pedagoContentBuilder.toString();
+            } else {
+                writeInPdfLog("PedagogicalContent is null for resource: " + resourceName);
+            }
 
             ResourceTrackingDTO resourceTracking = resourceSheetDTO.getTracking();
-            studentFeedback = resourceTracking.getStudentFeedback();
-            pedagoTeamFeedback = resourceTracking.getPedagogicalFeedback();
-            improvements = resourceTracking.getImprovementSuggestions();
+            if (resourceTracking != null) {
+                studentFeedback = resourceTracking.getStudentFeedback() != null ? resourceTracking.getStudentFeedback() : PLACEHOLDER;
+                pedagoTeamFeedback = resourceTracking.getPedagogicalFeedback() != null ? resourceTracking.getPedagogicalFeedback() : PLACEHOLDER;
+                improvements = resourceTracking.getImprovementSuggestions() != null ? resourceTracking.getImprovementSuggestions() : PLACEHOLDER;
+            } else {
+                writeInPdfLog("ResourceTracking is null for resource: " + resourceName);
+            }
             String internshipLogContent = "";
             if (isAlternance) {
                 internshipLogContent = "   - hoursPnInternship( " + hoursPNInternship + ")\n" +
@@ -247,9 +271,24 @@ public class ResourceGetterService {
                     "\n-> " + resourceName + " not found in resources tables");
         }
 
+        } catch (Exception e) {
+            writeInPdfLog("Error in setValuesFromResource for resource '" + resourceName + "': " + e.getClass().getName() + " - " + e.getMessage());
+            if (e.getCause() != null) {
+                writeInPdfLog("Caused by: " + e.getCause().getClass().getName() + " - " + e.getCause().getMessage());
+            }
+            // Print stack trace to log
+            java.io.StringWriter sw = new java.io.StringWriter();
+            e.printStackTrace(new java.io.PrintWriter(sw));
+            writeInPdfLog("Stack trace:\n" + sw.toString());
+            throw e; // Re-throw to maintain existing error handling
+        }
+
     }
 
     public static void setHoursDTO(HoursDTO hoursDTO, List<Double> hours) {
+        if (hoursDTO == null) {
+            return;
+        }
         hours.clear();
         hours.add(hoursDTO.getCm());
         hours.add(hoursDTO.getTd());

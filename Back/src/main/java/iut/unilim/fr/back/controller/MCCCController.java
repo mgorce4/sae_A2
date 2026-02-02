@@ -1,17 +1,13 @@
+
 package iut.unilim.fr.back.controller;
 
+import iut.unilim.fr.back.dto.ResourceDTO;
+import iut.unilim.fr.back.dto.ResourceSheetDTO;
+import iut.unilim.fr.back.dto.ResourceDTO.UeCoefficientDTO;
 import iut.unilim.fr.back.dto.admin.MCCCResourceDTO;
 import iut.unilim.fr.back.dto.admin.MCCCSaeDTO;
 import iut.unilim.fr.back.dto.admin.MCCCUEDTO;
-import iut.unilim.fr.back.entity.Path;
-import iut.unilim.fr.back.entity.Ressource;
-import iut.unilim.fr.back.entity.SAE;
-import iut.unilim.fr.back.entity.SAEHours;
-import iut.unilim.fr.back.entity.SAELinkResource;
-import iut.unilim.fr.back.entity.Terms;
-import iut.unilim.fr.back.entity.UE;
-import iut.unilim.fr.back.entity.UeCoefficientSAE;
-import iut.unilim.fr.back.entity.UserSyncadia;
+import iut.unilim.fr.back.entity.*;
 import iut.unilim.fr.back.mapper.MCCCMapper;
 import iut.unilim.fr.back.mapper.MCCCSaeMapper;
 import iut.unilim.fr.back.mapper.MCCCUEMapper;
@@ -21,13 +17,19 @@ import iut.unilim.fr.back.repository.SAERepository;
 import iut.unilim.fr.back.repository.TermsRepository;
 import iut.unilim.fr.back.repository.UERepository;
 import iut.unilim.fr.back.repository.UserSyncadiaRepository;
+import iut.unilim.fr.back.service.SAEService;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties.Http;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Optional;
 
 @RestController
@@ -63,6 +65,24 @@ public class MCCCController {
     private iut.unilim.fr.back.repository.SAELinkResourceRepository saeLinkResourceRepository;
 
     @Autowired
+    private iut.unilim.fr.back.repository.HoursPerStudentRepository hoursPerStudentRepository;
+
+    @Autowired
+    private iut.unilim.fr.back.repository.UeCoefficientRepository ueCoefficientRepository;
+
+    @Autowired
+    private iut.unilim.fr.back.repository.MainTeacherForResourceRepository mainTeacherForResourceRepository;
+
+    @Autowired
+    private iut.unilim.fr.back.repository.TeachersForResourceRepository teachersForResourceRepository;
+
+    @Autowired
+    private iut.unilim.fr.back.repository.RessourceSheetRepository ressourceSheetRepository;
+
+    @Autowired
+    private iut.unilim.fr.back.repository.NationalProgramObjectiveRepository nationalProgramObjectiveRepository;
+
+    @Autowired
     private MCCCMapper mcccMapper;
 
     @Autowired
@@ -85,7 +105,20 @@ public class MCCCController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
+        /**
+     * Get MCCC resources by path ID and semester
+     * GET /api/v2/mccc/resources/path/{pathId}/semester/{semester}
+     */
+    @GetMapping("/resources/path/{pathId}/semester/{semester}")
+    public ResponseEntity<List<MCCCResourceDTO>> getMCCCResourcesByPathAndSemester(@PathVariable Long pathId, @PathVariable Integer semester) {
+        try {
+            List<Ressource> resources = ressourceRepository.findByPathIdAndSemester(pathId, semester);
+            List<MCCCResourceDTO> dtos = mcccMapper.toDTOList(resources);
+            return ResponseEntity.ok(dtos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
     /**
      * Get MCCC resources by semester
      * GET /api/v2/mccc/resources/semester/{semester}
@@ -153,6 +186,346 @@ public class MCCCController {
             return ResponseEntity.ok(dtos);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Create a new Resource with all related entities and ResourceSheet
+     * POST /api/v2/mccc/resources
+     */
+    @PostMapping("/resources")
+    @Transactional
+    public ResponseEntity<?> createMCCCResource(@RequestBody iut.unilim.fr.back.dto.ResourceDTO dto) {
+        try {
+            List<SAE> linkedSaes = new ArrayList<>();
+            if (dto.getLinkedSaesIds() != null) {
+                for (Long id : dto.getLinkedSaesIds()) {
+                    Optional<SAE> saeOpt = saeRepository.findById(id);
+                    saeOpt.ifPresent(linkedSaes::add);
+                }
+            }
+            dto.setLinkedSaes(linkedSaes);
+            System.out.println("Creating MCCC Resource with DTO: " + dto);
+
+            Path path = pathRepository.findById(dto.getPathId())
+                .orElseThrow(() -> new RuntimeException("Path not found with id: " + dto.getPathId()));
+
+            Terms terms = termsRepository.findFirstByCode(dto.getTermsCode())
+            .orElseGet(() -> {
+                Terms newTerms = new Terms();
+                newTerms.setCode(dto.getTermsCode());
+                return termsRepository.save(newTerms);
+            });
+
+            Ressource resource = new Ressource();
+            resource.setLabel(dto.getLabel());
+            resource.setName(dto.getName());
+            resource.setApogeeCode(dto.getApogeeCode());
+            resource.setSemester(dto.getSemester());
+            resource.setDiffMultiCompetences(false);
+            resource.setTerms(terms);
+            resource.setPath(path);
+
+            Ressource savedResource = ressourceRepository.save(resource);
+
+
+            RessourceSheet resourceSheet = new RessourceSheet();
+            resourceSheet.setResource(savedResource);
+            resourceSheet.setYear(LocalDate.now());
+            ressourceSheetRepository.save(resourceSheet);
+
+            NationalProgramObjective nationalProgramObjective = new NationalProgramObjective();
+            nationalProgramObjective.setContent("" );
+            nationalProgramObjective.setResourceSheet(resourceSheet);
+            nationalProgramObjectiveRepository.save(nationalProgramObjective);
+
+            HoursPerStudent hoursInitial = new HoursPerStudent();
+            // implémenter get id ressource pour le ste dans les hoursPerStudent
+            hoursInitial.setCm(dto.getInitialCm() != null ? dto.getInitialCm() : 0.0);
+            hoursInitial.setTd(dto.getInitialTd() != null ? dto.getInitialTd() : 0.0);
+            hoursInitial.setTp(dto.getInitialTp() != null ? dto.getInitialTp() : 0.0);
+            hoursInitial.setHasAlternance(false);
+            hoursInitial.setResource(savedResource);
+
+            HoursPerStudent hoursAlternance = new HoursPerStudent();
+            hoursAlternance.setCm(dto.getAlternanceCm() != null ? dto.getAlternanceCm() : 0.0);
+            hoursAlternance.setTd(dto.getAlternanceTd() != null ? dto.getAlternanceTd() : 0.0);
+            hoursAlternance.setTp(dto.getAlternanceTp() != null ? dto.getAlternanceTp() : 0.0);
+            hoursAlternance.setHasAlternance(true);
+            hoursAlternance.setResource(savedResource);
+
+            hoursPerStudentRepository.save(hoursInitial);
+            hoursPerStudentRepository.save(hoursAlternance);
+
+            for (Long mainTeacherId : dto.getMainTeachers()) {
+                if (mainTeacherId != null) {
+                    UserSyncadia user = userSyncadiaRepository.findById(mainTeacherId)
+                        .orElseThrow(() -> new RuntimeException("User not found with id: " + mainTeacherId));
+                    MainTeacherForResource mainTeacherEntity = new MainTeacherForResource();
+                    mainTeacherEntity.setUser(user);
+                    mainTeacherEntity.setResource(savedResource);
+                    mainTeacherEntity.setIdUser(user.getIdUser());
+                    mainTeacherEntity.setIdResource(savedResource.getIdResource());
+                    mainTeacherForResourceRepository.save(mainTeacherEntity);
+                }
+            }
+
+            for (Long teacherId : dto.getTeachers()) {
+                if (teacherId != null) {
+                    UserSyncadia user = userSyncadiaRepository.findById(teacherId)
+                        .orElseThrow(() -> new RuntimeException("User not found with id: " + teacherId));
+                    TeachersForResource teacherEntity = new TeachersForResource();
+                    teacherEntity.setResource(savedResource);
+                    teacherEntity.setUser(user);
+                    teacherEntity.setIdUser(user.getIdUser());
+                    teacherEntity.setIdResource(savedResource.getIdResource());
+                    teachersForResourceRepository.save(teacherEntity);
+                }
+            }
+
+
+            for (UeCoefficientDTO ueco: dto.getUeCoefficients()) {
+                UeCoefficient coefficient = new UeCoefficient();
+                coefficient.setCoefficient(ueco.getCoefficient());
+                coefficient.setResource(savedResource);
+                Optional<UE> ueOpt = ueRepository.findById(ueco.getUeId());
+                coefficient.setUe(ueOpt.orElseThrow(() -> new RuntimeException("UE not found with id: " + ueco.getUeId())));
+                ueCoefficientRepository.save(coefficient);
+            }
+            List<SAELinkResource> existingLinks = saeLinkResourceRepository.findByIdResource(savedResource.getIdResource());
+            saeLinkResourceRepository.deleteAll(existingLinks);
+            for (SAE sae : dto.getLinkedSaes()) {
+                SAELinkResource link = new SAELinkResource();
+                link.setResource(savedResource);
+                link.setSae(sae);
+                link.setIdResource(savedResource.getIdResource());
+                link.setIdSAE(sae.getIdSAE());
+                saeLinkResourceRepository.save(link);
+            }
+            Ressource reloadedResource = ressourceRepository.findById(savedResource.getIdResource())
+            .orElseThrow(() -> new RuntimeException("Failed to reload saved resource"));
+            MCCCResourceDTO resultDto = mcccMapper.toDTO(reloadedResource);
+            return ResponseEntity.ok(resultDto);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e);
+        }
+    }
+
+    /**
+     * Update an existing Resource
+     * PUT /api/v2/mccc/resources/{id}
+     */
+    @PutMapping("/resources/{id}")
+    @Transactional
+    public ResponseEntity<?> updateMCCCResource(@PathVariable Long id, @RequestBody iut.unilim.fr.back.dto.ResourceDTO dto) {
+        try {
+            // Find existing resource
+            Ressource resource = ressourceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Resource not found with id: " + id));
+
+            // Update basic fields
+            resource.setLabel(dto.getLabel());
+            resource.setName(dto.getName());
+            resource.setApogeeCode(dto.getApogeeCode());
+            resource.setSemester(dto.getSemester());
+
+            // Update Terms
+            if (dto.getTermsCode() != null) {
+                Terms terms = termsRepository.findFirstByCode(dto.getTermsCode())
+                    .orElseGet(() -> {
+                        Terms newTerms = new Terms();
+                        newTerms.setCode(dto.getTermsCode());
+                        return termsRepository.save(newTerms);
+                    });
+                resource.setTerms(terms);
+            }
+
+            // Update Path
+            if (dto.getPathId() != null) {
+                Path path = pathRepository.findById(dto.getPathId())
+                    .orElseThrow(() -> new RuntimeException("Path not found with id: " + dto.getPathId()));
+                resource.setPath(path);
+            }
+
+            ressourceRepository.save(resource);
+
+            // Update HoursPerStudent
+            List<HoursPerStudent> existingHours = hoursPerStudentRepository.findByResource_IdResource(id);
+
+            // Update or create formation initiale hours
+            HoursPerStudent hoursInitial = existingHours.stream()
+                .filter(h -> !h.getHasAlternance())
+                .findFirst()
+                .orElse(null);
+
+            if (dto.getInitialCm() != null || dto.getInitialTd() != null || dto.getInitialTp() != null) {
+                if (hoursInitial != null) {
+                    hoursInitial.setCm(dto.getInitialCm() != null ? dto.getInitialCm() : 0.0);
+                    hoursInitial.setTd(dto.getInitialTd() != null ? dto.getInitialTd() : 0.0);
+                    hoursInitial.setTp(dto.getInitialTp() != null ? dto.getInitialTp() : 0.0);
+                    hoursPerStudentRepository.save(hoursInitial);
+                } else {
+                    HoursPerStudent newHours = new HoursPerStudent();
+                    newHours.setCm(dto.getInitialCm() != null ? dto.getInitialCm() : 0.0);
+                    newHours.setTd(dto.getInitialTd() != null ? dto.getInitialTd() : 0.0);
+                    newHours.setTp(dto.getInitialTp() != null ? dto.getInitialTp() : 0.0);
+                    newHours.setHasAlternance(false);
+                    newHours.setResource(resource);
+                    hoursPerStudentRepository.save(newHours);
+                }
+            }
+
+            // Update or create alternance hours
+            HoursPerStudent hoursAlternance = existingHours.stream()
+                .filter(HoursPerStudent::getHasAlternance)
+                .findFirst()
+                .orElse(null);
+
+            if (dto.getAlternanceCm() != null || dto.getAlternanceTd() != null || dto.getAlternanceTp() != null) {
+                if (hoursAlternance != null) {
+                    hoursAlternance.setCm(dto.getAlternanceCm() != null ? dto.getAlternanceCm() : 0.0);
+                    hoursAlternance.setTd(dto.getAlternanceTd() != null ? dto.getAlternanceTd() : 0.0);
+                    hoursAlternance.setTp(dto.getAlternanceTp() != null ? dto.getAlternanceTp() : 0.0);
+                    hoursPerStudentRepository.save(hoursAlternance);
+                } else {
+                    HoursPerStudent newHours = new HoursPerStudent();
+                    newHours.setCm(dto.getAlternanceCm() != null ? dto.getAlternanceCm() : 0.0);
+                    newHours.setTd(dto.getAlternanceTd() != null ? dto.getAlternanceTd() : 0.0);
+                    newHours.setTp(dto.getAlternanceTp() != null ? dto.getAlternanceTp() : 0.0);
+                    newHours.setHasAlternance(true);
+                    newHours.setResource(resource);
+                    hoursPerStudentRepository.save(newHours);
+                }
+            } else if (hoursAlternance != null) {
+                // Remove alternance hours if no longer provided
+                hoursPerStudentRepository.delete(hoursAlternance);
+            }
+
+            // Update Main Teacher
+            List<MainTeacherForResource> existingMainTeachers = mainTeacherForResourceRepository.findByIdResource(id);
+            mainTeacherForResourceRepository.deleteAll(existingMainTeachers);
+
+            if (dto.getMainTeachers() != null) {
+                for (Long mainTeacherId : dto.getMainTeachers()) {
+                    if (mainTeacherId != null) {
+                        UserSyncadia user = userSyncadiaRepository.findById(mainTeacherId)
+                            .orElseThrow(() -> new RuntimeException("User not found with id: " + mainTeacherId));
+                        MainTeacherForResource mainTeacherEntity = new MainTeacherForResource();
+                        mainTeacherEntity.setUser(user);
+                        mainTeacherEntity.setResource(resource);
+                        mainTeacherEntity.setIdUser(user.getIdUser());
+                        mainTeacherEntity.setIdResource(resource.getIdResource());
+                        mainTeacherForResourceRepository.save(mainTeacherEntity);
+                    }
+                }
+            }
+
+            // Update Associated Teachers
+            List<TeachersForResource> existingTeachers = teachersForResourceRepository.findByIdResource(id);
+            teachersForResourceRepository.deleteAll(existingTeachers);
+
+            if (dto.getTeachers() != null) {
+                for (Long teacherId : dto.getTeachers()) {
+                    if (teacherId != null) {
+                        UserSyncadia user = userSyncadiaRepository.findById(teacherId)
+                            .orElseThrow(() -> new RuntimeException("User not found with id: " + teacherId));
+                        TeachersForResource teacherEntity = new TeachersForResource();
+                        teacherEntity.setResource(resource);
+                        teacherEntity.setUser(user);
+                        teacherEntity.setIdUser(user.getIdUser());
+                        teacherEntity.setIdResource(resource.getIdResource());
+                        teachersForResourceRepository.save(teacherEntity);
+                    }
+                }
+            }
+
+
+            // Update UE Coefficients
+            List<UeCoefficient> existingCoefficients = ueCoefficientRepository.findByResource_IdResource(id);
+            ueCoefficientRepository.deleteAll(existingCoefficients);
+
+            if (dto.getUeCoefficients() != null) {
+                for (iut.unilim.fr.back.dto.ResourceDTO.UeCoefficientDTO coeffDTO : dto.getUeCoefficients()) {
+                    if (coeffDTO.getUeId() != null) {
+                        Optional<UE> ue = ueRepository.findById(coeffDTO.getUeId());
+                        if (ue.isPresent()) {
+                            UeCoefficient coefficient = new UeCoefficient();
+                            coefficient.setCoefficient(coeffDTO.getCoefficient());
+                            coefficient.setUe(ue.get());
+                            coefficient.setResource(resource);
+                            ueCoefficientRepository.save(coefficient);
+                        }
+                    }
+                }
+            }
+
+            // Supprimer les anciens liens SAE avant de recréer les nouveaux
+            List<SAELinkResource> existingLinks = saeLinkResourceRepository.findByIdResource(id);
+            saeLinkResourceRepository.deleteAll(existingLinks);
+
+            // Reconstruire la liste des SAE à partir des IDs envoyés
+            List<SAE> linkedSaes = new ArrayList<>();
+            if (dto.getLinkedSaesIds() != null) {
+                for (Long idSae : dto.getLinkedSaesIds()) {
+                    Optional<SAE> saeOpt = saeRepository.findById(idSae);
+                    saeOpt.ifPresent(linkedSaes::add);
+                }
+            }
+            dto.setLinkedSaes(linkedSaes);
+
+            if (dto.getLinkedSaes() != null) {
+                for (SAE sae : dto.getLinkedSaes()) {
+                    SAELinkResource link = new SAELinkResource();
+                    link.setResource(resource);
+                    link.setSae(sae);
+                    link.setIdResource(resource.getIdResource());
+                    link.setIdSAE(sae.getIdSAE());
+                    saeLinkResourceRepository.save(link);
+                }
+            }
+
+            // Note: We don't update the ResourceSheet date - it keeps the original creation date
+
+            // Convert to DTO and return
+            MCCCResourceDTO resultDto = mcccMapper.toDTO(resource);
+            return ResponseEntity.ok(resultDto);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error updating Resource: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Delete a Resource by ID (triggers will handle cascading deletes)
+     * DELETE /api/v2/mccc/resources/{id}
+     */
+    @DeleteMapping("/resources/{id}")
+    @Transactional
+    public ResponseEntity<?> deleteMCCCResource(@PathVariable Long id) {
+        try {
+            // Check if resource exists
+            if (!ressourceRepository.existsById(id)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Delete all NationalProgramObjective entries referencing RessourceSheets of this resource
+            List<iut.unilim.fr.back.entity.RessourceSheet> sheets = ressourceSheetRepository.findByResource_IdResource(id);
+            for (iut.unilim.fr.back.entity.RessourceSheet sheet : sheets) {
+                List<iut.unilim.fr.back.entity.NationalProgramObjective> objectives = nationalProgramObjectiveRepository.findByResourceSheet_IdResourceSheet(sheet.getIdResourceSheet());
+                nationalProgramObjectiveRepository.deleteAll(objectives);
+            }
+
+            // Now delete the resource (and other cascading deletes as before)
+            ressourceRepository.deleteById(id);
+            return ResponseEntity.ok().build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error deleting Resource: " + e.getMessage());
         }
     }
 
@@ -293,6 +666,7 @@ public class MCCCController {
             sae.setSemester(dto.getSemester());
             sae.setTerms(terms);
             sae.setPath(path);
+
 
             SAE savedSAE = saeRepository.save(sae);
 

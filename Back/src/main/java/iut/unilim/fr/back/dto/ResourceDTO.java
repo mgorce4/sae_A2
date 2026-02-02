@@ -2,6 +2,8 @@ package iut.unilim.fr.back.dto;
 
 import java.util.List;
 
+import iut.unilim.fr.back.entity.SAE;
+
 public class ResourceDTO {
     private String label;
     private String name;
@@ -10,15 +12,17 @@ public class ResourceDTO {
     private Long institutionId;
     private String termsCode;
     private Long pathId;
-    private Double cmInitial;
-    private Double tdInitial;
-    private Double tpInitial;
-    private Double cmAlternance;
-    private Double tdAlternance;
-    private Double tpAlternance;
-    private String mainTeacher;  // "Firstname Lastname"
-    private List<String> teachers;  // ["Firstname Lastname", ...]
+    private Double initialCm;
+    private Double initialTd;
+    private Double initialTp;
+    private Double alternanceCm;
+    private Double alternanceTd;
+    private Double alternanceTp;
+    private List<Long> mainTeachers;  // "Firstname Lastname"
+    private List<Long> teachers;  // ["Firstname Lastname", ...]
     private List<UeCoefficientDTO> ueCoefficients;
+    private List<Long> linkedSaesIds;
+    private List<SAE> linkedSaes;
 
     public static class UeCoefficientDTO {
         private Long ueId;
@@ -47,6 +51,14 @@ public class ResourceDTO {
 
         public void setCoefficient(Double coefficient) {
             this.coefficient = coefficient;
+        }
+
+        public String toString() {
+            return "UeCoefficientDTO{" +
+                    "ueId=" + ueId +
+                    ", ueLabel='" + ueLabel + '\'' +
+                    ", coefficient=" + coefficient +
+                    '}';
         }
     }
 
@@ -107,67 +119,67 @@ public class ResourceDTO {
         this.pathId = pathId;
     }
 
-    public Double getCmInitial() {
-        return cmInitial;
+    public Double getInitialCm() {
+        return initialCm;
     }
 
-    public void setCmInitial(Double cmInitial) {
-        this.cmInitial = cmInitial;
+    public void setInitialCm(Double cmInitial) {
+        this.initialCm = cmInitial;
     }
 
-    public Double getTdInitial() {
-        return tdInitial;
+    public Double getInitialTd() {
+        return initialTd;
     }
 
-    public void setTdInitial(Double tdInitial) {
-        this.tdInitial = tdInitial;
+    public void setInitialTd(Double tdInitial) {
+        this.initialTd = tdInitial;
     }
 
-    public Double getTpInitial() {
-        return tpInitial;
+    public Double getInitialTp() {
+        return initialTp;
     }
 
-    public void setTpInitial(Double tpInitial) {
-        this.tpInitial = tpInitial;
+    public void setInitialTp(Double tpInitial) {
+        this.initialTp = tpInitial;
     }
 
-    public Double getCmAlternance() {
-        return cmAlternance;
+    public Double getAlternanceCm() {
+        return alternanceCm;
     }
 
-    public void setCmAlternance(Double cmAlternance) {
-        this.cmAlternance = cmAlternance;
+    public void setAlternanceCm(Double cmAlternance) {
+        this.alternanceCm = cmAlternance;
     }
 
-    public Double getTdAlternance() {
-        return tdAlternance;
+    public Double getAlternanceTd() {
+        return alternanceTd;
     }
 
-    public void setTdAlternance(Double tdAlternance) {
-        this.tdAlternance = tdAlternance;
+    public void setAlternanceTd(Double tdAlternance) {
+        this.alternanceTd = tdAlternance;
     }
 
-    public Double getTpAlternance() {
-        return tpAlternance;
+    public Double getAlternanceTp() {
+        return alternanceTp;
     }
 
-    public void setTpAlternance(Double tpAlternance) {
-        this.tpAlternance = tpAlternance;
+    public void setAlternanceTp(Double tpAlternance) {
+        this.alternanceTp = tpAlternance;
     }
 
-    public String getMainTeacher() {
-        return mainTeacher;
+    public List<Long> getMainTeachers() {
+        return mainTeachers;
     }
 
-    public void setMainTeacher(String mainTeacher) {
-        this.mainTeacher = mainTeacher;
+    public void setMainTeachers(List<Long> mainTeachers) {
+        this.mainTeachers = mainTeachers;
     }
 
-    public List<String> getTeachers() {
+    public List<Long> getTeachers() {
         return teachers;
     }
 
-    public void setTeachers(List<String> teachers) {
+    public void setTeachers(List<Long> teachers) {
         this.teachers = teachers;
     }
 
@@ -177,6 +189,45 @@ public class ResourceDTO {
 
     public void setUeCoefficients(List<UeCoefficientDTO> ueCoefficients) {
         this.ueCoefficients = ueCoefficients;
+    }
+
+    public List<SAE> getLinkedSaes() {
+        return linkedSaes;
+    }
+
+    public void setLinkedSaes(List<SAE> linkedSaes) {
+        this.linkedSaes = linkedSaes;
+    }
+
+    public List<Long> getLinkedSaesIds() {
+        return linkedSaesIds;
+    }
+
+    public void setLinkedSaesIds(List<Long> linkedSaesIds) {
+        this.linkedSaesIds = linkedSaesIds;
+    }
+
+    public String toString() {
+        return "ResourceDTO{" +
+                "label='" + label + '\'' +
+                ", name='" + name + '\'' +
+                ", apogeeCode='" + apogeeCode + '\'' +
+                ", semester=" + semester +
+                ", institutionId=" + institutionId +
+                ", termsCode='" + termsCode + '\'' +
+                ", pathId=" + pathId +
+                ", initialCm=" + initialCm +
+                ", initialTd=" + initialTd +
+                ", initialTp=" + initialTp +
+                ", alternanceCm=" + alternanceCm +
+                ", alternanceTd=" + alternanceTd +
+                ", alternanceTp=" + alternanceTp +
+                ", mainTeachers=" + mainTeachers +
+                ", teachers=" + teachers +
+                ", ueCoefficients=" + ueCoefficients +
+                ", linkedSaesIds=" + linkedSaesIds +
+                ", linkedSaes=" + linkedSaes +
+                '}';
     }
 }
 
