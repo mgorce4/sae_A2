@@ -271,7 +271,6 @@ function toggleShowPopUp() {
 
             <RouterLink
                 class="button"
-                style="margin-top: 1.5vw; margin-bottom: 1vw"
                 to="/control-center"
             >
                 Centre de controle
@@ -381,7 +380,7 @@ function toggleShowPopUp() {
 
 #main_div {
     display: flex;
-    align-items: center;
+    align-items: flex-start; /* Alignement en haut */
     height: 100%;
     align-self: center;
     width: 100%;
@@ -403,14 +402,14 @@ function toggleShowPopUp() {
 
 #sub_div_for_MCCC_and_calender {
     width: 30%;
+    display: flex;
+    flex-direction: column;
 }
 
 /* -- MCCC -- */
 
 #MCCC_div {
     text-align: center;
-    height: 100px;
-    margin-bottom: 10%;
     align-content: center;
 }
 
@@ -420,11 +419,17 @@ function toggleShowPopUp() {
     background-color: var(--sub-section-background-color);
     border-radius: 15px;
     width: 100%;
-    height: 8vw;
+    height: 7vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5vw;
+
 }
 
 .button:hover {
     cursor: pointer;
+    background-color: var(--main-theme-secondary-background-color);
 }
 
 /* -- calendar -- */
@@ -438,6 +443,7 @@ function toggleShowPopUp() {
     align-items: center;
     padding-bottom: 1vw;
     text-align: center;
+    margin-bottom: 1.5vw;
 }
 
 #inline {
@@ -478,11 +484,11 @@ input[type='date']::-webkit-calendar-picker-indicator {
 #return_sheets_div {
     background-color: var(--main-theme-background-color);
     color: var(--main-theme-secondary-color);
-    height: 70vh; /* Hauteur fixe */
-    max-height: 70vh; /* Hauteur maximale fixe */
+    height: calc(6vw + 1.5vw + var(--date-panel-height, 20vw) + 1.5vw + 6vw); /* Hauteur fixe calculée */
+    max-height: calc(6vw + 1.5vw + var(--date-panel-height, 20vw) + 1.5vw + 6vw);
     width: 35%;
     padding: 0 1vw 1vw 1vw;
-    overflow-y: auto; /* Scrollbar uniquement si nécessaire */
+    overflow-y: auto; /* Scrollbar si contenu dépasse */
     font-size: 2vw;
     display: flex;
     flex-direction: column;
