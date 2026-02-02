@@ -50,11 +50,11 @@ onMounted(async () => {
 
 <template>
     <div id="ressources">
-        <div id="for_scroll_bar" style="overflow-y: scroll; margin: 1vw; height: 24vw">
+        <div id="for_scroll_bar" style="overflow-y: auto; overflow-x: hidden; margin: 1vw; height: 24vw">
             <p id="title">Vos ressources :</p>
             <div id="div_sheets">
                 <p v-if="resourceSheetsDTO.length === 0" style="color: white; padding: 1vw">
-                    Aucune ressource trouvée. Vous n'êtes professeur principal d'aucune ressource.
+                    Aucune ressource trouvée. Vous n'êtes professeur d'aucune ressource.
                 </p>
                 <RouterLink v-for="sheet in resourceSheetsDTO" :key="sheet.id" id="sheets" :to="`/form-ressource-sheet?id=${sheet.id}`">
                     <p>{{ sheet.resourceLabel }}</p>
@@ -86,20 +86,26 @@ onMounted(async () => {
 }
 
 #sheets {
+    height: auto;
     min-height: 7vw;
-    max-height: 10vw;
     min-width: 20vw;
+    max-width: 20vw;
     margin: 1em;
+    padding-bottom: 1.2vw;
     background-color: var(--sub-section-background-color);
     border-radius: 15px;
     align-items: center;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 #sheets > p {
     font-size: 4.5vw;
     color: var(--main-theme-secondary-color);
     text-align: center;
-    margin: 2vw;
+    margin: 2vw 2vw 0 2vw;
+    white-space: nowrap;
 }
 
 #for_scroll_bar::-webkit-scrollbar {
@@ -114,6 +120,22 @@ onMounted(async () => {
 }
 
 #for_scroll_bar::-webkit-scrollbar-thumb {
+    background: var(--main-theme-secondary-color);
+    border-radius: 10px;
+}
+
+#sheets::-webkit-scrollbar {
+    height: 8px;
+}
+
+#sheets::-webkit-scrollbar-track {
+    margin: 0 0.8vw 0.5vw 0.8vw;
+    background: var(--main-theme-secondary-background-color);
+    box-shadow: inset 0 0 5px var(--sub-scrollbar-color);
+    border-radius: 10px;
+}
+
+#sheets::-webkit-scrollbar-thumb {
     background: var(--main-theme-secondary-color);
     border-radius: 10px;
 }
