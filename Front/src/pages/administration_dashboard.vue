@@ -32,7 +32,7 @@ onMounted(async () => {
     console.log('=== ADMINISTRATION DASHBOARD - ONMOUNTED DEBUT ===')
     console.log('status:', status.value)
     console.log('localStorage.idInstitution:', localStorage.idInstitution)
-    
+
     try {
         console.log('Chargement des resource sheets...')
         const response = await axios.get('http://localhost:8080/api/v2/resource-sheets')
@@ -68,15 +68,15 @@ onMounted(async () => {
         const institutionId = localStorage.idInstitution
         console.log('=== CHARGEMENT PARCOURS ADMIN DASHBOARD ===')
         console.log('institutionId:', institutionId)
-        
+
         if (institutionId) {
             const pathsResponse = await axios.get('http://localhost:8080/api/paths')
             console.log('Tous les parcours reçus:', pathsResponse.data)
-            
+
             paths.value = pathsResponse.data.filter(
                 (path) => path.institution?.idInstitution === parseInt(institutionId),
             )
-            
+
             console.log('Parcours filtrés pour institution', institutionId, ':', paths.value)
         }
     } catch (error) {
@@ -152,7 +152,7 @@ function isSheetSelected(sheetId) {
 async function downloadSheets() {
     console.log('=== DOWNLOAD SHEETS ===')
     console.log('selectedSheets:', selectedSheets.value)
-    
+
     if (selectedSheets.value.length === 0) {
         console.log('Aucune fiche sélectionnée')
         alert('Veuillez sélectionner au moins une fiche à télécharger')
@@ -167,10 +167,10 @@ async function downloadSheets() {
         for (const sheetId of selectedSheets.value) {
             const sheet = resource_sheets.value.find((s) => s.id === sheetId)
             console.log('Sheet trouvée:', sheet)
-            
+
             if (sheet && sheet.resourceLabel) {
                 console.log('Téléchargement du PDF pour:', sheet.resourceLabel)
-                
+
                 // Call the PDF generation endpoint
                 const response = await axios.get('http://localhost:8080/api/pdf/generate', {
                     params: {
@@ -191,20 +191,20 @@ async function downloadSheets() {
                 link.click()
                 link.remove()
                 window.URL.revokeObjectURL(url)
-                
+
                 console.log('PDF téléchargé avec succès')
             } else {
                 console.error('Fiche introuvable ou sans label:', sheetId)
             }
         }
-        
+
         alert(`${selectedSheets.value.length} PDF(s) téléchargé(s) avec succès`)
     } catch (error) {
         console.error('Error downloading PDFs:', error)
         console.error('Error response:', error.response)
         console.error('Error status:', error.response?.status)
         console.error('Error data type:', typeof error.response?.data)
-        
+
         // Si c'est un blob, le lire
         if (error.response?.data instanceof Blob) {
             const reader = new FileReader()
