@@ -6,41 +6,65 @@ import axios from 'axios'
 let display_more_area = ref(false)
 let is_modifying = ref(false)
 
+let title = ref("")
+
 const teachers = ref([])
 
 const attachAccordionListeners = () => {
     nextTick(() => {
         const acc = document.getElementsByClassName('accordion_teacher')
+        console.log(acc.value)
         for (let i = 0; i < acc.length; i++) {
-            const newElement = acc[i].cloneNode(true)
-            acc[i].parentNode.replaceChild(newElement, acc[i])
 
-            newElement.addEventListener('click', function () {
-                this.classList.toggle('active')
-                const panel = this.nextElementSibling
-                if (panel.style.maxHeight) {
-                    panel.style.maxHeight = null
-                    panel.style.padding = '0 18px'
-                } else {
-                    // Calculate the actual height including error messages
-                    panel.style.maxHeight = panel.scrollHeight + 'px'
-                    panel.style.padding = '3px 18px 15px'
-                }
-            })
+            if (acc[i].getAttribute('data-accordion') === 'add-modify-teacher') {
+                acc[i].addEventListener('click', function () {
+                    console.log(this)
+                    console.log("1", this.classList)
+                    this.classList.toggle('active')
+                    console.log("2", this.classList)
+                    const panel = this.nextElementSibling
+                    if (panel.style.maxHeight) {
+                        panel.style.maxHeight = null
+                    } else {
+                        panel.style.maxHeight = panel.scrollHeight + 'vw'
+                        panel.style.padding = '0 18px'
+                    }
+                })
+            } else {
+                const newElement = acc[i].cloneNode(true)
+                acc[i].parentNode.replaceChild(newElement, acc[i])
+
+                newElement.addEventListener('click', function () {
+                    this.classList.toggle('active')
+                    const panel = this.nextElementSibling
+                    if (panel.style.maxHeight) {
+                        panel.style.maxHeight = null
+                    } else {
+                        // Calculate the actual height including error messages
+                        panel.style.maxHeight = panel.scrollHeight + 'vw'
+                        panel.style.padding = '0 18px'
+                    }
+                })
+            }
         }
     })
 }
-
-attachAccordionListeners()
-
-
 
 onMounted(async () => {
     const response = await axios.get('http://localhost:8080/api/access-rights')
     teachers.value = response.data.filter((ar) => ar.accessRight === 1)
 
+    await nextTick()
     attachAccordionListeners()
 })
+
+function addTeacher() {
+    title.value = "Ajouter un professeur"
+}
+
+function modify() {
+    title.value = "Modifier un professeur"
+}
 
 </script>
 
@@ -58,14 +82,14 @@ onMounted(async () => {
                 </div>
 
                 <div id="dark_bar">
-                    <h2>{{ is_modifying ? 'Modifier un professeur' : 'Ajouter un professeur' }}</h2>
-                    <button id="button_more" v-on:click="display_more_area = !display_more_area">
+                    <h2>Ajouter un professeur</h2>
+                    <button id="button_more" v-on:click="display_more_area = !display_more_area;  addTeacher()">
                         {{ display_more_area ? '-' : '+' }}
                     </button>
                 </div>
 
                 <form v-show="display_more_area" method="post" v-on:submit.prevent="">
-                    <a class="accordion_teacher" id="dark_bar">Ajout d'un professeur :</a>
+                    <a class="accordion_teacher dark_bar" data-accordion="add-modify-teacher">{{ title }}</a>
 
                     <div class="panel" style="display: flex">
                         <div style="margin-left: 15vw; padding-top: 1vw">
@@ -111,8 +135,8 @@ onMounted(async () => {
                             </div>
 
                             <div style="background-color: transparent; display: flex; padding: 0; margin-bottom: 0; gap: 0.3vw; justify-content: center; align-items: center">
-                                <input class="btn1" type="button" value="Modifier" v-on:click="is_modifying = true; display_more_area = true" />
                                 <input class="btn1" type="button" value="Spprimer"/>
+                                <input class="btn1" type="button" value="Modifier" v-on:click="is_modifying = true; display_more_area = true; modify(teacher)" />
                             </div>
                         </div>
                     </div>
