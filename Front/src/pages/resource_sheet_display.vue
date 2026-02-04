@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import axios from 'axios'
+import { API_BASE_URL } from '@/config/api.js'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -119,7 +120,7 @@ onMounted(async () => {
     console.log('resource_label from query:', resource_label)
     
     try {
-        const response = await axios.get('http://localhost:8080/api/v2/resource-sheets')
+        const response = await axios.get(`${API_BASE_URL}/api/v2/resource-sheets`)
         console.log('Resource sheets reçues:', response.data.length)
         
         resource_sheet.value = response.data.find((sheet) => sheet.resourceLabel === resource_label)

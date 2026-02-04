@@ -3,6 +3,7 @@ import { status, userName, institutionLocation, removeUser } from '../main.js'
 import { computed, ref, onMounted } from 'vue'
 import axios from 'axios'
 import { router } from '@/router'
+import { API_BASE_URL } from '@/config/api.js'
 
 status.value = ''
 institutionLocation.value = ''
@@ -15,9 +16,9 @@ const user_access_rights = ref([])
 onMounted(async () => {
     removeUser()
 
-    axios.get('http://localhost:8080/api/users').then((response) => (users.value = response.data))
+    axios.get(`${API_BASE_URL}/api/users`).then((response) => (users.value = response.data))
     axios
-        .get('http://localhost:8080/api/access-rights')
+        .get(`${API_BASE_URL}/api/access-rights`)
         .then((response) => (access_rights.value = response.data))
 
     if (window.localStorage.getItem('access_rights')) {
