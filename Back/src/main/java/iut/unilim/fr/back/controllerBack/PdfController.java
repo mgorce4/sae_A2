@@ -68,17 +68,24 @@ public class PdfController {
                 // Load the custom font from classpath
                 BaseFont customBaseFont;
                 try {
+                    System.out.println("DEBUG: Attempting to load font from: " + baseFont);
                     java.io.InputStream fontStream = getClass().getClassLoader().getResourceAsStream(baseFont);
                     if (fontStream != null) {
+                        System.out.println("DEBUG: Font stream found, reading bytes...");
                         byte[] fontBytes = fontStream.readAllBytes();
                         fontStream.close();
+                        System.out.println("DEBUG: Font bytes read: " + fontBytes.length + " bytes");
                         customBaseFont = BaseFont.createFont(baseFont, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, true, fontBytes, null);
+                        System.out.println("DEBUG: BaseFont created successfully");
                     } else {
+                        System.err.println("ERROR: Font file not found in classpath: " + baseFont);
                         writeInPdfLog("Font file not found in classpath: " + baseFont);
                         return ResponseEntity.internalServerError().build();
                     }
                 } catch (Exception fontException) {
-                    writeInPdfLog("Error loading font: " + fontException.getMessage());
+                    System.err.println("ERROR: Exception loading font: " + fontException.getClass().getName());
+                    fontException.printStackTrace();
+                    writeInPdfLog("Error loading font: " + fontException.getMessage() + " - " + fontException.getClass().getName());
                     return ResponseEntity.internalServerError().build();
                 }
 
@@ -234,7 +241,12 @@ public class PdfController {
 
                 writeInPdfLog(userName + " create a pdf for resource sheet: " + pdfFileName);
             } catch (Exception e) {
-                writeInPdfLog(e.getMessage());
+                System.err.println("FATAL ERROR generating PDF:");
+                e.printStackTrace();
+                writeInPdfLog("EXCEPTION in PDF generation: " + e.getClass().getName() + " - " + e.getMessage());
+                if (e.getCause() != null) {
+                    writeInPdfLog("CAUSED BY: " + e.getCause().getClass().getName() + " - " + e.getCause().getMessage());
+                }
                 return ResponseEntity.internalServerError().build();
             }
             byte[] pdfBytes = out.toByteArray();
