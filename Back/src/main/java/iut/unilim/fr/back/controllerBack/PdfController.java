@@ -34,7 +34,8 @@ public class PdfController {
     private final BaseColor COL_GRIS_CORPS = new BaseColor(128, 128, 128);
     private final BaseColor COL_CONTENT_TEXT = BaseColor.WHITE;
     private final BaseColor COL_TEXT = BaseColor.BLACK;
-    private final String baseFont = "src/main/resources/font/trade-gothic-lt-std-58a78e64434a9.otf";
+    // Use the ClassLoader to load resources from the JAR
+    private final String baseFont = "font/trade-gothic-lt-std-58a78e64434a9.otf";
 
     private static final int NONE = 0;
     private final int listIndent = 12;
