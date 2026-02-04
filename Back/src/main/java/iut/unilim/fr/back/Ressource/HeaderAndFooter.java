@@ -3,8 +3,7 @@ package iut.unilim.fr.back.Ressource;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -14,12 +13,12 @@ public class HeaderAndFooter extends PdfPageEventHelper {
     private static final BaseColor COL_RED_BAR = new BaseColor(176, 32, 40);
     private static final BaseColor COL_SEPARATOR_LINE = BaseColor.GRAY;
 
-    private static final String baseFont = "src/main/resources/font/trade-gothic-lt-std-58a78e64434a9.otf";
+    private static final String baseFont = "font/trade-gothic-lt-std-58a78e64434a9.otf";
+    private static final String imagePath = "img/unilim.jpg";
     private static Font whiteFont;
     private static Font blackFont;
 
     private PdfTemplate totalPagesTemplate;
-    Path imagePath = Paths.get("src/main/resources/img/unilim.jpg");
     private Image image;
     private String reference;
     private String department;
@@ -40,17 +39,51 @@ public class HeaderAndFooter extends PdfPageEventHelper {
             int imageWidth = 100;
             int imageHeight = 50;
             
-            blackFont = FontFactory.getFont(baseFont, fontSize, BaseColor.BLACK);
-            whiteFont = FontFactory.getFont(baseFont, fontSize, BaseColor.WHITE);
+            // Load custom font from classpath
+            InputStream fontStream = getClass().getClassLoader().getResourceAsStream(baseFont);
+            if (fontStream == null) {
+                System.err.println("ERROR: Font not found at " + baseFont);
+                writeInPdfLog("Font not found at " + baseFont);
+                throw new RuntimeException("Font not found: " + baseFont);
+            }
+            
+            byte[] fontBytes = fontStream.readAllBytes();
+            fontStream.close();
+            
+            BaseFont customBaseFont = BaseFont.createFont(baseFont, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, true, fontBytes, null);
+            blackFont = new Font(customBaseFont, fontSize, Font.NORMAL, BaseColor.BLACK);
+            whiteFont = new Font(customBaseFont, fontSize, Font.NORMAL, BaseColor.WHITE);
+            
+            System.out.println("HeaderAndFooter: Font loaded successfully");
 
-            this.image = Image.getInstance(imagePath.toAbsolutePath().toString());
+            // Load image from classpath
+            InputStream imageStream = getClass().getClassLoader().getResourceAsStream(imagePath);
+            if (imageStream == null) {
+                System.err.println("ERROR: Image not found at " + imagePath);
+                writeInPdfLog("Image not found at " + imagePath);
+                throw new RuntimeException("Image not found: " + imagePath);
+            }
+            
+            byte[] imageBytes = imageStream.readAllBytes();
+            imageStream.close();
+            
+            this.image = Image.getInstance(imageBytes);
             this.image.scaleToFit(imageWidth, imageHeight);
+            
+            System.out.println("HeaderAndFooter: Image loaded successfully");
+            
             this.reference = reference;
             this.resource = resource;
             this.department = department;
             this.ue = ue;
         } catch (Exception e) {
-            writeInPdfLog(e.getMessage());
+            System.err.println("FATAL ERROR in HeaderAndFooter constructor:");
+            e.printStackTrace();
+            writeInPdfLog("HeaderAndFooter ERROR: " + e.getClass().getName() + " - " + e.getMessage());
+            if (e.getCause() != null) {
+                writeInPdfLog("CAUSED BY: " + e.getCause().getClass().getName() + " - " + e.getCause().getMessage());
+            }
+            throw new RuntimeException("Failed to initialize HeaderAndFooter", e);
         }
     }
 
