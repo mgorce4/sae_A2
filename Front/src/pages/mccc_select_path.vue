@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref, nextTick, watch, computed } from 'vue'
 import axios from 'axios'
+import { API_BASE_URL } from '@/config/api.js'
 import { router } from '@/router'
 
 const display_more_area = ref(false)
@@ -81,7 +82,7 @@ watch([coursList, display_more_area], () => {
 
 onMounted(async () => {
     try {
-        const response = await axios.get(`http://localhost:8080/api/paths`)
+        const response = await axios.get(`${API_BASE_URL}/api/paths`)
         // Filtrer les paths par institution et ajouter la propriété show
         coursList.value = response.data
             .filter(
@@ -156,7 +157,7 @@ const save = async () => {
         }
         console.log('Envoi des données du parcours:', response)
 
-        await axios.post('http://localhost:8080/api/paths', response)
+        await axios.post(`${API_BASE_URL}/api/paths`, response)
 
         // Réinitialiser les champs
         coursName.value = ''
@@ -164,7 +165,7 @@ const save = async () => {
         display_more_area.value = false
 
         // Recharger et filtrer les paths par institution
-        const allPaths = await axios.get(`http://localhost:8080/api/paths`)
+        const allPaths = await axios.get(`${API_BASE_URL}/api/paths`)
         coursList.value = allPaths.data
             .filter(
                 (path) =>
@@ -201,12 +202,12 @@ const updateCourse = async (cours) => {
             },
         }
 
-        await axios.put(`http://localhost:8080/api/paths/${cours.idPath}`, response)
+        await axios.put(`${API_BASE_URL}/api/paths/${cours.idPath}`, response)
         click.value = false
         cours.show = false
 
         // Recharger la liste
-        const allPaths = await axios.get(`http://localhost:8080/api/paths`)
+        const allPaths = await axios.get(`${API_BASE_URL}/api/paths`)
         coursList.value = allPaths.data
             .filter(
                 (path) =>
@@ -231,10 +232,10 @@ const del = async (id) => {
         return
     }
     try {
-        await axios.delete(`http://localhost:8080/api/paths/${id}`)
+        await axios.delete(`${API_BASE_URL}/api/paths/${id}`)
 
         // Recharger la liste après suppression
-        const allPaths = await axios.get(`http://localhost:8080/api/paths`)
+        const allPaths = await axios.get(`${API_BASE_URL}/api/paths`)
         coursList.value = allPaths.data
             .filter(
                 (path) =>

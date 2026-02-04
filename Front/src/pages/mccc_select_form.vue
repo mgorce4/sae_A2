@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import axios from 'axios'
+import { API_BASE_URL } from '@/config/api.js'
 import { status } from '@/main.js'
 import { router } from '@/router'
 import { useRoute } from 'vue-router'
@@ -41,19 +42,19 @@ onMounted(async () => {
 
     try {
         // Charger les données filtrées par path
-        const saes = await axios.get(`http://localhost:8080/api/v2/mccc/saes/path/${pathId.value}`)
+        const saes = await axios.get(`${API_BASE_URL}/api/v2/mccc/saes/path/${pathId.value}`)
         // Filtrer par institution pour sécurité supplémentaire
         saeTable.value = saes.data.filter(sae =>
             sae.institutionId === institutionId
         )
 
-        const ues = await axios.get(`http://localhost:8080/api/v2/mccc/ues/path/${pathId.value}`)
+        const ues = await axios.get(`${API_BASE_URL}/api/v2/mccc/ues/path/${pathId.value}`)
         // Filtrer par institution pour sécurité supplémentaire
         ueTable.value = ues.data.filter(ue =>
             ue.institutionId === institutionId
         )
 
-        const resources = await axios.get(`http://localhost:8080/api/v2/mccc/resources/path/${pathId.value}`)
+        const resources = await axios.get(`${API_BASE_URL}/api/v2/mccc/resources/path/${pathId.value}`)
         // Filtrer par institution pour sécurité supplémentaire
         resourceTable.value = resources.data.filter(resource =>
             resource.institutionId === institutionId

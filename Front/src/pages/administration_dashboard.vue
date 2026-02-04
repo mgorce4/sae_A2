@@ -4,6 +4,7 @@ import { ref } from 'vue'
 import { status, institutionLocation } from '../main'
 import { onMounted } from 'vue'
 import axios from 'axios'
+import { API_BASE_URL } from '@/config/api.js'
 import { router } from '@/router'
 
 /* constantes */
@@ -35,7 +36,7 @@ onMounted(async () => {
 
     try {
         console.log('Chargement des resource sheets...')
-        const response = await axios.get('http://localhost:8080/api/v2/resource-sheets')
+        const response = await axios.get(`${API_BASE_URL}/api/v2/resource-sheets`)
         resource_sheets.value = response.data
         console.log('Resource sheets chargées:', resource_sheets.value.length)
     } catch (error) {
@@ -48,7 +49,7 @@ onMounted(async () => {
         const institutionId = localStorage.idInstitution
         if (institutionId) {
             const datesResponse = await axios.get(
-                `http://localhost:8080/api/final-delivery-dates/institution/${institutionId}`,
+                `${API_BASE_URL}/api/final-delivery-dates/institution/${institutionId}`,
             )
             if (datesResponse.data) {
                 deliveryDatesId.value = datesResponse.data.idFinalDelivery
@@ -70,7 +71,7 @@ onMounted(async () => {
         console.log('institutionId:', institutionId)
 
         if (institutionId) {
-            const pathsResponse = await axios.get('http://localhost:8080/api/paths')
+            const pathsResponse = await axios.get(`${API_BASE_URL}/api/paths`)
             console.log('Tous les parcours reçus:', pathsResponse.data)
 
             paths.value = pathsResponse.data.filter(
@@ -124,7 +125,7 @@ async function saveDeliveryDates() {
 
         // Use the save-by-institution endpoint which automatically handles create or update
         const response = await axios.post(
-            'http://localhost:8080/api/final-delivery-dates/save-by-institution',
+            `${API_BASE_URL}/api/final-delivery-dates/save-by-institution`,
             deliveryDatesData,
         )
         deliveryDatesId.value = response.data.idFinalDelivery
@@ -172,7 +173,7 @@ async function downloadSheets() {
                 console.log('Téléchargement du PDF pour:', sheet.resourceLabel)
 
                 // Call the PDF generation endpoint
-                const response = await axios.get('http://localhost:8080/api/pdf/generate', {
+                const response = await axios.get(`${API_BASE_URL}/api/pdf/generate`, {
                     params: {
                         resourceName: sheet.resourceLabel,
                         userName: userName,
