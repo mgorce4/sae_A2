@@ -65,6 +65,23 @@ public class PdfController {
         if (!resResourceName.isEmpty()) {
             String pdfFileName = resResourceName + "_ressource_sheet.pdf";
             try {
+                // Load the custom font from classpath
+                BaseFont customBaseFont;
+                try {
+                    java.io.InputStream fontStream = getClass().getClassLoader().getResourceAsStream(baseFont);
+                    if (fontStream != null) {
+                        byte[] fontBytes = fontStream.readAllBytes();
+                        fontStream.close();
+                        customBaseFont = BaseFont.createFont(baseFont, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, true, fontBytes, null);
+                    } else {
+                        writeInPdfLog("Font file not found in classpath: " + baseFont);
+                        return ResponseEntity.internalServerError().build();
+                    }
+                } catch (Exception fontException) {
+                    writeInPdfLog("Error loading font: " + fontException.getMessage());
+                    return ResponseEntity.internalServerError().build();
+                }
+
                 Document document = new Document(PageSize.A4, documentMargin, documentMargin, documentMarginTop, documentMarginBottom);
                 PdfWriter writer = PdfWriter.getInstance(document, out);
 
@@ -73,9 +90,9 @@ public class PdfController {
 
                 document.open();
 
-                Font font = FontFactory.getFont(baseFont, documentStandardFontSize, COL_TEXT);
-                Font contentFont = FontFactory.getFont(baseFont, documentStandardFontSize, COL_CONTENT_TEXT);
-                Font fontTitle = FontFactory.getFont(baseFont, documentTitleFontSize, COL_TEXT);
+                Font font = new Font(customBaseFont, documentStandardFontSize, Font.NORMAL, COL_TEXT);
+                Font contentFont = new Font(customBaseFont, documentStandardFontSize, Font.NORMAL, COL_CONTENT_TEXT);
+                Font fontTitle = new Font(customBaseFont, documentTitleFontSize, Font.NORMAL, COL_TEXT);
 
                 PdfPTable table = createPdfPTable(res, font, fontTitle);
 
@@ -83,7 +100,7 @@ public class PdfController {
                 Chunk descriptive = new Chunk("Descriptif", contentFont);
                 Chunk objective = new Chunk("Objectif", contentFont);
                 Chunk objectiveContent = new Chunk(res.getObjectiveContent(), contentFont);
-                PdfPTable content = createContentDiv(objective, objectiveContent);
+                PdfPTable content = createContentDiv(objective, objectiveContent, customBaseFont);
 
                 ArrayList<PdfPTable> contents = new ArrayList<>();
                 contents.add(content);
@@ -103,14 +120,14 @@ public class PdfController {
                 }
 
 
-                PdfPTable contentCompetence = createContentDiv(competenceTitle, bulletedList);
+                PdfPTable contentCompetence = createContentDiv(competenceTitle, bulletedList, customBaseFont);
                 contents.add(contentCompetence);
 
                 // Div SAE
                 Chunk saeConcerned = new Chunk("SAÉ Concernée", contentFont);
                 ArrayList<String> saes = (ArrayList<String>) res.getSaes();
 
-                createITextList(contentFont, contents, saeConcerned, saes);
+                createITextList(contentFont, contents, saeConcerned, saes, customBaseFont);
 
                 // Div keywords
                 Chunk motsCleTitre = new Chunk("Mots Clé", contentFont);
@@ -123,14 +140,14 @@ public class PdfController {
 
                 Chunk motsCleChunk = new Chunk(keyWord.toString(), contentFont);
 
-                PdfPTable motCleContent = createContentDiv(motsCleTitre, motsCleChunk);
+                PdfPTable motCleContent = createContentDiv(motsCleTitre, motsCleChunk, customBaseFont);
                 contents.add(motCleContent);
 
 
                 Chunk modality = new Chunk("Modalité", contentFont);
                 ArrayList<String> modalities = (ArrayList<String>) res.getModalities();
 
-                createITextList(contentFont, contents, modality, modalities);
+                createITextList(contentFont, contents, modality, modalities, customBaseFont);
 
                 document.add(table);
 
@@ -147,7 +164,7 @@ public class PdfController {
 
                     ArrayList<Chunk> programmeContent = completeInternshipProgramContent(res, contentFont);
 
-                    applyGreyStyleOnCell(programmeContent, contentFont, internshipProgramTable, internshipRepartition, hours);
+                    applyGreyStyleOnCell(programmeContent, contentFont, internshipProgramTable, internshipRepartition, hours, customBaseFont);
 
                 }
                 
@@ -156,7 +173,7 @@ public class PdfController {
 
                 ArrayList<Chunk> programmeContent = completeProgramContent(res, contentFont);
 
-                PdfPTable repartitionContent = applyGreyStyleOnCell(programmeContent, contentFont, repartitionProgrammeTable, hoursRepartition, hours);
+                PdfPTable repartitionContent = applyGreyStyleOnCell(programmeContent, contentFont, repartitionProgrammeTable, hoursRepartition, hours, customBaseFont);
                 repartitionContent.setPaddingTop(standardPadding);
 
                 contents.addAll(hours);
@@ -185,10 +202,10 @@ public class PdfController {
                 String[] itemsTP = pedagoContentTp.split(pedagoContentSplitDelimitator);
                 addCategoryLine(pedagoTable, "TP", itemsTP, contentFont);
 
-                PdfPTable contentPedagoContent = createContentDiv(pedagogicalContent, pedagoTable);
+                PdfPTable contentPedagoContent = createContentDiv(pedagogicalContent, pedagoTable, customBaseFont);
                 contents.add(contentPedagoContent);
 
-                PdfPTable contentDiv = createContent(descriptive, contents);
+                PdfPTable contentDiv = createContent(descriptive, contents, customBaseFont);
                 document.add(contentDiv);
                 document.newPage();
                 ArrayList<PdfPTable> resourceContentsTracking = new ArrayList<>();
@@ -197,19 +214,19 @@ public class PdfController {
                 Chunk pedagogicalTeamFeedback = new Chunk("Retour de l'équipe pédagogique", contentFont);
                 Chunk pedagogicalTeamFeedbackContent = new Chunk(res.getPedagoTeamFeedback(), contentFont);
 
-                resourceContentsTracking.add(createContentDiv(pedagogicalTeamFeedback, pedagogicalTeamFeedbackContent));
+                resourceContentsTracking.add(createContentDiv(pedagogicalTeamFeedback, pedagogicalTeamFeedbackContent, customBaseFont));
 
                 Chunk studentFeedback = new Chunk("Retour étudiant", contentFont);
                 Chunk studentFeedbackContent = new Chunk(res.getStudentFeedback(), contentFont);
 
-                resourceContentsTracking.add(createContentDiv(studentFeedback, studentFeedbackContent));
+                resourceContentsTracking.add(createContentDiv(studentFeedback, studentFeedbackContent, customBaseFont));
 
                 Chunk amelioration = new Chunk("Améliorations à mettre en oeuvre", contentFont);
                 Chunk ameliorationContent = new Chunk(res.getImprovements(), contentFont);
 
-                resourceContentsTracking.add(createContentDiv(amelioration, ameliorationContent));
+                resourceContentsTracking.add(createContentDiv(amelioration, ameliorationContent, customBaseFont));
 
-                PdfPTable resourceTrackingTable = createContent(resourceTracking, resourceContentsTracking);
+                PdfPTable resourceTrackingTable = createContent(resourceTracking, resourceContentsTracking, customBaseFont);
                 resourceTrackingTable.setPaddingTop(standardPadding);
 
                 document.add(resourceTrackingTable);
@@ -221,11 +238,20 @@ public class PdfController {
                 return ResponseEntity.internalServerError().build();
             }
             byte[] pdfBytes = out.toByteArray();
+            if (pdfBytes == null || pdfBytes.length == 0) {
+                writeInPdfLog("Failed to generate PDF: empty output");
+                return ResponseEntity.internalServerError().build();
+            }
             ByteArrayResource resource = new ByteArrayResource(pdfBytes);
+
+            MediaType pdfMediaType = MediaType.APPLICATION_PDF;
+            if (pdfMediaType == null) {
+                pdfMediaType = MediaType.APPLICATION_OCTET_STREAM;
+            }
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + pdfFileName + ".pdf\"")
-                    .contentType(MediaType.APPLICATION_PDF)
+                    .contentType(pdfMediaType)
                     .contentLength(pdfBytes.length)
                     .body(resource);
         } else {
@@ -234,7 +260,7 @@ public class PdfController {
         }
     }
 
-    private PdfPTable applyGreyStyleOnCell(ArrayList<Chunk> programmeContent, Font contentFont, PdfPTable repartitionProgrammeTable, Chunk hoursRepartition, ArrayList<PdfPTable> hours) {
+    private PdfPTable applyGreyStyleOnCell(ArrayList<Chunk> programmeContent, Font contentFont, PdfPTable repartitionProgrammeTable, Chunk hoursRepartition, ArrayList<PdfPTable> hours, BaseFont customBaseFont) {
         for (Chunk chunk : programmeContent) {
             PdfPCell cell = new PdfPCell(new Phrase(chunk.getContent(), contentFont));
 
@@ -245,7 +271,7 @@ public class PdfController {
             repartitionProgrammeTable.addCell(cell);
         }
 
-        PdfPTable repartitionContent = createContentDiv(hoursRepartition, repartitionProgrammeTable);
+        PdfPTable repartitionContent = createContentDiv(hoursRepartition, repartitionProgrammeTable, customBaseFont);
         hours.add(repartitionContent);
         return repartitionContent;
     }
@@ -365,7 +391,7 @@ public class PdfController {
         return table;
     }
 
-    private void createITextList(Font contentFont, ArrayList<PdfPTable> contents, Chunk title, ArrayList<String> items) {
+    private void createITextList(Font contentFont, ArrayList<PdfPTable> contents, Chunk title, ArrayList<String> items, BaseFont customBaseFont) {
         List modaliteList = new List(UNORDERED);
         modaliteList.setListSymbol("•");
         modaliteList.setSymbolIndent(listIndent);
@@ -373,15 +399,15 @@ public class PdfController {
             modaliteList.add(new ListItem(new Chunk(u_modality, contentFont)));
         }
 
-        PdfPTable modalityContent = createContentDiv(title, modaliteList);
+        PdfPTable modalityContent = createContentDiv(title, modaliteList, customBaseFont);
         contents.add(modalityContent);
     }
 
-    public PdfPTable createContentDiv(Chunk titreHeader, Element elementBody) {
+    public PdfPTable createContentDiv(Chunk titreHeader, Element elementBody, BaseFont customBaseFont) {
         int headerFontSize = 12;
         int cellPaddingTop = 45;
         float spacingAfter = 10f;
-        Font FONT_HEADER_BLOCK = FontFactory.getFont(baseFont, headerFontSize, Font.BOLD, COL_CONTENT_TEXT);
+        Font FONT_HEADER_BLOCK = new Font(customBaseFont, headerFontSize, Font.BOLD, COL_CONTENT_TEXT);
 
         PdfPTable table = new PdfPTable(specialTableNbRow);
         table.setWidthPercentage(widthPercentage);
@@ -407,9 +433,9 @@ public class PdfController {
         return table;
     }
 
-    private PdfPTable createContent(Chunk containerTitle, ArrayList<PdfPTable> contents)  {
+    private PdfPTable createContent(Chunk containerTitle, ArrayList<PdfPTable> contents, BaseFont customBaseFont)  {
         int containerFontSize = 14;
-        Font FONT_TITRE_CONTAINER = FontFactory.getFont(baseFont, containerFontSize, Font.NORMAL, COL_CONTENT_TEXT);
+        Font FONT_TITRE_CONTAINER = new Font(customBaseFont, containerFontSize, Font.NORMAL, COL_CONTENT_TEXT);
 
         PdfPTable masterTable = new PdfPTable(specialTableNbRow);
         masterTable.setPaddingTop(standardPadding);
