@@ -2,6 +2,7 @@
 
 import { nextTick, onMounted, ref } from 'vue'
 import axios from 'axios'
+import { API_BASE_URL } from '@/config/api.js'
 
 let display_more_area = ref(false)
 let is_modifying = ref(false)
@@ -51,7 +52,7 @@ const attachAccordionListeners = () => {
 }
 
 onMounted(async () => {
-    const response = await axios.get('http://localhost:8080/api/access-rights')
+    const response = await axios.get('\${API_BASE_URL}/api/access-rights')
     teachers.value = response.data.filter((ar) => ar.accessRight === 1)
 
     await nextTick()

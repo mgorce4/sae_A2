@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref, computed, nextTick, watch } from 'vue'
 import axios from 'axios'
+import { API_BASE_URL } from '@/config/api.js'
 import { status } from '../main'
 import { router } from '@/router'
 import { useRoute } from 'vue-router'
@@ -124,11 +125,11 @@ onMounted(async () => {
     }
 
     // Charger les SAE et UE filtrées par path
-    const response = await axios.get(`http://localhost:8080/api/v2/mccc/saes/path/${pathId}`)
+    const response = await axios.get(`${API_BASE_URL}/api/v2/mccc/saes/path/${pathId}`)
     // Filtrer par institution pour sécurité supplémentaire
     saeTableV2.value = response.data.filter((sae) => sae.institutionId === institutionId)
 
-    const responseUe = await axios.get(`http://localhost:8080/api/v2/mccc/ues/path/${pathId}`)
+    const responseUe = await axios.get(`${API_BASE_URL}/api/v2/mccc/ues/path/${pathId}`)
     // Filtrer par institution et trier
     ueTableV2.value = responseUe.data
         .filter((ue) => ue.institutionId === institutionId)
@@ -364,12 +365,12 @@ function saveSae() {
     if (addModifySdSaeModified.value === null) {
         // Create new SAE
         axios
-            .post('http://localhost:8080/api/v2/mccc/saes', saeDTO)
+            .post('\/api/v2/mccc/saes', saeDTO)
             .then(async (response) => {
                 console.log('SAE créée:', response.data)
                 // Reload SAEs
                 const responseReload = await axios.get(
-                    `http://localhost:8080/api/v2/mccc/saes/path/${pathId}`,
+                    `${API_BASE_URL}/api/v2/mccc/saes/path/${pathId}`,
                 )
                 saeTableV2.value = responseReload.data.filter(
                     (sae) => sae.institutionId === institutionId,
@@ -396,12 +397,12 @@ function saveSae() {
     } else {
         // Update existing SAE
         axios
-            .put(`http://localhost:8080/api/v2/mccc/saes/${addModifySdSaeModified.value}`, saeDTO)
+            .put(`${API_BASE_URL}/api/v2/mccc/saes/${addModifySdSaeModified.value}`, saeDTO)
             .then(async (response) => {
                 console.log('SAE modifiée:', response.data)
                 // Reload SAEs
                 const responseReload = await axios.get(
-                    `http://localhost:8080/api/v2/mccc/saes/path/${pathId}`,
+                    `${API_BASE_URL}/api/v2/mccc/saes/path/${pathId}`,
                 )
                 saeTableV2.value = responseReload.data.filter(
                     (sae) => sae.institutionId === institutionId,
@@ -435,14 +436,14 @@ async function deleteSae(saeId) {
     }
 
     try {
-        await axios.delete(`http://localhost:8080/api/v2/mccc/saes/${saeId}`)
+        await axios.delete(`${API_BASE_URL}/api/v2/mccc/saes/${saeId}`)
         console.log('SAE supprimée:', saeId)
 
         // Reload SAEs
         const pathId = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
         const institutionId = parseInt(localStorage.idInstitution)
         const responseReload = await axios.get(
-            `http://localhost:8080/api/v2/mccc/saes/path/${pathId}`,
+            `${API_BASE_URL}/api/v2/mccc/saes/path/${pathId}`,
         )
         saeTableV2.value = responseReload.data.filter((sae) => sae.institutionId === institutionId)
 

@@ -2,6 +2,7 @@
 import { status } from '../main'
 import { onMounted, ref, nextTick, watch, computed } from 'vue'
 import axios from 'axios'
+import { API_BASE_URL } from '@/config/api.js'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -249,7 +250,7 @@ async function modifyResource(resource) {
     // Charger les heures (il faut récupérer depuis l'API car resource n'a pas toutes les données)
     try {
         const hoursResponse = await axios.get(
-            `http://localhost:8080/api/hours-per-student/resource/${resource.resourceId}`,
+            `${API_BASE_URL}/api/hours-per-student/resource/${resource.resourceId}`,
         )
         const hours = hoursResponse.data
 
@@ -285,7 +286,7 @@ async function modifyResource(resource) {
 
         // Charger le professeur principal (maintenant que le DOM est prêt)
         const mainTeacherResponse = await axios.get(
-            `http://localhost:8080/api/main-teachers-for-resource/resource/${resource.resourceId}`,
+            `${API_BASE_URL}/api/main-teachers-for-resource/resource/${resource.resourceId}`,
         )
         if (mainTeacherResponse.data && mainTeacherResponse.data.length > 0) {
             const mainTeacher = mainTeacherResponse.data[0]
@@ -302,7 +303,7 @@ async function modifyResource(resource) {
 
         // Charger les professeurs associés
         const teachersResponse = await axios.get(
-            `http://localhost:8080/api/teachers-for-resource/resource/${resource.resourceId}`,
+            `${API_BASE_URL}/api/teachers-for-resource/resource/${resource.resourceId}`,
         )
         if (teachersResponse.data && teachersResponse.data.length > 0) {
             teachers_list.value = teachersResponse.data
@@ -324,7 +325,7 @@ async function modifyResource(resource) {
 
         // Charger les coefficients UE
         const coeffResponse = await axios.get(
-            `http://localhost:8080/api/ue-coefficients/resource/${resource.resourceId}`,
+            `${API_BASE_URL}/api/ue-coefficients/resource/${resource.resourceId}`,
         )
         if (coeffResponse.data && coeffResponse.data.length > 0) {
             ue_list.value = coeffResponse.data.map((coeff, index) => ({
@@ -363,12 +364,12 @@ async function deleteResource(resourceId) {
         console.log('=== SUPPRESSION RESSOURCE ===', resourceId)
 
         // Le backend gère tout automatiquement
-        await axios.delete(`http://localhost:8080/api/v2/mccc/resources/${resourceId}`)
+        await axios.delete(`${API_BASE_URL}/api/v2/mccc/resources/${resourceId}`)
 
         console.log('✅ Ressource supprimée')
 
         // Reload resource sheets
-        const reloadResponse = await axios.get('http://localhost:8080/api/v2/resource-sheets')
+        const reloadResponse = await axios.get('\${API_BASE_URL}/api/v2/resource-sheets')
         resource_sheets.value = reloadResponse.data
 
         alert('Ressource supprimée avec succès !')
@@ -615,14 +616,14 @@ async function saveResource() {
         if (is_modifying.value && resource_id_to_modify.value) {
             // Update existing resource
             const response = await axios.put(
-                `http://localhost:8080/api/v2/mccc/resources/${resource_id_to_modify.value}`,
+                `${API_BASE_URL}/api/v2/mccc/resources/${resource_id_to_modify.value}`,
                 resourceDTO,
             )
             console.log('✅ Ressource modifiée:', response.data)
         } else {
             // Create new resource
             const response = await axios.post(
-                'http://localhost:8080/api/v2/mccc/resources',
+                '\${API_BASE_URL}/api/v2/mccc/resources',
                 resourceDTO,
             )
             console.log('✅ Ressource créée:', response.data)
@@ -687,15 +688,15 @@ onMounted(async () => {
 
     await Promise.all([
         axios
-            .get('http://localhost:8080/api/v2/resource-sheets')
+            .get('\${API_BASE_URL}/api/v2/resource-sheets')
             .then((response) => (resource_sheets.value = response.data)),
         axios
-            .get(`http://localhost:8080/api/v2/mccc/resources/path/${pathId.value}/semester/${semesterNumber.value}`)
+            .get(`${API_BASE_URL}/api/v2/mccc/resources/path/${pathId.value}/semester/${semesterNumber.value}`)
             .then((response) => (resources.value = response.data)),
         axios
-            .get(`http://localhost:8080/api/v2/mccc/saes/path/${pathId.value}`)
+            .get(`${API_BASE_URL}/api/v2/mccc/saes/path/${pathId.value}`)
             .then((response) => (saes.value = response.data)),
-        axios.get(`http://localhost:8080/api/v2/mccc/ues/path/${pathId.value}`).then((response) => {
+        axios.get(`${API_BASE_URL}/api/v2/mccc/ues/path/${pathId.value}`).then((response) => {
             // Filtrer par institution pour sécurité supplémentaire
             UEs.value = response.data.filter((ue) => ue.institutionId === institutionId.value)
             console.log(
@@ -704,10 +705,10 @@ onMounted(async () => {
             )
         }),
         axios
-            .get('http://localhost:8080/api/access-rights')
+            .get('\${API_BASE_URL}/api/access-rights')
             .then((response) => (access_rights.value = response.data)),
         axios
-            .get('http://localhost:8080/api/paths')
+            .get('\${API_BASE_URL}/api/paths')
             .then((response) => (path.value = response.data)),
     ])
 

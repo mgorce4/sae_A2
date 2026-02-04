@@ -2,6 +2,7 @@
 import { status } from '../main'
 import { onMounted, ref, nextTick, watch } from 'vue'
 import axios from 'axios'
+import { API_BASE_URL } from '@/config/api.js'
 import { router } from '@/router'
 import { useRoute } from 'vue-router'
 
@@ -146,7 +147,7 @@ const reloadUEs = async () => {
         }
 
         // Charger les UEs filtrées par path
-        const response = await axios.get(`http://localhost:8080/api/v2/mccc/ues/path/${pathId}`)
+        const response = await axios.get(`${API_BASE_URL}/api/v2/mccc/ues/path/${pathId}`)
 
         // Filtrer par institution seulement (pas par semestre, c'est fait dans getUESemesterInstitution)
         ueList.value = response.data.filter((ue) => ue.institutionId === institutionId)
@@ -282,7 +283,7 @@ const save = async () => {
             pathId: pathId, // Utiliser pathId directement
         }
 
-        await axios.post('http://localhost:8080/api/v2/mccc/ues', payload)
+        await axios.post(`${API_BASE_URL}/api/v2/mccc/ues`, payload)
         ;[nb_UE, apogee_code, name_comp, comp_level, terms].forEach((f) => (f.value = ''))
         display_more_area.value = false
 
@@ -324,7 +325,7 @@ const updateUE = async (ue) => {
         }
 
         // Utiliser l'endpoint PUT du MCCC Controller
-        await axios.put(`http://localhost:8080/api/v2/mccc/ues/${ue.ueNumber}`, payload)
+        await axios.put(`${API_BASE_URL}/api/v2/mccc/ues/${ue.ueNumber}`, payload)
 
         // Recharger les UEs
         await reloadUEs()
@@ -350,7 +351,7 @@ const del = async (id) => {
         return
     }
     try {
-        await axios.delete(`http://localhost:8080/api/v2/mccc/ues/${id}`)
+        await axios.delete(`${API_BASE_URL}/api/v2/mccc/ues/${id}`)
         await reloadUEs()
 
         attachAccordionListeners()

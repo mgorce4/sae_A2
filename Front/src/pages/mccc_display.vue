@@ -1,5 +1,6 @@
 <script setup>
 import axios from 'axios';
+import { API_BASE_URL } from '@/config/api.js'
 import { ref, nextTick, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router'
 
@@ -102,14 +103,14 @@ const attachAccordionListeners = () => {
 
 onMounted(async () => {
     // Charger les UEs filtrées par path
-    const response = await axios.get(`http://localhost:8080/api/v2/mccc/ues/path/${pathId}`)
+    const response = await axios.get(`${API_BASE_URL}/api/v2/mccc/ues/path/${pathId}`)
     // Filtrer par institution seulement (pas par semestre, c'est fait dans getUESemesterInstitution)
     ueList.value = response.data.filter((ue) => ue.institutionId === institutionId)
 
-    const response2 = await axios.get(`http://localhost:8080/api/v2/mccc/resources/path/${pathId}/semester/${semester}`)
+    const response2 = await axios.get(`${API_BASE_URL}/api/v2/mccc/resources/path/${pathId}/semester/${semester}`)
     resourceList.value = response2.data.filter((resource) => resource.institutionId === institutionId)
 
-    const response3 = await axios.get(`http://localhost:8080/api/v2/mccc/saes/path/${pathId}`)
+    const response3 = await axios.get(`${API_BASE_URL}/api/v2/mccc/saes/path/${pathId}`)
     saeList.value = response3.data.filter((sae) => sae.institutionId === institutionId)
 
     const mccc_table = computed(() => {

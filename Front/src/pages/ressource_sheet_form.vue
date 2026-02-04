@@ -1,5 +1,6 @@
 <script setup>
 import axios from 'axios'
+import { API_BASE_URL } from '@/config/api.js'
 import { status } from '../main'
 import { onMounted, ref, nextTick, computed } from 'vue'
 import { router } from '@/router'
@@ -499,7 +500,7 @@ const saveResourceSheet = async () => {
 
         // Send PUT request
         await axios.put(
-            `http://localhost:8080/api/v2/resource-sheets/${resourceSheetId.value}`,
+            `${API_BASE_URL}/api/v2/resource-sheets/${resourceSheetId.value}`,
             updateDTO,
         )
 
@@ -516,7 +517,7 @@ onMounted(async () => {
     if (resourceSheetId.value) {
         try {
             const response = await axios.get(
-                `http://localhost:8080/api/v2/resource-sheets/${resourceSheetId.value}`,
+                `${API_BASE_URL}/api/v2/resource-sheets/${resourceSheetId.value}`,
             )
             resourceSheetDTO.value = response.data
 

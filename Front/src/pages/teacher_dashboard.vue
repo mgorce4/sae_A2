@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import { API_BASE_URL } from '@/config/api.js'
 
 import { status, institutionLocation } from '../main'
 status.value = 'Professeur'
@@ -24,7 +25,7 @@ onMounted(async () => {
         console.log('userId:', userId, '| userName:', userName)
 
         //all the resources-sheets
-        const response = await axios.get('http://localhost:8080/api/v2/resource-sheets')
+        const response = await axios.get(`${API_BASE_URL}/api/v2/resource-sheets`)
         
         console.log('Total fiches:', response.data.length)
         
