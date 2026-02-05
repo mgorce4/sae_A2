@@ -369,7 +369,7 @@ async function deleteResource(resourceId) {
         console.log('✅ Ressource supprimée')
 
         // Reload resource sheets
-        const reloadResponse = await axios.get('\${API_BASE_URL}/api/v2/resource-sheets')
+        const reloadResponse = await axios.get(`${API_BASE_URL}/api/v2/resource-sheets`)
         resource_sheets.value = reloadResponse.data
 
         alert('Ressource supprimée avec succès !')
@@ -623,7 +623,7 @@ async function saveResource() {
         } else {
             // Create new resource
             const response = await axios.post(
-                '\${API_BASE_URL}/api/v2/mccc/resources',
+                `${API_BASE_URL}/api/v2/mccc/resources`,
                 resourceDTO,
             )
             console.log('✅ Ressource créée:', response.data)
@@ -688,7 +688,7 @@ onMounted(async () => {
 
     await Promise.all([
         axios
-            .get('\${API_BASE_URL}/api/v2/resource-sheets')
+            .get(`${API_BASE_URL}/api/v2/resource-sheets`)
             .then((response) => (resource_sheets.value = response.data)),
         axios
             .get(`${API_BASE_URL}/api/v2/mccc/resources/path/${pathId.value}/semester/${semesterNumber.value}`)
@@ -705,10 +705,10 @@ onMounted(async () => {
             )
         }),
         axios
-            .get('\${API_BASE_URL}/api/access-rights')
+            .get(`${API_BASE_URL}/api/access-rights`)
             .then((response) => (access_rights.value = response.data)),
         axios
-            .get('\${API_BASE_URL}/api/paths')
+            .get(`${API_BASE_URL}/api/paths`)
             .then((response) => (path.value = response.data)),
     ])
 
