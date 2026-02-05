@@ -12,6 +12,7 @@ let title = ref("")
 
 const teacher_name = ref("")
 const teacher_firstname = ref("")
+const teacher_id = ref(0)
 
 const errors = ref({
     name: false,
@@ -120,20 +121,30 @@ const save = async () => {
             },
         }
 
-        let user_response = await axios.post('http://localhost:8080/api/users', payload);
-        [teacher_firstname, teacher_name].forEach((r) => r.value = '')
-        display_more_area.value = false
+        if (!is_modifying.value) {
+            let user_response = await axios.post('http://localhost:8080/api/users', payload);
+            [teacher_firstname, teacher_name].forEach((r) => r.value = '')
+            display_more_area.value = false
 
-        // get the id of the new user
-        let user = user_response.data
-        let id = user.idUser
+            // get the id of the new user
+            let user = user_response.data
+            let id = user.idUser
 
-        const access_right_payload = {
-            accessRight : teacher_acces_right,
-            idUser : id,
+            const access_right_payload = {
+                accessRight : teacher_acces_right,
+                idUser : id,
+            }
+
+            await axios.post('http://localhost:8080/api/access-rights', access_right_payload);
+        } else {
+            const user_id = teacher_id
+
+            await axios.put(`http://localhost:8080/api/users/${user_id.value}`, payload);
+
+            [teacher_firstname, teacher_name].forEach((r) => r.value = '')
+            display_more_area.value = false
+            is_modifying.value = false
         }
-
-        await axios.post('http://localhost:8080/api/access-rights', access_right_payload);
 
         await reloadTeachers()
         attachAccordionListeners()
@@ -154,8 +165,11 @@ async function reloadTeachers() {
     teachers.value = response.data.filter((ar) => ar.accessRight === teacher_acces_right).filter((teacher) => teacher.user.institution.idInstitution === parseInt(localStorage.idInstitution))
 }
 
-function modify() {
+function modify(teacher) {
     title.value = "Modifier un professeur"
+    teacher_name.value = teacher.user.lastname
+    teacher_firstname.value = teacher.user.firstname
+    teacher_id.value = teacher.idUser
 }
 
 const deleteTeacher = async (id) => {
@@ -279,7 +293,7 @@ const deleteTeacher = async (id) => {
                             </div>
 
                             <div style="background-color: transparent; display: flex; padding: 0; margin-bottom: 0; gap: 0.3vw; justify-content: center; align-items: center">
-                                <input class="btn1" type="button" value="Spprimer" v-on:click="deleteTeacher(teacher.idUser)"/>
+                                <input class="btn1" type="button" value="Supprimer" v-on:click="deleteTeacher(teacher.idUser)"/>
                                 <input class="btn1" type="button" value="Modifier" v-on:click="is_modifying = true; display_more_area = true; modify(teacher)" />
                             </div>
                         </div>
