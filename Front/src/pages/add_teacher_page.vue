@@ -64,7 +64,7 @@ const attachAccordionListeners = () => {
 }
 
 onMounted(async () => {
-    const response = await axios.get('\${API_BASE_URL}/api/access-rights')
+    const response = await axios.get(`${API_BASE_URL}/api/access-rights`)
     teachers.value = response.data.filter((ar) => ar.accessRight === 1)
 
     await nextTick()
@@ -123,7 +123,7 @@ const save = async () => {
         }
 
         if (!is_modifying.value) {
-            let user_response = await axios.post('http://localhost:8080/api/users', payload);
+            let user_response = await axios.post(`${API_BASE_URL}/api/users`, payload);
             [teacher_firstname, teacher_name].forEach((r) => r.value = '')
             display_more_area.value = false
 
@@ -136,11 +136,11 @@ const save = async () => {
                 idUser : id,
             }
 
-            await axios.post('http://localhost:8080/api/access-rights', access_right_payload);
+            await axios.post(`${API_BASE_URL}/api/access-rights`, access_right_payload);
         } else {
             const user_id = teacher_id
 
-            await axios.put(`http://localhost:8080/api/users/${user_id.value}`, payload);
+            await axios.put(`${API_BASE_URL}/api/users/${user_id.value}`, payload);
 
             [teacher_firstname, teacher_name].forEach((r) => r.value = '')
             display_more_area.value = false
@@ -162,7 +162,7 @@ const save = async () => {
 }
 
 async function reloadTeachers() {
-    const response = await axios.get('http://localhost:8080/api/access-rights')
+    const response = await axios.get(`${API_BASE_URL}/api/access-rights`)
     teachers.value = response.data.filter((ar) => ar.accessRight === teacher_acces_right).filter((teacher) => teacher.user.institution.idInstitution === parseInt(localStorage.idInstitution))
 }
 
@@ -182,13 +182,13 @@ const deleteTeacher = async (id) => {
         return
     }
     try {
-        let main_resources = await axios.get(`http://localhost:8080/api/main-teachers-for-resource/user/${id}`)
+        let main_resources = await axios.get(`${API_BASE_URL}/api/main-teachers-for-resource/user/${id}`)
         let main_resources_data = main_resources.data
 
         if (main_resources_data.length > 0) {
 
             for (let i = 0; i < main_resources_data.length; i++) {
-                await axios.delete(`http://localhost:8080/api/main-teachers-for-resource/user/${id}/resource/${main_resources_data[i].idResource}`)
+                await axios.delete(`${API_BASE_URL}/api/main-teachers-for-resource/user/${id}/resource/${main_resources_data[i].idResource}`)
             }
 
             for (let i = 0; i < main_resources_data.length; i++) {
@@ -196,13 +196,13 @@ const deleteTeacher = async (id) => {
             }
         }
 
-        let normal_resources = await axios.get(`http://localhost:8080/api/teachers-for-resource/user/${id}`)
+        let normal_resources = await axios.get(`${API_BASE_URL}/api/teachers-for-resource/user/${id}`)
         let normal_resources_data = normal_resources.data
 
         if (normal_resources_data.length > 0) {
 
             for (let i = 0; i < normal_resources_data.length; i++) {
-                await axios.delete(`http://localhost:8080/api/teachers-for-resource/user/${id}/resource/${normal_resources_data[i].idResource}`)
+                await axios.delete(`${API_BASE_URL}/api/teachers-for-resource/user/${id}/resource/${normal_resources_data[i].idResource}`)
             }
 
             for (let i = 0; i < normal_resources_data.length; i++) {
@@ -210,8 +210,8 @@ const deleteTeacher = async (id) => {
             }
         }
 
-        await axios.delete(`http://localhost:8080/api/users/${id}`)
-        await axios.delete(`http://localhost:8080/api/access-rights/1/${id}`)
+        await axios.delete(`${API_BASE_URL}/api/users/${id}`)
+        await axios.delete(`${API_BASE_URL}/api/access-rights/1/${id}`)
 
         await reloadTeachers()
 
