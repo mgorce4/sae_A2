@@ -1071,7 +1071,7 @@ function toggleShowPopUp() {
 
                         <div id="sae_container">
                             <p>SAE liées :</p>
-                            <div class="component">
+                            <div class="component" id="sae_list">
                                 <div
                                     v-for="sae in saes"
                                     :key="sae.saeId"
@@ -1081,7 +1081,7 @@ function toggleShowPopUp() {
                                         <input type="checkbox" v-model="sae.checked" />
                                         <span class="slider"></span>
                                     </label>
-                                    <label>{{ sae.label }}</label>
+                                    <label style="width: 10vw">{{ sae.label }}</label>
                                 </div>
                             </div>
                         </div>
@@ -1816,6 +1816,12 @@ input[readonly].input {
     color: white;
     font-size: 1.1vw;
     word-break: break-all;
+}
+
+#sae_list {
+    display: flex;
+    max-width: 35vw;
+    flex-wrap: wrap;
 }
 </style>
 

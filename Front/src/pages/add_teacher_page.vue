@@ -4,25 +4,37 @@ import { nextTick, onMounted, ref } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
 
+const teacher_acces_right = 1
+
 let display_more_area = ref(false)
 let is_modifying = ref(false)
 
 let title = ref("")
+
+const teacher_name = ref("")
+const teacher_firstname = ref("")
+const teacher_id = ref(0)
+
+const errors = ref({
+    name: false,
+    firstname: false,
+})
+
+const error_messages = ref({
+    name: "Le nom doit être renseigné",
+    firstname: "Le prenom doit être renseigné",
+})
 
 const teachers = ref([])
 
 const attachAccordionListeners = () => {
     nextTick(() => {
         const acc = document.getElementsByClassName('accordion_teacher')
-        console.log(acc.value)
         for (let i = 0; i < acc.length; i++) {
 
             if (acc[i].getAttribute('data-accordion') === 'add-modify-teacher') {
                 acc[i].addEventListener('click', function () {
-                    console.log(this)
-                    console.log("1", this.classList)
                     this.classList.toggle('active')
-                    console.log("2", this.classList)
                     const panel = this.nextElementSibling
                     if (panel.style.maxHeight) {
                         panel.style.maxHeight = null
@@ -63,8 +75,150 @@ function addTeacher() {
     title.value = "Ajouter un professeur"
 }
 
-function modify() {
+function getUsername() {
+    return (teacher_firstname.value.charAt(0) + teacher_name.value).toLowerCase()
+}
+
+const save = async () => {
+
+    // reste all errors
+    errors.value = {
+        name: false,
+        firstname: false,
+    }
+
+    let hasError = false
+
+    if (teacher_name.value === "") {
+        errors.value.name = true
+        hasError = true
+    }
+
+    if (teacher_firstname.value === "") {
+        errors.value.firstname = true
+        hasError = true
+    }
+
+    if (hasError) {
+        return
+    }
+
+    try {
+        // is user logged in
+        if (!localStorage.idUser) {
+            alert('Erreur : Veuillez vous reconnecter.')
+            return
+        }
+
+        const payload = {
+            firstname : teacher_firstname.value,
+            lastname : teacher_name.value,
+            username : getUsername(),
+            password : getUsername() + '123',
+            institution : {
+                idInstitution : parseInt(localStorage.idInstitution),
+                name : localStorage.institutionName,
+                location : localStorage.institutionLocation,
+            },
+        }
+
+        if (!is_modifying.value) {
+            let user_response = await axios.post('http://localhost:8080/api/users', payload);
+            [teacher_firstname, teacher_name].forEach((r) => r.value = '')
+            display_more_area.value = false
+
+            // get the id of the new user
+            let user = user_response.data
+            let id = user.idUser
+
+            const access_right_payload = {
+                accessRight : teacher_acces_right,
+                idUser : id,
+            }
+
+            await axios.post('http://localhost:8080/api/access-rights', access_right_payload);
+        } else {
+            const user_id = teacher_id
+
+            await axios.put(`http://localhost:8080/api/users/${user_id.value}`, payload);
+
+            [teacher_firstname, teacher_name].forEach((r) => r.value = '')
+            display_more_area.value = false
+            is_modifying.value = false
+        }
+
+        await reloadTeachers()
+        attachAccordionListeners()
+
+        console.log('professeur sauvegardée avec succès')
+    } catch (error) {
+        console.error('Erreur lors de la sauvegarde:', error)
+        if (error.response) {
+            console.error("Détails de l'erreur:", error.response.data)
+            console.error('Status:', error.response.status)
+        }
+        alert('Erreur lors de la sauvegarde. Consultez la console pour plus de détails.')
+    }
+}
+
+async function reloadTeachers() {
+    const response = await axios.get('http://localhost:8080/api/access-rights')
+    teachers.value = response.data.filter((ar) => ar.accessRight === teacher_acces_right).filter((teacher) => teacher.user.institution.idInstitution === parseInt(localStorage.idInstitution))
+}
+
+function modify(teacher) {
     title.value = "Modifier un professeur"
+    teacher_name.value = teacher.user.lastname
+    teacher_firstname.value = teacher.user.firstname
+    teacher_id.value = teacher.idUser
+}
+
+const deleteTeacher = async (id) => {
+    if (
+        !confirm(
+            'Cette action est irréversible (pour le moment), continuer à vos risques et périls.',
+        )
+    ) {
+        return
+    }
+    try {
+        let main_resources = await axios.get(`http://localhost:8080/api/main-teachers-for-resource/user/${id}`)
+        let main_resources_data = main_resources.data
+
+        if (main_resources_data.length > 0) {
+
+            for (let i = 0; i < main_resources_data.length; i++) {
+                await axios.delete(`http://localhost:8080/api/main-teachers-for-resource/user/${id}/resource/${main_resources_data[i].idResource}`)
+            }
+
+            for (let i = 0; i < main_resources_data.length; i++) {
+                alert('Vous venez de supprimer un professeur référent de la ressource' + main_resources_data[i].resourceLabel + '. Veuillez rajouter un nouveau professeur référent pour cette ressource.')
+            }
+        }
+
+        let normal_resources = await axios.get(`http://localhost:8080/api/teachers-for-resource/user/${id}`)
+        let normal_resources_data = normal_resources.data
+
+        if (normal_resources_data.length > 0) {
+
+            for (let i = 0; i < normal_resources_data.length; i++) {
+                await axios.delete(`http://localhost:8080/api/teachers-for-resource/user/${id}/resource/${normal_resources_data[i].idResource}`)
+            }
+
+            for (let i = 0; i < normal_resources_data.length; i++) {
+                alert('Vous venez de supprimer un professeur enseignant de la ressource' + normal_resources_data[i].resourceLabel + '. Si besoin, veuillez rajouter un nouveau professeur enseignant pour cette ressource si nécessaire.')
+            }
+        }
+
+        await axios.delete(`http://localhost:8080/api/users/${id}`)
+        await axios.delete(`http://localhost:8080/api/access-rights/1/${id}`)
+
+        await reloadTeachers()
+
+        attachAccordionListeners()
+    } catch (error) {
+        console.error('Erreur lors de la suppression', error)
+    }
 }
 
 </script>
@@ -96,15 +250,19 @@ function modify() {
                         <div style="margin-left: 15vw; padding-top: 1vw">
                             <div class="sub_div_panel">
                                 <label>Nom : </label>
-                                <input type="text" class="input">
+                                <input type="text" class="input" v-model="teacher_name">
                                 <input style="margin-left: 11.5vw" class="btn1" type="reset" value="Annuler" v-on:click="display_more_area = !display_more_area" />
                             </div>
 
+                            <p v-if="errors.name" class="error_message" style="text-align: left">{{ error_messages.name }}</p>
+
                             <div class="sub_div_panel">
                                 <label>Prenom : </label>
-                                <input type="text" class="input">
-                                <input style="margin-left: 10vw" id="save" class="btn1" type="button" value="Sauvegarder" />
+                                <input type="text" class="input" v-model="teacher_firstname">
+                                <input style="margin-left: 10vw" id="save" class="btn1" type="button" value="Sauvegarder" v-on:click="save()" />
                             </div>
+
+                            <p v-if="errors.firstname" class="error_message" style="text-align: left">{{ error_messages.firstname }}</p>
                         </div>
 
                     </div>
@@ -136,7 +294,7 @@ function modify() {
                             </div>
 
                             <div style="background-color: transparent; display: flex; padding: 0; margin-bottom: 0; gap: 0.3vw; justify-content: center; align-items: center">
-                                <input class="btn1" type="button" value="Spprimer"/>
+                                <input class="btn1" type="button" value="Supprimer" v-on:click="deleteTeacher(teacher.idUser)"/>
                                 <input class="btn1" type="button" value="Modifier" v-on:click="is_modifying = true; display_more_area = true; modify(teacher)" />
                             </div>
                         </div>
