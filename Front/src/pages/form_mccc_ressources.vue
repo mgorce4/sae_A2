@@ -54,15 +54,14 @@ watch(checkboxAlternanceStatus, (newValue) => {
 })
 
 // Watchers to sync SAE switches with resource being modified
+// Ne pas observer saes.value pour éviter la boucle infinie
 watch([
-    () => saes.value,
     () => resource_id_to_modify.value,
     () => is_modifying.value,
-    () => resources.value
-], ([, resourceId, isModifying, resourcesVal]) => {
+], ([resourceId, isModifying]) => {
     if (!isModifying || !resourceId) return;
     // Find the resource being modified
-    const resource = resourcesVal.find(r => r.resourceId === resourceId);
+    const resource = resources.value.find(r => r.resourceId === resourceId);
     if (!resource) return;
     // Debug log
     console.log('[SYNC SAE CHECKED] resource.linkedSaes:', resource.linkedSaes);
@@ -82,7 +81,7 @@ watch([
         return { ...sae, checked };
     });
     console.log('[SYNC SAE CHECKED] saes.value after:', JSON.parse(JSON.stringify(saes.value)));
-}, { immediate: true });
+});
 
 const pathId = ref(null)
 const semesterNumber = ref(null)
