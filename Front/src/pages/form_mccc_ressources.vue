@@ -447,15 +447,8 @@ async function saveResource() {
     }
 
     // Validate UE coefficients
-    const ues = document.querySelectorAll('#ue_select')
-    const coefs = document.querySelectorAll('#coefficient')
-
-    // Update ue_list with current values
-    for (let i = 0; i < ue_list.value.length; i++) {
-        ue_list.value[i].ue = ues[i].value
-        ue_list.value[i].coefficient = coefs[i].value
-    }
-
+    // Les valeurs sont maintenant gérées automatiquement par v-model
+    
     // Check if at least one UE is selected
     let hasValidUE = false
     for (let i = 0; i < ue_list.value.length; i++) {
@@ -1195,12 +1188,14 @@ function toggleShowPopUp() {
                                             class="component ue_div"
                                             style="margin-bottom: 1vw; margin-left: 5.9vw"
                                         >
-                                            <select id="ue_select" class="input">
+                                            <select id="ue_select" class="input" v-model="ue.ue">
+                                                <option value="">Sélectionner une UE</option>
                                                 <option
-                                                    v-for="ue in getUEsByInstitution()"
-                                                    :key="ue.ueNumber"
+                                                    v-for="availableUe in getUEsByInstitution()"
+                                                    :key="availableUe.ueNumber"
+                                                    :value="availableUe.label"
                                                 >
-                                                    {{ ue.label }}
+                                                    {{ availableUe.label }}
                                                 </option>
                                             </select>
                                             <button class="button_more" id="button_ue_minus">
