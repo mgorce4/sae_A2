@@ -152,6 +152,11 @@ const reloadUEs = async () => {
         // Filtrer par institution seulement (pas par semestre, c'est fait dans getUESemesterInstitution)
         ueList.value = response.data.filter((ue) => ue.institutionId === institutionId)
 
+        // filter the resources by alphabetical order with sort and localeCompare
+        // localeCompare return a negative number if a is before b, a positive number if a is after b and 0 if they are equal
+        // the number returned by localeCompare is used by sort to order the elements of the array
+        ueList.value.sort((a, b) => a.label.localeCompare(b.label))
+
         console.log('=== RELOAD UEs ===')
         console.log(
             `UEs chargées pour institution ${institutionId} et path ${pathId}:`,
@@ -176,13 +181,13 @@ onMounted(async () => {
     console.log('=== FORM MCCC UE - ONMOUNTED ===')
     console.log('route.query:', route.query)
     console.log('localStorage.pathId:', localStorage.pathId)
-    
+
     // S'assurer que le pathId est dans localStorage si disponible dans query
     if (route.query.pathId && !localStorage.pathId) {
         localStorage.pathId = route.query.pathId
         console.log('PathId stocké dans localStorage:', route.query.pathId)
     }
-    
+
     await reloadUEs()
     attachAccordionListeners()
 })
