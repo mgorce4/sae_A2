@@ -403,7 +403,6 @@ function toggleShowPopUp() {
     width: 30%;
     display: flex;
     flex-direction: column;
-    margin-top: 5vw;
 }
 
 /* -- MCCC -- */
