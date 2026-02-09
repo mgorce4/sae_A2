@@ -15,8 +15,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
+import static iut.unilim.fr.back.controllerBack.DataEncryptionController.encodeData;
 import static iut.unilim.fr.back.controllerBack.LogController.writeInCsvLogs;
 
 @Service
@@ -73,7 +75,7 @@ public class TeacherImportCsvService {
                         teacher.setLastname(name);
                         teacher.setFirstname(firstName);
                         teacher.setUsername(username);
-                        teacher.setPassword(username + "1234");
+                        teacher.setPassword(encodeData(username, "unilim"));
 
 
                         teacher.setInstitution(institution);
@@ -113,6 +115,8 @@ public class TeacherImportCsvService {
                     accessRightRepository.saveAll(accessRightsToSave);
                     writeInCsvLogs("{User} add access right ( teacher ) for " +  accessRightsToSave.size() + " users.");
                 }
+            } catch (NoSuchAlgorithmException e) {
+                writeInCsvLogs("{User} attempt to import teachers from a csv file, but an error occurred:"+ e.getMessage());
             }
 
             if (!teachersToSave.isEmpty()) {
