@@ -15,9 +15,11 @@ import ResourceSheetDisplay from '../pages/resource_sheet_display.vue'
 import ControlCenter from '../pages/control_center.vue'
 import HelpCenter from '../pages/help_center.vue'
 import addTeacherPage from '../pages/add_teacher_page.vue'
+import SyncadiaPresentation from '../pages/Syncadia_presentation_page.vue'
 
 const routes = [
   { path: '/', component: Login },
+  {path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound},
   { path: '/dashboard-administration', component: AdministrationDashboard },
   { path: '/teacher-dashboard', component: DsbrProf },
   { path: '/mccc-select-form', component: MCCCSelectForm },
@@ -31,7 +33,7 @@ const routes = [
   { path: '/control-center', component: ControlCenter },
   { path: '/help-center', component: HelpCenter },
   { path: '/add-teacher-page', component: addTeacherPage },
-  { path: '/:pathMatch(.*)*', component: NotFound },
+  { path: '/syncadia-presentation', component: SyncadiaPresentation },
 ]
 
 export const router = createRouter({
