@@ -129,6 +129,11 @@ onMounted(async () => {
     // Filtrer par institution pour sécurité supplémentaire
     saeTableV2.value = response.data.filter((sae) => sae.institutionId === institutionId)
 
+    // filter the resources by alphabetical order with sort and localeCompare
+    // localeCompare return a negative number if a is before b, a positive number if a is after b and 0 if they are equal
+    // the number returned by localeCompare is used by sort to order the elements of the array
+    saeTableV2.value.sort((a, b) => a.label.localeCompare(b.label))
+
     const responseUe = await axios.get(`${API_BASE_URL}/api/v2/mccc/ues/path/${pathId}`)
     // Filtrer par institution et trier
     ueTableV2.value = responseUe.data
