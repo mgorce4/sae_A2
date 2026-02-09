@@ -50,7 +50,7 @@ const handleDisconnect = () => {
                     />
                 </a>
                 <div id="dividing_line"></div>
-                <p id="app_name">Syncadia</p>
+                <p id="app_name" @click="router.push('/syncadia-presentation')" style="cursor: pointer">Syncadia</p>
             </div>
             <div v-show="status" id="user_name_and_pp" class="container-fluid">
                 <p v-if="userName" id="user_name">{{ userName }}</p>
