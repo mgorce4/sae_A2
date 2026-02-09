@@ -270,11 +270,10 @@ function toggleShowPopUp() {
                 <button class="btn1" @click="saveDeliveryDates">Valider</button>
             </div>
 
-            <!-- work in progress
             <RouterLink class="button" to="/control-center">
                 Centre de controle
             </RouterLink>
-            -->
+
         </div>
 
         <div id="return_sheets_div">

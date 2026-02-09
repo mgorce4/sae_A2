@@ -447,7 +447,7 @@ async function saveResource() {
 
     // Validate UE coefficients
     // Les valeurs sont maintenant gérées automatiquement par v-model
-    
+
     // Check if at least one UE is selected
     let hasValidUE = false
     for (let i = 0; i < ue_list.value.length; i++) {
@@ -883,7 +883,11 @@ function getUEsByInstitution() {
 }
 
 function getResourcesBySemester() {
-    return resources.value
+
+    // filter the resources by alphabetical order with sort and localeCompare
+    // localeCompare return a negative number if a is before b, a positive number if a is after b and 0 if they are equal
+    // the number returned by localeCompare is used by sort to order the elements of the array
+    return resources.value.sort((a, b) => a.label.localeCompare(b.label))
 }
 
 function getUEFromResource(resource) {
