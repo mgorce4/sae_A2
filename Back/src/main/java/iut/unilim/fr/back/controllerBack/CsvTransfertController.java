@@ -103,14 +103,14 @@ public class CsvTransfertController {
         try {
             Optional<UserSyncadia> user = userSyncadiaRepository.findByUsername(currentUser);
             if (user.isEmpty()) {
-                writeInCsvLogs(user + "attempt to import a CSV file, but an error as occured because he was not found.");
+                writeInCsvLogs(user + "attempt to import a CSV file, but an error as occurred because he was not found.");
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("An error as occured: User not found");
+                        .body("An error as occurred: User not found");
             } else {
                 Institution inst = user.get().getInstitution();
                 Long institutionId = inst.getIdInstitution();
                 teacherImportCsvService.importTeachers(file, institutionId, currentUser);
-                return ResponseEntity.ok("Import RÉUSSI (Mode Bypass Sécurité - Institution " + institutionId + ")");
+                return ResponseEntity.ok("Import successfully");
             }
 
 
