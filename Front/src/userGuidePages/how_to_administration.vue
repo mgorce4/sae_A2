@@ -256,7 +256,7 @@ onMounted(() => {
                             <option :value="'selection_parcours'">Sélectionner un parcours</option>
                             <option :value="'Parcours 1'">Parcours 1</option>
                             <option :value="'Parcours 2'">Parcours 2</option>
-                            </select>  
+                            </select>
                         </div>
 
                         <div id="semesters_div">
@@ -287,6 +287,48 @@ onMounted(() => {
                         Vous pourrez ensuite cliquer sur le bouton <span><img src="/media/download.webp" width="35" height="35" alt="download"/></span> pour télecharger toutes les fiches sélectionnées.<br>
                     </p>
                 </div>
+
+                <div>
+                    Si les fiches ressources sont remplies par les professeurs, elles seront colorées en bleu clair, mais si elles ne sont pas encore remplies, elles seront colorées en bleu foncé.
+
+                    <p>Cette fiche ressource est remplie : </p>
+
+                    <div class="ressource" style="width: 18vw; margin-top: 1vw">
+                        <p class="ressource_label">R1.01</p>
+                        <div style="gap: 5px">
+
+                            <button
+                                class="btn1"
+                                style="width: 5vw"
+                            >
+                                Visualiser
+                            </button>
+                            <input
+                                type="checkbox"
+                            />
+                        </div>
+                    </div>
+
+                    <p>Cette fiche ressource n'est pas remplie : </p>
+
+                    <div class="ressource" style="width: 18vw; margin-top: 1vw; background-color: var(--sub-scrollbar-color">
+                        <p class="ressource_label">R1.02</p>
+                        <div style="gap: 5px">
+
+                            <button
+                                class="btn1"
+                                style="width: 5vw"
+                            >
+                                Visualiser
+                            </button>
+                            <input
+                                type="checkbox"
+                            />
+                        </div>
+                    </div>
+
+                </div>
+
             </div>
         </div>
     </div>

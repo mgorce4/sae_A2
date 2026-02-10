@@ -322,31 +322,57 @@ function toggleShowPopUp() {
                     Aucune fiche rendue pour ce semestre.
                 </p>
 
-                <div
-                    v-else
-                    class="ressource"
-                    v-for="sheet in getResourcesForSemester(selected_semester_sheets)"
-                    :key="sheet.id"
-                >
-                    <p class="ressource_label">{{ sheet.resourceLabel }}</p>
-                    <div style="gap: 5px">
-                        <button
-                            class="btn1"
-                            style="width: 5vw"
-                            @click="
+                <div v-else v-for="sheet in getResourcesForSemester(selected_semester_sheets)" :key="sheet.id">
+                    <div
+                        v-if="sheet.hoursTeacher === null || sheet.hoursTeacher === undifinded"
+                        class="ressource"
+                        style="background-color: var(--sub-scrollbar-color)"
+                    >
+                        <p class="ressource_label">{{ sheet.resourceLabel }}</p>
+                        <div style="gap: 5px">
+                            <button
+                                class="btn1"
+                                style="width: 5vw"
+                                @click="
                                 goToRessourceSheetDisplay(
                                     '/resource-sheet-display',
                                     sheet.resourceLabel,
                                 )
                             "
-                        >
-                            Visualiser
-                        </button>
-                        <input
-                            type="checkbox"
-                            :checked="isSheetSelected(sheet.id)"
-                            @change="toggleSheetSelection(sheet.id)"
-                        />
+                            >
+                                Visualiser
+                            </button>
+                            <input
+                                type="checkbox"
+                                :checked="isSheetSelected(sheet.id)"
+                                @change="toggleSheetSelection(sheet.id)"
+                            />
+                        </div>
+                    </div>
+
+                    <div v-else class="ressource">
+
+                        <p class="ressource_label">{{ sheet.resourceLabel }}</p>
+                        <div style="gap: 5px">
+
+                            <button
+                                class="btn1"
+                                style="width: 5vw"
+                                @click="
+                                goToRessourceSheetDisplay(
+                                    '/resource-sheet-display',
+                                    sheet.resourceLabel,
+                                )
+                            "
+                            >
+                                Visualiser
+                            </button>
+                            <input
+                                type="checkbox"
+                                :checked="isSheetSelected(sheet.id)"
+                                @change="toggleSheetSelection(sheet.id)"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
