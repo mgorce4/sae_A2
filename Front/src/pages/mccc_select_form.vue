@@ -144,7 +144,9 @@ function toggleShowPopUp() {
                         <button v-show="hasResourceInSemester(2*index+index2+1) || hasUEInSemester(2*index+index2+1)" class="btn_form_acces" @click="goToRessourceSheet('/form-mccc-ressources', (2*index+index2+1), pathId)">Ressource</button>
                         <button v-show="hasSAEInSemester(2*index+index2+1) || hasUEInSemester(2*index+index2+1)" class="btn_form_acces" @click="goToRessourceSheet('/form-mccc-sae', (2*index+index2+1), pathId)">SAÉ</button>
                     </div>
-                    <button v-show="btn && hasUEInSemester(2*index+index2+1)" class="btn_form_acces btn_display_mccc" @click="goToRessourceSheet('/mccc-display', (2*index+index2+1), pathId)">Affichage des MCCC</button>
+                    <button v-show="btn && hasUEInSemester(2*index+index2+1)" class="btn_form_acces btn_display_mccc" @click="goToRessourceSheet('/mccc-display', (2*index+index2+1), pathId)">
+                        Affichage des MCCC
+                    </button>
                 </div>
             </div>
         </div>

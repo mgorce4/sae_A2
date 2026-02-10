@@ -1,7 +1,6 @@
 <script setup>
 import axios from 'axios';
-import { API_BASE_URL } from '@/config/api.js'
-import { ref, nextTick, onMounted, computed } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -20,19 +19,31 @@ const selectedUeIntitule = ref(null)
 const selectedUeCompetenceLevel = ref(null)
 const selectedUeLinkedResources = ref([])
 const selectedUeLinkedSaes = ref([])
+/*
+function initTrianglesBoolean() {
+    ueSelected.value = []
+    for (let i = 0; i < ueList.value.length(); i++) {
+        console.log(i)
+    }
+}*/
 
-function selectUe(ue) {
+function selectUe(ue, index) {
+    console.log("index : ", index)
     ueSelected.value = true
     selectedUeId.value = ue.ueNumber
-    selectedUeCodeApogee.value = ue.euApogeeCode
     selectedUeIntitule.value = ue.label
+    console.log("===================== UE "+ selectedUeIntitule.value +" IIIIIIIIIIIId : " + selectedUeId.value + "============================================")
+    selectedUeCodeApogee.value = ue.euApogeeCode
+    
     selectedUeCompetenceLevel.value = ue.competenceLevel
 
+    selectedUeLinkedResources.value = []
     selectedUeLinkedResources.value = resourceList.value.filter(
-        (resource) => resource.ueCoefficients && resource.ueCoefficients.some(
+        (resource) => resource.ueCoefficients.some(
             (coef) => coef.ueId === selectedUeId.value
         )
     )
+    selectedUeLinkedSaes.value = []
     selectedUeLinkedSaes.value = saeList.value.filter(
         (sae) => sae.ueCoefficients && sae.ueCoefficients.some(
             (coef) => coef.ueId === selectedUeId.value
@@ -41,7 +52,30 @@ function selectUe(ue) {
     console.log('Selected UE:', ue)
     console.log('Linked Resources:', selectedUeLinkedResources.value)
     console.log('Linked SAEs:', selectedUeLinkedSaes.value)
-    attachAccordionListeners()
+}
+
+function getCoefFromResource(resource) {
+    let coefs = []
+
+    resource.ueCoefficients.map((ue) => {
+        coefs.push(ue.coefficient)
+    })
+
+    return coefs
+}
+
+function getOtherUeLinked(linkedUe) {
+    console.log('===Finding other UEs linked to the selected UE:', selectedUeIntitule.value, '===')
+    const result = []
+    console.log('Getting other UEs linked to:', linkedUe)
+    for (const ue of linkedUe) {
+        if (ue.ueLabel != selectedUeIntitule.value && !result.some(u => u.ueLabel === ue.ueLabel)) {
+            console.log('Adding other UE:', ue)
+            result.push(ue)
+        }
+    }
+    console.log('Other UEs linked:', result)
+    return result
 }
 
 const semester = parseInt(route.query.id)
@@ -80,52 +114,44 @@ function getUESemesterInstitution() {
 }
 
 const attachAccordionListeners = () => {
-    nextTick(() => {
-        const acc = document.getElementsByClassName('accordion_mccc')
-        for (let i = 0; i < acc.length; i++) {
-            const newElement = acc[i].cloneNode(true)
-            acc[i].parentNode.replaceChild(newElement, acc[i])
+    const acc = document.getElementsByClassName('accordion_mccc')
+    for (let i = 0; i < acc.length; i++) {
+        const newElement = acc[i].cloneNode(true)
+        acc[i].parentNode.replaceChild(newElement, acc[i])
 
-            newElement.addEventListener('click', function () {
-                this.classList.toggle('active')
-                const panel = this.nextElementSibling
-                if (panel.style.maxHeight) {
-                    panel.style.maxHeight = null
-                } else {
-                    // Calculate the actual height including error messages
-                    panel.style.maxHeight = panel.scrollHeight + 'vw'
-                    panel.style.padding = '0vw 0vw 0vw'
-                }
-            })
-        }
-    })
+        newElement.addEventListener('click', function () {
+            this.classList.toggle('active')
+            const panel = this.nextElementSibling
+            if (panel.style.maxHeight) {
+                panel.style.maxHeight = null
+            } else {
+                panel.style.maxHeight = panel.scrollHeight + 'vw'
+                panel.style.padding = '0'
+            }
+        })
+    }
 }
+
+// Attacher les listeners après que le DOM soit mis à jour
+watch(
+    [selectedUeLinkedResources, selectedUeLinkedSaes],
+    () => {
+        attachAccordionListeners()
+    },
+    { flush: 'post' }
+)
 
 onMounted(async () => {
     // Charger les UEs filtrées par path
-    const response = await axios.get(`${API_BASE_URL}/api/v2/mccc/ues/path/${pathId}`)
+    const response = await axios.get(`http://localhost:8080/api/v2/mccc/ues/path/${pathId}`)
     // Filtrer par institution seulement (pas par semestre, c'est fait dans getUESemesterInstitution)
     ueList.value = response.data.filter((ue) => ue.institutionId === institutionId)
 
-    const response2 = await axios.get(`${API_BASE_URL}/api/v2/mccc/resources/path/${pathId}/semester/${semester}`)
+    const response2 = await axios.get(`http://localhost:8080/api/v2/mccc/resources/path/${pathId}/semester/${semester}`)
     resourceList.value = response2.data.filter((resource) => resource.institutionId === institutionId)
 
-    const response3 = await axios.get(`${API_BASE_URL}/api/v2/mccc/saes/path/${pathId}`)
+    const response3 = await axios.get(`http://localhost:8080/api/v2/mccc/saes/path/${pathId}`)
     saeList.value = response3.data.filter((sae) => sae.institutionId === institutionId)
-
-    const mccc_table = computed(() => {
-        return users.value
-            .map((user) => {
-                const userRights = access_rights.value.filter((ar) => ar.idUser === user.idUser)
-                return {
-                    ...user,
-                    accessRights: userRights,
-                }
-            })
-            .filter((user) => user.accessRights.length > 0)
-    })
-
-    attachAccordionListeners()
 })
 
 </script>
@@ -137,24 +163,33 @@ onMounted(async () => {
             <p>Retour</p>
         </div>
         <div class="container-fluid" style="gap: 0px; width: 100%; align-items: start;">
-            <div class="container-fluid cfh" style="width: fit-content;">
+            <div class="container-fluid cfh" style="width: fit-content; align-items: flex-start;">
+                <div class="container-fluid" v-show="selectedUeId">
+                    <div class="ue_selection_button">{{ selectedUeIntitule }}</div>
+                    <div class="display_mccc_triangle"></div>
+                </div>
+                <div style="background-color: var(--header-color); width: 10vw; height: 0.3vw; padding: 0; margin: 1vw 0; align-self: flex-start;" v-show="selectedUeId"></div>
                 <div v-for="(value, index) in getUESemesterInstitution()" :key="index" v-show="resourceList.length >= 1" class="container-fluid" style="gap: 0;">
-                    <div class="ue_selection_button" @click="selectUe(value)">{{ value.label }}</div>
-                    <div class="display_mccc_triangle" v-show="ueSelected"></div>
-                    <div style="width: 2.5vw;" v-show="!ueSelected"></div>
+                    <div class="ue_selection_button" :class="{ 'ue_selected': selectedUeId === value.ueNumber }" @click="selectUe(value, index)">{{ value.label }}</div>
                 </div>
             </div>
 
             <div class="background_form_mccc" style="padding: 2vw; width: 100%;">
+                <!-- Display of selected UE and its linked resources and SAE -->
                 <p>Code apogee : {{ selectedUeCodeApogee }}</p>
                 <p>Intitulé de la compétence : {{ selectedUeIntitule }}</p>
                 <p>Niveau de la compétence : {{ selectedUeCompetenceLevel }}</p>
                 <div v-for="(value, index) in selectedUeLinkedResources" :key="index">
+                    <!-- Display of linked resources -->
                     <a class="dark_bar accordion_mccc" data-accordion="add-modify-resource">{{ value.label }} : {{ value.name }}</a>
                     <div class="panel_form_mccc container-fluid cfh">
                         <div class="container-fluid">
                             <p>Code apogee : </p>
                             <p class="mccc_input">{{ value.apogeeCode }}</p>
+                        </div>
+                        <div class="container-fluid">
+                            <p>Modalité : </p>
+                            <p class="mccc_input">{{ value.termsCode }}</p>
                         </div>
                         <div class="container-fluid">
                             <p>Nombre d'heures (initiale) : </p>
@@ -182,11 +217,30 @@ onMounted(async () => {
                         </div>
                         <div class="container-fluid">
                             <p>Autres UE reliées : </p>
-                            <p class="mccc_input">{{ value.apogeeCode }}</p>
+                            <table class="ueCoefficient">
+                                <tr>
+                                    <td>U.E. affectée(s) :</td>
+                                    <th class="display_coef_label" v-for="(labelUe, index2) in getOtherUeLinked(value.ueCoefficients)" v-bind:key="index2">
+                                        {{ labelUe.ueLabel }}
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td>Coefficient :</td>
+                                    <td class="display_coef_ue" v-for="(coefUe, index45) in getCoefFromResource(value)" v-bind:key="index45">
+                                        {{ coefUe }}
+                                    </td>
+                                    <!--
+                                    <td class="display_coef_ue" v-for="(coefUe, index3) in getOtherUeLinked(value.ueCoefficients)" v-bind:key="index3">
+                                         {{ coefUe.coefficient }}
+                                    </td>
+                                    -->
+                                </tr>
+                            </table>
                         </div>
                     </div>
                 </div>
                 <div v-for="(value, index) in selectedUeLinkedSaes" :key="index">
+                    <!-- Display of linked SAE -->
                     <a class="dark_bar accordion_mccc" data-accordion="add-modify-sae">{{ value.label }} : {{ value.name }}</a>
                     <div class="panel_form_mccc container-fluid">
                         <div class="container-fluid">
