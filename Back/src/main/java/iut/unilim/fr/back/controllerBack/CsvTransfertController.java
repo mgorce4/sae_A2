@@ -2,6 +2,7 @@ package iut.unilim.fr.back.controllerBack;
 
 import iut.unilim.fr.back.controller.ResourceSheetDTOController;
 import iut.unilim.fr.back.dto.*;
+import iut.unilim.fr.back.entity.Institution;
 import iut.unilim.fr.back.entity.Ressource;
 import iut.unilim.fr.back.entity.UserSyncadia;
 import iut.unilim.fr.back.repository.RessourceRepository;
@@ -85,7 +86,7 @@ public class CsvTransfertController {
 
         String fileName = resourceName + ".csv";
 
-        writeInCsvLogs(logMessage.toString() + " in file " + fileName);
+        writeInCsvLogs(logMessage + " in file " + fileName);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
                 .contentType(MediaType.parseMediaType("text/csv"))
@@ -95,34 +96,28 @@ public class CsvTransfertController {
 
     @PostMapping("/import")
     public ResponseEntity<?> importTeachers(
-            @RequestParam("file") MultipartFile file
-            // Principal principal
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("currentUser") String currentUser
     ) {
-        /*if (principal == null) {
-            System.out.println("toto");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session expirée ou invalide.");
-        }
-        */
+
         try {
-            /*String userEmail = principal.getName();
+            Optional<UserSyncadia> user = userSyncadiaRepository.findByUsername(currentUser);
+            if (user.isEmpty()) {
+                writeInCsvLogs(user + "attempt to import a CSV file, but an error as occured because he was not found.");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("An error as occured: User not found");
+            } else {
+                Institution inst = user.get().getInstitution();
+                Long institutionId = inst.getIdInstitution();
+                teacherImportCsvService.importTeachers(file, institutionId, currentUser);
+                return ResponseEntity.ok("Import RÉUSSI (Mode Bypass Sécurité - Institution " + institutionId + ")");
+            }
 
-            UserSyncadia currentUser = userSyncadiaRepository.findByUsername(userEmail)
-                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé en base"));
-
-            if (currentUser.getInstitution() == null) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body("Vous n'êtes rattaché à aucune institution.");
-            }*/
-
-            Long institutionId = 1L;
-            teacherImportCsvService.importTeachers(file, institutionId);
-
-            return ResponseEntity.ok("Import RÉUSSI (Mode Bypass Sécurité - Institution " + institutionId + ")");
 
         } catch (Exception e) {
-            e.printStackTrace();
+            writeInCsvLogs(currentUser + " got an error while importing professor in CSV : " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erreur : " + e.getMessage());
+                    .body("Error : " + e.getMessage());
         }
     }
 

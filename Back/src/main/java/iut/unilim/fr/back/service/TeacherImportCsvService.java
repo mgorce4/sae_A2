@@ -34,7 +34,7 @@ public class TeacherImportCsvService {
     private AccessRightRepository accessRightRepository;
 
     @Transactional
-    public void importTeachers(MultipartFile file, Long institutionId) throws IOException {
+    public void importTeachers(MultipartFile file, Long institutionId, String userName) throws IOException {
 
         Optional<Institution> institution_o = institutionRepository.findById(institutionId);
         if (institution_o.isPresent()) {
@@ -56,7 +56,7 @@ public class TeacherImportCsvService {
                 }
 
                 if (!headerMap.containsKey("prenom") || !headerMap.containsKey("nom") || !headerMap.containsKey("username")){
-                    writeInCsvLogs("{User} attempt to import teachers from a CSV file, but the file is invalid.");
+                    writeInCsvLogs(userName + " attempt to import teachers from a CSV file, but the file is invalid.");
                 }
 
                 String line;
