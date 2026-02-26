@@ -19,6 +19,19 @@ const selectedUeIntitule = ref(null)
 const selectedUeCompetenceLevel = ref(null)
 const selectedUeLinkedResources = ref([])
 const selectedUeLinkedSaes = ref([])
+
+// Variables pour gérer l'affichage des accordions
+const openedResourceIndex = ref(null)
+const openedSaeIndex = ref(null)
+
+// Fonctions pour gérer les accordions
+function toggleResource(index) {
+    openedResourceIndex.value = openedResourceIndex.value === index ? null : index
+}
+
+function toggleSae(index) {
+    openedSaeIndex.value = openedSaeIndex.value === index ? null : index
+}
 /*
 function initTrianglesBoolean() {
     ueSelected.value = []
@@ -43,12 +56,16 @@ function selectUe(ue, index) {
             (coef) => coef.ueId === selectedUeId.value
         )
     )
-    selectedUeLinkedSaes.value = []
     selectedUeLinkedSaes.value = saeList.value.filter(
         (sae) => sae.ueCoefficients && sae.ueCoefficients.some(
             (coef) => coef.ueId === selectedUeId.value
         )
     )
+    
+    // Réinitialiser les accordions ouverts
+    openedResourceIndex.value = null
+    openedSaeIndex.value = null
+    
     console.log('Selected UE:', ue)
     console.log('Linked Resources:', selectedUeLinkedResources.value)
     console.log('Linked SAEs:', selectedUeLinkedSaes.value)
@@ -57,24 +74,27 @@ function selectUe(ue, index) {
 function getCoefFromResource(resource) {
     let coefs = []
 
-    resource.ueCoefficients.map((ue) => {
-        coefs.push(ue.coefficient)
+    resource.ueCoefficients.forEach((ue) => {
+        // Exclure l'UE sélectionnée, comme dans getOtherUeLinked
+        if (ue.ueLabel !== selectedUeIntitule.value) {
+            coefs.push(ue.coefficient)
+        }
     })
 
     return coefs
 }
 
 function getOtherUeLinked(linkedUe) {
-    console.log('===Finding other UEs linked to the selected UE:', selectedUeIntitule.value, '===')
+    console.log('===Finding other UEs linked to the resource (excluding selected):', '===')
     const result = []
-    console.log('Getting other UEs linked to:', linkedUe)
+    console.log('Getting UEs linked to:', linkedUe)
     for (const ue of linkedUe) {
-        if (ue.ueLabel != selectedUeIntitule.value && !result.some(u => u.ueLabel === ue.ueLabel)) {
-            console.log('Adding other UE:', ue)
+        if (ue.ueLabel !== selectedUeIntitule.value && !result.some(u => u.ueLabel === ue.ueLabel)) {
+            console.log('Adding UE:', ue)
             result.push(ue)
         }
     }
-    console.log('Other UEs linked:', result)
+    console.log('Other UEs linked (excluding selected):', result)
     return result
 }
 
@@ -113,33 +133,7 @@ function getUESemesterInstitution() {
     return filtered
 }
 
-const attachAccordionListeners = () => {
-    const acc = document.getElementsByClassName('accordion_mccc')
-    for (let i = 0; i < acc.length; i++) {
-        const newElement = acc[i].cloneNode(true)
-        acc[i].parentNode.replaceChild(newElement, acc[i])
-
-        newElement.addEventListener('click', function () {
-            this.classList.toggle('active')
-            const panel = this.nextElementSibling
-            if (panel.style.maxHeight) {
-                panel.style.maxHeight = null
-            } else {
-                panel.style.maxHeight = panel.scrollHeight + 'vw'
-                panel.style.padding = '0'
-            }
-        })
-    }
-}
-
-// Attacher les listeners après que le DOM soit mis à jour
-watch(
-    [selectedUeLinkedResources, selectedUeLinkedSaes],
-    () => {
-        attachAccordionListeners()
-    },
-    { flush: 'post' }
-)
+// Plus besoin d'accordion listeners JavaScript avec Vue.js
 
 onMounted(async () => {
     // Charger les UEs filtrées par path
@@ -165,24 +159,26 @@ onMounted(async () => {
         <div class="container-fluid" style="gap: 0px; width: 100%; align-items: start;">
             <div class="container-fluid cfh" style="width: fit-content; align-items: flex-start;">
                 <div class="container-fluid" v-show="selectedUeId">
-                    <div class="ue_selection_button">{{ selectedUeIntitule }}</div>
+                    <div class="ue_selection_button" style="background-color: var(--header-color);">{{ selectedUeIntitule }}</div>
                     <div class="display_mccc_triangle"></div>
                 </div>
                 <div style="background-color: var(--header-color); width: 10vw; height: 0.3vw; padding: 0; margin: 1vw 0; align-self: flex-start;" v-show="selectedUeId"></div>
-                <div v-for="(value, index) in getUESemesterInstitution()" :key="index" v-show="resourceList.length >= 1" class="container-fluid" style="gap: 0;">
+                <div v-for="(value, index) in getUESemesterInstitution()" :key="index" v-show="resourceList.length >= 1 || saeList.lenght >= 1" class="container-fluid" style="gap: 0;">
                     <div class="ue_selection_button" :class="{ 'ue_selected': selectedUeId === value.ueNumber }" @click="selectUe(value, index)">{{ value.label }}</div>
                 </div>
             </div>
 
-            <div class="background_form_mccc" style="padding: 2vw; width: 100%;">
+            <div class="background_form_mccc" style="padding: 2vw; width: 100%; color: white; font-size: 1vw; ">
                 <!-- Display of selected UE and its linked resources and SAE -->
                 <p>Code apogee : {{ selectedUeCodeApogee }}</p>
                 <p>Intitulé de la compétence : {{ selectedUeIntitule }}</p>
                 <p>Niveau de la compétence : {{ selectedUeCompetenceLevel }}</p>
                 <div v-for="(value, index) in selectedUeLinkedResources" :key="index">
                     <!-- Display of linked resources -->
-                    <a class="dark_bar accordion_mccc" data-accordion="add-modify-resource">{{ value.label }} : {{ value.name }}</a>
-                    <div class="panel_form_mccc container-fluid cfh">
+                    <a class="dark_bar_display accordion_mccc"  :class="{ 'active': openedResourceIndex === index }" @click="toggleResource(index)" style="cursor: pointer;">
+                        {{ value.label }} : {{ value.name }}
+                    </a>
+                    <div v-show="openedResourceIndex === index" class="panel_display container-fluid cfh">
                         <div class="container-fluid">
                             <p>Code apogee : </p>
                             <p class="mccc_input">{{ value.apogeeCode }}</p>
@@ -241,11 +237,13 @@ onMounted(async () => {
                 </div>
                 <div v-for="(value, index) in selectedUeLinkedSaes" :key="index">
                     <!-- Display of linked SAE -->
-                    <a class="dark_bar accordion_mccc" data-accordion="add-modify-sae">{{ value.label }} : {{ value.name }}</a>
-                    <div class="panel_form_mccc container-fluid">
+                    <a class="dark_bar_display accordion_mccc" :class="{ 'active': openedSaeIndex === index }" @click="toggleSae(index)" style="cursor: pointer;">
+                        {{ value.label }}
+                    </a>
+                    <div v-show="openedSaeIndex === index" class="panel_display container-fluid">
                         <div class="container-fluid">
                             <p>Code apogee : </p>
-                            <p>{{ value.apogeeCode }}</p>
+                            <p class="mccc_input">{{ value.apogeeCode }}</p>
                         </div>
                     </div>
                 </div>
@@ -283,6 +281,28 @@ onMounted(async () => {
 .mccc_input > p {
     font-size: 1vw;
     margin: 0vw 1vw;
+}
+
+.dark_bar_display {
+    background-color: var(--main-theme-tertiary-color);
+    color: white;
+    padding: 1vw;
+    margin-top: 0.5vw;
+    text-decoration: none;
+    display: block;
+    border-radius: 0.3vw;
+    transition: background-color 0.3s ease;
+}
+
+.panel_display {
+    width: 90%;
+    justify-self: center;
+    padding: 0 18px;
+    background-color: rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+    color: var(--main-theme-secondary-color);
 }
 </style>
 
