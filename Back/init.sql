@@ -11,6 +11,7 @@ CREATE TABLE USERSYNCADIA(
     lastname TEXT NOT NULL,
     username TEXT NOT NULL,
     password TEXT NOT NULL,
+    mail TEXT NOT NULL,
     id_institution INT REFERENCES INSTITUTION(id_institution)
 );
 CREATE TABLE TASK(
