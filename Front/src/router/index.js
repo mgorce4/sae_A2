@@ -20,6 +20,7 @@ import ControlCenter from '../pages/control_center.vue'
 import HelpCenter from '../pages/help_center.vue'
 import addTeacherPage from '../pages/add_teacher_page.vue'
 import SyncadiaPresentation from '../pages/Syncadia_presentation_page.vue'
+import MultiAccessRightDashboard from '../pages/multi_access_right_dashboard.vue'
 
 const routes = [
   { path: '/', component: Login },
@@ -39,6 +40,7 @@ const routes = [
   { path: '/help-center', component: HelpCenter },
   { path: '/add-teacher-page', component: addTeacherPage },
   { path: '/syncadia-presentation', component: SyncadiaPresentation },
+  { path: '/multi_access_right_dashboard', component: MultiAccessRightDashboard },
 ]
 
 export const router = createRouter({
