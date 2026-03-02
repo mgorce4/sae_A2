@@ -2,6 +2,7 @@ package iut.unilim.fr.back.controller;
 
 import iut.unilim.fr.back.repository.TeachersForResourceRepository;
 import iut.unilim.fr.back.dto.ResourceSheetDTO;
+import iut.unilim.fr.back.dto.ResourceSheetSummaryDTO;
 import iut.unilim.fr.back.dto.ResourceSheetUpdateDTO;
 import iut.unilim.fr.back.entity.RessourceSheet;
 import iut.unilim.fr.back.mapper.ResourceSheetMapper;
@@ -37,6 +38,16 @@ public class ResourceSheetDTOController {
         this.resourceSheetMapper = resourceSheetMapper;
         this.rKaNCgLvMEXxNzMxj2F7FYi1AdRrTo6Nhu = rKaNCgLvMEXxNzMxj2F7FYi1AdRrTo6Nhu;
         this.teachersForResourceRepository = teachersForResourceRepository;
+    }
+
+    /**
+     * GET /api/v2/resource-sheets/institution/{institutionId}
+     * Returns lightweight summaries for the admin dashboard (single query, no N+1)
+     */
+    @GetMapping("/institution/{institutionId}")
+    public ResponseEntity<List<ResourceSheetSummaryDTO>> getResourceSheetsByInstitution(@PathVariable Long institutionId) {
+        List<ResourceSheetSummaryDTO> dtos = ressourceSheetRepository.findSummaryByInstitutionId(institutionId);
+        return ResponseEntity.ok(dtos);
     }
 
     /**
