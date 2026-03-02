@@ -98,6 +98,19 @@ function getOtherUeLinked(linkedUe) {
     return result
 }
 
+function getCoefFromSae(sae) {
+    let coefs = []
+
+    sae.ueCoefficients.forEach((ue) => {
+        // Exclure l'UE sélectionnée, comme dans getOtherUeLinked
+        if (ue.ueLabel !== selectedUeIntitule.value) {
+            coefs.push(ue.coefficient)
+        }
+    })
+
+    return coefs
+}
+
 const semester = parseInt(route.query.id)
 
 function getUESemesterInstitution() {
@@ -163,14 +176,14 @@ onMounted(async () => {
                     <div class="display_mccc_triangle"></div>
                 </div>
                 <div style="background-color: var(--header-color); width: 10vw; height: 0.3vw; padding: 0; margin: 1vw 0; align-self: flex-start;" v-show="selectedUeId"></div>
-                <div v-for="(value, index) in getUESemesterInstitution()" :key="index" v-show="resourceList.length >= 1 || saeList.lenght >= 1" class="container-fluid" style="gap: 0;">
+                <div v-for="(value, index) in getUESemesterInstitution()" :key="index" v-show="resourceList.length >= 1 || saeList.length >= 1" class="container-fluid" style="gap: 0;">
                     <div class="ue_selection_button" :class="{ 'ue_selected': selectedUeId === value.ueNumber }" @click="selectUe(value, index)">{{ value.label }}</div>
                 </div>
             </div>
 
             <div class="background_form_mccc" style="padding: 2vw; width: 100%; color: white; font-size: 1vw; ">
                 <!-- Display of selected UE and its linked resources and SAE -->
-                <p>Code apogee : {{ selectedUeCodeApogee }}</p>
+                <p>Code Apogée : {{ selectedUeCodeApogee }}</p>
                 <p>Intitulé de la compétence : {{ selectedUeIntitule }}</p>
                 <p>Niveau de la compétence : {{ selectedUeCompetenceLevel }}</p>
                 <div v-for="(value, index) in selectedUeLinkedResources" :key="index">
@@ -180,7 +193,17 @@ onMounted(async () => {
                     </a>
                     <div v-show="openedResourceIndex === index" class="panel_display container-fluid cfh">
                         <div class="container-fluid">
-                            <p>Code apogee : </p>
+                            <p>Professeur principal : </p>
+                            <p class="mccc_input">{{ value.mainTeacherName }}</p>
+                        </div>
+                        <div v-if="value.teachers.length >= 1" class="container-fluid">
+                            <p>Professeurs : </p>
+                            <div v-for="(teacher, teacherIndex) in value.teachers" :key="teacherIndex">
+                                <p class="mccc_input">{{ teacher.teacherName }}</p>
+                            </div>
+                        </div>
+                        <div class="container-fluid">
+                            <p>Code Apogée : </p>
                             <p class="mccc_input">{{ value.apogeeCode }}</p>
                         </div>
                         <div class="container-fluid">
@@ -212,10 +235,9 @@ onMounted(async () => {
                             <p class="mccc_input">{{ value.ueCoefficients[0].coefficient }}</p>
                         </div>
                         <div class="container-fluid">
-                            <p>Autres UE reliées : </p>
                             <table class="ueCoefficient">
                                 <tr>
-                                    <td>U.E. affectée(s) :</td>
+                                    <td>Autre(s) U.E. affectée(s) :</td>
                                     <th class="display_coef_label" v-for="(labelUe, index2) in getOtherUeLinked(value.ueCoefficients)" v-bind:key="index2">
                                         {{ labelUe.ueLabel }}
                                     </th>
@@ -225,11 +247,6 @@ onMounted(async () => {
                                     <td class="display_coef_ue" v-for="(coefUe, index45) in getCoefFromResource(value)" v-bind:key="index45">
                                         {{ coefUe }}
                                     </td>
-                                    <!--
-                                    <td class="display_coef_ue" v-for="(coefUe, index3) in getOtherUeLinked(value.ueCoefficients)" v-bind:key="index3">
-                                         {{ coefUe.coefficient }}
-                                    </td>
-                                    -->
                                 </tr>
                             </table>
                         </div>
@@ -240,10 +257,42 @@ onMounted(async () => {
                     <a class="dark_bar_display accordion_mccc" :class="{ 'active': openedSaeIndex === index }" @click="toggleSae(index)" style="cursor: pointer;">
                         {{ value.label }}
                     </a>
-                    <div v-show="openedSaeIndex === index" class="panel_display container-fluid">
+                    <div v-show="openedSaeIndex === index" class="panel_display container-fluid cfh">
                         <div class="container-fluid">
-                            <p>Code apogee : </p>
+                            <p>Code Apogée : </p>
                             <p class="mccc_input">{{ value.apogeeCode }}</p>
+                        </div>
+                        <div class="container-fluid">
+                            <p>Modalité : </p>
+                            <p class="mccc_input">{{ value.termsCode }}</p>
+                        </div>
+                        <div class="container-fluid">
+                            <p>Nombre d'heures (formation initiale) : </p>
+                            <p class="mccc_input">{{ value.hours }}</p>
+                        </div>
+                        <div class="container-fluid" v-if="value.hasAlternance">
+                            <p>Nombre d'heures (alternance) : </p>
+                            <p class="mccc_input">{{ value.hoursAlternance }}</p>
+                        </div>
+                        <div class="container-fluid">
+                            <p>Coefficient : </p>
+                            <p class="mccc_input">{{ value.ueCoefficients[0].coefficient }}</p>
+                        </div>
+                        <div class="container-fluid" v-if="getOtherUeLinked(value.ueCoefficients) != 0">
+                            <table class="ueCoefficient">
+                                <tr>
+                                    <td>Autre(s) U.E. affectée(s) :</td>
+                                    <th class="display_coef_label" v-for="(labelUe, index2) in getOtherUeLinked(value.ueCoefficients)" v-bind:key="index2">
+                                        {{ labelUe.ueLabel }}
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td>Coefficient :</td>
+                                    <td class="display_coef_ue" v-for="(coefUe, index45) in getCoefFromSae(value)" v-bind:key="index45">
+                                        {{ coefUe }}
+                                    </td>
+                                </tr>
+                            </table>
                         </div>
                     </div>
                 </div>
