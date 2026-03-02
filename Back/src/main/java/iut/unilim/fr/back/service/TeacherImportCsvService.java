@@ -55,7 +55,7 @@ public class TeacherImportCsvService {
                     headerMap.put(headerName.toLowerCase(), i);
                 }
 
-                if (!headerMap.containsKey("prenom") || !headerMap.containsKey("nom") || !headerMap.containsKey("username")){
+                if (!headerMap.containsKey("prenom") || !headerMap.containsKey("nom") || !headerMap.containsKey("username") || !headerMap.containsKey("mail")){
                     writeInCsvLogs(userName + " attempt to import teachers from a CSV file, but the file is invalid.");
                 }
 
@@ -65,16 +65,16 @@ public class TeacherImportCsvService {
                     String name = getValue(data, headerMap, "nom");
                     String firstName = getValue(data, headerMap, "prenom");
                     String username = getValue(data, headerMap, "username");
+                    String mail = getValue(data, headerMap, "mail");
                     Optional<UserSyncadia> userAlreadyImported = teacherRepository.findByUsername(username);
-
 
                     if (data.length != 0 && userAlreadyImported.isEmpty()) {
                         UserSyncadia teacher = new UserSyncadia();
 
-
                         teacher.setLastname(name);
                         teacher.setFirstname(firstName);
                         teacher.setUsername(username);
+                        teacher.setMail(mail);
                         teacher.setPassword(encodeData(username, "unilim"));
 
 
@@ -84,6 +84,7 @@ public class TeacherImportCsvService {
                         writeInCsvLogs("Teacher imported : \n" +
                                 "   - Name : " + name + "\n" +
                                 "   - First name : " + firstName + "\n" +
+                                "   - Mail : " + mail + "\n" +
                                 "   - Username : " + username);
                         writeInCsvLogs("{User} import a teacher from a csv file.");
                     } else {
