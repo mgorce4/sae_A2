@@ -8,6 +8,55 @@ function toggleShowPopUp() {
     show_popup.value = !show_popup.value
 }
 
+const fileInputRef = ref(null)
+const isLoading = ref(false)
+const message = ref('')
+const isError = ref(false)
+
+const triggerFilePicker = () => {
+    fileInputRef.value.click()
+}
+
+const uploadCsv = async (event) => {
+    const file = event.target.files[0]
+    if (!file) return
+
+    isLoading.value = true
+    message.value = ''
+    isError.value = false
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const currentUser = localStorage.getItem('username') || 'admin'
+    formData.append('currentUser', currentUser)
+
+    try {
+        const response = await fetch('http://localhost:8080/api/csv/import', {
+            method: 'POST',
+            body: formData,
+            credentials: 'include'
+        })
+
+        if (response.ok) {
+            const responseText = await response.text()
+            message.value = responseText
+            isError.value = false
+        } else {
+            const errorText = await response.text()
+            message.value = `Erreur : ${errorText}`
+            isError.value = true
+        }
+    } catch (error) {
+        console.error("Erreur lors de l'import :", error)
+        isError.value = true
+    } finally {
+        isLoading.value = false
+        if (fileInputRef.value) {
+            fileInputRef.value.value = ''
+        }
+    }
+}
 </script>
 
 <template>
@@ -56,6 +105,29 @@ function toggleShowPopUp() {
 
             <div id="right_component">
                 <RouterLink class="button" style=" width: 31.5vw; margin: 3vh 1vw;" to="/add-teacher-page">Ajout professeur</RouterLink>
+
+                <div class="import-section">
+                    <input
+                        type="file"
+                        ref="fileInputRef"
+                        accept=".csv"
+                        style="display: none"
+                        @change="uploadCsv"
+                    />
+
+                    <button 
+                        class="button btn-import" 
+                        @click="triggerFilePicker" 
+                        :disabled="isLoading"
+                        style="width: 31.5vw; margin: 0 1vw;"
+                    >
+                        {{ isLoading ? 'Importation en cours...' : 'Importer des professeurs (CSV)' }}
+                    </button>
+
+                    <p v-if="message" :class="['status-message', isError ? 'error-msg' : 'success-msg']">
+                        {{ message }}
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -96,6 +168,9 @@ function toggleShowPopUp() {
     background-color: var(--main-theme-background-color);
     height: 40vw;
     border-radius: 1vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
 }
 
 #popup_date {
@@ -119,5 +194,40 @@ function toggleShowPopUp() {
     border-left: 0.8vw solid transparent;
     border-right: 0.8vw solid transparent;
     border-top: 0.8vw solid var(--sub-div-background-color);
+}
+
+.import-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-top: 1vw;
+}
+
+.btn-import {
+    cursor: pointer;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+}
+
+.btn-import:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.status-message {
+    margin-top: 1vw;
+    font-weight: bold;
+    text-align: center;
+    max-width: 90%;
+}
+
+.success-msg {
+    color: #4caf50;
+}
+
+.error-msg {
+    color: #f44336;
 }
 </style>
