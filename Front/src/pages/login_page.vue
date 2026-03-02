@@ -56,9 +56,8 @@ function addItem() {
         redirect(accessRights[0])
         router.push(redirectlink.value)
     } else if (accessRights && accessRights.length > 1) {
-        // Multiple access rights - could show a selection menu
-        // For now, redirect to the first one
-        redirect(accessRights[0])
+        // Multiple access rights
+        redirect(4)
         router.push(redirectlink.value)
     }
 }
@@ -118,6 +117,10 @@ function redirect(access_right) {
         case 3:
             localStorage.status = 'Admin'
             redirectlink.value = '/admin-dashboard'
+            break
+        case 4 :
+            localStorage.status = 'Multiple'
+            redirectlink.value = '/multi_access_right_dashboard'
             break
     }
 }
