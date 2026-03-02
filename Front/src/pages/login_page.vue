@@ -117,7 +117,7 @@ function redirect(access_right) {
             break
         case 3:
             localStorage.status = 'Admin'
-            redirectlink.value = '/'
+            redirectlink.value = '/admin-dashboard'
             break
     }
 }
