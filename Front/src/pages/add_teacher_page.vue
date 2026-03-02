@@ -13,16 +13,19 @@ let title = ref("")
 
 const teacher_name = ref("")
 const teacher_firstname = ref("")
+const teacher_mail = ref("")
 const teacher_id = ref(0)
 
 const errors = ref({
     name: false,
     firstname: false,
+    mail: false,
 })
 
 const error_messages = ref({
     name: "Le nom doit être renseigné",
     firstname: "Le prenom doit être renseigné",
+    mail: "Le mail doit être renseigné",
 })
 
 const teachers = ref([])
@@ -85,6 +88,7 @@ const save = async () => {
     errors.value = {
         name: false,
         firstname: false,
+        mail: false,
     }
 
     let hasError = false
@@ -96,6 +100,11 @@ const save = async () => {
 
     if (teacher_firstname.value === "") {
         errors.value.firstname = true
+        hasError = true
+    }
+
+    if (teacher_mail.value ===""){
+        errors.value.mail = true
         hasError = true
     }
 
@@ -115,6 +124,7 @@ const save = async () => {
             lastname : teacher_name.value,
             username : getUsername(),
             password : getUsername() + '123',
+            mail : teacher_mail.value,
             institution : {
                 idInstitution : parseInt(localStorage.idInstitution),
                 name : localStorage.institutionName,
@@ -124,7 +134,7 @@ const save = async () => {
 
         if (!is_modifying.value) {
             let user_response = await axios.post(`${API_BASE_URL}/api/users`, payload);
-            [teacher_firstname, teacher_name].forEach((r) => r.value = '')
+            [teacher_firstname, teacher_name, teacher_mail].forEach((r) => r.value = '')
             display_more_area.value = false
 
             // get the id of the new user
@@ -142,7 +152,7 @@ const save = async () => {
 
             await axios.put(`${API_BASE_URL}/api/users/${user_id.value}`, payload);
 
-            [teacher_firstname, teacher_name].forEach((r) => r.value = '')
+            [teacher_firstname, teacher_name, teacher_mail].forEach((r) => r.value = '')
             display_more_area.value = false
             is_modifying.value = false
         }
@@ -170,6 +180,7 @@ function modify(teacher) {
     title.value = "Modifier un professeur"
     teacher_name.value = teacher.user.lastname
     teacher_firstname.value = teacher.user.firstname
+    teacher_mail.value = teacher.user.mail
     teacher_id.value = teacher.idUser
 }
 
@@ -237,7 +248,7 @@ const deleteTeacher = async (id) => {
                 </div>
 
                 <div id="dark_bar">
-                    <h2>Ajouter un professeur</h2>
+                    <p>Ajouter un professeur</p>
                     <button id="button_more" v-on:click="display_more_area = !display_more_area;  addTeacher()">
                         {{ display_more_area ? '-' : '+' }}
                     </button>
@@ -249,7 +260,7 @@ const deleteTeacher = async (id) => {
                     <div class="panel" style="display: flex">
                         <div style="margin-left: 15vw; padding-top: 1vw">
                             <div class="sub_div_panel">
-                                <label>Nom : </label>
+                                <label style="font-size: 1vw;">Nom : </label>
                                 <input type="text" class="input" v-model="teacher_name">
                                 <input style="margin-left: 11.5vw" class="btn1" type="reset" value="Annuler" v-on:click="display_more_area = !display_more_area" />
                             </div>
@@ -257,12 +268,20 @@ const deleteTeacher = async (id) => {
                             <p v-if="errors.name" class="error_message" style="text-align: left">{{ error_messages.name }}</p>
 
                             <div class="sub_div_panel">
-                                <label>Prenom : </label>
+                                <label style="font-size: 1vw;">Prenom : </label>
                                 <input type="text" class="input" v-model="teacher_firstname">
                                 <input style="margin-left: 10vw" id="save" class="btn1" type="button" value="Sauvegarder" v-on:click="save()" />
                             </div>
 
                             <p v-if="errors.firstname" class="error_message" style="text-align: left">{{ error_messages.firstname }}</p>
+
+                            <div class="sub_div_panel">
+                                <label style="font-size: 1vw;">Mail : </label>
+                                <input type="text" class="input" style="width: 17vw;" v-model="teacher_mail">
+                            </div>
+
+                            <p v-if="errors.mail" class="error_message" style="text-align: left">{{ error_messages.mail }}</p>
+
                         </div>
 
                     </div>
@@ -293,10 +312,14 @@ const deleteTeacher = async (id) => {
                                 <p>{{teacher.user.username}}</p>
                             </div>
 
-                            <div style="background-color: transparent; display: flex; padding: 0; margin-bottom: 0; gap: 0.3vw; justify-content: center; align-items: center">
-                                <input class="btn1" type="button" value="Supprimer" v-on:click="deleteTeacher(teacher.idUser)"/>
-                                <input class="btn1" type="button" value="Modifier" v-on:click="is_modifying = true; display_more_area = true; modify(teacher)" />
+                            <div style="display: flex; padding-top: 0; gap: 0.3vw">
+                                <p>Mail : </p>
+                                <p>{{teacher.user.mail}}</p>
                             </div>
+                        </div>
+                        <div style="background-color: transparent; display: flex; padding: 0; margin-top: 0; margin-bottom: 1vh; justify-content: center; align-items: center">
+                            <input class="btn1" type="button" value="Supprimer" v-on:click="deleteTeacher(teacher.idUser)"/>
+                            <input class="btn1" type="button" value="Modifier" v-on:click="is_modifying = true; display_more_area = true; modify(teacher)" />
                         </div>
                     </div>
                 </div>
