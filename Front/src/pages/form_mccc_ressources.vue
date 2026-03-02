@@ -809,7 +809,7 @@ onMounted(async () => {
                 }
             })
 
-            if (index_to_remove !== -1 && teachers_list.value.length > 1) {
+            if (index_to_remove !== -1 && teachers_list.value.length > 0) {
                 teachers_list.value = teachers_list.value.filter((_, i) => i !== index_to_remove)
                 show_teacher_list.value = show_teacher_list.value.filter(
                     (_, i) => i !== index_to_remove,
@@ -1267,7 +1267,7 @@ function toggleShowPopUp() {
                                     </div>
                                     <p id="error_main_teacher" class="error_message"></p>
 
-                                    <div class="component" style="justify-content: center">
+                                    <div class="component" style="justify-content: center" v-if="teachers_list.length >= 2">
                                         <label for="teacher">Professeur(s) associé(s) : </label>
                                         <button class="button_more" id="button_teacher_plus">
                                             +
@@ -1280,7 +1280,7 @@ function toggleShowPopUp() {
                                         class="component teacher_row"
                                         style="justify-content: center"
                                     >
-                                        <div class="teacher_select_container">
+                                        <div class="teacher_select_container" v-if="teachers_list.length >= 2">
                                             <input
                                                 type="text"
                                                 class="input teacher"
@@ -1310,7 +1310,7 @@ function toggleShowPopUp() {
                                             </div>
                                         </div>
 
-                                        <button class="button_more" id="button_teacher_cross">
+                                        <button class="button_more" id="button_teacher_cross" v-if="teachers_list.length >= 2">
                                             x
                                         </button>
                                     </div>
