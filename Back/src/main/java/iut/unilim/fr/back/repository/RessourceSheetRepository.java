@@ -22,5 +22,22 @@ public interface RessourceSheetRepository extends JpaRepository<RessourceSheet, 
            "JOIN MainTeacherForResource mt ON mt.idResource = r.idResource " +
            "WHERE mt.idUser = :userId")
     List<RessourceSheet> findByMainTeacher(@Param("userId") Long userId);
+
+    @Query("SELECT rs FROM RessourceSheet rs " +
+           "JOIN rs.resource r " +
+           "JOIN r.path p " +
+           "JOIN p.institution i " +
+           "WHERE i.idInstitution = :institutionId")
+    List<RessourceSheet> findByInstitutionId(@Param("institutionId") Long institutionId);
+
+    @Query("SELECT new iut.unilim.fr.back.dto.ResourceSheetSummaryDTO(" +
+           "rs.idResourceSheet, r.label, r.semester, r.path.name, " +
+           "(SELECT COUNT(th) FROM TeacherHours th WHERE th.resourceSheet = rs AND th.isAlternance = false)) " +
+           "FROM RessourceSheet rs " +
+           "JOIN rs.resource r " +
+           "JOIN r.path p " +
+           "JOIN p.institution i " +
+           "WHERE i.idInstitution = :institutionId")
+    List<iut.unilim.fr.back.dto.ResourceSheetSummaryDTO> findSummaryByInstitutionId(@Param("institutionId") Long institutionId);
 }
 
