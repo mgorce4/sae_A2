@@ -1,6 +1,8 @@
 package iut.unilim.fr.back.controller;
 
+import iut.unilim.fr.back.repository.TeachersForResourceRepository;
 import iut.unilim.fr.back.dto.ResourceSheetDTO;
+import iut.unilim.fr.back.dto.ResourceSheetSummaryDTO;
 import iut.unilim.fr.back.dto.ResourceSheetUpdateDTO;
 import iut.unilim.fr.back.entity.RessourceSheet;
 import iut.unilim.fr.back.mapper.ResourceSheetMapper;
@@ -11,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -22,16 +25,29 @@ public class ResourceSheetDTOController {
 
     private final RessourceSheetRepository ressourceSheetRepository;
     private final ResourceSheetMapper resourceSheetMapper;
-    private final ResourceSheetUpdateService resourceSheetUpdateService;
+    private final ResourceSheetUpdateService rKaNCgLvMEXxNzMxj2F7FYi1AdRrTo6Nhu;
+    private final iut.unilim.fr.back.repository.TeachersForResourceRepository teachersForResourceRepository;
 
     // Constructor injection (better than @Autowired on fields)
     public ResourceSheetDTOController(
             RessourceSheetRepository ressourceSheetRepository,
             ResourceSheetMapper resourceSheetMapper,
-            ResourceSheetUpdateService resourceSheetUpdateService) {
+            ResourceSheetUpdateService rKaNCgLvMEXxNzMxj2F7FYi1AdRrTo6Nhu,
+            iut.unilim.fr.back.repository.TeachersForResourceRepository teachersForResourceRepository) {
         this.ressourceSheetRepository = ressourceSheetRepository;
         this.resourceSheetMapper = resourceSheetMapper;
-        this.resourceSheetUpdateService = resourceSheetUpdateService;
+        this.rKaNCgLvMEXxNzMxj2F7FYi1AdRrTo6Nhu = rKaNCgLvMEXxNzMxj2F7FYi1AdRrTo6Nhu;
+        this.teachersForResourceRepository = teachersForResourceRepository;
+    }
+
+    /**
+     * GET /api/v2/resource-sheets/institution/{institutionId}
+     * Returns lightweight summaries for the admin dashboard (single query, no N+1)
+     */
+    @GetMapping("/institution/{institutionId}")
+    public ResponseEntity<List<ResourceSheetSummaryDTO>> getResourceSheetsByInstitution(@PathVariable Long institutionId) {
+        List<ResourceSheetSummaryDTO> dtos = ressourceSheetRepository.findSummaryByInstitutionId(institutionId);
+        return ResponseEntity.ok(dtos);
     }
 
     /**
@@ -88,6 +104,40 @@ public class ResourceSheetDTOController {
     }
 
     /**
+     * GET /api/v2/resource-sheets/for-user/{userId}
+     * Returns all resource sheets where the user is main teacher OR associated teacher
+     */
+    @CrossOrigin(origins = "*")
+    @GetMapping("/for-user/{userId}")
+    public List<ResourceSheetDTO> getResourceSheetsForUser(@PathVariable Long userId) {
+        // Fiches où il est mainTeacher
+        List<RessourceSheet> mainTeacherSheets = ressourceSheetRepository.findByMainTeacher(userId);
+
+        // Fiches où il est prof associé (TeachersForResource)
+        List<Long> resourceIds = teachersForResourceRepository.findByIdUser(userId)
+            .stream()
+            .map(tfr -> tfr.getIdResource())
+            .distinct()
+            .toList();
+        List<RessourceSheet> associatedSheets = new ArrayList<>();
+        for (Long resourceId : resourceIds) {
+            associatedSheets.addAll(ressourceSheetRepository.findByResource_IdResource(resourceId));
+        }
+
+        // Fusionner sans doublons
+        List<RessourceSheet> allSheets = new ArrayList<>(mainTeacherSheets);
+        for (RessourceSheet sheet : associatedSheets) {
+            if (allSheets.stream().noneMatch(s -> s.getIdResourceSheet().equals(sheet.getIdResourceSheet()))) {
+                allSheets.add(sheet);
+            }
+        }
+
+        return allSheets.stream()
+            .map(resourceSheetMapper::toDTO)
+            .collect(Collectors.toList());
+    }
+
+    /**
      * PUT /api/v2/resource-sheets/{id}
      * Update a resource sheet with new data
      * Handles both creation (new data) and update (modify existing data)
@@ -102,7 +152,7 @@ public class ResourceSheetDTOController {
             }
 
             // Update the resource sheet
-            resourceSheetUpdateService.updateResourceSheet(id, updateDTO);
+            rKaNCgLvMEXxNzMxj2F7FYi1AdRrTo6Nhu.updateResourceSheet(id, updateDTO);
 
             // Return the updated resource sheet
             ResourceSheetDTO updatedDTO = resourceSheetMapper.toDTO(resourceSheet.get());
