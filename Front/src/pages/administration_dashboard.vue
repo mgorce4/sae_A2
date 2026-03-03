@@ -147,7 +147,7 @@ async function downloadSheets() {
         return
     }
 
-    const userName = localStorage.username || 'user'
+    const userName = (localStorage.getItem('firstname') + ' ' + localStorage.getItem('lastname')).trim() || 'user'
     console.log('userName:', userName)
 
     try {

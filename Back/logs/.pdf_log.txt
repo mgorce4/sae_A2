@@ -3,3 +3,23 @@
 [09:01:2026 14:20:01:252] Attempt to get from database with resource name: ""
 -> "" not found in resources tables
 [09:01:2026 14:20:01:259] {user} attempt to generate a resource sheet pdf, but no matches found for the resource name
+[03:03:2026 13:06:51:128] Get resource 
+     - id : 78
+     - label :  Initiation au développement
+[03:03:2026 13:06:51:141] Get from database :
+   - Resource (R1.01:  Initiation au développement; IU EN FOR 001; UE1.1; prof testazert;)
+   - department(TEST)
+   - objectives(test)
+   - skills([test, test2])
+   - saes([SAÉ 1.01 Implémentation d'un besoin client , SAÉ 1.02 Comparaison d'approches algorithmiques])
+   - terms([test])
+   - keywords([test])
+   - hoursStudent([1000000.0, 1515616.0, 79465.0, 2595081.0])
+   - hoursNP([4.0, 12.0, 14.0, 30.0])
+   - pedagoContent( DS: 1. test
+; CM: 1. test
+; TD: 1. test
+; TP: 1. test
+)
+   - feedBack(Student: bien; Pedagogical team: bien; Improvements: pas maélioration)
+[03:03:2026 13:06:51:445] atest create a pdf for resource sheet: R1.01_ressource_sheet.pdf

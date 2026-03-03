@@ -1,4 +1,5 @@
 import { createWebHashHistory, createRouter } from 'vue-router'
+import { getToken, getAccessRightsFromToken } from '@/utils/jwt.js'
 
 import Login from '../pages/login_page.vue'
 
@@ -46,4 +47,28 @@ const routes = [
 export const router = createRouter({
   history: createWebHashHistory(),
   routes,
+})
+
+// Routes accessibles sans authentification
+const publicRoutes = ['/', '/syncadia-presentation']
+
+router.beforeEach((to) => {
+  const token = getToken()
+  const isPublic = publicRoutes.includes(to.path)
+
+  // Redirige vers login si pas de token et route protégée
+  if (!token && !isPublic) {
+    return { path: '/' }
+  }
+
+  // Un utilisateur déjà connecté qui retourne sur '/' est redirigé vers son dashboard
+  if (token && to.path === '/') {
+    const roles = getAccessRightsFromToken()
+    if (roles.length === 1) {
+      const map = { 1: '/teacher-dashboard', 2: '/dashboard-administration', 3: '/admin-dashboard' }
+      return { path: map[roles[0]] || '/' }
+    } else if (roles.length > 1) {
+      return { path: '/multi_access_right_dashboard' }
+    }
+  }
 })
