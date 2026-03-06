@@ -41,6 +41,7 @@ onMounted(async () => {
     }
 
     try {
+        const startTime = performance.now()
         // Charger les données filtrées par path
         const saes = await axios.get(`${API_BASE_URL}/api/v2/mccc/saes/path/${pathId.value}`)
         // Filtrer par institution pour sécurité supplémentaire
@@ -60,11 +61,14 @@ onMounted(async () => {
             resource.institutionId === institutionId
         )
 
+        const endTime = performance.now()
+        const duration = (endTime - startTime).toFixed(2)
         console.log(`Données chargées pour le parcours ${pathId.value} et institution ${institutionId}:`, {
             saes: saeTable.value.length,
             ues: ueTable.value.length,
             resources: resourceTable.value.length
         })
+        console.log(`Temps de chargement des données API : ${duration} ms`)
     } catch (error) {
         console.error('Erreur lors du chargement des données:', error)
         alert('Erreur lors du chargement des données du parcours')
