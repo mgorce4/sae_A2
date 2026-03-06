@@ -3,6 +3,7 @@ package iut.unilim.fr.back.controllerBack;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import iut.unilim.fr.back.Ressource.HeaderAndFooter;
+import iut.unilim.fr.back.security.UserDetailsImpl;
 import iut.unilim.fr.back.service.ResourceGetterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -17,10 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.io.ByteArrayOutputStream;
+import java.security.Principal;
 import java.util.ArrayList;
 
 import static com.itextpdf.text.List.UNORDERED;
 import static iut.unilim.fr.back.controllerBack.LogController.writeInPdfLog;
+import static iut.unilim.fr.back.security.UserDetailsImpl.getCurrentUser;
 
 @RestController
 @RequestMapping("/api/pdf")
@@ -45,7 +48,11 @@ public class PdfController {
     private final int specialTableNbRow = 1;
 
     @GetMapping("/generate")
-    public ResponseEntity<Resource> generatePdf(@RequestParam String resourceName, @RequestParam String userName) {
+    public ResponseEntity<Resource> generatePdf(@RequestParam String resourceName) {
+        UserDetailsImpl currentUser = getCurrentUser();
+        Long userId = currentUser.getId();
+        String userName = currentUser.getUsername();
+
         res.setValuesFromResource(resourceName);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -174,7 +181,7 @@ public class PdfController {
                     applyGreyStyleOnCell(programmeContent, contentFont, internshipProgramTable, internshipRepartition, hours, customBaseFont);
 
                 }
-                
+
                 PdfPTable repartitionProgrammeTable = new PdfPTable(repartitionProgramNbColumn);
                 repartitionProgrammeTable.setWidthPercentage(widthPercentage);
 
@@ -186,7 +193,7 @@ public class PdfController {
                 contents.addAll(hours);
 
                 // ------------------------------------------------------------------------------
-                
+
                 Chunk pedagogicalContent = new Chunk("Contenue pédagogique", contentFont);
                 PdfPTable pedagoTable = new PdfPTable(pedagoTableNbColumn);
                 pedagoTable.setWidthPercentage(widthPercentage);
@@ -239,10 +246,9 @@ public class PdfController {
                 document.add(resourceTrackingTable);
                 document.close();
 
-                writeInPdfLog(userName + " create a pdf for resource sheet: " + pdfFileName);
+                writeInPdfLog(userName + "(" + userId + ") create a pdf for resource sheet: " + pdfFileName);
             } catch (Exception e) {
                 System.err.println("FATAL ERROR generating PDF:");
-                e.printStackTrace();
                 writeInPdfLog("EXCEPTION in PDF generation: " + e.getClass().getName() + " - " + e.getMessage());
                 if (e.getCause() != null) {
                     writeInPdfLog("CAUSED BY: " + e.getCause().getClass().getName() + " - " + e.getCause().getMessage());
@@ -250,16 +256,9 @@ public class PdfController {
                 return ResponseEntity.internalServerError().build();
             }
             byte[] pdfBytes = out.toByteArray();
-            if (pdfBytes == null || pdfBytes.length == 0) {
-                writeInPdfLog("Failed to generate PDF: empty output");
-                return ResponseEntity.internalServerError().build();
-            }
             ByteArrayResource resource = new ByteArrayResource(pdfBytes);
 
             MediaType pdfMediaType = MediaType.APPLICATION_PDF;
-            if (pdfMediaType == null) {
-                pdfMediaType = MediaType.APPLICATION_OCTET_STREAM;
-            }
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + pdfFileName + ".pdf\"")
@@ -267,7 +266,7 @@ public class PdfController {
                     .contentLength(pdfBytes.length)
                     .body(resource);
         } else {
-            writeInPdfLog( userName + " attempt to generate a resource sheet pdf, but no matches found for the resource name");
+            writeInPdfLog( userName + "(" + userId + ") attempt to generate a resource sheet pdf, but no matches found for the resource name");
             return ResponseEntity.internalServerError().build();
         }
     }

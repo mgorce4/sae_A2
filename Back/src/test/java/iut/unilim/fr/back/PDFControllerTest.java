@@ -1,11 +1,15 @@
 package iut.unilim.fr.back;
 
 import iut.unilim.fr.back.controllerBack.PdfController;
+import iut.unilim.fr.back.security.UserDetailsImpl;
 import iut.unilim.fr.back.service.ResourceGetterService;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -25,6 +29,24 @@ class PdfControllerTest {
 
     @InjectMocks
     private PdfController pdfController;
+
+    private MockedStatic<UserDetailsImpl> mockedUserDetails;
+    private UserDetailsImpl mockUser;
+
+    @BeforeEach
+    void setUp() {
+        mockUser = mock(UserDetailsImpl.class);
+        lenient().when(mockUser.getId()).thenReturn(1L);
+        lenient().when(mockUser.getUsername()).thenReturn("admin");
+
+        mockedUserDetails = mockStatic(UserDetailsImpl.class);
+        mockedUserDetails.when(UserDetailsImpl::getCurrentUser).thenReturn(mockUser);
+    }
+
+    @AfterEach
+    void tearDown() {
+        mockedUserDetails.close();
+    }
 
     @Test
     void testGeneratePdf_Success() {
@@ -52,7 +74,7 @@ class PdfControllerTest {
         when(res.getImprovements()).thenReturn("Rien");
 
         try {
-            ResponseEntity<Resource> response = pdfController.generatePdf("R1.01", "UserTest");
+            ResponseEntity<Resource> response = pdfController.generatePdf("R1.01");
 
             assertEquals(HttpStatus.OK, response.getStatusCode());
             assertNotNull(response.getBody());
@@ -69,7 +91,7 @@ class PdfControllerTest {
     void testGeneratePdf_NotFound() {
         when(res.getResourceName()).thenReturn("");
 
-        ResponseEntity<Resource> response = pdfController.generatePdf("Inconnu", "UserTest");
+        ResponseEntity<Resource> response = pdfController.generatePdf("Inconnu");
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }

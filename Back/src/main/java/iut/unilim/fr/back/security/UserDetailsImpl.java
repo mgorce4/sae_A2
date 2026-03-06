@@ -3,8 +3,10 @@ package iut.unilim.fr.back.security;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import iut.unilim.fr.back.entity.AccessRight;
 import iut.unilim.fr.back.entity.UserSyncadia;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -78,5 +80,10 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public static UserDetailsImpl getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return (UserDetailsImpl) auth.getPrincipal();
     }
 }
