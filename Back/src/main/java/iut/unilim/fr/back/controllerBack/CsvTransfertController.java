@@ -8,6 +8,7 @@ import iut.unilim.fr.back.entity.UserSyncadia;
 import iut.unilim.fr.back.repository.RessourceRepository;
 import iut.unilim.fr.back.repository.RessourceSheetRepository;
 import iut.unilim.fr.back.repository.UserSyncadiaRepository;
+import iut.unilim.fr.back.security.UserDetailsImpl;
 import iut.unilim.fr.back.service.TeacherImportCsvService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -15,9 +16,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.swing.text.html.Option;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -26,6 +30,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static iut.unilim.fr.back.controllerBack.LogController.writeInCsvLogs;
+import static iut.unilim.fr.back.security.UserDetailsImpl.getCurrentUser;
 import static iut.unilim.fr.back.service.ResourceGetterService.*;
 
 @RestController
@@ -43,73 +48,88 @@ public class CsvTransfertController {
     private ResourceSheetDTOController rsDTOController;
 
     @GetMapping("/generate")
-    public ResponseEntity<ByteArrayResource> generateCsv(@RequestParam String resourceName, @RequestParam(required = false, defaultValue = "") String userDepartment, @RequestParam String userName) {
-        Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(resourceName);
-        List<ExportCsvDTO> csvContents = new ArrayList<>();
+    public ResponseEntity<ByteArrayResource> generateCsv(@RequestParam String resourceName) {
+        UserDetailsImpl currentUser = getCurrentUser();
+        Long userId = currentUser.getId();
+        String userName = currentUser.getUsername();
 
-        if (resultResource.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        //TODO : find dep user par id
+        Optional<UserSyncadia> user = userSyncadiaRepository.findById(userId);
+        if (user.isPresent()) {
 
+            Institution institution = user.get().getInstitution();
+            String userDepartment = institution.getName();
 
-        StringBuilder csvBuilder = new StringBuilder();
-        StringBuilder logMessage = new StringBuilder(userName + " get from ResourceSheet :\n");
-        // En tete
-        csvBuilder.append("Département; Référence UE; Référence Ressouce; Professeur référent; SAÉs; Heures; Heures Alternance; DS; CM; TD; TP; Retour de l'équipe pédagogique; Retour étudiant; Amélioration à mettre en oeuvre\n");
+            Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(resourceName);
+            List<ExportCsvDTO> csvContents = new ArrayList<>();
 
-        if (userDepartment.isEmpty()) {
-            List<ResourceSheetDTO> resourcesSheets = rsDTOController.getResourceSheetsByResourceId(resultResource.get().getIdResource());
-            for (ResourceSheetDTO res : resourcesSheets) {
-                csvContents.add(getExportCsvDTO(resourceName, res));
+            if (resultResource.isEmpty()) {
+                return ResponseEntity.notFound().build();
             }
-        }
-        else {
-            List<ResourceSheetDTO> allResourceSheets = rsDTOController.getAllResourceSheets();
-            List<ResourceSheetDTO> departmentResourceSheets = new ArrayList<>();
 
-            for (ResourceSheetDTO res : allResourceSheets) {
-                if (Objects.equals(res.getDepartment(), userDepartment)) {
-                    departmentResourceSheets.add(res);
+
+            StringBuilder csvBuilder = new StringBuilder();
+            StringBuilder logMessage = new StringBuilder(userName + " get from ResourceSheet :\n");
+            // En tete
+            csvBuilder.append("Département; Référence UE; Référence Ressouce; Professeur référent; SAÉs; Heures; Heures Alternance; DS; CM; TD; TP; Retour de l'équipe pédagogique; Retour étudiant; Amélioration à mettre en oeuvre\n");
+
+            if (userDepartment.isEmpty()) {
+                List<ResourceSheetDTO> resourcesSheets = rsDTOController.getResourceSheetsByResourceId(resultResource.get().getIdResource());
+                for (ResourceSheetDTO res : resourcesSheets) {
+                    csvContents.add(getExportCsvDTO(resourceName, res));
                 }
             }
-            for (ResourceSheetDTO res : departmentResourceSheets) {
-                csvContents.add(getExportCsvDTO(resourceName, res));
+            else {
+                List<ResourceSheetDTO> allResourceSheets = rsDTOController.getAllResourceSheets();
+                List<ResourceSheetDTO> departmentResourceSheets = new ArrayList<>();
+
+                for (ResourceSheetDTO res : allResourceSheets) {
+                    if (Objects.equals(res.getDepartment(), userDepartment)) {
+                        departmentResourceSheets.add(res);
+                    }
+                }
+                for (ResourceSheetDTO res : departmentResourceSheets) {
+                    csvContents.add(getExportCsvDTO(resourceName, res));
+                }
             }
+            for (ExportCsvDTO csvContent: csvContents) {
+                csvBuilder.append(generateCsvFromResource(csvContent));
+                logMessage.append(csvContent.getLogs());
+            }
+
+            byte[] csvBytes = ("\uFEFF" + csvBuilder.toString()).getBytes(StandardCharsets.UTF_8);
+            ByteArrayResource resource = new ByteArrayResource(csvBytes);
+
+            String fileName = resourceName + ".csv";
+
+            writeInCsvLogs(logMessage + " in file " + fileName);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                    .contentType(MediaType.parseMediaType("text/csv"))
+                    .contentLength(csvBytes.length)
+                    .body(resource);
         }
-        for (ExportCsvDTO csvContent: csvContents) {
-            csvBuilder.append(generateCsvFromResource(csvContent));
-            logMessage.append(csvContent.getLogs());
-        }
-
-        byte[] csvBytes = ("\uFEFF" + csvBuilder.toString()).getBytes(StandardCharsets.UTF_8);
-        ByteArrayResource resource = new ByteArrayResource(csvBytes);
-
-        String fileName = resourceName + ".csv";
-
-        writeInCsvLogs(logMessage + " in file " + fileName);
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
-                .contentType(MediaType.parseMediaType("text/csv"))
-                .contentLength(csvBytes.length)
-                .body(resource);
+        return (ResponseEntity<ByteArrayResource>) ResponseEntity.notFound();
     }
 
     @PostMapping("/import")
     public ResponseEntity<?> importTeachers(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("currentUser") String currentUser
+            @RequestParam("file") MultipartFile file
     ) {
+        UserDetailsImpl currentUser = getCurrentUser();
+        Long userId = currentUser.getId();
+        String userName = currentUser.getUsername();
 
         try {
-            Optional<UserSyncadia> user = userSyncadiaRepository.findByUsername(currentUser);
-            if (user.isEmpty()) {
-                writeInCsvLogs(user + "attempt to import a CSV file, but an error as occurred because he was not found.");
+            if (userName.isEmpty()) {
+                writeInCsvLogs(userName + "(" + userId + ") attempt to import a CSV file, but an error as occurred because he was not found.");
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("An error as occurred: User not found");
             } else {
-                Institution inst = user.get().getInstitution();
+                Institution inst = userSyncadiaRepository.findById(userId).get().getInstitution();
                 Long institutionId = inst.getIdInstitution();
-                teacherImportCsvService.importTeachers(file, institutionId, currentUser);
+                teacherImportCsvService.importTeachers(file, institutionId, userName);
+                writeInCsvLogs(userName + "(" + userId + ") imported from CSV file successfully");
                 return ResponseEntity.ok("Import successfully");
             }
 

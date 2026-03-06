@@ -85,18 +85,18 @@ public class TeacherImportCsvService {
                                 "   - Name : " + name + "\n" +
                                 "   - First name : " + firstName + "\n" +
                                 "   - Username : " + username);
-                        writeInCsvLogs("{User} import a teacher from a csv file.");
+                        writeInCsvLogs(userName + " import a teacher from a csv file.");
                     } else {
                         if (data.length == 0) {
-                            writeInCsvLogs("{User} attempt to import teachers from a csv file, but the csv file is empty");
+                            writeInCsvLogs(userName +  " attempt to import teachers from a csv file, but the csv file is empty");
                         } else {
-                            writeInCsvLogs("{User} attempt to import teachers from a csv file, but the user is already in the data base.");
+                            writeInCsvLogs(userName +  " attempt to import teachers from a csv file, but the user is already in the data base.");
                         }
                     }
                 }
                 if (!teachersToSave.isEmpty()) {
                     List<UserSyncadia> savedUsers = teacherRepository.saveAll(teachersToSave);
-                    writeInCsvLogs("{User} saved " + savedUsers.size() + " teacher from a csv file.");
+                    writeInCsvLogs(userName +  " saved " + savedUsers.size() + " teacher from a csv file.");
 
                     List<AccessRight> accessRightsToSave = new ArrayList<>();
 
@@ -113,17 +113,17 @@ public class TeacherImportCsvService {
                     }
 
                     accessRightRepository.saveAll(accessRightsToSave);
-                    writeInCsvLogs("{User} add access right ( teacher ) for " +  accessRightsToSave.size() + " users.");
+                    writeInCsvLogs(userName +  " add access right ( teacher ) for " +  accessRightsToSave.size() + " users.");
                 }
             } catch (NoSuchAlgorithmException e) {
-                writeInCsvLogs("{User} attempt to import teachers from a csv file, but an error occurred:"+ e.getMessage());
+                writeInCsvLogs(userName +  " attempt to import teachers from a csv file, but an error occurred:"+ e.getMessage());
             }
 
             if (!teachersToSave.isEmpty()) {
                 teacherRepository.saveAll(teachersToSave);
             }
         } else {
-            writeInCsvLogs("{User} attempt to import professors from a csv file, but their institution is invalid.");
+            writeInCsvLogs(userName +  " attempt to import professors from a csv file, but their institution is invalid.");
         }
 
 

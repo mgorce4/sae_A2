@@ -9,11 +9,15 @@ import iut.unilim.fr.back.entity.UserSyncadia;
 import iut.unilim.fr.back.repository.RessourceRepository;
 import iut.unilim.fr.back.repository.RessourceSheetRepository;
 import iut.unilim.fr.back.repository.UserSyncadiaRepository;
+import iut.unilim.fr.back.security.UserDetailsImpl;
 import iut.unilim.fr.back.service.TeacherImportCsvService;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
@@ -46,10 +50,36 @@ class CsvTransfertControllerTest {
     @InjectMocks
     private CsvTransfertController csvController;
 
+    private MockedStatic<UserDetailsImpl> mockedUserDetails;
+    private UserDetailsImpl mockUser;
+    private UserSyncadia dbUser;
+
+    @BeforeEach
+    void setUp() {
+        mockUser = mock(UserDetailsImpl.class);
+        lenient().when(mockUser.getId()).thenReturn(1L);
+        lenient().when(mockUser.getUsername()).thenReturn("admin");
+
+        mockedUserDetails = mockStatic(UserDetailsImpl.class);
+        mockedUserDetails.when(UserDetailsImpl::getCurrentUser).thenReturn(mockUser);
+
+        dbUser = new UserSyncadia();
+        Institution inst = new Institution();
+        inst.setIdInstitution(1L);
+        inst.setName("Info");
+        dbUser.setInstitution(inst);
+    }
+
+    @AfterEach
+    void tearDown() {
+        mockedUserDetails.close();
+    }
 
     @Test
     void testGenerateCsv_Success() {
         String resourceName = "R1.01";
+
+        when(userSyncadiaRepository.findById(1L)).thenReturn(Optional.of(dbUser));
 
         Ressource mockRessource = new Ressource();
         mockRessource.setIdResource(1L);
@@ -57,7 +87,6 @@ class CsvTransfertControllerTest {
                 .thenReturn(Optional.of(mockRessource));
 
         ResourceSheetDTO dto = mock(ResourceSheetDTO.class);
-
         when(dto.getDepartment()).thenReturn("Info");
         when(dto.getMainTeacher()).thenReturn("Prof");
 
@@ -80,27 +109,26 @@ class CsvTransfertControllerTest {
 
         when(rsDTOController.getResourceSheetsByResourceId(1L)).thenReturn(List.of(dto));
 
-        ResponseEntity<ByteArrayResource> response = csvController.generateCsv(resourceName, "", "atest");
+        ResponseEntity<ByteArrayResource> response = csvController.generateCsv(resourceName);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
 
         String csvContent = new String(response.getBody().getByteArray(), StandardCharsets.UTF_8);
-
         assertTrue(csvContent.startsWith("\uFEFF"));
-
+        // TODO : Correct ts
         assertTrue(csvContent.contains("R1.01"));
-
         assertTrue(csvContent.contains("Info"));
         assertTrue(csvContent.contains("Prof"));
     }
 
     @Test
-    void testGenerateCsv_NotFound() {
+    void testGenerateCsv_ResourceNotFound() {
+        when(userSyncadiaRepository.findById(1L)).thenReturn(Optional.of(dbUser));
         when(ressourceRepository.findFirstByLabelStartingWith("Inconnu"))
                 .thenReturn(Optional.empty());
 
-        ResponseEntity<ByteArrayResource> response = csvController.generateCsv("Inconnu", "", "User");
+        ResponseEntity<ByteArrayResource> response = csvController.generateCsv("Inconnu");
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
@@ -108,35 +136,28 @@ class CsvTransfertControllerTest {
     @Test
     void testImportTeachers_Success() throws Exception {
         MultipartFile file = new org.springframework.mock.web.MockMultipartFile("file", "test.csv", "text/csv", "data".getBytes());
-        String currentUser = "admin";
-        UserSyncadia user = new iut.unilim.fr.back.entity.UserSyncadia();
-        Institution inst = new iut.unilim.fr.back.entity.Institution();
-        inst.setIdInstitution(1L);
-        user.setInstitution(inst);
 
-        when(userSyncadiaRepository.findByUsername(currentUser)).thenReturn(Optional.of(user));
+        when(userSyncadiaRepository.findById(1L)).thenReturn(Optional.of(dbUser));
 
-        ResponseEntity<?> response = csvController.importTeachers(file, currentUser);
+        ResponseEntity<?> response = csvController.importTeachers(file);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
+        assertTrue(response.getBody().toString().contains("Import successfully"));
 
-        assertTrue(response.getBody().toString().contains("Import successful"));
-        verify(teacherImportCsvService).importTeachers(file, 1L, currentUser);
+        verify(teacherImportCsvService).importTeachers(file, 1L, "admin");
     }
 
     @Test
-    void testImportTeachers_UserNotFound() throws Exception {
+    void testImportTeachers_UserMissingUsername() throws Exception {
         MultipartFile file = new org.springframework.mock.web.MockMultipartFile("file", "test.csv", "text/csv", "data".getBytes());
-        String currentUser = "unknown";
 
-        when(userSyncadiaRepository.findByUsername(currentUser)).thenReturn(Optional.empty());
+        when(mockUser.getUsername()).thenReturn("");
 
-        ResponseEntity<?> response = csvController.importTeachers(file, currentUser);
+        ResponseEntity<?> response = csvController.importTeachers(file);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertNotNull(response.getBody());
-
         assertTrue(response.getBody().toString().contains("User not found"));
     }
 

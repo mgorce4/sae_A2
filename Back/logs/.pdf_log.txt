@@ -23,3 +23,65 @@
 )
    - feedBack(Student: bien; Pedagogical team: bien; Improvements: pas maélioration)
 [03:03:2026 13:06:51:445] atest create a pdf for resource sheet: R1.01_ressource_sheet.pdf
+[06:03:2026 11:07:39:752] Get resource 
+     - id : 78
+     - label :  Initiation au développement
+[06:03:2026 11:07:39:767] Get from database :
+   - Resource (R1.01:  Initiation au développement; IU EN FOR 001; UE1.1; prof testazert;)
+   - department(TEST)
+   - objectives(test)
+   - skills([test, test2])
+   - saes([SAÉ 1.01 Implémentation d'un besoin client , SAÉ 1.02 Comparaison d'approches algorithmiques])
+   - terms([test])
+   - keywords([test])
+   - hoursStudent([1000000.0, 1515616.0, 79465.0, 2595081.0])
+   - hoursNP([4.0, 12.0, 14.0, 30.0])
+   - pedagoContent( DS: 1. test
+; CM: 1. test
+; TD: 1. test
+; TP: 1. test
+)
+   - feedBack(Student: bien; Pedagogical team: bien; Improvements: pas maélioration)
+[06:03:2026 11:07:40:202] atest create a pdf for resource sheet: R1.01_ressource_sheet.pdf
+[06:03:2026 11:07:40:440] Get resource 
+     - id : 79
+     - label : Développement d'interfaces web
+[06:03:2026 11:07:40:441] Get from database :
+   - Resource (R1.02: Développement d'interfaces web; IU EN FOR 001; UE1.5; Prof2 Test2;)
+   - department(TEST)
+   - objectives(je suis une ressourcedfgdf dfg)
+   - skills([je suis une descripdfg df gtion  d'une compétence])
+   - saes([SAÉ 1.01 Implémentation d'un besoin client , SAÉ 1.05 Recueil de besoins, SAÉ 1.06 Découverte de l'environnement économique et écologique ])
+   - terms([test, Aucun contenue pour cette catégorie])
+   - keywords([test, Aucun contenue pour cette catégorie])
+   - hoursStudent([8.0, 10.0, 16.0, 34.0])
+   - hoursNP([4.0, 12.0, 14.0, 30.0])
+   - pedagoContent( DS: 1. je suis un ds
+; CM: 1. je suis un cm
+; TD: 1. je suis un td
+; TP: 1. je suis un tp
+)
+   - feedBack(Student: AWAfdgh dfhg; Pedagogical team: WAWghnff fgh; Improvements: DAMN f ghsfd h)
+[06:03:2026 11:07:40:481] atest create a pdf for resource sheet: R1.02_ressource_sheet.pdf
+[06:03:2026 11:09:16:480] Get resource 
+     - id : 78
+     - label :  Initiation au développement
+[06:03:2026 11:09:16:500] Get from database :
+   - Resource (R1.01:  Initiation au développement; IU EN FOR 001; UE1.1; prof testazert;)
+   - department(TEST)
+   - objectives(test)
+   - skills([test, test2])
+   - saes([SAÉ 1.01 Implémentation d'un besoin client , SAÉ 1.02 Comparaison d'approches algorithmiques])
+   - terms([test])
+   - keywords([test])
+   - hoursStudent([1000000.0, 1515616.0, 79465.0, 2595081.0])
+   - hoursNP([4.0, 12.0, 14.0, 30.0])
+   - pedagoContent( DS: 1. test
+; CM: 1. test
+; TD: 1. test
+; TP: 1. test
+)
+   - feedBack(Student: bien; Pedagogical team: bien; Improvements: pas maélioration)
+[06:03:2026 11:09:16:880] atest create a pdf for resource sheet: R1.01_ressource_sheet.pdf
+[06:03:2026 11:48:41:668] admin(1) attempt to generate a resource sheet pdf, but no matches found for the resource name
+[06:03:2026 11:48:42:373] admin(1) create a pdf for resource sheet: R1.01_ressource_sheet.pdf
