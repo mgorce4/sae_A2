@@ -263,6 +263,13 @@ FOREIGN KEY (id_resource)
 REFERENCES RESOURCE(id_Resource)
 ON DELETE CASCADE;
 
+CREATE TABLE YEAR_DATES(
+    id_YearDates SERIAL PRIMARY KEY,
+    start_year DATE NOT NULL,
+    end_year DATE NOT NULL,
+    id_institution INT REFERENCES INSTITUTION(id_institution)
+);
+
 
 INSERT INTO INSTITUTION (name, location) VALUES
 ('INFORMATIQUE', 'IUT du Limousin'),
