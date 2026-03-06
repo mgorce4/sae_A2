@@ -7,6 +7,7 @@ import iut.unilim.fr.back.dto.ResourceDTO.UeCoefficientDTO;
 import iut.unilim.fr.back.dto.admin.MCCCResourceDTO;
 import iut.unilim.fr.back.dto.admin.MCCCSaeDTO;
 import iut.unilim.fr.back.dto.admin.MCCCUEDTO;
+import iut.unilim.fr.back.dto.admin.MCCCPathDataDTO;
 import iut.unilim.fr.back.entity.*;
 import iut.unilim.fr.back.mapper.MCCCMapper;
 import iut.unilim.fr.back.mapper.MCCCSaeMapper;
@@ -1006,6 +1007,28 @@ public class MCCCController {
             List<UE> ues = ueRepository.findByPath_IdPath(pathId);
             List<MCCCUEDTO> dtos = mcccUEMapper.toDTOList(ues);
             return ResponseEntity.ok(dtos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Get all MCCC data (SAEs, UEs, Resources) for a path in a single request
+     * GET /api/v2/mccc/all/path/{pathId}
+     */
+    @GetMapping("/all/path/{pathId}")
+    public ResponseEntity<MCCCPathDataDTO> getMCCCAllByPath(@PathVariable Long pathId) {
+        try {
+            List<SAE> saes = saeRepository.findByPathId(pathId);
+            List<UE> ues = ueRepository.findByPath_IdPath(pathId);
+            List<Ressource> resources = ressourceRepository.findByPathId(pathId);
+
+            MCCCPathDataDTO dto = new MCCCPathDataDTO(
+                mcccSaeMapper.toDTOList(saes),
+                mcccUEMapper.toDTOList(ues),
+                mcccMapper.toDTOList(resources)
+            );
+            return ResponseEntity.ok(dto);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
