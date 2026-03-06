@@ -42,27 +42,15 @@ onMounted(async () => {
 
     try {
         const startTime = performance.now()
-        // Charger les données filtrées par path
-        const saes = await axios.get(`${API_BASE_URL}/api/v2/mccc/saes/path/${pathId.value}`)
-        // Filtrer par institution pour sécurité supplémentaire
-        saeTable.value = saes.data.filter(sae =>
-            sae.institutionId === institutionId
-        )
 
-        const ues = await axios.get(`${API_BASE_URL}/api/v2/mccc/ues/path/${pathId.value}`)
-        // Filtrer par institution pour sécurité supplémentaire
-        ueTable.value = ues.data.filter(ue =>
-            ue.institutionId === institutionId
-        )
+        // Un seul appel API pour récupérer toutes les données du parcours
+        const { data } = await axios.get(`${API_BASE_URL}/api/v2/mccc/all/path/${pathId.value}`)
 
-        const resources = await axios.get(`${API_BASE_URL}/api/v2/mccc/resources/path/${pathId.value}`)
-        // Filtrer par institution pour sécurité supplémentaire
-        resourceTable.value = resources.data.filter(resource =>
-            resource.institutionId === institutionId
-        )
+        saeTable.value = data.saes.filter(sae => sae.institutionId === institutionId)
+        ueTable.value = data.ues.filter(ue => ue.institutionId === institutionId)
+        resourceTable.value = data.resources.filter(resource => resource.institutionId === institutionId)
 
-        const endTime = performance.now()
-        const duration = (endTime - startTime).toFixed(2)
+        const duration = (performance.now() - startTime).toFixed(2)
         console.log(`Données chargées pour le parcours ${pathId.value} et institution ${institutionId}:`, {
             saes: saeTable.value.length,
             ues: ueTable.value.length,
