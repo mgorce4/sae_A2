@@ -177,7 +177,7 @@ onMounted(async () => {
                 </div>
                 <div style="background-color: var(--header-color); width: 10vw; height: 0.3vw; padding: 0; margin: 1vw 0; align-self: flex-start;" v-show="selectedUeId"></div>
                 <div v-for="(value, index) in getUESemesterInstitution()" :key="index" v-show="resourceList.length >= 1 || saeList.length >= 1" class="container-fluid" style="gap: 0;">
-                    <div class="ue_selection_button" :class="{ 'ue_selected': selectedUeId === value.ueNumber }" @click="selectUe(value, index)">{{ value.label }}</div>
+                    <div class="ue_selection_button" style="margin-right: 2.5vw;" :class="{ 'ue_selected': selectedUeId === value.ueNumber }" @click="selectUe(value, index)">{{ value.label }}</div>
                 </div>
             </div>
 
@@ -192,26 +192,26 @@ onMounted(async () => {
                         {{ value.label }} : {{ value.name }}
                     </a>
                     <div v-show="openedResourceIndex === index" class="panel_display container-fluid cfh">
-                        <div class="container-fluid">
-                            <p>Professeur principal : </p>
+                        <div class="full_mccc_display_field container-fluid">
+                            <p class="full_mccc_label">Professeur principal : </p>
                             <p class="mccc_input">{{ value.mainTeacherName }}</p>
                         </div>
-                        <div v-if="value.teachers.length >= 1" class="container-fluid">
-                            <p>Professeurs : </p>
+                        <div v-if="value.teachers.length >= 1" class="full_mccc_display_field container-fluid spb">
+                            <p class="full_mccc_label">Professeurs : </p>
                             <div v-for="(teacher, teacherIndex) in value.teachers" :key="teacherIndex">
                                 <p class="mccc_input">{{ teacher.teacherName }}</p>
                             </div>
                         </div>
-                        <div class="container-fluid">
-                            <p>Code Apogée : </p>
+                        <div class="full_mccc_display_field container-fluid">
+                            <p class="full_mccc_label">Code Apogée : </p>
                             <p class="mccc_input">{{ value.apogeeCode }}</p>
                         </div>
-                        <div class="container-fluid">
-                            <p>Modalité : </p>
+                        <div class="full_mccc_display_field container-fluid">
+                            <p class="full_mccc_label">Modalité : </p>
                             <p class="mccc_input">{{ value.termsCode }}</p>
                         </div>
-                        <div class="container-fluid">
-                            <p>Nombre d'heures (initiale) : </p>
+                        <div class="full_mccc_display_field container-fluid">
+                            <p class="full_mccc_label">Nombre d'heures (initiale) : </p>
                             <div class="container-fluid cfh mccc_input">
                                 <p>CM : {{ value.initialCm }}</p>
                                 <p>TD : {{ value.initialTd }}</p>
@@ -220,8 +220,8 @@ onMounted(async () => {
                                 <p>Total : {{ value.initialTotal }}</p>
                             </div>
                         </div>
-                        <div class="container-fluid" v-show="value.alternanceCm != null && value.alternanceTd != null && value.alternanceTp != null && value.alternanceProject != null && value.alternanceTotal > 0">
-                            <p>Nombre d'heures (alternance) : </p>
+                        <div class="full_mccc_display_field container-fluid" v-show="value.alternanceCm != null && value.alternanceTd != null && value.alternanceTp != null && value.alternanceProject != null && value.alternanceTotal > 0">
+                            <p class="full_mccc_label">Nombre d'heures (alternance) : </p>
                             <div class="container-fluid cfh mccc_input">
                                 <p>CM : {{ value.alternanceCm }}</p>
                                 <p>TD : {{ value.alternanceTd }}</p>
@@ -230,21 +230,21 @@ onMounted(async () => {
                                 <p>Total : {{ value.alternanceTotal }}</p>
                             </div>
                         </div>
-                        <div class="container-fluid">
-                            <p>Coefficient : </p>
+                        <div class="full_mccc_display_field container-fluid">
+                            <p class="full_mccc_label">Coefficient : </p>
                             <p class="mccc_input">{{ value.ueCoefficients[0].coefficient }}</p>
                         </div>
-                        <div class="container-fluid">
+                        <div class="container-fluid" v-if="getOtherUeLinked(value.ueCoefficients) != 0">
                             <table class="ueCoefficient">
                                 <tr>
-                                    <td>Autre(s) U.E. affectée(s) :</td>
-                                    <th class="display_coef_label" v-for="(labelUe, index2) in getOtherUeLinked(value.ueCoefficients)" v-bind:key="index2">
+                                    <td style="width: 14.4vw; text-align: right;">Autre(s) U.E. affectée(s) :</td>
+                                    <th class="display_coef_label" v-for="(labelUe, index2) in getOtherUeLinked(value.ueCoefficients)" v-bind:key="index2" style="width: fit-content;">
                                         {{ labelUe.ueLabel }}
                                     </th>
                                 </tr>
                                 <tr>
-                                    <td>Coefficient :</td>
-                                    <td class="display_coef_ue" v-for="(coefUe, index45) in getCoefFromResource(value)" v-bind:key="index45">
+                                    <td style="width: 14.4vw; text-align: right;">Coefficient :</td>
+                                    <td class="display_coef_ue" v-for="(coefUe, index45) in getCoefFromResource(value)" v-bind:key="index45" style="width: fit-content;">
                                         {{ coefUe }}
                                     </td>
                                 </tr>
@@ -258,36 +258,36 @@ onMounted(async () => {
                         {{ value.label }}
                     </a>
                     <div v-show="openedSaeIndex === index" class="panel_display container-fluid cfh">
-                        <div class="container-fluid">
-                            <p>Code Apogée : </p>
+                        <div class="full_mccc_display_field container-fluid">
+                            <p class="full_mccc_label">Code Apogée : </p>
                             <p class="mccc_input">{{ value.apogeeCode }}</p>
                         </div>
-                        <div class="container-fluid">
-                            <p>Modalité : </p>
+                        <div class="full_mccc_display_field container-fluid">
+                            <p class="full_mccc_label">Modalité : </p>
                             <p class="mccc_input">{{ value.termsCode }}</p>
                         </div>
-                        <div class="container-fluid">
-                            <p>Nombre d'heures (formation initiale) : </p>
+                        <div class="full_mccc_display_field container-fluid">
+                            <p class="full_mccc_label">Nombre d'heures (formation initiale) : </p>
                             <p class="mccc_input">{{ value.hours }}</p>
                         </div>
-                        <div class="container-fluid" v-if="value.hasAlternance">
-                            <p>Nombre d'heures (alternance) : </p>
+                        <div class="full_mccc_display_field container-fluid" v-if="value.hasAlternance">
+                            <p class="full_mccc_label">Nombre d'heures (alternance) : </p>
                             <p class="mccc_input">{{ value.hoursAlternance }}</p>
                         </div>
-                        <div class="container-fluid">
-                            <p>Coefficient : </p>
+                        <div class="full_mccc_display_field container-fluid">
+                            <p class="full_mccc_label">Coefficient : </p>
                             <p class="mccc_input">{{ value.ueCoefficients[0].coefficient }}</p>
                         </div>
-                        <div class="container-fluid" v-if="getOtherUeLinked(value.ueCoefficients) != 0">
+                        <div class="full_mccc_display_field container-fluid" v-if="getOtherUeLinked(value.ueCoefficients) != 0">
                             <table class="ueCoefficient">
                                 <tr>
-                                    <td>Autre(s) U.E. affectée(s) :</td>
+                                    <td style="width: 14.4vw; text-align: right;">Autre(s) U.E. affectée(s) :</td>
                                     <th class="display_coef_label" v-for="(labelUe, index2) in getOtherUeLinked(value.ueCoefficients)" v-bind:key="index2">
                                         {{ labelUe.ueLabel }}
                                     </th>
                                 </tr>
                                 <tr>
-                                    <td>Coefficient :</td>
+                                    <td style="width: 14.4vw; text-align: right;">Coefficient :</td>
                                     <td class="display_coef_ue" v-for="(coefUe, index45) in getCoefFromSae(value)" v-bind:key="index45">
                                         {{ coefUe }}
                                     </td>
@@ -325,6 +325,17 @@ onMounted(async () => {
     border-top: 1vw solid transparent;
     border-right: 2vw solid var(--main-theme-background-color);
     border-bottom: 1vw solid transparent;
+}
+
+.full_mccc_display_field > .full_mccc_label {
+    width: 15vw;
+    margin: 0.2 0.6vw;
+    text-align: right;
+}
+
+.full_mccc_display_field > .mccc_input {
+    width: 25vw;
+    margin: 0 0.6vw;
 }
 
 .mccc_input > p {
