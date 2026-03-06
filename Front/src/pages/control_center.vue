@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { status } from '@/main.js'
+import { getAccessRightsFromToken } from '@/utils/jwt.js'
 
 const show_popup = ref(false)
 
@@ -8,13 +9,16 @@ function toggleShowPopUp() {
     show_popup.value = !show_popup.value
 }
 
+const access_right = getAccessRightsFromToken()
+
 </script>
 
 <template>
     <div id="main">
         <div style="display: flex; align-items: center; height: 1vw">
             <div id="return_arrow">
-                <RouterLink id="back_arrow" to="/dashboard-administration">←</RouterLink>
+                <RouterLink id="back_arrow" to="/dashboard-administration" v-if="access_right.length == 1">←</RouterLink>
+                <RouterLink to="/multi_access_right_dashboard" id="back_arrow" v-else>←</RouterLink>
                 <p>Retour</p>
             </div>
         </div>

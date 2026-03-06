@@ -1,6 +1,7 @@
 <script setup>
 import { status } from '../main'
 import { router } from '@/router'
+import { getAccessRightsFromToken } from '@/utils/jwt.js'
 
 const routes = {
     Administration: '/dashboard-administration',
@@ -10,23 +11,26 @@ const routes = {
 const goToDashboard = () => {
     router.push(routes[status.value] || '/')
 }
+
+const access_right = getAccessRightsFromToken()
 </script>
 
 <template>
     <div id="justified">
         <div id="center">
             <div style="display: flex; align-items: center; height: 1vw">
-                <a class="back_arrow" @click="goToDashboard" style="cursor: pointer">←</a>
-                <p class="back" @click="goToDashboard" style="cursor: pointer">Retour à l'accueil</p>
+                <RouterLink id="back_arrow" :to="goToDashboard" v-if="access_right.length == 1">←</RouterLink>
+                <RouterLink to="/multi_access_right_dashboard" id="back_arrow" v-else>←</RouterLink>
+                <p>Retour</p>
             </div>
         </div>
         <div class= "background_form_mccc">
             <div id="white_text">
                 <p id="title">L'histoire de Syncadia</p>
-                <p>Le nom Syncadia provient de la combinaison des mots synchroniser et academia (terme 
-anglais signifiant « académie »). Cette fusion illustre parfaitement le concept de l’ERP, 
-centré sur la coordination et la gestion du milieu éducatif. De plus, la sonorité du nom 
-évoque le mot anglais cicada (« cigale »), symbole de l’été et de la fin de l’année scolaire, ce 
+                <p>Le nom Syncadia provient de la combinaison des mots synchroniser et academia (terme
+anglais signifiant « académie »). Cette fusion illustre parfaitement le concept de l’ERP,
+centré sur la coordination et la gestion du milieu éducatif. De plus, la sonorité du nom
+évoque le mot anglais cicada (« cigale »), symbole de l’été et de la fin de l’année scolaire, ce
 qui renforce la cohérence et la pertinence de ce choix.</p>
                 <p id="title">Qui sommes-nous ?</p>
                 <p>Nous sommes une équipe de 6 étudiants en BUT informatique à l'IUT du Limousin. Nous réalisons ce projet dans le cadre d'une Situation d'Apprentissage Evaluée.</p>
@@ -39,7 +43,7 @@ qui renforce la cohérence et la pertinence de ce choix.</p>
             </div>
         </div>
     </div>
-    
+
 </template>
 
 <style>

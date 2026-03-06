@@ -771,7 +771,8 @@ function toggleShowPopUpPedago() {
 <template>
     <div id="Ressource_Sheet">
         <div id="return_Arrow" @click="goBack">
-            <RouterLink id="back_arrow" to="/teacher-dashboard">←</RouterLink>
+            <RouterLink id="back_arrow" to="/teacher-dashboard" v-if="access_right.length == 1">←</RouterLink>
+            <RouterLink to="/multi_access_right_dashboard" id="back_arrow" v-else>←</RouterLink>
             <p>Retour</p>
         </div>
         <div id="background_Form">
