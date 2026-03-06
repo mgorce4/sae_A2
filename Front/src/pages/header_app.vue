@@ -29,7 +29,11 @@ const current_how_to = computed(() => {
 })
 
 const goToDashboard = () => {
-    router.push(routes[status.value] || '/')
+    if (localStorage.access_rights.length > 1) {
+        router.push('/multi_access_right_dashboard')
+    } else {
+        router.push(routes[status.value] || '/')
+    }
 }
 
 const handleDisconnect = () => {

@@ -1,7 +1,9 @@
 <script setup>
 import teacher_dashboard from '@/pages/teacher_dashboard.vue'
 import administration_dashboard from '@/pages/administration_dashboard.vue'
+import admin_dashboard from '@/pages/admin_dashboard.vue'
 import { ref } from 'vue'
+import { getAccessRightsFromToken } from '@/utils/jwt.js'
 
 const map_colors = {
     'Professeur': 'var(--onglet-techer-color)',
@@ -11,6 +13,7 @@ const map_colors = {
 
 let isTeacher = ref(true)
 let isAdministration = ref(false)
+let isAdmin = ref(false)
 
 const changeColorsTemplate = async (status) => {
     const color = map_colors[status] || 'var(--onglet-techer-color)'
@@ -20,17 +23,26 @@ const changeColorsTemplate = async (status) => {
         case 'Professeur':
             isTeacher.value = true
             isAdministration.value = false
+            isAdmin.value = false
             break
         case 'Administration':
             isTeacher.value = false
             isAdministration.value = true
+            isAdmin.value = false
             break
         case 'Admin':
             isTeacher.value = false
             isAdministration.value = false
+            isAdmin.value = true
             break
     }
 }
+
+const access_rights = getAccessRightsFromToken()
+
+const hasTeacherRight = access_rights.includes(1)
+const hasAdministrationRight = access_rights.includes(2)
+const hasAdminRight = access_rights.includes(3)
 
 </script>
 
@@ -38,14 +50,14 @@ const changeColorsTemplate = async (status) => {
     <div>
         <div>
             <div style="display: flex">
-                <p class="onglet" v-on:click="changeColorsTemplate('Professeur')">Professeur</p>
-                <p class="onglet" style="margin-left: 0; background-color: var(--onglet-administration-color)" v-on:click="changeColorsTemplate('Administration')">Administration</p>
-                <p class="onglet" style="margin-left: 0; background-color: var(--onglet-admin-color)" v-on:click="changeColorsTemplate('Admin')">Admin</p>
+                <p class="onglet" v-if="hasTeacherRight" v-on:click="changeColorsTemplate('Professeur')">Professeur</p>
+                <p class="onglet" v-if="hasAdministrationRight" style="margin-left: 0; background-color: var(--onglet-administration-color)" v-on:click="changeColorsTemplate('Administration')">Administration</p>
+                <p class="onglet" v-if="hasAdminRight" style="margin-left: 0; background-color: var(--onglet-admin-color)" v-on:click="changeColorsTemplate('Admin')">Admin</p>
             </div>
             <div id="template">
                 <teacher_dashboard v-if="isTeacher" />
                 <administration_dashboard v-else-if="isAdministration" />
-                <p v-else style="color: white">En cours...</p>
+                <admin_dashboard v-else-if="isAdmin" />
             </div>
 
         </div>
