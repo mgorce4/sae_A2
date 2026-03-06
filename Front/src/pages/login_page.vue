@@ -1,75 +1,123 @@
 <script setup>
-import { userName, institutionLocation, removeUser, status } from '../main.js'
-import { ref, onMounted } from 'vue'
+import { status, userName, institutionLocation, removeUser } from '../main.js'
+import { computed, ref, onMounted } from 'vue'
 import axios from 'axios'
 import { router } from '@/router'
 import { API_BASE_URL } from '@/config/api.js'
-import { setToken, getAccessRightsFromToken } from '@/utils/jwt.js'
 
-onMounted(() => {
+status.value = ''
+institutionLocation.value = ''
+
+const users = ref([])
+const access_rights = ref([])
+
+const user_access_rights = ref([])
+
+onMounted(async () => {
     removeUser()
+
+    axios.get(`${API_BASE_URL}/api/users`).then((response) => (users.value = response.data))
+    axios
+        .get(`${API_BASE_URL}/api/access-rights`)
+        .then((response) => (access_rights.value = response.data))
+
+    if (window.localStorage.getItem('access_rights')) {
+        try {
+            user_access_rights.value = JSON.parse(window.localStorage.getItem('access_rights'))
+        } catch {
+            localStorage.removeItem('access_rights')
+        }
+    }
+})
+
+const users_access_right = computed(() => {
+    // Join between users and access_rights where users.idUser = access_rights.idUser
+    return users.value
+        .map((user) => {
+            const userRights = access_rights.value.filter((ar) => ar.idUser === user.idUser)
+            return {
+                ...user,
+                accessRights: userRights,
+            }
+        })
+        .filter((user) => user.accessRights.length > 0)
 })
 
 const username = ref('')
 const password = ref('')
 const loginError = ref(false)
-const redirectlink = ref('')
 
-async function addItem() {
+function addItem() {
     loginError.value = false
-    try {
-        const response = await axios.post(`${API_BASE_URL}/api/auth/signin`, {
-            username: username.value,
-            password: password.value,
-        })
+    verifyUser(username.value, password.value)
 
-        const data = response.data
+    const accessRights = JSON.parse(window.localStorage.getItem('access_rights'))
+    if (accessRights && accessRights.length === 1) {
+        redirect(accessRights[0])
+        router.push(redirectlink.value)
+    } else if (accessRights && accessRights.length > 1) {
+        // Multiple access rights - could show a selection menu
+        // For now, redirect to the first one
+        redirect(accessRights[0])
+        router.push(redirectlink.value)
+    }
+}
 
-        // Stocker le JWT
-        setToken(data.token)
+function is_username_and_password_ok(username, user, password) {
+    return username === user.username && password === user.password
+}
 
-        // Stocker les informations de l'utilisateur (pas d'identifiant ni de mot de passe)
-        localStorage.setItem('firstname', data.firstname)
-        localStorage.setItem('lastname', data.lastname)
-        localStorage.setItem('idUser', data.id)
-        localStorage.setItem('idInstitution', data.idInstitution)
-        localStorage.setItem('institutionName', data.institutionName)
-        localStorage.setItem('institutionLocation', data.institutionLocation)
-        // Mettre à jour les états réactifs globaux
-        userName.value = data.lastname + ' ' + data.firstname
-        institutionLocation.value = data.institutionLocation
+function verifyUser(username, password) {
+    const user = users.value.find((user) => is_username_and_password_ok(username, user, password))
 
-        // Les droits d'accès sont lus directement depuis le payload du JWT (signé)
-        redirect(getAccessRightsFromToken())
-    } catch (error) {
+    if (user) {
+        localStorage.username = username
+        localStorage.password = password
+        localStorage.firstname = user.firstname
+        localStorage.lastname = user.lastname
+        localStorage.idUser = user.idUser
+        localStorage.idInstitution = user.institution.idInstitution
+        localStorage.institutionName = user.institution.name
+        localStorage.institutionLocation = user.institution.location
+        verifyAccessRight()
+    } else {
         loginError.value = true
         removeUser()
     }
 }
 
-function redirect(accessRights) {
-    if (accessRights.length === 1) {
-        redirectSingle(accessRights[0])
-    } else if (accessRights.length > 1) {
-        status.value = 'Multiple'
-        redirectlink.value = '/multi_access_right_dashboard'
-    }
-    router.push(redirectlink.value)
+function number_of_access_right(access_right) {
+    return access_right.accessRights.length
 }
 
-function redirectSingle(accessRight) {
-    switch (accessRight) {
+function verifyAccessRight() {
+    user_access_rights.value = []
+    users_access_right.value.forEach((access_right) => {
+        if (localStorage.username === access_right.username) {
+            access_right.accessRights.forEach((access_right) => {
+                user_access_rights.value.push(access_right.accessRight)
+            })
+        }
+    })
+    const parsed = JSON.stringify(user_access_rights.value)
+    localStorage.setItem('access_rights', parsed)
+}
+const redirectlink = ref("")
+
+function redirect(access_right) {
+    userName.value = localStorage.lastname + ' ' + localStorage.firstname
+    switch (access_right) {
         case 1:
-            status.value = 'Professeur'
+            localStorage.status = 'Professeur'
             redirectlink.value = '/teacher-dashboard'
             break
         case 2:
-            status.value = 'Administration'
+            localStorage.status = 'Administration'
             redirectlink.value = '/dashboard-administration'
             break
         case 3:
-            status.value = 'Admin'
-            redirectlink.value = '/admin-dashboard'
+            localStorage.status = 'Admin'
+            redirectlink.value = '/'
             break
     }
 }

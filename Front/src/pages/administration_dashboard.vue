@@ -30,46 +30,58 @@ const paths = ref([]) // Liste des parcours pour l'institution
 const pathId = ref(null) // ID du parcours sélectionné
 
 onMounted(async () => {
-    const institutionId = localStorage.idInstitution
-    const startTime = performance.now()
+    console.log('=== ADMINISTRATION DASHBOARD - ONMOUNTED DEBUT ===')
+    console.log('status:', status.value)
+    console.log('localStorage.idInstitution:', localStorage.idInstitution)
 
-    const [sheetsResult, datesResult, pathsResult] = await Promise.allSettled([
-        axios.get(`${API_BASE_URL}/api/v2/resource-sheets/institution/${institutionId}`),
-        institutionId
-            ? axios.get(`${API_BASE_URL}/api/final-delivery-dates/institution/${institutionId}`)
-            : Promise.resolve(null),
-        axios.get(`${API_BASE_URL}/api/paths`),
-    ])
-
-    const endTime = performance.now()
-    console.log(`API load time: ${Math.round(endTime - startTime)} ms`)
-
-    // Resource sheets
-    if (sheetsResult.status === 'fulfilled') {
-        resource_sheets.value = sheetsResult.value.data
+    try {
+        console.log('Chargement des resource sheets...')
+        const response = await axios.get(`${API_BASE_URL}/api/v2/resource-sheets`)
+        resource_sheets.value = response.data
         console.log('Resource sheets chargées:', resource_sheets.value.length)
-    } else {
-        console.error('Error loading resource sheets:', sheetsResult.reason)
+    } catch (error) {
+        console.error('Error loading resource sheets:', error)
         resource_sheets.value = []
     }
 
-    // Delivery dates
-    if (datesResult.status === 'fulfilled' && datesResult.value?.data) {
-        deliveryDatesId.value = datesResult.value.data.idFinalDelivery
-        firstDeliveryDate.value = datesResult.value.data.firstDelivery || ''
-        secondDeliveryDate.value = datesResult.value.data.secondDelivery || ''
-    } else if (datesResult.status === 'rejected' && datesResult.reason?.response?.status !== 404) {
-        console.error('Error loading delivery dates:', datesResult.reason)
+    // Load delivery dates for the current institution
+    try {
+        const institutionId = localStorage.idInstitution
+        if (institutionId) {
+            const datesResponse = await axios.get(
+                `${API_BASE_URL}/api/final-delivery-dates/institution/${institutionId}`,
+            )
+            if (datesResponse.data) {
+                deliveryDatesId.value = datesResponse.data.idFinalDelivery
+                firstDeliveryDate.value = datesResponse.data.firstDelivery || ''
+                secondDeliveryDate.value = datesResponse.data.secondDelivery || ''
+            }
+        }
+    } catch (error) {
+        // 404 is normal if no dates exist yet for this institution
+        if (error.response?.status !== 404) {
+            console.error('Error loading delivery dates:', error)
+        }
     }
 
-    // Paths
-    if (pathsResult.status === 'fulfilled') {
-        paths.value = pathsResult.value.data.filter(
-            (path) => path.institution?.idInstitution === parseInt(institutionId),
-        )
-        console.log('Parcours filtrés pour institution', institutionId, ':', paths.value)
-    } else {
-        console.error('Error loading paths:', pathsResult.reason)
+    // Load paths for the current institution
+    try {
+        const institutionId = localStorage.idInstitution
+        console.log('=== CHARGEMENT PARCOURS ADMIN DASHBOARD ===')
+        console.log('institutionId:', institutionId)
+
+        if (institutionId) {
+            const pathsResponse = await axios.get(`${API_BASE_URL}/api/paths`)
+            console.log('Tous les parcours reçus:', pathsResponse.data)
+
+            paths.value = pathsResponse.data.filter(
+                (path) => path.institution?.idInstitution === parseInt(institutionId),
+            )
+
+            console.log('Parcours filtrés pour institution', institutionId, ':', paths.value)
+        }
+    } catch (error) {
+        console.error('Error loading paths:', error)
         paths.value = []
     }
 })
@@ -82,6 +94,7 @@ function getResourcesForSemester(semester) {
 
     let filteredSheets = resource_sheets.value
         .filter((sheet) => sheet.semester === semester)
+        .filter((sheet) => sheet.institutionId == localStorage.idInstitution)
 
     // Filtrer par path si un path est sélectionné
     if (pathId.value !== null) {
@@ -147,7 +160,7 @@ async function downloadSheets() {
         return
     }
 
-    const userName = (localStorage.getItem('firstname') + ' ' + localStorage.getItem('lastname')).trim() || 'user'
+    const userName = localStorage.username || 'user'
     console.log('userName:', userName)
 
     try {
@@ -311,7 +324,7 @@ function toggleShowPopUp() {
 
                 <div v-else v-for="sheet in getResourcesForSemester(selected_semester_sheets)" :key="sheet.id">
                     <div
-                        v-if="!sheet.hasTeacherHours"
+                        v-if="sheet.hoursTeacher === null || sheet.hoursTeacher === undifinded"
                         class="ressource"
                         style="background-color: var(--sub-scrollbar-color)"
                     >

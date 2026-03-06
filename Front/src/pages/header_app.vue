@@ -4,11 +4,9 @@ import { ref, computed } from 'vue'
 import how_to_administration from '../userGuidePages/how_to_administration.vue'
 import how_to_teacher from '../userGuidePages/how_to_teacher.vue'
 import { router } from '@/router'
-import { getStatusFromToken } from '@/utils/jwt.js'
 
-// Dérivé du JWT à chaque chargement — non falsifiable
-status.value = getStatusFromToken()
-userName.value = (localStorage.getItem('lastname') + ' ' + localStorage.getItem('firstname')).trim()
+status.value = localStorage.status
+userName.value = localStorage.lastname + ' ' + localStorage.firstname
 
 const show_how_to_popup = ref(false)
 

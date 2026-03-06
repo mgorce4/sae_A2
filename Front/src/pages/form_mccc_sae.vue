@@ -47,7 +47,6 @@ console.log('SAE TABLE V2 : ', saeTableV2)
 console.log('UE TABLE V2 : ', ueTableV2)
 
 const semesterNumber = ref(route.query.id)
-const pathId = ref(parseInt(route.query.pathId) || parseInt(localStorage.pathId) || null)
 console.log('semestre saé : ', semesterNumber.value)
 
 // Filter SAE data by semester
@@ -371,7 +370,7 @@ function saveSae() {
     if (addModifySdSaeModified.value === null) {
         // Create new SAE
         axios
-            .post(`${API_BASE_URL}/api/v2/mccc/saes`, saeDTO)
+            .post('\/api/v2/mccc/saes', saeDTO)
             .then(async (response) => {
                 console.log('SAE créée:', response.data)
                 // Reload SAEs

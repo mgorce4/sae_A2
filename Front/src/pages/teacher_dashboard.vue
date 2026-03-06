@@ -24,13 +24,23 @@ onMounted(async () => {
 
         console.log('userId:', userId, '| userName:', userName)
 
-        // Mesure du temps de chargement API
-        const start = performance.now()
-        const response = await axios.get(`${API_BASE_URL}/api/v2/resource-sheets/for-user/${userId}`)
-        const end = performance.now()
-        console.log(`Chargement API: ${(end - start).toFixed(2)} ms`)
-        resourceSheetsDTO.value = response.data
-        console.log(`Total fiches pour ${userName}:`, resourceSheetsDTO.value.length)
+        //all the resources-sheets
+        const response = await axios.get(`${API_BASE_URL}/api/v2/resource-sheets`)
+        
+        console.log('Total fiches:', response.data.length)
+        
+        //To get the mainTeacher and the teacher
+        resourceSheetsDTO.value = response.data.filter(sheet => {
+            const isMainTeacher = sheet.mainTeacher === userName
+            const isInTeachers = sheet.teachers && sheet.teachers.includes(userName)
+            
+            if (isMainTeacher || isInTeachers) {
+                console.log('Match:', sheet.resourceLabel, '| mainTeacher:', sheet.mainTeacher, '| teachers:', sheet.teachers)
+            }
+            return isMainTeacher || isInTeachers
+        })
+
+        console.log(`${resourceSheetsDTO.value.length} fiche(s) pour ${userName}`)
     } catch (error) {
         console.error('Error loading resource sheets:', error)
     }

@@ -49,6 +49,7 @@ public class PedagogicalContentDTO {
         this.ds = ds;
     }
 
+
     /**
      * Inner class for a pedagogical content item
      */
