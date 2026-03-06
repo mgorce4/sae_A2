@@ -4,13 +4,14 @@ import { ref, computed } from 'vue'
 import how_to_administration from '../userGuidePages/how_to_administration.vue'
 import how_to_teacher from '../userGuidePages/how_to_teacher.vue'
 import { router } from '@/router'
-import { getStatusFromToken } from '@/utils/jwt.js'
+import { getAccessRightsFromToken, getStatusFromToken } from '@/utils/jwt.js'
 
 // Dérivé du JWT à chaque chargement — non falsifiable
 status.value = getStatusFromToken()
 userName.value = (localStorage.getItem('lastname') + ' ' + localStorage.getItem('firstname')).trim()
 
 const show_how_to_popup = ref(false)
+const access_rights = getAccessRightsFromToken()
 
 const togglePopup = () => {
     show_how_to_popup.value = !show_how_to_popup.value
@@ -31,7 +32,7 @@ const current_how_to = computed(() => {
 })
 
 const goToDashboard = () => {
-    if (localStorage.access_rights.length > 1) {
+    if (access_rights.length > 1) {
         router.push('/multi_access_right_dashboard')
     } else {
         router.push(routes[status.value] || '/')

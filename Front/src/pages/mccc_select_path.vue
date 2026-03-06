@@ -3,6 +3,7 @@ import { onMounted, ref, nextTick, watch, computed } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
 import { router } from '@/router'
+import { getAccessRightsFromToken } from '@/utils/jwt.js'
 
 const display_more_area = ref(false)
 const coursName = ref('')
@@ -250,12 +251,15 @@ const del = async (id) => {
         console.error('Erreur lors de la suppression', error)
     }
 }
+
+const access_right = getAccessRightsFromToken()
 </script>
 
 <template>
     <div id="form_select_page">
         <div style="display: flex; align-items: center; height: 1vw">
-            <RouterLink class="back_arrow" to="/dashboard-administration">←</RouterLink>
+            <RouterLink id="back_arrow" to="/dashboard-administration" v-if="access_right.length == 1">←</RouterLink>
+            <RouterLink to="/multi_access_right_dashboard" id="back_arrow" v-else>←</RouterLink>
             <p class="back">Retour à l'accueil</p>
         </div>
         <div id="background_path">

@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
 import { useRoute } from 'vue-router'
+import { getAccessRightsFromToken } from '@/utils/jwt.js'
 
 const route = useRoute()
 
@@ -118,13 +119,13 @@ function is_improvement_suggestions_defined() {
 onMounted(async () => {
     console.log('=== RESOURCE SHEET DISPLAY - ONMOUNTED ===')
     console.log('resource_label from query:', resource_label)
-    
+
     try {
         const response = await axios.get(`${API_BASE_URL}/api/v2/resource-sheets`)
         console.log('Resource sheets reçues:', response.data.length)
-        
+
         resource_sheet.value = response.data.find((sheet) => sheet.resourceLabel === resource_label)
-        
+
         if (resource_sheet.value) {
             console.log('Fiche trouvée:', resource_sheet.value)
         } else {
@@ -136,18 +137,17 @@ onMounted(async () => {
         alert('Erreur lors du chargement de la fiche de ressource')
     }
 })
+
+const access_right = getAccessRightsFromToken()
+
 </script>
 
 <template>
     <div id="main">
         <div class="component spb">
             <div id="return_arrow">
-                <RouterLink
-                    id="back_arrow"
-                    to="/dashboard-administration"
-                >
-                    ←
-                </RouterLink>
+                <RouterLink id="back_arrow" to="/dashboard-administration" v-if="access_right.length == 1">←</RouterLink>
+                <RouterLink to="/multi_access_right_dashboard" id="back_arrow" v-else>←</RouterLink>
                 <p>Retour</p>
             </div>
 
