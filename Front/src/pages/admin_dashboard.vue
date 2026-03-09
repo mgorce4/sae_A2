@@ -17,7 +17,7 @@ const goToNext = (url, status) => {
 </script>
 
 <template>
-   <button class="btn1" to="/mccc-select-path">MCCC</button>
+   <button class="btn1" @click="goToNext('/mccc-select-path',Admin)">MCCC</button>
    <button class="btn1" @click="goToNext('/admin-ressources-sheet',Admin)">Vue Fiche professeur</button>
    <button class="btn1" @click="goToNext('/add-teacher-page',Admin)">Vue professseur</button>
 </template>

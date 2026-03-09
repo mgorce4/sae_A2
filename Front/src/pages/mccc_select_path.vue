@@ -2,6 +2,7 @@
 import { onMounted, ref, nextTick, watch, computed } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
+import { status } from '@/main.js'
 import { router } from '@/router'
 import { getAccessRightsFromToken, getIdInstitutionFromToken } from '@/utils/jwt.js'
 
@@ -260,7 +261,10 @@ const access_right = getAccessRightsFromToken()
 <template>
     <div id="form_select_page">
         <div style="display: flex; align-items: center; height: 1vw">
-            <RouterLink id="back_arrow" to="/dashboard-administration" v-if="access_right.length == 1">←</RouterLink>
+            <div v-if="access_right.length == 1">
+                <RouterLink v-if="status==='Administration'" id="back_arrow" to="/dashboard-administration">←</RouterLink>
+                <RouterLink v-else-if="status==='Admin'" id="back_arrow" to="/admin-dashboard">←</RouterLink>
+            </div>
             <RouterLink to="/multi_access_right_dashboard" id="back_arrow" v-else>←</RouterLink>
             <p class="back">Retour à l'accueil</p>
         </div>
@@ -343,14 +347,14 @@ const access_right = getAccessRightsFromToken()
                                 "
                             >
                                 <button
-                                    v-if="!cours.edit"
+                                    v-if="!cours.edit && status != 'Admin'"
                                     @click="cours.edit = true"
                                     class="btn_modify"
                                 >
                                     Modifier
                                 </button>
                                 <button
-                                    v-if="!cours.edit"
+                                    v-if="!cours.edit && status != 'Admin'"
                                     class="btn_modify"
                                     @click="del(cours.idPath)"
                                 >
