@@ -71,6 +71,7 @@ const attachAccordionListeners = () => {
 onMounted(async () => {
     const response = await axios.get(`${API_BASE_URL}/api/access-rights`)
     teachers.value = response.data.filter((ar) => ar.accessRight === 1)
+    teachers.value = teachers.value.filter((teacher) => teacher.user.institution.idInstitution === getIdInstitutionFromToken())
 
     await nextTick()
     attachAccordionListeners()

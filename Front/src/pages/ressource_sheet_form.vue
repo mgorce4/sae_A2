@@ -58,6 +58,9 @@ const institutionName = computed(() => resourceSheetDTO.value?.department || '##
 const resourceName = computed(() => resourceSheetDTO.value?.resourceName || 'Nom de la ressource')
 const resourceLabel = computed(() => resourceSheetDTO.value?.resourceLabel || '###')
 
+const resourceObjetive = computed(() => resourceSheetDTO.value?.objective || '')
+const resourceSkills = computed(() => resourceSheetDTO.value?.skills || [])
+
 const hoursPerStudent = computed(() => resourceSheetDTO.value?.hoursPN || null)
 const hoursPerStudentAlternance = computed(() => resourceSheetDTO.value?.hoursPNAlternance || null)
 
@@ -770,6 +773,11 @@ const show_popup_pedago = ref(false)
 function toggleShowPopUpPedago() {
     show_popup_pedago.value = !show_popup_pedago.value
 }
+
+const isObjectiveAndSkillsFilled = computed(() => {
+    return resourceObjetive.value === "" && resourceSkills.value.length === 0;
+})
+
 </script>
 <template>
     <div id="Ressource_Sheet">
@@ -1299,7 +1307,8 @@ function toggleShowPopUpPedago() {
 
             <!-- Save button container -->
             <div class="save-button-container">
-                <button id="button_save" @click="saveResourceSheet">Sauvegarder</button>
+                <button v-if="isObjectiveAndSkillsFilled" id="button_save" @click="saveResourceSheet">Sauvegarder</button>
+                <button v-else id="button_save" @click="saveResourceSheet">Modifier</button>
             </div>
         </div>
     </div>
