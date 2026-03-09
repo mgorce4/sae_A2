@@ -8,7 +8,7 @@ import { API_BASE_URL } from '@/config/api.js'
 import { router } from '@/router'
 
 /* constantes */
-
+institutionLocation.value = localStorage.institutionLocation
 status.value = 'Administration'
 institutionLocation.value = localStorage.institutionLocation
 
