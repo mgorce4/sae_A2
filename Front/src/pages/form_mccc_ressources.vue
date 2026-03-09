@@ -880,7 +880,7 @@ onMounted(async () => {
 })
 
 function getUEsByInstitution() {
-    return UEs.value.filter((ue) => ue.institutionId == getIdInstitutionFromToken())
+    return UEs.value.filter((ue) => ue.institutionId == getIdInstitutionFromToken()).filter((ue) => ue.semester == route.query.id)
 }
 
 function getResourcesBySemester() {
