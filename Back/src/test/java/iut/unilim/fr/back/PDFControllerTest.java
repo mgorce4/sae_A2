@@ -78,7 +78,7 @@ class PdfControllerTest {
 
             assertEquals(HttpStatus.OK, response.getStatusCode());
             assertNotNull(response.getBody());
-            assertTrue(response.getHeaders().getContentDisposition().toString().contains("R1.01_ressource_sheet.pdf"));
+            assertTrue(response.getHeaders().getContentDisposition().toString().contains("R1.01_resource_sheet.pdf"));
 
         } catch (Exception e) {
             System.out.println("No police file found. Test is ignored : \n" + e.getMessage());

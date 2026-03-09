@@ -2,7 +2,7 @@ package iut.unilim.fr.back.controllerBack;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
-import iut.unilim.fr.back.Ressource.HeaderAndFooter;
+import iut.unilim.fr.back.resource.HeaderAndFooter;
 import iut.unilim.fr.back.security.UserDetailsImpl;
 import iut.unilim.fr.back.service.ResourceGetterService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.io.ByteArrayOutputStream;
-import java.security.Principal;
 import java.util.ArrayList;
 
 import static com.itextpdf.text.List.UNORDERED;
@@ -70,7 +69,7 @@ public class PdfController {
 
         String resResourceName = res.getResourceName();
         if (!resResourceName.isEmpty()) {
-            String pdfFileName = resResourceName + "_ressource_sheet.pdf";
+            String pdfFileName = resResourceName + "_resource_sheet.pdf";
             try {
                 BaseFont customBaseFont;
                 try {

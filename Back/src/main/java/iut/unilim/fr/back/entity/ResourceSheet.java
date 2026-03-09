@@ -5,7 +5,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "RESOURCE_SHEET")
-public class RessourceSheet {
+public class ResourceSheet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_ResourceSheet")
@@ -16,12 +16,12 @@ public class RessourceSheet {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_Resource")
-    private Ressource resource;
+    private Resource resource;
 
-    public RessourceSheet() {
+    public ResourceSheet() {
     }
 
-    public RessourceSheet(Long idResourceSheet, LocalDate year, Ressource resource) {
+    public ResourceSheet(Long idResourceSheet, LocalDate year, Resource resource) {
         this.idResourceSheet = idResourceSheet;
         this.year = year;
         this.resource = resource;
@@ -43,11 +43,11 @@ public class RessourceSheet {
         this.year = year;
     }
 
-    public Ressource getResource() {
+    public Resource getResource() {
         return resource;
     }
 
-    public void setResource(Ressource resource) {
+    public void setResource(Resource resource) {
         this.resource = resource;
     }
 }

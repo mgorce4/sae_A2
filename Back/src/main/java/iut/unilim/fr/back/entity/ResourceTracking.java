@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "resource_tracking")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RessourceTracking {
+public class ResourceTracking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_resourcetracking")
@@ -25,12 +25,12 @@ public class RessourceTracking {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_resourcesheet")
     @JsonIgnore
-    private RessourceSheet resourceSheet;
+    private ResourceSheet resourceSheet;
 
-    public RessourceTracking() {
+    public ResourceTracking() {
     }
 
-    public RessourceTracking(Long idResourceTracking, String pedagogicalFeedback, String studentFeedback, String improvementSuggestions, RessourceSheet resourceSheet) {
+    public ResourceTracking(Long idResourceTracking, String pedagogicalFeedback, String studentFeedback, String improvementSuggestions, ResourceSheet resourceSheet) {
         this.idResourceTracking = idResourceTracking;
         this.pedagogicalFeedback = pedagogicalFeedback;
         this.studentFeedback = studentFeedback;
@@ -70,11 +70,11 @@ public class RessourceTracking {
         this.improvementSuggestions = improvementSuggestions;
     }
 
-    public RessourceSheet getResourceSheet() {
+    public ResourceSheet getResourceSheet() {
         return resourceSheet;
     }
 
-    public void setResourceSheet(RessourceSheet resourceSheet) {
+    public void setResourceSheet(ResourceSheet resourceSheet) {
         this.resourceSheet = resourceSheet;
     }
 }

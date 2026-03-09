@@ -292,8 +292,8 @@ INSERT INTO USERSYNCADIA ( firstname, lastname, username, password, id_instituti
 ( 'Prof2', 'Test2', 'ptest2', 'test123', 4);
 
 INSERT INTO TASK (name, description, delivery , id_User) VALUES
-('remplir fiche ressource', 'vous devez remplir la fiche ressource pour chaque ressource pédagogique que vous créez', '2026-01-30',  1),
-('mettre à jour fiche ressource', 'vous devez mettre à jour la fiche ressource pour chaque ressource pédagogique que vous modifiez', '2026-01-30', 3);
+('remplir fiche resource', 'vous devez remplir la fiche resource pour chaque resource pédagogique que vous créez', '2026-01-30',  1),
+('mettre à jour fiche resource', 'vous devez mettre à jour la fiche resource pour chaque resource pédagogique que vous modifiez', '2026-01-30', 3);
 
 
 
@@ -350,7 +350,7 @@ INSERT INTO RESOURCE(apogeeCode, label,name, diffMultiCompetences, semester, id_
 ('TIN01A1M', 'R1.01',' Initiation au développement', FALSE, 1, 1),
 ('TIN01A2M', 'R1.02','Développement d''interfaces web', FALSE, 1, 2),
 ('TIN01A3M', 'R1.03','Introduction à l''architecture des ordinateurs', FALSE, 1, 3),
-('TIN01A4M', 'R2.04','Test de la nouvelle ressource', FALSE, 2, 4);
+('TIN01A4M', 'R2.04','Test de la nouvelle resource', FALSE, 2, 4);
 
 
 INSERT INTO SAE_LINK_RESOURCE(id_SAE, id_resource) VALUES
@@ -415,7 +415,7 @@ INSERT INTO NATIONAL_PROGRAM_SKILL(label, description, id_ResourceSheet) VALUES
 ('dev','Être capable de coder en Python', 1),
 ('web','Maîtriser HTML et CSS', 2),
 ('arch','Comprendre le fonctionnement des processeurs', 3),
-('test','Savoir évaluer une ressource pédagogique', 4);
+('test','Savoir évaluer une resource pédagogique', 4);
 
 INSERT INTO PEDAGOGICAL_CONTENT(cm, td, tp,id_resourceSheet) VALUES
 ('1 Ennui ultime du python,2 pourquoi le prof il fait des dessins frr?,3 j''abandonne c''est trop là', '1 waw en vrai c''est ok de fou,2 euh ok c''est chelou mais ok ig,3 c''est quoi cette merde là laissez moi mourir', '1 hello world,2 bibliothèque des pleurs,3 putain c''est quoi pickle ;-;',1),
@@ -437,7 +437,7 @@ INSERT INTO KEYWORD(keyword, id_ResourceSheet) VALUES
 ('architecture', 3),
 ('ordinateur', 3),
 ('test', 4),
-('ressource pédagogique', 4);
+('resource pédagogique', 4);
 
 INSERT INTO MODALITIES_OF_IMPLEMENTATION(modality, id_ResourceSheet) VALUES
 ('IUZHDEIZUHDEOID', 1),

@@ -1,20 +1,20 @@
-package iut.unilim.fr.back.Ressource;
+package iut.unilim.fr.back.resource;
 
 import java.util.ArrayList;
 
 public class MCCC {
-    private ArrayList<Ressource> ressources;
+    private ArrayList<Resource> resources;
     private ArrayList<UE> UEs;
     private ArrayList<SAE> SAEs;
 
     public MCCC() {
-        ressources = new ArrayList<>();
+        resources = new ArrayList<>();
         UEs = new ArrayList<>();
         SAEs = new ArrayList<>();
     }
 
-    public ArrayList<Ressource> getRessource() {
-        return ressources;
+    public ArrayList<Resource> getResource() {
+        return resources;
     }
     public ArrayList<UE> getUE() {
         return UEs;
@@ -23,8 +23,8 @@ public class MCCC {
         return SAEs;
     }
 
-    public void addRessource(Ressource ressource) {
-        ressources.add(ressource);
+    public void addResource(Resource resource) {
+        resources.add(resource);
     }
     public void addUE(UE ue) {
         UEs.add(ue);

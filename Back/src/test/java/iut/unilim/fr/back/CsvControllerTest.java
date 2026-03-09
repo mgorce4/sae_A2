@@ -4,9 +4,9 @@ import iut.unilim.fr.back.controller.ResourceSheetDTOController;
 import iut.unilim.fr.back.controllerBack.CsvTransfertController;
 import iut.unilim.fr.back.dto.*;
 import iut.unilim.fr.back.entity.Institution;
-import iut.unilim.fr.back.entity.Ressource;
+import iut.unilim.fr.back.entity.Resource;
 import iut.unilim.fr.back.entity.UserSyncadia;
-import iut.unilim.fr.back.repository.RessourceRepository;
+import iut.unilim.fr.back.repository.ResourceRepository;
 import iut.unilim.fr.back.repository.ResourceSheetRepository;
 import iut.unilim.fr.back.repository.UserSyncadiaRepository;
 import iut.unilim.fr.back.security.UserDetailsImpl;
@@ -36,7 +36,7 @@ import static org.mockito.Mockito.*;
 class CsvTransfertControllerTest {
 
     @Mock
-    private RessourceRepository ressourceRepository;
+    private ResourceRepository resourceRepository;
     @Mock
     private ResourceSheetRepository resourceSheetRepository;
     @Mock
@@ -81,10 +81,10 @@ class CsvTransfertControllerTest {
 
         when(userSyncadiaRepository.findById(1L)).thenReturn(Optional.of(dbUser));
 
-        Ressource mockRessource = new Ressource();
-        mockRessource.setIdResource(1L);
-        when(ressourceRepository.findFirstByLabelStartingWith(resourceName))
-                .thenReturn(Optional.of(mockRessource));
+        Resource mockResource = new Resource();
+        mockResource.setIdResource(1L);
+        when(resourceRepository.findFirstByLabelStartingWith(resourceName))
+                .thenReturn(Optional.of(mockResource));
 
         ResourceSheetDTO dto = mock(ResourceSheetDTO.class);
         when(dto.getDepartment()).thenReturn("Info");
@@ -126,7 +126,7 @@ class CsvTransfertControllerTest {
     @Test
     void testGenerateCsv_ResourceNotFound() {
         when(userSyncadiaRepository.findById(1L)).thenReturn(Optional.of(dbUser));
-        when(ressourceRepository.findFirstByLabelStartingWith("Inconnu"))
+        when(resourceRepository.findFirstByLabelStartingWith("Inconnu"))
                 .thenReturn(Optional.empty());
 
         ResponseEntity<ByteArrayResource> response = csvController.generateCsv("Inconnu");

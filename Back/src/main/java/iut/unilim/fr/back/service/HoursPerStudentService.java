@@ -1,9 +1,9 @@
 package iut.unilim.fr.back.service;
 
 import iut.unilim.fr.back.entity.HoursPerStudent;
-import iut.unilim.fr.back.entity.Ressource;
+import iut.unilim.fr.back.entity.Resource;
 import iut.unilim.fr.back.repository.HoursPerStudentRepository;
-import iut.unilim.fr.back.repository.RessourceRepository;
+import iut.unilim.fr.back.repository.ResourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -15,7 +15,7 @@ public class HoursPerStudentService {
     private HoursPerStudentRepository hoursPerStudentRepository;
 
     @Autowired
-    private RessourceRepository ressourceRepository;
+    private ResourceRepository resourceRepository;
 
     public List<HoursPerStudent> getAllHoursPerStudent() {
         return hoursPerStudentRepository.findAll();
@@ -32,7 +32,7 @@ public class HoursPerStudentService {
     public HoursPerStudent createHoursPerStudent(HoursPerStudent hoursPerStudent) {
         // Gérer Resource - récupérer l'entité existante
         if (hoursPerStudent.getResource() != null && hoursPerStudent.getResource().getIdResource() != null) {
-            Optional<Ressource> existingResource = ressourceRepository.findById(hoursPerStudent.getResource().getIdResource());
+            Optional<Resource> existingResource = resourceRepository.findById(hoursPerStudent.getResource().getIdResource());
             existingResource.ifPresent(hoursPerStudent::setResource);
         }
 

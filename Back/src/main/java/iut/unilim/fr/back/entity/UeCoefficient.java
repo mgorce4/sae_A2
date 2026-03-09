@@ -19,12 +19,12 @@ public class UeCoefficient {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_resource")
-    private Ressource resource;
+    private Resource resource;
 
     public UeCoefficient() {
     }
 
-    public UeCoefficient(Long idCoefficient, Double coefficient, UE ue, Ressource resource) {
+    public UeCoefficient(Long idCoefficient, Double coefficient, UE ue, Resource resource) {
         this.idCoefficient = idCoefficient;
         this.coefficient = coefficient;
         this.ue = ue;
@@ -55,11 +55,11 @@ public class UeCoefficient {
         this.ue = ue;
     }
 
-    public Ressource getResource() {
+    public Resource getResource() {
         return resource;
     }
 
-    public void setResource(Ressource resource) {
+    public void setResource(Resource resource) {
         this.resource = resource;
     }
 }

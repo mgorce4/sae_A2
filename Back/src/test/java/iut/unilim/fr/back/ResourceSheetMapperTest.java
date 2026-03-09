@@ -46,10 +46,10 @@ class ResourceSheetMapperTest {
     @Mock
     private PedagogicalContentRepository pedagogicalContentRepository;
     @Mock
-    private RessourceTrackingRepository resourceTrackingRepository;
+    private ResourceTrackingRepository resourceTrackingRepository;
 
     @Mock
-    private RessourceRepository ressourceRepository;
+    private ResourceRepository resourceRepository;
 
     @InjectMocks
     private ResourceSheetMapper resourceSheetMapper;
@@ -60,7 +60,7 @@ class ResourceSheetMapperTest {
         Long resId = 50L;
         Integer semester = 1;
 
-        Ressource resource = new Ressource();
+        Resource resource = new Resource();
         resource.setIdResource(resId);
         resource.setName("Development");
         resource.setLabel("R1.01");
@@ -68,7 +68,7 @@ class ResourceSheetMapperTest {
         resource.setSemester(semester);
         resource.setDiffMultiCompetences(true);
 
-        RessourceSheet sheet = new RessourceSheet();
+        ResourceSheet sheet = new ResourceSheet();
         sheet.setIdResourceSheet(sheetId);
         sheet.setYear(LocalDate.now());
         sheet.setResource(resource);
@@ -170,7 +170,7 @@ class ResourceSheetMapperTest {
         when(pedagogicalContentRepository.findByResourceSheet_IdResourceSheet(sheetId))
                 .thenReturn(Collections.singletonList(content));
 
-        RessourceTracking tracking = new RessourceTracking();
+        ResourceTracking tracking = new ResourceTracking();
         tracking.setStudentFeedback("Good");
         tracking.setPedagogicalFeedback("Okay");
         tracking.setImprovementSuggestions("More practice");
@@ -235,7 +235,7 @@ class ResourceSheetMapperTest {
 
     @Test
     void testToDTO_NullResource() {
-        RessourceSheet sheet = new RessourceSheet();
+        ResourceSheet sheet = new ResourceSheet();
         sheet.setIdResourceSheet(1L);
         sheet.setResource(null);
 

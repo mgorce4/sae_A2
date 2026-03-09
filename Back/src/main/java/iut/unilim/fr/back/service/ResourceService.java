@@ -1,10 +1,10 @@
 package iut.unilim.fr.back.service;
 
 import iut.unilim.fr.back.entity.Path;
-import iut.unilim.fr.back.entity.Ressource;
+import iut.unilim.fr.back.entity.Resource;
 import iut.unilim.fr.back.entity.Terms;
 import iut.unilim.fr.back.repository.PathRepository;
-import iut.unilim.fr.back.repository.RessourceRepository;
+import iut.unilim.fr.back.repository.ResourceRepository;
 import iut.unilim.fr.back.repository.TermsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class RessourceService {
+public class ResourceService {
     @Autowired
-    private RessourceRepository ressourceRepository;
+    private ResourceRepository resourceRepository;
 
     @Autowired
     private TermsRepository termsRepository;
@@ -22,19 +22,19 @@ public class RessourceService {
     @Autowired
     private PathRepository pathRepository;
 
-    public List<Ressource> getAllRessources() {
-        return ressourceRepository.findAll();
+    public List<Resource> getAllResources() {
+        return resourceRepository.findAll();
     }
 
-    public Optional<Ressource> getRessourceById(Long id) {
-        return ressourceRepository.findById(id);
+    public Optional<Resource> getResourceById(Long id) {
+        return resourceRepository.findById(id);
     }
 
-    public List<Ressource> getRessourcesByPathId(Long pathId) {
-        return ressourceRepository.findByPathId(pathId);
+    public List<Resource> getResourcesByPathId(Long pathId) {
+        return resourceRepository.findByPathId(pathId);
     }
 
-    public Ressource createRessource(Ressource resource) {
+    public Resource createResource(Resource resource) {
         // Gérer Terms
         if (resource.getTerms() != null && resource.getTerms().getCode() != null) {
             Optional<Terms> existingTerms = termsRepository.findFirstByCode(resource.getTerms().getCode());
@@ -53,10 +53,10 @@ public class RessourceService {
             existingPath.ifPresent(resource::setPath);
         }
 
-        return ressourceRepository.save(resource);
+        return resourceRepository.save(resource);
     }
 
-    public Ressource updateRessource(Long id, Ressource resource) {
+    public Resource updateResource(Long id, Resource resource) {
         resource.setIdResource(id);
 
         // Gérer Terms
@@ -77,11 +77,11 @@ public class RessourceService {
             existingPath.ifPresent(resource::setPath);
         }
 
-        return ressourceRepository.save(resource);
+        return resourceRepository.save(resource);
     }
 
-    public void deleteRessource(Long id) {
-        ressourceRepository.deleteById(id);
+    public void deleteResource(Long id) {
+        resourceRepository.deleteById(id);
     }
 }
 

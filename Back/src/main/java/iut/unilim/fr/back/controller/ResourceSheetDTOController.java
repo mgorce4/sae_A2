@@ -3,7 +3,7 @@ package iut.unilim.fr.back.controller;
 import iut.unilim.fr.back.dto.ResourceSheetDTO;
 import iut.unilim.fr.back.dto.ResourceSheetSummaryDTO;
 import iut.unilim.fr.back.dto.ResourceSheetUpdateDTO;
-import iut.unilim.fr.back.entity.RessourceSheet;
+import iut.unilim.fr.back.entity.ResourceSheet;
 import iut.unilim.fr.back.mapper.ResourceSheetMapper;
 import iut.unilim.fr.back.repository.ResourceSheetRepository;
 import iut.unilim.fr.back.service.ResourceSheetUpdateService;
@@ -55,7 +55,7 @@ public class ResourceSheetDTOController {
      */
     @GetMapping
     public List<ResourceSheetDTO> getAllResourceSheets() {
-        List<RessourceSheet> resourceSheets = resourceSheetRepository.findAll();
+        List<ResourceSheet> resourceSheets = resourceSheetRepository.findAll();
         System.out.println("toto: "+ resourceSheets.size());
         return resourceSheets.stream()
             .map(resourceSheetMapper::toDTO)
@@ -69,7 +69,7 @@ public class ResourceSheetDTOController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<ResourceSheetDTO> getResourceSheetById(@PathVariable Long id) {
-        Optional<RessourceSheet> resourceSheet = resourceSheetRepository.findById(id);
+        Optional<ResourceSheet> resourceSheet = resourceSheetRepository.findById(id);
 
         if (resourceSheet.isPresent()) {
             ResourceSheetDTO dto = resourceSheetMapper.toDTO(resourceSheet.get());
@@ -85,7 +85,7 @@ public class ResourceSheetDTOController {
      */
     @GetMapping("/resource/{resourceId}")
     public List<ResourceSheetDTO> getResourceSheetsByResourceId(@PathVariable Long resourceId) {
-        List<RessourceSheet> resourceSheets = resourceSheetRepository.findByResource_IdResource(resourceId);
+        List<ResourceSheet> resourceSheets = resourceSheetRepository.findByResource_IdResource(resourceId);
         return resourceSheets.stream()
             .map(resourceSheetMapper::toDTO)
             .collect(Collectors.toList());
@@ -97,7 +97,7 @@ public class ResourceSheetDTOController {
      */
     @GetMapping("/teacher/{userId}")
     public List<ResourceSheetDTO> getResourceSheetsByTeacherId(@PathVariable Long userId) {
-        List<RessourceSheet> resourceSheets = resourceSheetRepository.findByMainTeacher(userId);
+        List<ResourceSheet> resourceSheets = resourceSheetRepository.findByMainTeacher(userId);
         return resourceSheets.stream()
             .map(resourceSheetMapper::toDTO)
             .collect(Collectors.toList());
@@ -111,7 +111,7 @@ public class ResourceSheetDTOController {
     @GetMapping("/for-user/{userId}")
     public List<ResourceSheetDTO> getResourceSheetsForUser(@PathVariable Long userId) {
         // Fiches où il est mainTeacher
-        List<RessourceSheet> mainTeacherSheets = resourceSheetRepository.findByMainTeacher(userId);
+        List<ResourceSheet> mainTeacherSheets = resourceSheetRepository.findByMainTeacher(userId);
 
         // Fiches où il est prof associé (TeachersForResource)
         List<Long> resourceIds = teachersForResourceRepository.findByIdUser(userId)
@@ -119,14 +119,14 @@ public class ResourceSheetDTOController {
             .map(tfr -> tfr.getIdResource())
             .distinct()
             .toList();
-        List<RessourceSheet> associatedSheets = new ArrayList<>();
+        List<ResourceSheet> associatedSheets = new ArrayList<>();
         for (Long resourceId : resourceIds) {
             associatedSheets.addAll(resourceSheetRepository.findByResource_IdResource(resourceId));
         }
 
         // Fusionner sans doublons
-        List<RessourceSheet> allSheets = new ArrayList<>(mainTeacherSheets);
-        for (RessourceSheet sheet : associatedSheets) {
+        List<ResourceSheet> allSheets = new ArrayList<>(mainTeacherSheets);
+        for (ResourceSheet sheet : associatedSheets) {
             if (allSheets.stream().noneMatch(s -> s.getIdResourceSheet().equals(sheet.getIdResourceSheet()))) {
                 allSheets.add(sheet);
             }
@@ -146,7 +146,7 @@ public class ResourceSheetDTOController {
     public ResponseEntity<?> updateResourceSheet(@PathVariable Long id, @RequestBody ResourceSheetUpdateDTO updateDTO) {
         try {
             // Verify the resource sheet exists
-            Optional<RessourceSheet> resourceSheet = resourceSheetRepository.findById(id);
+            Optional<ResourceSheet> resourceSheet = resourceSheetRepository.findById(id);
             if (!resourceSheet.isPresent()) {
                 return ResponseEntity.notFound().build();
             }
