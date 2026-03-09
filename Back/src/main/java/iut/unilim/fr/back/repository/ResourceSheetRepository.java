@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface RessourceSheetRepository extends JpaRepository<RessourceSheet, Long> {
+public interface ResourceSheetRepository extends JpaRepository<RessourceSheet, Long> {
     List<RessourceSheet> findByResource_IdResource(Long resourceId);
     Optional<RessourceSheet> findFirstByResource_IdResource(Long resourceId);
 

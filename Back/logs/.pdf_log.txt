@@ -85,3 +85,23 @@
 [06:03:2026 11:09:16:880] atest create a pdf for resource sheet: R1.01_ressource_sheet.pdf
 [06:03:2026 11:48:41:668] admin(1) attempt to generate a resource sheet pdf, but no matches found for the resource name
 [06:03:2026 11:48:42:373] admin(1) create a pdf for resource sheet: R1.01_ressource_sheet.pdf
+[09:03:2026 15:19:20:480] Get resource 
+     - id : 78
+     - label :  Initiation au développement
+[09:03:2026 15:19:20:501] Get from database :
+   - Resource (R1.01:  Initiation au développement; IU EN FOR 001; UE1.1; prof testazert;)
+   - department(TEST)
+   - objectives(test)
+   - skills([test, test2])
+   - saes([SAÉ 1.01 Implémentation d'un besoin client , SAÉ 1.02 Comparaison d'approches algorithmiques])
+   - terms([test])
+   - keywords([test])
+   - hoursStudent([1000000.0, 1515616.0, 79465.0, 2595081.0])
+   - hoursNP([4.0, 12.0, 14.0, 30.0])
+   - pedagoContent( DS: 1. test
+; CM: 1. test
+; TD: 1. test
+; TP: 1. test
+)
+   - feedBack(Student: bien; Pedagogical team: bien; Improvements: pas maélioration)
+[09:03:2026 15:19:20:926] atest(6) create a pdf for resource sheet: R1.01_ressource_sheet.pdf

@@ -19,7 +19,7 @@ public class ResourceGetterService {
     @Autowired
     private RessourceRepository ressourceRepository;
     @Autowired
-    private RessourceSheetRepository  ressourceSheetRepository;
+    private ResourceSheetRepository resourceSheetRepository;
 
     @Autowired
     private ResourceSheetDTOController rsDTOController;
@@ -119,7 +119,7 @@ public class ResourceGetterService {
             Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(resourceName);
 
         if (resultResource.isPresent()) {
-            resultResourceSheet = ressourceSheetRepository.findFirstByResource_IdResource(resultResource.get().getIdResource());
+            resultResourceSheet = resourceSheetRepository.findFirstByResource_IdResource(resultResource.get().getIdResource());
         } else {
             writeInPdfLog("Could not get the resource sheet from the database because there is no resource with id = " + resourceName);}
 

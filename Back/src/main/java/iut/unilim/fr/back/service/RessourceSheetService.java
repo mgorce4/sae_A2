@@ -1,7 +1,7 @@
 package iut.unilim.fr.back.service;
 
 import iut.unilim.fr.back.entity.RessourceSheet;
-import iut.unilim.fr.back.repository.RessourceSheetRepository;
+import iut.unilim.fr.back.repository.ResourceSheetRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,20 +15,20 @@ public class RessourceSheetService {
     private static final Logger logger = LoggerFactory.getLogger(RessourceSheetService.class);
 
     @Autowired
-    private RessourceSheetRepository ressourceSheetRepository;
+    private ResourceSheetRepository resourceSheetRepository;
 
     public List<RessourceSheet> getAllRessourceSheets() {
-        return ressourceSheetRepository.findAll();
+        return resourceSheetRepository.findAll();
     }
 
     public Optional<RessourceSheet> getRessourceSheetById(Long id) {
-        return ressourceSheetRepository.findById(id);
+        return resourceSheetRepository.findById(id);
     }
 
     @Transactional(readOnly = true)
     public Optional<RessourceSheet> getRessourceSheetByIdWithDetails(Long id) {
         logger.info("Loading RessourceSheet with ID: {}", id);
-        Optional<RessourceSheet> ressourceSheetOpt = ressourceSheetRepository.findById(id);
+        Optional<RessourceSheet> ressourceSheetOpt = resourceSheetRepository.findById(id);
 
         if (ressourceSheetOpt.isPresent()) {
             RessourceSheet rs = ressourceSheetOpt.get();
@@ -51,20 +51,20 @@ public class RessourceSheetService {
     }
 
     public List<RessourceSheet> getRessourceSheetsByResourceId(Long resourceId) {
-        return ressourceSheetRepository.findByResource_IdResource(resourceId);
+        return resourceSheetRepository.findByResource_IdResource(resourceId);
     }
 
     public RessourceSheet createRessourceSheet(RessourceSheet resourceSheet) {
-        return ressourceSheetRepository.save(resourceSheet);
+        return resourceSheetRepository.save(resourceSheet);
     }
 
     public RessourceSheet updateRessourceSheet(Long id, RessourceSheet resourceSheet) {
         resourceSheet.setIdResourceSheet(id);
-        return ressourceSheetRepository.save(resourceSheet);
+        return resourceSheetRepository.save(resourceSheet);
     }
 
     public void deleteRessourceSheet(Long id) {
-        ressourceSheetRepository.deleteById(id);
+        resourceSheetRepository.deleteById(id);
     }
 }
 

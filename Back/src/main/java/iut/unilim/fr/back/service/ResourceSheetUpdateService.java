@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,7 +14,7 @@ import java.util.stream.Collectors;
 public class ResourceSheetUpdateService {
 
     @Autowired
-    private RessourceSheetRepository ressourceSheetRepository;
+    private ResourceSheetRepository resourceSheetRepository;
 
     @Autowired
     private NationalProgramObjectiveRepository nationalProgramObjectiveRepository;
@@ -48,7 +47,7 @@ public class ResourceSheetUpdateService {
     @Transactional
     public void updateResourceSheet(Long resourceSheetId, ResourceSheetUpdateDTO updateDTO) {
         // Verify the resource sheet exists
-        RessourceSheet resourceSheet = ressourceSheetRepository.findById(resourceSheetId)
+        RessourceSheet resourceSheet = resourceSheetRepository.findById(resourceSheetId)
             .orElseThrow(() -> new RuntimeException("Resource sheet not found: " + resourceSheetId));
 
         // 1. Update Objective

@@ -5,7 +5,7 @@ import iut.unilim.fr.back.controller.AdministrationDashboardController;
 import iut.unilim.fr.back.dto.admin.AdministrationDashboardDTO;
 import iut.unilim.fr.back.entity.RessourceSheet;
 import iut.unilim.fr.back.mapper.AdministrationDashboardMapper;
-import iut.unilim.fr.back.repository.RessourceSheetRepository;
+import iut.unilim.fr.back.repository.ResourceSheetRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
 class AdministrationDashboardControllerTest {
 
     @Mock
-    private RessourceSheetRepository ressourceSheetRepository;
+    private ResourceSheetRepository resourceSheetRepository;
 
     @Mock
     private AdministrationDashboardMapper dashboardMapper;
@@ -43,7 +43,7 @@ class AdministrationDashboardControllerTest {
         AdministrationDashboardDTO dto2 = new AdministrationDashboardDTO();
         List<AdministrationDashboardDTO> dtos = Arrays.asList(dto1, dto2);
 
-        when(ressourceSheetRepository.findAll()).thenReturn(sheets);
+        when(resourceSheetRepository.findAll()).thenReturn(sheets);
         when(dashboardMapper.toDTOList(sheets)).thenReturn(dtos);
 
         ResponseEntity<List<AdministrationDashboardDTO>> response = controller.getAdministrationDashboard();
@@ -51,13 +51,13 @@ class AdministrationDashboardControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(2, response.getBody().size());
-        verify(ressourceSheetRepository).findAll();
+        verify(resourceSheetRepository).findAll();
         verify(dashboardMapper).toDTOList(sheets);
     }
 
     @Test
     void testGetAdministrationDashboard_Exception() {
-        when(ressourceSheetRepository.findAll()).thenThrow(new RuntimeException("Database error"));
+        when(resourceSheetRepository.findAll()).thenThrow(new RuntimeException("Database error"));
 
         ResponseEntity<List<AdministrationDashboardDTO>> response = controller.getAdministrationDashboard();
 
@@ -72,7 +72,7 @@ class AdministrationDashboardControllerTest {
         Long otherInstitutionId = 200L;
 
         List<RessourceSheet> sheets = Collections.singletonList(new RessourceSheet());
-        when(ressourceSheetRepository.findAll()).thenReturn(sheets);
+        when(resourceSheetRepository.findAll()).thenReturn(sheets);
 
         AdministrationDashboardDTO dtoTarget = mock(AdministrationDashboardDTO.class);
         when(dtoTarget.getInstitutionId()).thenReturn(targetInstitutionId);
@@ -96,7 +96,7 @@ class AdministrationDashboardControllerTest {
 
     @Test
     void testGetDashboardByInstitution_Exception() {
-        when(ressourceSheetRepository.findAll()).thenThrow(new RuntimeException("Error"));
+        when(resourceSheetRepository.findAll()).thenThrow(new RuntimeException("Error"));
 
         ResponseEntity<List<AdministrationDashboardDTO>> response = controller.getDashboardByInstitution(1L);
 
@@ -110,7 +110,7 @@ class AdministrationDashboardControllerTest {
         Integer otherSemester = 4;
 
         List<RessourceSheet> sheets = Collections.singletonList(new RessourceSheet());
-        when(ressourceSheetRepository.findAll()).thenReturn(sheets);
+        when(resourceSheetRepository.findAll()).thenReturn(sheets);
 
         AdministrationDashboardDTO dtoTarget = mock(AdministrationDashboardDTO.class);
         when(dtoTarget.getSemester()).thenReturn(targetSemester);
@@ -134,7 +134,7 @@ class AdministrationDashboardControllerTest {
 
     @Test
     void testGetDashboardBySemester_Exception() {
-        when(ressourceSheetRepository.findAll()).thenThrow(new RuntimeException("Error"));
+        when(resourceSheetRepository.findAll()).thenThrow(new RuntimeException("Error"));
 
         ResponseEntity<List<AdministrationDashboardDTO>> response = controller.getDashboardBySemester(1);
 
