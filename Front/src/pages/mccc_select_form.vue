@@ -5,6 +5,7 @@ import { API_BASE_URL } from '@/config/api.js'
 import { status } from '@/main.js'
 import { router } from '@/router'
 import { useRoute } from 'vue-router'
+import { getIdInstitutionFromToken } from '@/utils/jwt.js'
 
 const route = useRoute()
 
@@ -22,7 +23,7 @@ const pathId = ref(null)
 onMounted(async () => {
     // Récupérer le pathId depuis l'URL ou localStorage
     pathId.value = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
-    const institutionId = parseInt(localStorage.idInstitution)
+    const institutionId = getIdInstitutionFromToken()
 
     if (!pathId.value || isNaN(pathId.value)) {
         console.error('PathId manquant ou invalide dans l\'URL')

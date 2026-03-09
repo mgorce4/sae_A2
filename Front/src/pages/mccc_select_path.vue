@@ -3,7 +3,7 @@ import { onMounted, ref, nextTick, watch, computed } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
 import { router } from '@/router'
-import { getAccessRightsFromToken } from '@/utils/jwt.js'
+import { getAccessRightsFromToken, getIdInstitutionFromToken } from '@/utils/jwt.js'
 
 const display_more_area = ref(false)
 const coursName = ref('')
@@ -84,12 +84,13 @@ watch([coursList, display_more_area], () => {
 onMounted(async () => {
     try {
         const response = await axios.get(`${API_BASE_URL}/api/paths`)
+        const institutionId = getIdInstitutionFromToken()
         // Filtrer les paths par institution et ajouter la propriété show
         coursList.value = response.data
             .filter(
                 (path) =>
                     path.institution &&
-                    path.institution.idInstitution === parseInt(localStorage.idInstitution),
+                    path.institution.idInstitution === institutionId,
             )
             .map((path) => ({
                 ...path,
@@ -142,7 +143,8 @@ const save = async () => {
     }
 
     // Vérifier que l'institution est définie
-    if (!localStorage.idInstitution) {
+    const institutionId = getIdInstitutionFromToken()
+    if (!institutionId) {
         console.error('Institution non définie. Veuillez vous reconnecter.')
         alert('Erreur : Institution non définie. Veuillez vous reconnecter.')
         return
@@ -153,7 +155,7 @@ const save = async () => {
             name: coursName.value,
             number: parseInt(coursNb.value),
             institution: {
-                idInstitution: parseInt(localStorage.idInstitution),
+                idInstitution: institutionId,
             },
         }
         console.log('Envoi des données du parcours:', response)
@@ -171,7 +173,7 @@ const save = async () => {
             .filter(
                 (path) =>
                     path.institution &&
-                    path.institution.idInstitution === parseInt(localStorage.idInstitution),
+                    path.institution.idInstitution === institutionId,
             )
             .map((path) => ({
                 ...path,
@@ -199,7 +201,7 @@ const updateCourse = async (cours) => {
             name: cours.name,
             number: parseInt(cours.number),
             institution: {
-                idInstitution: parseInt(localStorage.idInstitution),
+                idInstitution: getIdInstitutionFromToken(),
             },
         }
 
@@ -213,7 +215,7 @@ const updateCourse = async (cours) => {
             .filter(
                 (path) =>
                     path.institution &&
-                    path.institution.idInstitution === parseInt(localStorage.idInstitution),
+                    path.institution.idInstitution === getIdInstitutionFromToken(),
             )
             .map((path) => ({
                 ...path,
@@ -241,7 +243,7 @@ const del = async (id) => {
             .filter(
                 (path) =>
                     path.institution &&
-                    path.institution.idInstitution === parseInt(localStorage.idInstitution),
+                    path.institution.idInstitution === getIdInstitutionFromToken(),
             )
             .map((path) => ({
                 ...path,

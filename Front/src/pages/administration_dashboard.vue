@@ -5,12 +5,13 @@ import { status, institutionLocation } from '../main'
 import { onMounted } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
+import { getToken, removeToken, getIdInstitutionFromToken, getInstitutionLocationFromToken, getFirstnameFromToken, getLastnameFromToken } from '@/utils/jwt.js'
 import { router } from '@/router'
 
 /* constantes */
 
 status.value = 'Administration'
-institutionLocation.value = localStorage.institutionLocation
+institutionLocation.value = getInstitutionLocationFromToken()
 
 const show_popup = ref(false)
 
@@ -29,20 +30,37 @@ const selectedSheets = ref([]) // Pour stocker les IDs des fiches sélectionnée
 const paths = ref([]) // Liste des parcours pour l'institution
 const pathId = ref(null) // ID du parcours sélectionné
 
-onMounted(async () => {
-    const institutionId = localStorage.idInstitution
+function getAuthHeaders() {
+    const token = getToken()
+    return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
+async function loadData() {
+    const institutionId = getIdInstitutionFromToken()
     const startTime = performance.now()
+    const headers = getAuthHeaders()
 
     const [sheetsResult, datesResult, pathsResult] = await Promise.allSettled([
-        axios.get(`${API_BASE_URL}/api/v2/resource-sheets/institution/${institutionId}`),
+        axios.get(`${API_BASE_URL}/api/v2/resource-sheets/institution/${institutionId}`, { headers, skipAuthRedirect: true }),
         institutionId
-            ? axios.get(`${API_BASE_URL}/api/final-delivery-dates/institution/${institutionId}`)
+            ? axios.get(`${API_BASE_URL}/api/final-delivery-dates/institution/${institutionId}`, { headers, skipAuthRedirect: true })
             : Promise.resolve(null),
-        axios.get(`${API_BASE_URL}/api/paths`),
+        axios.get(`${API_BASE_URL}/api/paths`, { headers, skipAuthRedirect: true }),
     ])
 
     const endTime = performance.now()
     console.log(`API load time: ${Math.round(endTime - startTime)} ms`)
+
+    // Si toutes les requêtes retournent 401, le token est invalide → rediriger vers login
+    const allUnauthorized = [sheetsResult, datesResult, pathsResult].every(
+        r => r.status === 'rejected' && r.reason?.response?.status === 401
+    )
+    if (allUnauthorized) {
+        console.warn('Token invalide ou expiré, redirection vers la page de connexion')
+        removeToken()
+        window.location.hash = '#/'
+        return
+    }
 
     // Resource sheets
     if (sheetsResult.status === 'fulfilled') {
@@ -72,6 +90,10 @@ onMounted(async () => {
         console.error('Error loading paths:', pathsResult.reason)
         paths.value = []
     }
+}
+
+onMounted(async () => {
+    await loadData()
 })
 
 function getResourcesForSemester(semester) {
@@ -96,7 +118,7 @@ function getResourcesForSemester(semester) {
 
 async function saveDeliveryDates() {
     try {
-        const institutionId = localStorage.idInstitution
+        const institutionId = getIdInstitutionFromToken()
         if (!institutionId) {
             console.error('Institution non trouvée')
             return
@@ -111,14 +133,16 @@ async function saveDeliveryDates() {
         }
 
         // Use the save-by-institution endpoint which automatically handles create or update
+        const headers = getAuthHeaders()
         const response = await axios.post(
             `${API_BASE_URL}/api/final-delivery-dates/save-by-institution`,
             deliveryDatesData,
+            { headers },
         )
         deliveryDatesId.value = response.data.idFinalDelivery
 
-        // Reload the page to show the updated dates
-        window.location.reload()
+        // Reload data without full page reload
+        await loadData()
     } catch (error) {
         console.error('Error saving delivery dates:', error)
     }
@@ -166,6 +190,7 @@ async function downloadSheets() {
                         userName: userName,
                     },
                     responseType: 'blob',
+                    headers: getAuthHeaders(),
                 })
 
                 console.log('Réponse reçue, création du lien de téléchargement...')

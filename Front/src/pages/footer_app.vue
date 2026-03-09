@@ -1,9 +1,10 @@
 <script setup>
 import { onMounted } from 'vue'
 import { institutionLocation } from '../main'
+import { getInstitutionLocationFromToken } from '@/utils/jwt.js'
 
-onMounted(async () => {
-    institutionLocation.value = localStorage.institutionLocation
+onMounted(() => {
+    institutionLocation.value = getInstitutionLocationFromToken()
 })
 </script>
 

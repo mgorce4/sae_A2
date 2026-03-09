@@ -25,20 +25,29 @@ public class JwtUtils {
     @Value("${syncadia.app.jwtExpirationMs}")
     private int jwtExpirationMs;
 
-    public String generateJwtToken(Authentication authentication) {
+    public String generateJwtToken(Authentication authentication, iut.unilim.fr.back.entity.UserSyncadia user) {
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
 
         List<Integer> roles = userPrincipal.getAuthorities().stream()
                 .map(a -> Integer.parseInt(a.getAuthority().replace("ROLE_", "")))
                 .collect(Collectors.toList());
 
-        return Jwts.builder()
+        io.jsonwebtoken.JwtBuilder builder = Jwts.builder()
                 .subject(userPrincipal.getUsername())
                 .claim("roles", roles)
+                .claim("id", userPrincipal.getId())
                 .issuedAt(new Date())
-                .expiration(new Date(new Date().getTime() + jwtExpirationMs))
-                .signWith(key())
-                .compact();
+                .expiration(new Date(new Date().getTime() + jwtExpirationMs));
+
+        if (user != null) {
+            builder.claim("firstname", user.getFirstname())
+                   .claim("lastname", user.getLastname())
+                   .claim("idInstitution", user.getInstitution() != null ? user.getInstitution().getIdInstitution() : null)
+                   .claim("institutionName", user.getInstitution() != null ? user.getInstitution().getName() : null)
+                   .claim("institutionLocation", user.getInstitution() != null ? user.getInstitution().getLocation() : null);
+        }
+
+        return builder.signWith(key()).compact();
     }
 
     private SecretKey key() {

@@ -4,7 +4,7 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { router } from '@/router'
 import { API_BASE_URL } from '@/config/api.js'
-import { setToken, getAccessRightsFromToken } from '@/utils/jwt.js'
+import { setToken, getAccessRightsFromToken, getFirstnameFromToken, getLastnameFromToken, getInstitutionLocationFromToken } from '@/utils/jwt.js'
 
 onMounted(() => {
     removeUser()
@@ -25,19 +25,12 @@ async function addItem() {
 
         const data = response.data
 
-        // Stocker le JWT
+        // Stocker uniquement le JWT — toutes les infos utilisateur sont dans son payload signé
         setToken(data.token)
 
-        // Stocker les informations de l'utilisateur (pas d'identifiant ni de mot de passe)
-        localStorage.setItem('firstname', data.firstname)
-        localStorage.setItem('lastname', data.lastname)
-        localStorage.setItem('idUser', data.id)
-        localStorage.setItem('idInstitution', data.idInstitution)
-        localStorage.setItem('institutionName', data.institutionName)
-        localStorage.setItem('institutionLocation', data.institutionLocation)
-        // Mettre à jour les états réactifs globaux
-        userName.value = data.lastname + ' ' + data.firstname
-        institutionLocation.value = data.institutionLocation
+        // Mettre à jour les états réactifs globaux depuis le payload JWT
+        userName.value = (getLastnameFromToken() + ' ' + getFirstnameFromToken()).trim()
+        institutionLocation.value = getInstitutionLocationFromToken()
 
         // Les droits d'accès sont lus directement depuis le payload du JWT (signé)
         redirect(getAccessRightsFromToken())

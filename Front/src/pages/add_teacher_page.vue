@@ -3,6 +3,7 @@
 import { nextTick, onMounted, ref } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
+import { getIdFromToken, getIdInstitutionFromToken, getInstitutionNameFromToken, getInstitutionLocationFromToken } from '@/utils/jwt.js'
 
 const teacher_acces_right = 1
 
@@ -114,7 +115,7 @@ const save = async () => {
 
     try {
         // is user logged in
-        if (!localStorage.idUser) {
+        if (!getIdFromToken()) {
             alert('Erreur : Veuillez vous reconnecter.')
             return
         }
@@ -126,9 +127,9 @@ const save = async () => {
             password : getUsername() + '123',
             mail : teacher_mail.value,
             institution : {
-                idInstitution : parseInt(localStorage.idInstitution),
-                name : localStorage.institutionName,
-                location : localStorage.institutionLocation,
+                idInstitution : getIdInstitutionFromToken(),
+                name : getInstitutionNameFromToken(),
+                location : getInstitutionLocationFromToken(),
             },
         }
 
@@ -173,7 +174,7 @@ const save = async () => {
 
 async function reloadTeachers() {
     const response = await axios.get(`${API_BASE_URL}/api/access-rights`)
-    teachers.value = response.data.filter((ar) => ar.accessRight === teacher_acces_right).filter((teacher) => teacher.user.institution.idInstitution === parseInt(localStorage.idInstitution))
+    teachers.value = response.data.filter((ar) => ar.accessRight === teacher_acces_right).filter((teacher) => teacher.user.institution.idInstitution === getIdInstitutionFromToken())
 }
 
 function modify(teacher) {

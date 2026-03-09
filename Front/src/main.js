@@ -11,16 +11,8 @@ export const institutionLocation = ref('')
 export function removeUser() {
     if (typeof window === 'undefined') return
 
-    const ls = window.localStorage
-
-    ls.removeItem('access_rights') // nettoyage données legacy
-    ls.removeItem('firstname')
-    ls.removeItem('idUser')
-    ls.removeItem('institutionLocation')
-    ls.removeItem('institutionName')
-    ls.removeItem('lastname')
-    ls.removeItem('idInstitution')
-    ls.removeItem('jwt_token')
+    // Seul le jwt_token est dans localStorage — on le supprime
+    window.localStorage.removeItem('jwt_token')
 
     // Réinitialiser les états réactifs globaux pour que le header se mette à jour
     status.value = ''

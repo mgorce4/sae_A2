@@ -4,6 +4,7 @@ import { onMounted, ref, nextTick, watch, computed } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
 import { useRoute } from 'vue-router'
+import { getIdInstitutionFromToken } from '@/utils/jwt.js'
 
 const route = useRoute()
 
@@ -566,7 +567,7 @@ async function saveResource() {
     // Prepare DTO
     const pathId = parseInt(route.query.pathId)
     console.log(pathId)
-    const institutionId = parseInt(localStorage.idInstitution)
+    const institutionId = getIdInstitutionFromToken()
     console.log(institutionId)
 
     const resourceDTO = {
@@ -661,7 +662,7 @@ async function saveResource() {
 onMounted(async () => {
     pathId.value = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
     semesterNumber.value = parseInt(route.query.id)
-    institutionId.value = parseInt(localStorage.idInstitution)
+    institutionId.value = getIdInstitutionFromToken()
 
     if (!pathId.value || isNaN(pathId.value)) {
         alert('Erreur : pathId manquant')
@@ -705,7 +706,7 @@ onMounted(async () => {
     ])
 
     access_rights.value = access_rights.value
-        .filter((ar) => ar.user.institution.idInstitution == localStorage.idInstitution)
+        .filter((ar) => ar.user.institution.idInstitution == getIdInstitutionFromToken())
         .filter((ar) => ar.accessRight == access_right_teacher)
     saes.value = saes.value.filter((saes) => saes.semester == route.query.id)
     // Ne reset les checked que si on n'est PAS en modification
@@ -879,7 +880,7 @@ onMounted(async () => {
 })
 
 function getUEsByInstitution() {
-    return UEs.value.filter((ue) => ue.institutionId == localStorage.idInstitution)
+    return UEs.value.filter((ue) => ue.institutionId == getIdInstitutionFromToken())
 }
 
 function getResourcesBySemester() {

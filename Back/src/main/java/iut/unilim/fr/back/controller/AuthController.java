@@ -47,15 +47,17 @@ public class AuthController {
                             loginRequest.getPassword()));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            String jwt = jwtUtils.generateJwtToken(authentication);
 
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            UserSyncadia user = userRepository.findById(userDetails.getId()).orElseThrow();
+
+            // Générer le JWT avec toutes les infos utilisateur embarquées dans le payload
+            String jwt = jwtUtils.generateJwtToken(authentication, user);
 
             List<Integer> accessRights = userDetails.getAuthorities().stream()
                     .map(item -> Integer.parseInt(item.getAuthority().replace("ROLE_", "")))
                     .collect(Collectors.toList());
 
-            UserSyncadia user = userRepository.findById(userDetails.getId()).orElseThrow();
 
             return ResponseEntity.ok(new JwtResponse(
                     jwt,

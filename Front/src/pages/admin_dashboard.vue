@@ -1,8 +1,9 @@
 <script setup>
 
 import { status, institutionLocation } from '../main'
+import { getInstitutionLocationFromToken } from '@/utils/jwt.js'
 status.value = 'Admin'
-institutionLocation.value = localStorage.institutionLocation
+institutionLocation.value = getInstitutionLocationFromToken()
 
 
 </script>

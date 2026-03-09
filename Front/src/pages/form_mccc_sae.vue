@@ -5,6 +5,7 @@ import { API_BASE_URL } from '@/config/api.js'
 import { status } from '../main'
 import { router } from '@/router'
 import { useRoute } from 'vue-router'
+import { getIdInstitutionFromToken } from '@/utils/jwt.js'
 
 const route = useRoute()
 
@@ -110,7 +111,7 @@ const preventInvalidChars = (event) => {
 
 onMounted(async () => {
     const pathId = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
-    const institutionId = parseInt(localStorage.idInstitution)
+    const institutionId = getIdInstitutionFromToken()
 
     if (!pathId || isNaN(pathId)) {
         console.error('PathId manquant ou invalide')
@@ -337,7 +338,7 @@ function saveSae() {
 
     // Prepare DTO
     const pathId = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
-    const institutionId = parseInt(localStorage.idInstitution)
+    const institutionId = getIdInstitutionFromToken()
 
     const saeDTO = {
         label: addModifySaeLabel.value,
@@ -447,7 +448,7 @@ async function deleteSae(saeId) {
 
         // Reload SAEs
         const pathId = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
-        const institutionId = parseInt(localStorage.idInstitution)
+        const institutionId = getIdInstitutionFromToken()
         const responseReload = await axios.get(
             `${API_BASE_URL}/api/v2/mccc/saes/path/${pathId}`,
         )

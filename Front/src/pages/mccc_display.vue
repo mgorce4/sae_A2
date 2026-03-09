@@ -2,12 +2,12 @@
 import axios from 'axios';
 import { ref, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router'
+import { getIdInstitutionFromToken } from '@/utils/jwt.js'
 
 const route = useRoute()
 
 const pathId = parseInt(localStorage.pathId)
-console.log('path ID from localStorage:', pathId)
-const institutionId = parseInt(localStorage.idInstitution)
+const institutionId = getIdInstitutionFromToken()
 const ueList = ref([])
 const resourceList = ref([])
 const saeList = ref([])
@@ -47,7 +47,7 @@ function selectUe(ue, index) {
     selectedUeIntitule.value = ue.label
     console.log("===================== UE "+ selectedUeIntitule.value +" IIIIIIIIIIIId : " + selectedUeId.value + "============================================")
     selectedUeCodeApogee.value = ue.euApogeeCode
-    
+
     selectedUeCompetenceLevel.value = ue.competenceLevel
 
     selectedUeLinkedResources.value = []
@@ -61,11 +61,11 @@ function selectUe(ue, index) {
             (coef) => coef.ueId === selectedUeId.value
         )
     )
-    
+
     // Réinitialiser les accordions ouverts
     openedResourceIndex.value = null
     openedSaeIndex.value = null
-    
+
     console.log('Selected UE:', ue)
     console.log('Linked Resources:', selectedUeLinkedResources.value)
     console.log('Linked SAEs:', selectedUeLinkedSaes.value)
@@ -116,7 +116,7 @@ const semester = parseInt(route.query.id)
 function getUESemesterInstitution() {
     const pathId = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
     const semester = parseInt(route.query.id)
-    const institutionId = parseInt(localStorage.idInstitution)
+    const institutionId = getIdInstitutionFromToken()
 
     console.log('=== FILTRAGE UE POUR AFFICHAGE ===')
     console.log('PathId:', pathId)

@@ -5,10 +5,13 @@ import { status } from '../main'
 import { onMounted, ref, nextTick, computed } from 'vue'
 import { router } from '@/router'
 import { useRoute } from 'vue-router'
+import { getAccessRightsFromToken } from '@/utils/jwt.js'
 
 const route = useRoute()
 
 status.value = 'Professeur'
+
+const access_right = getAccessRightsFromToken()
 
 const resourceSheetId = ref(route.query.id)
 

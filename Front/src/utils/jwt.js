@@ -13,26 +13,66 @@ export function removeToken() {
 }
 
 /**
- * Décode le payload du JWT (base64) et retourne les droits d'accès.
- * Le JWT est signé par le serveur : son payload ne peut pas être falsifié
- * sans invalider la signature, qui est vérifiée à chaque requête côté backend.
+ * Retourne le payload complet du JWT décodé en UTF-8.
+ * Le contenu est signé par le serveur — impossible à falsifier sans invalider la signature.
+ * atob() retourne des bytes Latin-1 — on réencode en UTF-8 pour gérer les accents.
  */
-export function getAccessRightsFromToken() {
+function getPayload() {
   const token = getToken()
-  if (!token) return []
+  if (!token) return null
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return payload.roles || []
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+    const jsonStr = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'))
+        .join('')
+    )
+    return JSON.parse(jsonStr)
   } catch {
-    return []
+    return null
   }
+}
+
+/** Droits d'accès (rôles) de l'utilisateur connecté */
+export function getAccessRightsFromToken() {
+  return getPayload()?.roles || []
+}
+
+/** ID de l'utilisateur connecté */
+export function getIdFromToken() {
+  return getPayload()?.id ?? null
+}
+
+/** Prénom de l'utilisateur connecté */
+export function getFirstnameFromToken() {
+  return getPayload()?.firstname ?? ''
+}
+
+/** Nom de l'utilisateur connecté */
+export function getLastnameFromToken() {
+  return getPayload()?.lastname ?? ''
+}
+
+/** ID de l'institution de l'utilisateur connecté */
+export function getIdInstitutionFromToken() {
+  return getPayload()?.idInstitution ?? null
+}
+
+/** Nom de l'institution de l'utilisateur connecté */
+export function getInstitutionNameFromToken() {
+  return getPayload()?.institutionName ?? ''
+}
+
+/** Localisation de l'institution de l'utilisateur connecté */
+export function getInstitutionLocationFromToken() {
+  return getPayload()?.institutionLocation ?? ''
 }
 
 const ROLE_MAP = { 1: 'Professeur', 2: 'Administration', 3: 'Admin' }
 
 /**
  * Dérive le statut affiché directement depuis le payload du JWT signé.
- * Jamais stocké en localStorage — impossible à falsifier.
  */
 export function getStatusFromToken() {
   const roles = getAccessRightsFromToken()
@@ -40,27 +80,34 @@ export function getStatusFromToken() {
   return ROLE_MAP[roles[0]] || ''
 }
 
-// Attache automatiquement le token JWT dans l'en-tête Authorization de toutes les requêtes axios
-axios.interceptors.request.use(
-  (config) => {
-    const token = getToken()
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => Promise.reject(error)
-)
+// Evite d'enregistrer les intercepteurs plusieurs fois (HMR / double import)
+if (!window.__axiosInterceptorsRegistered) {
+  window.__axiosInterceptorsRegistered = true
 
-// Redirige vers la page de login si le serveur répond 401
-axios.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      removeToken()
-      window.location.hash = '#/'
-    }
-    return Promise.reject(error)
-  }
-)
+  // Attache automatiquement le token JWT dans l'en-tête Authorization de toutes les requêtes axios
+  axios.interceptors.request.use(
+    (config) => {
+      const token = getToken()
+      if (token) {
+        config.headers['Authorization'] = `Bearer ${token}`
+      }
+      return config
+    },
+    (error) => Promise.reject(error)
+  )
 
+  // Redirige vers la page de login si le serveur répond 401
+  axios.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (error.response && error.response.status === 401) {
+        // Ne pas rediriger si la requête gère elle-même l'erreur (skipAuthRedirect)
+        if (!error.config?.skipAuthRedirect) {
+          removeToken()
+          window.location.hash = '#/'
+        }
+      }
+      return Promise.reject(error)
+    }
+  )
+}
