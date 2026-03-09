@@ -115,17 +115,17 @@ onMounted(() => {
                 <div class="container-fluid">
                     <button class="button_more">+</button>
                     <p class="popup_text">
-                        En cliquant sur ce bouton, une zone d'ajout de ressource apparaîtra.<br />
+                        En cliquant sur ce bouton, une zone d'ajout de resource apparaîtra.<br />
                         Il vous suffira de renseigner les informations demandées, puis de cliquer
                         sur <span class="btn_modify btn_how_to_admini">Sauvegarder</span> pour créer une
-                        nouvelle ressource.<br />
+                        nouvelle resource.<br />
                     </p>
                 </div>
                 <div class="container-fluid">
                     <p class="popup_text">
-                        Pour modifier les informations d'une ressource, cliquez sur le bouton
+                        Pour modifier les informations d'une resource, cliquez sur le bouton
                         <span class="btn_modify btn_how_to_admini">Modifier</span> correspondant à la
-                        ressource.<br />
+                        resource.<br />
                         Une zone de modification apparaîtra, il vous suffira de renseigner les
                         nouvelles informations, puis de cliquer sur
                         <span class="btn_modify btn_how_to_admini">Sauvegarder</span> pour appliquer les
@@ -159,7 +159,7 @@ onMounted(() => {
                 <div class="container-fluid">
                     <p class="popup_text">
                         Les dates de rendu des fiches correspondent à une date avant laquelle toutes
-                        les fiches ressource des professeurs doivent être soumises pour l'année
+                        les fiches resource des professeurs doivent être soumises pour l'année
                         scolaire en cours.
                     </p>
                 </div>
@@ -276,14 +276,14 @@ onMounted(() => {
                     <div class="container-fluid">
                     <button class="btn1">Visualiser</button>
                     <p class="popup_text">
-                        En cliquant sur ce bouton, une nouvelle fenêtre s'ouvrira affichant la fiche ressource soumise par le professeur.<br>
+                        En cliquant sur ce bouton, une nouvelle fenêtre s'ouvrira affichant la fiche resource soumise par le professeur.<br>
                         Vous pourrez ainsi examiner la fiche avant de décider de la télecharger.<br>
                     </p>
                     </div>
                     <div class="container-fluid">
                     <input type="checkbox"/>
                     <p class="popup_text">
-                        En cochant cette case, vous sélectionnez la fiche ressource soumise par le professeur.<br>
+                        En cochant cette case, vous sélectionnez la fiche resource soumise par le professeur.<br>
                         Vous pourrez ensuite cliquer sur le bouton <span><img src="/media/download.webp" width="35" height="35" alt="download"/></span> pour télecharger toutes les fiches sélectionnées.<br>
                     </p>
                 </div>
@@ -291,10 +291,10 @@ onMounted(() => {
                 <div>
                     Si les fiches ressources sont remplies par les professeurs, elles seront colorées en bleu clair, mais si elles ne sont pas encore remplies, elles seront colorées en bleu foncé.
 
-                    <p>Cette fiche ressource est remplie : </p>
+                    <p>Cette fiche resource est remplie : </p>
 
-                    <div class="ressource" style="width: 18vw; margin-top: 1vw">
-                        <p class="ressource_label">R1.01</p>
+                    <div class="resource" style="width: 18vw; margin-top: 1vw">
+                        <p class="resource_label">R1.01</p>
                         <div style="gap: 5px">
 
                             <button
@@ -309,10 +309,10 @@ onMounted(() => {
                         </div>
                     </div>
 
-                    <p>Cette fiche ressource n'est pas remplie : </p>
+                    <p>Cette fiche resource n'est pas remplie : </p>
 
-                    <div class="ressource" style="width: 18vw; margin-top: 1vw; background-color: var(--sub-scrollbar-color">
-                        <p class="ressource_label">R1.02</p>
+                    <div class="resource" style="width: 18vw; margin-top: 1vw; background-color: var(--sub-scrollbar-color">
+                        <p class="resource_label">R1.02</p>
                         <div style="gap: 5px">
 
                             <button

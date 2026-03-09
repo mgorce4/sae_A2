@@ -226,7 +226,7 @@ function addMainTeacherEvents(div) {
     })
 }
 
-// Fonction pour modifier une ressource
+// Fonction pour modifier une resource
 async function modifyResource(resource) {
     console.log('=== MODIFICATION RESSOURCE ===', resource)
 
@@ -238,7 +238,7 @@ async function modifyResource(resource) {
     // Attendre que le DOM soit mis à jour
     await nextTick()
 
-    // Charger les données de la ressource dans le formulaire
+    // Charger les données de la resource dans le formulaire
     await nextTick();
     resource_label.value = resource.label ?? ''
     resource_name.value = resource.name ?? ''
@@ -349,14 +349,14 @@ async function modifyResource(resource) {
         // Scroll vers le formulaire
         document.getElementById('dark_bar').scrollIntoView({ behavior: 'smooth' })
     } catch (error) {
-        console.error('❌ Erreur lors du chargement de la ressource:', error)
-        alert('Erreur lors du chargement de la ressource pour modification')
+        console.error('❌ Erreur lors du chargement de la resource:', error)
+        alert('Erreur lors du chargement de la resource pour modification')
     }
 }
 
-// Fonction pour supprimer une ressource
+// Fonction pour supprimer une resource
 async function deleteResource(resourceId) {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette ressource ?')) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette resource ?')) {
         return
     }
 
@@ -376,7 +376,7 @@ async function deleteResource(resourceId) {
     } catch (error) {
         console.error('❌ Erreur lors de la suppression:', error)
         alert(
-            'Erreur lors de la suppression de la ressource: ' +
+            'Erreur lors de la suppression de la resource: ' +
                 (error.response?.data || error.message),
         )
     }
@@ -392,7 +392,7 @@ function setErrorMessage(elementId, message) {
     }
 }
 
-// Fonction de sauvegarde de ressource - Comme saveSae
+// Fonction de sauvegarde de resource - Comme saveSae
 async function saveResource() {
     /* display errors messages */
     // DEBUG: Log teachers_list and access_rights before mapping
@@ -410,12 +410,12 @@ async function saveResource() {
 
     if (!resource_label.value) {
         errors.value.label = true
-        setErrorMessage('error_resource_label', "L'intitulé de la ressource est obligatoire")
+        setErrorMessage('error_resource_label', "L'intitulé de la resource est obligatoire")
         hasErrors = true
     }
     if (!resource_name.value) {
         errors.value.name = true
-        setErrorMessage('error_resource_name', 'Le nom de la ressource est obligatoire')
+        setErrorMessage('error_resource_name', 'Le nom de la resource est obligatoire')
         hasErrors = true
     }
     if (!apogee_code.value) {
@@ -603,7 +603,7 @@ async function saveResource() {
         linkedSaesIds: saes.value.filter((sae) => sae.checked).map((sae) => sae.saeId),
     }
 
-    console.log('📤 Envoi du DTO ressource:', resourceDTO)
+    console.log('📤 Envoi du DTO resource:', resourceDTO)
 
     try {
         if (is_modifying.value && resource_id_to_modify.value) {
@@ -653,7 +653,7 @@ async function saveResource() {
     } catch (error) {
         console.error('❌ Erreur lors de la sauvegarde:', error)
         alert(
-            'Erreur lors de la sauvegarde de la ressource: ' +
+            'Erreur lors de la sauvegarde de la resource: ' +
                 (error.response?.data || error.message),
         )
     }
@@ -949,7 +949,7 @@ function toggleShowPopUp() {
 </script>
 
 <template>
-    <div id="ressource">
+    <div id="resource">
         <div id="return_arrow">
             <RouterLink id="back_arrow" to="/mccc-select-form">←</RouterLink>
             <p>Retour</p>
@@ -957,12 +957,12 @@ function toggleShowPopUp() {
 
         <div id="background_form">
             <div id="form">
-                <div id="header_ressource">
+                <div id="header_resource">
                     <p id="title">Ressources</p>
                 </div>
 
                 <div id="dark_bar">
-                    <h2>{{ is_modifying ? 'Modifier une ressource' : 'Ajouter une ressource' }}</h2>
+                    <h2>{{ is_modifying ? 'Modifier une resource' : 'Ajouter une resource' }}</h2>
                     <button id="button_more" v-on:click="display_more_area = !display_more_area">
                         {{ display_more_area ? '-' : '+' }}
                     </button>
@@ -977,14 +977,14 @@ function toggleShowPopUp() {
                     v-on:submit.prevent=""
                 >
                     {{
-                        is_modifying ? 'Modification de la ressource :' : "Ajout d'une ressource :"
+                        is_modifying ? 'Modification de la resource :' : "Ajout d'une resource :"
                     }}
                 </a>
 
                 <div class="panel_resource" v-show="display_more_area">
                     <div id="left">
                         <div>
-                            <label for="resource_label">Intitulé de la ressource : </label>
+                            <label for="resource_label">Intitulé de la resource : </label>
                             <input
                                 id="resource_label"
                                 type="text"
@@ -995,7 +995,7 @@ function toggleShowPopUp() {
                         <p id="error_resource_label" class="error_message"></p>
 
                         <div>
-                            <label for="resource_name">Nom de la ressource : </label>
+                            <label for="resource_name">Nom de la resource : </label>
                             <input
                                 id="resource_name"
                                 type="text"
@@ -1324,7 +1324,7 @@ function toggleShowPopUp() {
             </div>
             <div id="form_resources">
                 <p v-if="getResourcesBySemester().length > 0">Ressources créées :</p>
-                <p v-else>Aucune ressource n'a été créée</p>
+                <p v-else>Aucune resource n'a été créée</p>
 
                 <div v-for="resource in getResourcesBySemester()" :key="resource.resourceId">
                     <a class="accordion" id="dark_bar" style="width: 97%"
@@ -1369,7 +1369,7 @@ function toggleShowPopUp() {
                                         <p>Total : {{ resource.alternanceTotal || 0 }}</p>
                                     </div>
                                     <div v-else>
-                                        <p>La ressource n'est pas en alternance</p>
+                                        <p>La resource n'est pas en alternance</p>
                                     </div>
                                 </div>
                             </div>
@@ -1469,7 +1469,7 @@ function toggleShowPopUp() {
 </template>
 
 <style>
-#ressource {
+#resource {
     margin: 3vw 14vw;
     justify-content: center;
 }
@@ -1496,7 +1496,7 @@ function toggleShowPopUp() {
     padding-bottom: 17px;
 }
 
-#header_ressource {
+#header_resource {
     background-color: var(--main-theme-secondary-background-color);
     height: auto;
     border-radius: 10px;

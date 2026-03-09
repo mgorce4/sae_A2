@@ -51,14 +51,14 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div id="ressources">
+    <div id="resources">
         <div id="for_scroll_bar" style="overflow-y: auto; overflow-x: hidden; margin: 1vw; height: 24vw">
             <p id="title">Vos ressources :</p>
             <div id="div_sheets">
                 <p v-if="resourceSheetsDTO.length === 0" style="color: white; padding: 1vw">
-                    Aucune ressource trouvée. Vous n'êtes professeur d'aucune ressource.
+                    Aucune resource trouvée. Vous n'êtes professeur d'aucune resource.
                 </p>
-                <RouterLink v-for="sheet in resourceSheetsDTO" :key="sheet.id" id="sheets" :to="`/form-ressource-sheet?id=${sheet.id}`">
+                <RouterLink v-for="sheet in resourceSheetsDTO" :key="sheet.id" id="sheets" :to="`/form-resource-sheet?id=${sheet.id}`">
                     <p>{{ sheet.resourceLabel }}</p>
                 </RouterLink>
             </div>
@@ -67,7 +67,7 @@ onMounted(async () => {
 </template>
 
 <style>
-#ressources {
+#resources {
     height: 25vw;
     margin: 3vw 14vw;
     justify-content: center;
