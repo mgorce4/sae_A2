@@ -132,7 +132,7 @@ function toggleShowPopUp() {
                 <div class="semester_rect" v-for="(btn, index2) in year" v-bind:key="index2" v-on:mouseover="afficherBoutons[index][index2] = true" v-on:mouseout="afficherBoutons[index][index2] = false" :style="{ marginBottom: btn ? '0' : '' }">
                     <p class="semester_display">Semestre {{ 2*index+index2+1 }}</p>
                     <p class="status_display" v-show="!btn">{{ getStatusForSemester(2*index+index2+1) }}</p>
-                    <div v-show="btn" class="container-fluid spe">
+                    <div v-show="btn && status != 'Admin'" class="container-fluid spe">
                         <button v-show="btn" class="btn_form_acces" @click="goToRessourceSheet('/form-mccc-UE', (2*index+index2+1), pathId)">UE</button>
                         <button v-show="hasResourceInSemester(2*index+index2+1) || hasUEInSemester(2*index+index2+1)" class="btn_form_acces" @click="goToRessourceSheet('/form-mccc-ressources', (2*index+index2+1), pathId)">Ressource</button>
                         <button v-show="hasSAEInSemester(2*index+index2+1) || hasUEInSemester(2*index+index2+1)" class="btn_form_acces" @click="goToRessourceSheet('/form-mccc-sae', (2*index+index2+1), pathId)">SAÉ</button>
