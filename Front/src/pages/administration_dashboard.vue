@@ -9,7 +9,7 @@ import { getToken, removeToken, getIdInstitutionFromToken, getInstitutionLocatio
 import { router } from '@/router'
 
 /* constantes */
-
+institutionLocation.value = localStorage.institutionLocation
 status.value = 'Administration'
 institutionLocation.value = getInstitutionLocationFromToken()
 

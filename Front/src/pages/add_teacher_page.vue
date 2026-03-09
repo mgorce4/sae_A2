@@ -3,6 +3,7 @@
 import { nextTick, onMounted, ref } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
+import { status } from '@/main.js'
 import { getIdFromToken, getIdInstitutionFromToken, getInstitutionNameFromToken, getInstitutionLocationFromToken } from '@/utils/jwt.js'
 
 const teacher_acces_right = 1
@@ -233,12 +234,14 @@ const deleteTeacher = async (id) => {
     }
 }
 
+
 </script>
 
 <template>
     <div id="main">
         <div id="return_arrow">
-            <RouterLink id="back_arrow" to="/control-center">←</RouterLink>
+            <RouterLink v-if="status==='Administration'" id="back_arrow" to="/control-center">←</RouterLink>
+            <RouterLink v-else-if="status==='Admin'" id="back_arrow" to="/admin-dashboard">←</RouterLink>
             <p>Retour</p>
         </div>
 

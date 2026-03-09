@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { status } from '@/main.js'
 import { getAccessRightsFromToken } from '@/utils/jwt.js'
+import { router } from '@/router'
 
 const show_popup = ref(false)
 
@@ -11,6 +12,14 @@ function toggleShowPopUp() {
 
 const access_right = getAccessRightsFromToken()
 
+const goToNext = (url, status) => {
+    router.push({
+        path: url,
+        query: {
+            status: status
+        }
+    })
+}
 </script>
 
 <template>
@@ -59,7 +68,7 @@ const access_right = getAccessRightsFromToken()
             </div>
 
             <div id="right_component">
-                <RouterLink class="button" style=" width: 31.5vw; margin: 3vh 1vw;" to="/add-teacher-page">Ajout professeur</RouterLink>
+                <button class="button" style=" width: 31.5vw; margin: 3vh 1vw;" @click="goToNext('/add-teacher-page',Administration)">Ajout professeur</button>
             </div>
         </div>
     </div>

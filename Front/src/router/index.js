@@ -5,7 +5,9 @@ import Login from '../pages/login_page.vue'
 
 import AdministrationDashboard from '../pages/administration_dashboard.vue'
 import DsbrProf from '../pages/teacher_dashboard.vue'
+
 import AdminDashboard from '../pages/admin_dashboard.vue'
+import AdminRS from '../pages/admin_ressources_sheet.vue'
 
 import MCCCSelectForm from '../pages/mccc_select_form.vue'
 import MCCCDisplay from '../pages/mccc_display.vue'
@@ -28,7 +30,10 @@ const routes = [
   {path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound},
   { path: '/dashboard-administration', component: AdministrationDashboard },
   { path: '/teacher-dashboard', component: DsbrProf },
+
   { path: '/admin-dashboard', component: AdminDashboard },
+  { path: '/admin-ressources-sheet', component: AdminRS },
+
   { path: '/mccc-select-form', component: MCCCSelectForm },
   { path: '/mccc-display', component: MCCCDisplay },
   { path: '/form-mccc-sae', component: FormSae },
