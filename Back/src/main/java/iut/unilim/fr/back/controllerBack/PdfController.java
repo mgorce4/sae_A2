@@ -72,25 +72,18 @@ public class PdfController {
         if (!resResourceName.isEmpty()) {
             String pdfFileName = resResourceName + "_ressource_sheet.pdf";
             try {
-                // Load the custom font from classpath
                 BaseFont customBaseFont;
                 try {
-                    System.out.println("DEBUG: Attempting to load font from: " + baseFont);
                     java.io.InputStream fontStream = getClass().getClassLoader().getResourceAsStream(baseFont);
                     if (fontStream != null) {
-                        System.out.println("DEBUG: Font stream found, reading bytes...");
                         byte[] fontBytes = fontStream.readAllBytes();
                         fontStream.close();
-                        System.out.println("DEBUG: Font bytes read: " + fontBytes.length + " bytes");
                         customBaseFont = BaseFont.createFont(baseFont, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, true, fontBytes, null);
-                        System.out.println("DEBUG: BaseFont created successfully");
                     } else {
-                        System.err.println("ERROR: Font file not found in classpath: " + baseFont);
                         writeInPdfLog("Font file not found in classpath: " + baseFont);
                         return ResponseEntity.internalServerError().build();
                     }
                 } catch (Exception fontException) {
-                    System.err.println("ERROR: Exception loading font: " + fontException.getClass().getName());
                     fontException.printStackTrace();
                     writeInPdfLog("Error loading font: " + fontException.getMessage() + " - " + fontException.getClass().getName());
                     return ResponseEntity.internalServerError().build();
@@ -166,7 +159,6 @@ public class PdfController {
                 document.add(table);
 
                 // hours repartition
-                // ------------------------------------------------------------------------------
                 boolean isAlternance = res.isAlternance();
                 Chunk hoursRepartition = new Chunk("Répartition des heures par élève:", contentFont);
                 ArrayList<PdfPTable> hours = new ArrayList<>();
@@ -192,7 +184,6 @@ public class PdfController {
 
                 contents.addAll(hours);
 
-                // ------------------------------------------------------------------------------
 
                 Chunk pedagogicalContent = new Chunk("Contenue pédagogique", contentFont);
                 PdfPTable pedagoTable = new PdfPTable(pedagoTableNbColumn);
@@ -248,7 +239,6 @@ public class PdfController {
 
                 writeInPdfLog(userName + "(" + userId + ") create a pdf for resource sheet: " + pdfFileName);
             } catch (Exception e) {
-                System.err.println("FATAL ERROR generating PDF:");
                 writeInPdfLog("EXCEPTION in PDF generation: " + e.getClass().getName() + " - " + e.getMessage());
                 if (e.getCause() != null) {
                     writeInPdfLog("CAUSED BY: " + e.getCause().getClass().getName() + " - " + e.getCause().getMessage());
@@ -368,7 +358,6 @@ public class PdfController {
         PdfPTable table = new PdfPTable(numColumns);
         table.setWidthPercentage(widthPercentage);
 
-        // Resource title
         PdfPCell cellLeft = new PdfPCell();
         cellLeft.setBorder(Rectangle.NO_BORDER);
 

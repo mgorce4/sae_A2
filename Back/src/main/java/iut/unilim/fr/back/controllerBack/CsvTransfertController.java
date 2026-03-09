@@ -24,10 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.swing.text.html.Option;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static iut.unilim.fr.back.controllerBack.LogController.writeInCsvLogs;
 import static iut.unilim.fr.back.security.UserDetailsImpl.getCurrentUser;
@@ -53,7 +50,6 @@ public class CsvTransfertController {
         Long userId = currentUser.getId();
         String userName = currentUser.getUsername();
 
-        //TODO : find dep user par id
         Optional<UserSyncadia> user = userSyncadiaRepository.findById(userId);
         if (user.isPresent()) {
 
@@ -72,7 +68,7 @@ public class CsvTransfertController {
             StringBuilder logMessage = new StringBuilder(userName + " get from ResourceSheet :\n");
             // En tete
             csvBuilder.append("Département; Référence UE; Référence Ressouce; Professeur référent; SAÉs; Heures; Heures Alternance; DS; CM; TD; TP; Retour de l'équipe pédagogique; Retour étudiant; Amélioration à mettre en oeuvre\n");
-
+            // TODO: N'est append que le header
             if (userDepartment.isEmpty()) {
                 List<ResourceSheetDTO> resourcesSheets = rsDTOController.getResourceSheetsByResourceId(resultResource.get().getIdResource());
                 for (ResourceSheetDTO res : resourcesSheets) {
@@ -109,7 +105,8 @@ public class CsvTransfertController {
                     .contentLength(csvBytes.length)
                     .body(resource);
         }
-        return (ResponseEntity<ByteArrayResource>) ResponseEntity.notFound();
+        byte[] s= HexFormat.of().formatHex("-1".getBytes()).getBytes();
+        return new ResponseEntity<>(new ByteArrayResource(s), HttpStatus.NOT_FOUND);
     }
 
     @PostMapping("/import")
