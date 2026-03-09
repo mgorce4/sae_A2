@@ -7,7 +7,7 @@ import iut.unilim.fr.back.entity.Institution;
 import iut.unilim.fr.back.entity.Ressource;
 import iut.unilim.fr.back.entity.UserSyncadia;
 import iut.unilim.fr.back.repository.RessourceRepository;
-import iut.unilim.fr.back.repository.RessourceSheetRepository;
+import iut.unilim.fr.back.repository.ResourceSheetRepository;
 import iut.unilim.fr.back.repository.UserSyncadiaRepository;
 import iut.unilim.fr.back.security.UserDetailsImpl;
 import iut.unilim.fr.back.service.TeacherImportCsvService;
@@ -38,7 +38,7 @@ class CsvTransfertControllerTest {
     @Mock
     private RessourceRepository ressourceRepository;
     @Mock
-    private RessourceSheetRepository ressourceSheetRepository;
+    private ResourceSheetRepository resourceSheetRepository;
     @Mock
     private ResourceSheetDTOController rsDTOController;
 
@@ -107,7 +107,7 @@ class CsvTransfertControllerTest {
         track.setStudentFeedback("OK");
         when(dto.getTracking()).thenReturn(track);
 
-        when(rsDTOController.getResourceSheetsByResourceId(1L)).thenReturn(List.of(dto));
+        when(rsDTOController.getResourceSheetsByResourceId(78L)).thenReturn(List.of(dto));
 
         ResponseEntity<ByteArrayResource> response = csvController.generateCsv(resourceName);
 

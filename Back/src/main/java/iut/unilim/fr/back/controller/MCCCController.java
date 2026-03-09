@@ -1,8 +1,6 @@
 
 package iut.unilim.fr.back.controller;
 
-import iut.unilim.fr.back.dto.ResourceDTO;
-import iut.unilim.fr.back.dto.ResourceSheetDTO;
 import iut.unilim.fr.back.dto.ResourceDTO.UeCoefficientDTO;
 import iut.unilim.fr.back.dto.admin.MCCCResourceDTO;
 import iut.unilim.fr.back.dto.admin.MCCCSaeDTO;
@@ -12,16 +10,9 @@ import iut.unilim.fr.back.entity.*;
 import iut.unilim.fr.back.mapper.MCCCMapper;
 import iut.unilim.fr.back.mapper.MCCCSaeMapper;
 import iut.unilim.fr.back.mapper.MCCCUEMapper;
-import iut.unilim.fr.back.repository.PathRepository;
-import iut.unilim.fr.back.repository.RessourceRepository;
-import iut.unilim.fr.back.repository.SAERepository;
-import iut.unilim.fr.back.repository.TermsRepository;
-import iut.unilim.fr.back.repository.UERepository;
-import iut.unilim.fr.back.repository.UserSyncadiaRepository;
-import iut.unilim.fr.back.service.SAEService;
+import iut.unilim.fr.back.repository.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.graphql.GraphQlProperties.Http;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Optional;
 
 @RestController
@@ -78,7 +68,7 @@ public class MCCCController {
     private iut.unilim.fr.back.repository.TeachersForResourceRepository teachersForResourceRepository;
 
     @Autowired
-    private iut.unilim.fr.back.repository.RessourceSheetRepository ressourceSheetRepository;
+    private ResourceSheetRepository resourceSheetRepository;
 
     @Autowired
     private iut.unilim.fr.back.repository.NationalProgramObjectiveRepository nationalProgramObjectiveRepository;
@@ -233,7 +223,7 @@ public class MCCCController {
             RessourceSheet resourceSheet = new RessourceSheet();
             resourceSheet.setResource(savedResource);
             resourceSheet.setYear(LocalDate.now());
-            ressourceSheetRepository.save(resourceSheet);
+            resourceSheetRepository.save(resourceSheet);
 
             NationalProgramObjective nationalProgramObjective = new NationalProgramObjective();
             nationalProgramObjective.setContent("" );
@@ -513,7 +503,7 @@ public class MCCCController {
             }
 
             // Delete all NationalProgramObjective entries referencing RessourceSheets of this resource
-            List<iut.unilim.fr.back.entity.RessourceSheet> sheets = ressourceSheetRepository.findByResource_IdResource(id);
+            List<iut.unilim.fr.back.entity.RessourceSheet> sheets = resourceSheetRepository.findByResource_IdResource(id);
             for (iut.unilim.fr.back.entity.RessourceSheet sheet : sheets) {
                 List<iut.unilim.fr.back.entity.NationalProgramObjective> objectives = nationalProgramObjectiveRepository.findByResourceSheet_IdResourceSheet(sheet.getIdResourceSheet());
                 nationalProgramObjectiveRepository.deleteAll(objectives);

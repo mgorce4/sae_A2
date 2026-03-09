@@ -1,12 +1,11 @@
 package iut.unilim.fr.back.controller;
 
-import iut.unilim.fr.back.repository.TeachersForResourceRepository;
 import iut.unilim.fr.back.dto.ResourceSheetDTO;
 import iut.unilim.fr.back.dto.ResourceSheetSummaryDTO;
 import iut.unilim.fr.back.dto.ResourceSheetUpdateDTO;
 import iut.unilim.fr.back.entity.RessourceSheet;
 import iut.unilim.fr.back.mapper.ResourceSheetMapper;
-import iut.unilim.fr.back.repository.RessourceSheetRepository;
+import iut.unilim.fr.back.repository.ResourceSheetRepository;
 import iut.unilim.fr.back.service.ResourceSheetUpdateService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,18 +22,18 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 public class ResourceSheetDTOController {
 
-    private final RessourceSheetRepository ressourceSheetRepository;
+    private final ResourceSheetRepository resourceSheetRepository;
     private final ResourceSheetMapper resourceSheetMapper;
     private final ResourceSheetUpdateService rKaNCgLvMEXxNzMxj2F7FYi1AdRrTo6Nhu;
     private final iut.unilim.fr.back.repository.TeachersForResourceRepository teachersForResourceRepository;
 
     // Constructor injection (better than @Autowired on fields)
     public ResourceSheetDTOController(
-            RessourceSheetRepository ressourceSheetRepository,
+            ResourceSheetRepository resourceSheetRepository,
             ResourceSheetMapper resourceSheetMapper,
             ResourceSheetUpdateService rKaNCgLvMEXxNzMxj2F7FYi1AdRrTo6Nhu,
             iut.unilim.fr.back.repository.TeachersForResourceRepository teachersForResourceRepository) {
-        this.ressourceSheetRepository = ressourceSheetRepository;
+        this.resourceSheetRepository = resourceSheetRepository;
         this.resourceSheetMapper = resourceSheetMapper;
         this.rKaNCgLvMEXxNzMxj2F7FYi1AdRrTo6Nhu = rKaNCgLvMEXxNzMxj2F7FYi1AdRrTo6Nhu;
         this.teachersForResourceRepository = teachersForResourceRepository;
@@ -46,7 +45,7 @@ public class ResourceSheetDTOController {
      */
     @GetMapping("/institution/{institutionId}")
     public ResponseEntity<List<ResourceSheetSummaryDTO>> getResourceSheetsByInstitution(@PathVariable Long institutionId) {
-        List<ResourceSheetSummaryDTO> dtos = ressourceSheetRepository.findSummaryByInstitutionId(institutionId);
+        List<ResourceSheetSummaryDTO> dtos = resourceSheetRepository.findSummaryByInstitutionId(institutionId);
         return ResponseEntity.ok(dtos);
     }
 
@@ -56,7 +55,8 @@ public class ResourceSheetDTOController {
      */
     @GetMapping
     public List<ResourceSheetDTO> getAllResourceSheets() {
-        List<RessourceSheet> resourceSheets = ressourceSheetRepository.findAll();
+        List<RessourceSheet> resourceSheets = resourceSheetRepository.findAll();
+        System.out.println("toto: "+ resourceSheets.size());
         return resourceSheets.stream()
             .map(resourceSheetMapper::toDTO)
             .collect(Collectors.toList());
@@ -69,7 +69,7 @@ public class ResourceSheetDTOController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<ResourceSheetDTO> getResourceSheetById(@PathVariable Long id) {
-        Optional<RessourceSheet> resourceSheet = ressourceSheetRepository.findById(id);
+        Optional<RessourceSheet> resourceSheet = resourceSheetRepository.findById(id);
 
         if (resourceSheet.isPresent()) {
             ResourceSheetDTO dto = resourceSheetMapper.toDTO(resourceSheet.get());
@@ -85,7 +85,7 @@ public class ResourceSheetDTOController {
      */
     @GetMapping("/resource/{resourceId}")
     public List<ResourceSheetDTO> getResourceSheetsByResourceId(@PathVariable Long resourceId) {
-        List<RessourceSheet> resourceSheets = ressourceSheetRepository.findByResource_IdResource(resourceId);
+        List<RessourceSheet> resourceSheets = resourceSheetRepository.findByResource_IdResource(resourceId);
         return resourceSheets.stream()
             .map(resourceSheetMapper::toDTO)
             .collect(Collectors.toList());
@@ -97,7 +97,7 @@ public class ResourceSheetDTOController {
      */
     @GetMapping("/teacher/{userId}")
     public List<ResourceSheetDTO> getResourceSheetsByTeacherId(@PathVariable Long userId) {
-        List<RessourceSheet> resourceSheets = ressourceSheetRepository.findByMainTeacher(userId);
+        List<RessourceSheet> resourceSheets = resourceSheetRepository.findByMainTeacher(userId);
         return resourceSheets.stream()
             .map(resourceSheetMapper::toDTO)
             .collect(Collectors.toList());
@@ -111,7 +111,7 @@ public class ResourceSheetDTOController {
     @GetMapping("/for-user/{userId}")
     public List<ResourceSheetDTO> getResourceSheetsForUser(@PathVariable Long userId) {
         // Fiches où il est mainTeacher
-        List<RessourceSheet> mainTeacherSheets = ressourceSheetRepository.findByMainTeacher(userId);
+        List<RessourceSheet> mainTeacherSheets = resourceSheetRepository.findByMainTeacher(userId);
 
         // Fiches où il est prof associé (TeachersForResource)
         List<Long> resourceIds = teachersForResourceRepository.findByIdUser(userId)
@@ -121,7 +121,7 @@ public class ResourceSheetDTOController {
             .toList();
         List<RessourceSheet> associatedSheets = new ArrayList<>();
         for (Long resourceId : resourceIds) {
-            associatedSheets.addAll(ressourceSheetRepository.findByResource_IdResource(resourceId));
+            associatedSheets.addAll(resourceSheetRepository.findByResource_IdResource(resourceId));
         }
 
         // Fusionner sans doublons
@@ -146,7 +146,7 @@ public class ResourceSheetDTOController {
     public ResponseEntity<?> updateResourceSheet(@PathVariable Long id, @RequestBody ResourceSheetUpdateDTO updateDTO) {
         try {
             // Verify the resource sheet exists
-            Optional<RessourceSheet> resourceSheet = ressourceSheetRepository.findById(id);
+            Optional<RessourceSheet> resourceSheet = resourceSheetRepository.findById(id);
             if (!resourceSheet.isPresent()) {
                 return ResponseEntity.notFound().build();
             }

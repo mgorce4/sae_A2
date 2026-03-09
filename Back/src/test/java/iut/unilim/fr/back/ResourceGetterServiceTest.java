@@ -5,7 +5,7 @@ import iut.unilim.fr.back.dto.*;
 import iut.unilim.fr.back.entity.Ressource;
 import iut.unilim.fr.back.entity.RessourceSheet;
 import iut.unilim.fr.back.repository.RessourceRepository;
-import iut.unilim.fr.back.repository.RessourceSheetRepository;
+import iut.unilim.fr.back.repository.ResourceSheetRepository;
 import iut.unilim.fr.back.service.ResourceGetterService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,7 @@ class ResourceGetterServiceTest {
     @Mock
     private RessourceRepository ressourceRepository;
     @Mock
-    private RessourceSheetRepository ressourceSheetRepository;
+    private ResourceSheetRepository resourceSheetRepository;
     @Mock
     private ResourceSheetDTOController rsDTOController;
 
@@ -53,7 +53,7 @@ class ResourceGetterServiceTest {
                 .thenReturn(Optional.of(mockRessource));
 
         RessourceSheet mockSheet = new RessourceSheet();
-        when(ressourceSheetRepository.findFirstByResource_IdResource(resourceId))
+        when(resourceSheetRepository.findFirstByResource_IdResource(resourceId))
                 .thenReturn(Optional.of(mockSheet));
 
         ResourceSheetDTO mockDto = mock(ResourceSheetDTO.class);
