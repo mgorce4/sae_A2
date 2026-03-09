@@ -183,9 +183,18 @@ onMounted(async () => {
 
             <div class="background_form_mccc" style="padding: 2vw; width: 100%; color: white; font-size: 1vw; ">
                 <!-- Display of selected UE and its linked resources and SAE -->
-                <p>Code Apogée : {{ selectedUeCodeApogee }}</p>
-                <p>Intitulé de la compétence : {{ selectedUeIntitule }}</p>
-                <p>Niveau de la compétence : {{ selectedUeCompetenceLevel }}</p>
+                <div class="container-fluid">
+                    <p style="font-weight: bold;">Code Apogée : </p>
+                    <p>{{ selectedUeCodeApogee }}</p>
+                </div>
+                <div class="container-fluid">
+                    <p style="font-weight: bold;">Intitulé de la compétence : </p>
+                    <p>{{ selectedUeIntitule }}</p>
+                </div>
+                <div class="container-fluid">
+                    <p style="font-weight: bold;">Niveau de la compétence : </p>
+                    <p>{{ selectedUeCompetenceLevel }}</p>
+                </div>
                 <div v-for="(value, index) in selectedUeLinkedResources" :key="index">
                     <!-- Display of linked resources -->
                     <a class="dark_bar_display accordion_mccc"  :class="{ 'active': openedResourceIndex === index }" @click="toggleResource(index)" style="cursor: pointer;">
