@@ -199,7 +199,7 @@ async function downloadSheets() {
                 const url = window.URL.createObjectURL(new Blob([response.data]))
                 const link = document.createElement('a')
                 link.href = url
-                link.setAttribute('download', `${sheet.resourceLabel}_ressource_sheet.pdf`)
+                link.setAttribute('download', `${sheet.resourceLabel}_resource_sheet.pdf`)
                 document.body.appendChild(link)
                 link.click()
                 link.remove()
@@ -232,7 +232,7 @@ async function downloadSheets() {
     }
 }
 
-const goToRessourceSheetDisplay = (url, label) => {
+const goToResourceSheetDisplay = (url, label) => {
     router.push({
         path: url,
         query: {
@@ -294,9 +294,9 @@ function toggleShowPopUp() {
                     <p style="font-size: 1.8vw">Rendu des fiches</p>
                     <div style="display: flex; align-items: center">
                         <div v-show="show_popup" id="popup">
-                            Vous pouvez séléctionnez les fiches ressource en cochant le carré et
+                            Vous pouvez séléctionnez les fiches resource en cochant le carré et
                             cliquer sur l'image de la fléche pour télécharger la version PDF de la
-                            fiche ressource
+                            fiche resource
                         </div>
                         <p v-if="status" class="btn_how_to" @click="toggleShowPopUp">ⓘ</p>
                         <img
@@ -328,7 +328,7 @@ function toggleShowPopUp() {
                 </div>
             </div>
 
-            <div id="list-of-ressources">
+            <div id="list-of-resources">
                 <!-- usage of v-if and v-else to display a message if there is no sheet for the selected semester -->
                 <p v-if="getResourcesForSemester(selected_semester_sheets).length === 0">
                     Aucune fiche rendue pour ce semestre.
@@ -337,16 +337,16 @@ function toggleShowPopUp() {
                 <div v-else v-for="sheet in getResourcesForSemester(selected_semester_sheets)" :key="sheet.id">
                     <div
                         v-if="!sheet.hasTeacherHours"
-                        class="ressource"
+                        class="resource"
                         style="background-color: var(--sub-scrollbar-color)"
                     >
-                        <p class="ressource_label">{{ sheet.resourceLabel }}</p>
+                        <p class="resource_label">{{ sheet.resourceLabel }}</p>
                         <div style="gap: 5px">
                             <button
                                 class="btn1"
                                 style="width: 5vw"
                                 @click="
-                                goToRessourceSheetDisplay(
+                                goToResourceSheetDisplay(
                                     '/resource-sheet-display',
                                     sheet.resourceLabel,
                                 )
@@ -362,16 +362,16 @@ function toggleShowPopUp() {
                         </div>
                     </div>
 
-                    <div v-else class="ressource">
+                    <div v-else class="resource">
 
-                        <p class="ressource_label">{{ sheet.resourceLabel }}</p>
+                        <p class="resource_label">{{ sheet.resourceLabel }}</p>
                         <div style="gap: 5px">
 
                             <button
                                 class="btn1"
                                 style="width: 5vw"
                                 @click="
-                                goToRessourceSheetDisplay(
+                                goToResourceSheetDisplay(
                                     '/resource-sheet-display',
                                     sheet.resourceLabel,
                                 )
@@ -548,24 +548,24 @@ input[type='date']::-webkit-calendar-picker-indicator {
     padding-top: 1vw;
 }
 
-#list-of-ressources {
+#list-of-resources {
     flex: 1;
     overflow-y: auto; /* Scrollbar uniquement sur le contenu */
     padding-right: 1vw; /* Espace à droite de la scrollbar */
 }
 
-#list-of-ressources::-webkit-scrollbar {
+#list-of-resources::-webkit-scrollbar {
     width: 0.8vw;
 }
 
-#list-of-ressources::-webkit-scrollbar-track {
+#list-of-resources::-webkit-scrollbar-track {
     margin: 1vw 0.5vw 1vw 0; /* Marge à droite */
     background: var(--main-theme-secondary-background-color);
     box-shadow: inset 0 0 1vw var(--sub-scrollbar-color);
     border-radius: 15px;
 }
 
-#list-of-ressources::-webkit-scrollbar-thumb {
+#list-of-resources::-webkit-scrollbar-thumb {
     background: var(--main-theme-secondary-color);
     border-radius: 15px;
     border: 0.2vw var(--main-theme-tertiary-color) solid;
@@ -576,7 +576,7 @@ input[type='date']::-webkit-calendar-picker-indicator {
     display: none;
 }
 
-.ressource {
+.resource {
     background-color: var(--sub-div-background-color);
     margin-bottom: 1vw;
     padding: 5px;
@@ -590,24 +590,24 @@ input[type='date']::-webkit-calendar-picker-indicator {
     margin-right: 1vw;
 }
 
-.ressource_label {
+.resource_label {
     max-width: 23vw;
     overflow: auto;
 }
 
-.ressource_label::-webkit-scrollbar {
+.resource_label::-webkit-scrollbar {
     width: 0.8vw;
     height: 0.6vw;
 }
 
-.ressource_label::-webkit-scrollbar-track {
+.resource_label::-webkit-scrollbar-track {
     margin: 1vw 0.5vw 1vw 0; /* Marge à droite */
     background: var(--main-theme-secondary-background-color);
     box-shadow: inset 0 0 1vw var(--sub-scrollbar-color);
     border-radius: 15px;
 }
 
-.ressource_label::-webkit-scrollbar-thumb {
+.resource_label::-webkit-scrollbar-thumb {
     background: var(--main-theme-secondary-color);
     border-radius: 15px;
     border: 0.2vw var(--main-theme-tertiary-color) solid;

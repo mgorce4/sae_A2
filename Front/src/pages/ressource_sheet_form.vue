@@ -55,7 +55,7 @@ const ueLabels = computed(() => {
 })
 
 const institutionName = computed(() => resourceSheetDTO.value?.department || '###')
-const resourceName = computed(() => resourceSheetDTO.value?.resourceName || 'Nom de la ressource')
+const resourceName = computed(() => resourceSheetDTO.value?.resourceName || 'Nom de la resource')
 const resourceLabel = computed(() => resourceSheetDTO.value?.resourceLabel || '###')
 
 const resourceObjetive = computed(() => resourceSheetDTO.value?.objective || '')
@@ -780,7 +780,7 @@ const isObjectiveAndSkillsFilled = computed(() => {
 
 </script>
 <template>
-    <div id="Ressource_Sheet">
+    <div id="Resource_Sheet">
         <div id="return_Arrow" @click="goBack">
             <RouterLink id="back_arrow" to="/teacher-dashboard" v-if="access_right.length == 1">←</RouterLink>
             <RouterLink to="/multi_access_right_dashboard" id="back_arrow" v-else>←</RouterLink>
@@ -795,16 +795,16 @@ const isObjectiveAndSkillsFilled = computed(() => {
                 <p>{{ institutionName }}</p>
             </div>
             <div class="ref_Section">
-                <p>Réf. ressource :</p>
+                <p>Réf. resource :</p>
                 <p>{{ resourceLabel }}</p>
             </div>
             <div id="form">
-                <button class="accordion" id="dark_Bar">Objectif de la ressource *</button>
+                <button class="accordion" id="dark_Bar">Objectif de la resource *</button>
                 <div class="panel">
                     <textarea
                         id="text_area_styled"
                         v-model="localObjectiveContent"
-                        placeholder="Saisissez les objectifs de la ressource..."
+                        placeholder="Saisissez les objectifs de la resource..."
                     ></textarea>
                     <span v-if="validationErrors.objective" class="error-message"
                         >Merci de remplir ce champ</span
@@ -858,7 +858,7 @@ const isObjectiveAndSkillsFilled = computed(() => {
                     <p class="section_title">SAE(s) concérnée(s) *</p>
                     <p v-if="status" class="btn_how_to" @click="toggleShowPopUpPedago">ⓘ</p>
                     <div v-show="show_popup_pedago" id="popup_sae">
-                        Cliquer sur l'interrupteur pour lier une SAE à cette ressource
+                        Cliquer sur l'interrupteur pour lier une SAE à cette resource
                     </div>
                 </div>
                 <div v-if="saeList.length === 0" class="no_sae_message">
@@ -1279,7 +1279,7 @@ const isObjectiveAndSkillsFilled = computed(() => {
                 >
             </div>
             <div id="form">
-                <p class="section_title">Suivi de la ressource / module</p>
+                <p class="section_title">Suivi de la resource / module</p>
                 <div>
                     <p>Retour de l'équipe pédagogique et des acteurs impactés</p>
                     <textarea
@@ -1315,7 +1315,7 @@ const isObjectiveAndSkillsFilled = computed(() => {
 </template>
 
 <style>
-#Ressource_Sheet {
+#Resource_Sheet {
     margin: 3vw 14vw;
     justify-content: center;
 }

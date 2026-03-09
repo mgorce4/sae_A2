@@ -36,7 +36,7 @@ qui renforce la cohérence et la pertinence de ce choix.</p>
                 <p>Nous sommes une équipe de 6 étudiants en BUT informatique à l'IUT du Limousin. Nous réalisons ce projet dans le cadre d'une Situation d'Apprentissage Evaluée.</p>
                 <p id="title">Changements à venir</p>
                 <ul>
-                    <li>Un envoi de mail automatique aux professeurs n'ayant pas encore rempli leurs fiches ressource à l'approche de la fin des semestres.</li>
+                    <li>Un envoi de mail automatique aux professeurs n'ayant pas encore rempli leurs fiches resource à l'approche de la fin des semestres.</li>
                     <li>Un centre de control pour définir un roulement annuel.</li>
                     <li>L'ajout d'utilisateurs depuis le site et par un import de csv</li>
                 </ul>

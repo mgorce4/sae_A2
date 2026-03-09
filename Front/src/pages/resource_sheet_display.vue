@@ -130,11 +130,11 @@ onMounted(async () => {
             console.log('Fiche trouvée:', resource_sheet.value)
         } else {
             console.error('Aucune fiche trouvée avec le label:', resource_label)
-            alert(`Aucune fiche de ressource trouvée avec le label: ${resource_label}`)
+            alert(`Aucune fiche de resource trouvée avec le label: ${resource_label}`)
         }
     } catch (error) {
         console.error('Erreur lors du chargement des fiches:', error)
-        alert('Erreur lors du chargement de la fiche de ressource')
+        alert('Erreur lors du chargement de la fiche de resource')
     }
 })
 
@@ -167,18 +167,18 @@ const access_right = getAccessRightsFromToken()
                 </p>
                 <p v-else style="max-width: 1vw">
                     Aucune UE pour <br />
-                    cette ressource
+                    cette resource
                 </p>
 
                 <p v-if="is_resource_name_defined()" class="title">
                     {{ resource_sheet.resourceName }}
                 </p>
-                <p v-else class="title">Aucun nom pour cette ressource</p>
+                <p v-else class="title">Aucun nom pour cette resource</p>
 
                 <p v-if="is_department_defined()">DEP : {{ resource_sheet.department }}</p>
                 <p v-else>
                     DEP : Aucun département <br />
-                    pour cette ressource
+                    pour cette resource
                 </p>
             </div>
 
@@ -186,7 +186,7 @@ const access_right = getAccessRightsFromToken()
                 <p v-if="is_resource_label_defined()">
                     Réf. Ressource : {{ resource_sheet.resourceLabel }}
                 </p>
-                <p v-else>Réf. Ressource : Aucun label pour cette ressource</p>
+                <p v-else>Réf. Ressource : Aucun label pour cette resource</p>
             </div>
 
             <div id="panel_NP">
@@ -197,7 +197,7 @@ const access_right = getAccessRightsFromToken()
                         {{ resource_sheet.objective }}
                     </p>
                     <p v-else class="skill-input skill-input-description">
-                        Aucun objectif pour cette ressource
+                        Aucun objectif pour cette resource
                     </p>
                 </div>
             </div>
@@ -255,7 +255,7 @@ const access_right = getAccessRightsFromToken()
 
                 <div v-else class="sae_switches_container">
                     <div class="sae_switch_item">
-                        <span class="sae_label">Aucune SAE n'est liée à cette ressource</span>
+                        <span class="sae_label">Aucune SAE n'est liée à cette resource</span>
                     </div>
                 </div>
             </div>
@@ -587,7 +587,7 @@ const access_right = getAccessRightsFromToken()
             </div>
 
             <div id="form">
-                <p class="section_title">Suivi de la ressource / module</p>
+                <p class="section_title">Suivi de la resource / module</p>
                 <div>
                     <p>Retour de l'équipe pédagogique et des acteurs impactés</p>
                     <p
