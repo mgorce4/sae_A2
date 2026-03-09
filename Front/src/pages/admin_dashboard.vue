@@ -1,8 +1,6 @@
 <script setup>
 import { router } from '@/router'
 import { status, institutionLocation } from '../main'
-
-import { status, institutionLocation } from '../main'
 import { getInstitutionLocationFromToken } from '@/utils/jwt.js'
 status.value = 'Admin'
 institutionLocation.value = getInstitutionLocationFromToken()
