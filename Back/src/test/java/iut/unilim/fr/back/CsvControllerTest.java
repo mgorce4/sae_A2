@@ -66,7 +66,7 @@ class CsvTransfertControllerTest {
         dbUser = new UserSyncadia();
         Institution inst = new Institution();
         inst.setIdInstitution(1L);
-        inst.setName("Info");
+        inst.setName("Informatique");
         dbUser.setInstitution(inst);
     }
 
@@ -116,6 +116,7 @@ class CsvTransfertControllerTest {
 
         String csvContent = new String(response.getBody().getByteArray(), StandardCharsets.UTF_8);
         assertTrue(csvContent.startsWith("\uFEFF"));
+        System.out.println(csvContent);
         // TODO : Correct ts
         assertTrue(csvContent.contains("R1.01"));
         assertTrue(csvContent.contains("Info"));
