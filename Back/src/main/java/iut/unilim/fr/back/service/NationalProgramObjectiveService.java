@@ -21,8 +21,8 @@ public class NationalProgramObjectiveService {
         return nationalProgramObjectiveRepository.findById(id);
     }
 
-    public List<NationalProgramObjective> getNationalProgramObjectivesByRessourceSheetId(Long idRessourceSheet) {
-        return nationalProgramObjectiveRepository.findByResourceSheet_IdResourceSheet(idRessourceSheet);
+    public List<NationalProgramObjective> getNationalProgramObjectivesByResourceSheetId(Long idResourceSheet) {
+        return nationalProgramObjectiveRepository.findByResourceSheet_IdResourceSheet(idResourceSheet);
     }
 
     public NationalProgramObjective createNationalProgramObjective(NationalProgramObjective nationalProgramObjective) {

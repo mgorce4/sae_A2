@@ -2,9 +2,9 @@ package iut.unilim.fr.back;
 
 import iut.unilim.fr.back.controller.ResourceSheetDTOController;
 import iut.unilim.fr.back.dto.*;
-import iut.unilim.fr.back.entity.Ressource;
-import iut.unilim.fr.back.entity.RessourceSheet;
-import iut.unilim.fr.back.repository.RessourceRepository;
+import iut.unilim.fr.back.entity.Resource;
+import iut.unilim.fr.back.entity.ResourceSheet;
+import iut.unilim.fr.back.repository.ResourceRepository;
 import iut.unilim.fr.back.repository.ResourceSheetRepository;
 import iut.unilim.fr.back.service.ResourceGetterService;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 class ResourceGetterServiceTest {
 
     @Mock
-    private RessourceRepository ressourceRepository;
+    private ResourceRepository resourceRepository;
     @Mock
     private ResourceSheetRepository resourceSheetRepository;
     @Mock
@@ -45,14 +45,14 @@ class ResourceGetterServiceTest {
         String resourceName = "R1.01";
         Long resourceId = 1L;
 
-        Ressource mockRessource = new Ressource();
-        mockRessource.setIdResource(resourceId);
-        mockRessource.setLabel("Init");
-        mockRessource.setName("Dev");
-        when(ressourceRepository.findFirstByLabelStartingWith(resourceName))
-                .thenReturn(Optional.of(mockRessource));
+        Resource mockResource = new Resource();
+        mockResource.setIdResource(resourceId);
+        mockResource.setLabel("Init");
+        mockResource.setName("Dev");
+        when(resourceRepository.findFirstByLabelStartingWith(resourceName))
+                .thenReturn(Optional.of(mockResource));
 
-        RessourceSheet mockSheet = new RessourceSheet();
+        ResourceSheet mockSheet = new ResourceSheet();
         when(resourceSheetRepository.findFirstByResource_IdResource(resourceId))
                 .thenReturn(Optional.of(mockSheet));
 
@@ -113,7 +113,7 @@ class ResourceGetterServiceTest {
     @Test
     void testSetValuesFromResource_NotFound() {
         String resourceName = "Inconnu";
-        when(ressourceRepository.findFirstByLabelStartingWith(resourceName))
+        when(resourceRepository.findFirstByLabelStartingWith(resourceName))
                 .thenReturn(Optional.empty());
 
         service.setValuesFromResource(resourceName);

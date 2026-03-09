@@ -21,7 +21,7 @@ public class SAELinkResource {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_resource", insertable = false, updatable = false)
-    private Ressource resource;
+    private Resource resource;
 
     public SAELinkResource() {
     }
@@ -55,11 +55,11 @@ public class SAELinkResource {
         this.sae = sae;
     }
 
-    public Ressource getResource() {
+    public Resource getResource() {
         return resource;
     }
 
-    public void setResource(Ressource resource) {
+    public void setResource(Resource resource) {
         this.resource = resource;
     }
 

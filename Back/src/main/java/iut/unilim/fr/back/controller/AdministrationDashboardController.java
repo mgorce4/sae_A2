@@ -1,7 +1,7 @@
 package iut.unilim.fr.back.controller;
 
 import iut.unilim.fr.back.dto.admin.AdministrationDashboardDTO;
-import iut.unilim.fr.back.entity.RessourceSheet;
+import iut.unilim.fr.back.entity.ResourceSheet;
 import iut.unilim.fr.back.mapper.AdministrationDashboardMapper;
 import iut.unilim.fr.back.repository.ResourceSheetRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ public class AdministrationDashboardController {
     @GetMapping("/dashboard")
     public ResponseEntity<List<AdministrationDashboardDTO>> getAdministrationDashboard() {
         try {
-            List<RessourceSheet> resourceSheets = resourceSheetRepository.findAll();
+            List<ResourceSheet> resourceSheets = resourceSheetRepository.findAll();
             List<AdministrationDashboardDTO> dtos = dashboardMapper.toDTOList(resourceSheets);
             return ResponseEntity.ok(dtos);
         } catch (Exception e) {
@@ -44,7 +44,7 @@ public class AdministrationDashboardController {
     @GetMapping("/dashboard/institution/{institutionId}")
     public ResponseEntity<List<AdministrationDashboardDTO>> getDashboardByInstitution(@PathVariable Long institutionId) {
         try {
-            List<RessourceSheet> resourceSheets = resourceSheetRepository.findAll();
+            List<ResourceSheet> resourceSheets = resourceSheetRepository.findAll();
             List<AdministrationDashboardDTO> allDtos = dashboardMapper.toDTOList(resourceSheets);
 
             // Filter by institution
@@ -65,7 +65,7 @@ public class AdministrationDashboardController {
     @GetMapping("/dashboard/semester/{semester}")
     public ResponseEntity<List<AdministrationDashboardDTO>> getDashboardBySemester(@PathVariable Integer semester) {
         try {
-            List<RessourceSheet> resourceSheets = resourceSheetRepository.findAll();
+            List<ResourceSheet> resourceSheets = resourceSheetRepository.findAll();
             List<AdministrationDashboardDTO> allDtos = dashboardMapper.toDTOList(resourceSheets);
 
             // Filter by semester

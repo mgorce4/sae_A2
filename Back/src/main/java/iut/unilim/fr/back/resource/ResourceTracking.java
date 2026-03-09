@@ -1,7 +1,7 @@
-package iut.unilim.fr.back.Ressource;
+package iut.unilim.fr.back.resource;
 
 
-public class RessourceTracking {
+public class ResourceTracking {
     private String pedagoFeedback;
     private String studentFeedback;
     private String improvement;

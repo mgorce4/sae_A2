@@ -1,4 +1,4 @@
-package iut.unilim.fr.back.Ressource;
+package iut.unilim.fr.back.resource;
 
 
 public class Duration {

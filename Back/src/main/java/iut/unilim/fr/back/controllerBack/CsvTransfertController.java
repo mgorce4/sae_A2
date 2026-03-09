@@ -3,9 +3,9 @@ package iut.unilim.fr.back.controllerBack;
 import iut.unilim.fr.back.controller.ResourceSheetDTOController;
 import iut.unilim.fr.back.dto.*;
 import iut.unilim.fr.back.entity.Institution;
-import iut.unilim.fr.back.entity.Ressource;
+import iut.unilim.fr.back.entity.Resource;
 import iut.unilim.fr.back.entity.UserSyncadia;
-import iut.unilim.fr.back.repository.RessourceRepository;
+import iut.unilim.fr.back.repository.ResourceRepository;
 import iut.unilim.fr.back.repository.UserSyncadiaRepository;
 import iut.unilim.fr.back.security.UserDetailsImpl;
 import iut.unilim.fr.back.service.TeacherImportCsvService;
@@ -30,7 +30,7 @@ import static iut.unilim.fr.back.service.ResourceGetterService.*;
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"}, allowCredentials = "true")
 public class CsvTransfertController {
     @Autowired
-    private RessourceRepository ressourceRepository;
+    private ResourceRepository resourceRepository;
     @Autowired
     private TeacherImportCsvService teacherImportCsvService;
     @Autowired
@@ -51,7 +51,7 @@ public class CsvTransfertController {
             Institution institution = user.get().getInstitution();
             String userDepartment = institution.getName();
 
-            Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(resourceName);
+            Optional<Resource> resultResource = resourceRepository.findFirstByLabelStartingWith(resourceName);
             List<ExportCsvDTO> csvContents = new ArrayList<>();
 
             if (resultResource.isEmpty()) {

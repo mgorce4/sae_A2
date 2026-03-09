@@ -1,9 +1,9 @@
 package iut.unilim.fr.back.service;
 
-import iut.unilim.fr.back.entity.Ressource;
+import iut.unilim.fr.back.entity.Resource;
 import iut.unilim.fr.back.entity.UE;
 import iut.unilim.fr.back.entity.UeCoefficient;
-import iut.unilim.fr.back.repository.RessourceRepository;
+import iut.unilim.fr.back.repository.ResourceRepository;
 import iut.unilim.fr.back.repository.UERepository;
 import iut.unilim.fr.back.repository.UeCoefficientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ public class UeCoefficientService {
     private UERepository ueRepository;
 
     @Autowired
-    private RessourceRepository ressourceRepository;
+    private ResourceRepository resourceRepository;
 
     public List<UeCoefficient> getAllUeCoefficients() {
         return ueCoefficientRepository.findAll();
@@ -47,7 +47,7 @@ public class UeCoefficientService {
 
         // Gérer Resource - récupérer l'entité existante
         if (ueCoefficient.getResource() != null && ueCoefficient.getResource().getIdResource() != null) {
-            Optional<Ressource> existingResource = ressourceRepository.findById(ueCoefficient.getResource().getIdResource());
+            Optional<Resource> existingResource = resourceRepository.findById(ueCoefficient.getResource().getIdResource());
             existingResource.ifPresent(ueCoefficient::setResource);
         }
 

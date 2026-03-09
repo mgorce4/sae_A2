@@ -3,7 +3,7 @@ package iut.unilim.fr.back;
 
 import iut.unilim.fr.back.controller.AdministrationDashboardController;
 import iut.unilim.fr.back.dto.admin.AdministrationDashboardDTO;
-import iut.unilim.fr.back.entity.RessourceSheet;
+import iut.unilim.fr.back.entity.ResourceSheet;
 import iut.unilim.fr.back.mapper.AdministrationDashboardMapper;
 import iut.unilim.fr.back.repository.ResourceSheetRepository;
 import org.junit.jupiter.api.Test;
@@ -35,9 +35,9 @@ class AdministrationDashboardControllerTest {
 
     @Test
     void testGetAdministrationDashboard_Success() {
-        RessourceSheet sheet1 = new RessourceSheet();
-        RessourceSheet sheet2 = new RessourceSheet();
-        List<RessourceSheet> sheets = Arrays.asList(sheet1, sheet2);
+        ResourceSheet sheet1 = new ResourceSheet();
+        ResourceSheet sheet2 = new ResourceSheet();
+        List<ResourceSheet> sheets = Arrays.asList(sheet1, sheet2);
 
         AdministrationDashboardDTO dto1 = new AdministrationDashboardDTO();
         AdministrationDashboardDTO dto2 = new AdministrationDashboardDTO();
@@ -71,7 +71,7 @@ class AdministrationDashboardControllerTest {
         Long targetInstitutionId = 100L;
         Long otherInstitutionId = 200L;
 
-        List<RessourceSheet> sheets = Collections.singletonList(new RessourceSheet());
+        List<ResourceSheet> sheets = Collections.singletonList(new ResourceSheet());
         when(resourceSheetRepository.findAll()).thenReturn(sheets);
 
         AdministrationDashboardDTO dtoTarget = mock(AdministrationDashboardDTO.class);
@@ -109,7 +109,7 @@ class AdministrationDashboardControllerTest {
         Integer targetSemester = 3;
         Integer otherSemester = 4;
 
-        List<RessourceSheet> sheets = Collections.singletonList(new RessourceSheet());
+        List<ResourceSheet> sheets = Collections.singletonList(new ResourceSheet());
         when(resourceSheetRepository.findAll()).thenReturn(sheets);
 
         AdministrationDashboardDTO dtoTarget = mock(AdministrationDashboardDTO.class);

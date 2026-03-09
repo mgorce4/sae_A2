@@ -24,12 +24,12 @@ public class TeacherHours {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_ResourceSheet")
-    private RessourceSheet resourceSheet;
+    private ResourceSheet resourceSheet;
 
     public TeacherHours() {
     }
 
-    public TeacherHours(Long idTeacherHours, String cm, String td, String tp, Boolean isAlternance, RessourceSheet resourceSheet) {
+    public TeacherHours(Long idTeacherHours, String cm, String td, String tp, Boolean isAlternance, ResourceSheet resourceSheet) {
         this.idTeacherHours = idTeacherHours;
         this.cm = cm;
         this.td = td;
@@ -78,11 +78,11 @@ public class TeacherHours {
         this.isAlternance = isAlternance;
     }
 
-    public RessourceSheet getResourceSheet() {
+    public ResourceSheet getResourceSheet() {
         return resourceSheet;
     }
 
-    public void setResourceSheet(RessourceSheet resourceSheet) {
+    public void setResourceSheet(ResourceSheet resourceSheet) {
         this.resourceSheet = resourceSheet;
     }
 }

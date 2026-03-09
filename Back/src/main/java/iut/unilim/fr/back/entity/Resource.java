@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity
 @Table(name = "RESOURCE")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Ressource {
+public class Resource {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_Resource")
@@ -35,10 +35,10 @@ public class Ressource {
     @JoinColumn(name = "path_id")
     private Path path;
 
-    public Ressource() {
+    public Resource() {
     }
 
-    public Ressource(Long idResource, String apogeeCode, String label, String name, Boolean diffMultiCompetences, Integer semester, Terms terms, Path path) {
+    public Resource(Long idResource, String apogeeCode, String label, String name, Boolean diffMultiCompetences, Integer semester, Terms terms, Path path) {
         this.idResource = idResource;
         this.apogeeCode = apogeeCode;
         this.label = label;
@@ -114,7 +114,7 @@ public class Ressource {
     }
 
     public String toString() {
-        return "Ressource [idResource=" + idResource + ", apogeeCode=" + apogeeCode + ", label=" + label + ", name="
+        return "Resource [idResource=" + idResource + ", apogeeCode=" + apogeeCode + ", label=" + label + ", name="
                 + name + ", diffMultiCompetences=" + diffMultiCompetences + ", semester=" + semester + ", terms="
                 + terms + ", path=" + path + "]";
     }

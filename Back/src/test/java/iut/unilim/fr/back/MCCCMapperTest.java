@@ -46,7 +46,7 @@ class MCCCMapperTest {
         Long resId = 100L;
         Long institutionId = 55L;
 
-        Ressource resource = new Ressource();
+        Resource resource = new Resource();
         resource.setIdResource(resId);
         resource.setLabel("R1.01");
         resource.setName("Init Dev");
@@ -87,7 +87,7 @@ class MCCCMapperTest {
         when(hoursPerStudentRepository.findByResource_IdResource(resId))
                 .thenReturn(Collections.singletonList(pnHours));
 
-        RessourceSheet sheet = new RessourceSheet();
+        ResourceSheet sheet = new ResourceSheet();
         sheet.setResource(resource);
 
         TeacherHours initialHours = new TeacherHours();
@@ -170,7 +170,7 @@ class MCCCMapperTest {
     @Test
     void testToDTO_EmptyValues() {
         Long resId = 200L;
-        Ressource resource = new Ressource();
+        Resource resource = new Resource();
         resource.setIdResource(resId);
 
         when(hoursPerStudentRepository.findByResource_IdResource(resId)).thenReturn(Collections.emptyList());
@@ -191,9 +191,9 @@ class MCCCMapperTest {
 
     @Test
     void testToDTOList() {
-        Ressource r1 = new Ressource(); r1.setIdResource(1L);
-        Ressource r2 = new Ressource(); r2.setIdResource(2L);
-        List<Ressource> resources = Arrays.asList(r1, r2);
+        Resource r1 = new Resource(); r1.setIdResource(1L);
+        Resource r2 = new Resource(); r2.setIdResource(2L);
+        List<Resource> resources = Arrays.asList(r1, r2);
 
 
         when(hoursPerStudentRepository.findByResource_IdResource(anyLong())).thenReturn(Collections.emptyList());

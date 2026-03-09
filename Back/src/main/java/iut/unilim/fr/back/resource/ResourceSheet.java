@@ -1,14 +1,14 @@
-package iut.unilim.fr.back.Ressource;
+package iut.unilim.fr.back.resource;
 
 import java.util.List;
-public class RessourceSheet {
-    Ressource ressource;
+public class ResourceSheet {
+    Resource resource;
 
     private String name;
     private List<String> competence;
     //private List<SAE> saes;
 
-    public static class RessourceTracking {
+    public static class ResourceTracking {
         private String pedagoFeedback;
         private String studentFeedback;
         private String improvement;

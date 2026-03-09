@@ -21,7 +21,7 @@ public class TeachersForResource {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_Resource", insertable = false, updatable = false)
-    private Ressource resource;
+    private Resource resource;
 
     public TeachersForResource() {
     }
@@ -55,11 +55,11 @@ public class TeachersForResource {
         this.user = user;
     }
 
-    public Ressource getResource() {
+    public Resource getResource() {
         return resource;
     }
 
-    public void setResource(Ressource resource) {
+    public void setResource(Resource resource) {
         this.resource = resource;
     }
 

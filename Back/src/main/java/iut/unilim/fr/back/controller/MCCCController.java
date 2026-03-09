@@ -29,7 +29,7 @@ import java.util.Optional;
 public class MCCCController {
 
     @Autowired
-    private RessourceRepository ressourceRepository;
+    private ResourceRepository resourceRepository;
 
     @Autowired
     private SAERepository saeRepository;
@@ -89,7 +89,7 @@ public class MCCCController {
     @GetMapping("/resources")
     public ResponseEntity<List<MCCCResourceDTO>> getAllMCCCResources() {
         try {
-            List<Ressource> resources = ressourceRepository.findAll();
+            List<Resource> resources = resourceRepository.findAll();
             List<MCCCResourceDTO> dtos = mcccMapper.toDTOList(resources);
             return ResponseEntity.ok(dtos);
         } catch (Exception e) {
@@ -103,7 +103,7 @@ public class MCCCController {
     @GetMapping("/resources/path/{pathId}/semester/{semester}")
     public ResponseEntity<List<MCCCResourceDTO>> getMCCCResourcesByPathAndSemester(@PathVariable Long pathId, @PathVariable Integer semester) {
         try {
-            List<Ressource> resources = ressourceRepository.findByPathIdAndSemester(pathId, semester);
+            List<Resource> resources = resourceRepository.findByPathIdAndSemester(pathId, semester);
             List<MCCCResourceDTO> dtos = mcccMapper.toDTOList(resources);
             return ResponseEntity.ok(dtos);
         } catch (Exception e) {
@@ -117,7 +117,7 @@ public class MCCCController {
     @GetMapping("/resources/semester/{semester}")
     public ResponseEntity<List<MCCCResourceDTO>> getMCCCResourcesBySemester(@PathVariable Integer semester) {
         try {
-            List<Ressource> resources = ressourceRepository.findBySemester(semester);
+            List<Resource> resources = resourceRepository.findBySemester(semester);
             List<MCCCResourceDTO> dtos = mcccMapper.toDTOList(resources);
             return ResponseEntity.ok(dtos);
         } catch (Exception e) {
@@ -132,7 +132,7 @@ public class MCCCController {
     @GetMapping("/resources/{id}")
     public ResponseEntity<MCCCResourceDTO> getMCCCResourceById(@PathVariable Long id) {
         try {
-            Optional<Ressource> resourceOpt = ressourceRepository.findById(id);
+            Optional<Resource> resourceOpt = resourceRepository.findById(id);
             if (resourceOpt.isPresent()) {
                 MCCCResourceDTO dto = mcccMapper.toDTO(resourceOpt.get());
                 return ResponseEntity.ok(dto);
@@ -151,7 +151,7 @@ public class MCCCController {
     @GetMapping("/resources/institution/{institutionId}")
     public ResponseEntity<List<MCCCResourceDTO>> getMCCCResourcesByInstitution(@PathVariable Long institutionId) {
         try {
-            List<Ressource> resources = ressourceRepository.findAll();
+            List<Resource> resources = resourceRepository.findAll();
             List<MCCCResourceDTO> dtos = mcccMapper.toDTOList(resources);
 
             // Filter by institution ID
@@ -172,7 +172,7 @@ public class MCCCController {
     @GetMapping("/resources/path/{pathId}")
     public ResponseEntity<List<MCCCResourceDTO>> getMCCCResourcesByPath(@PathVariable Long pathId) {
         try {
-            List<Ressource> resources = ressourceRepository.findByPathId(pathId);
+            List<Resource> resources = resourceRepository.findByPathId(pathId);
             List<MCCCResourceDTO> dtos = mcccMapper.toDTOList(resources);
             return ResponseEntity.ok(dtos);
         } catch (Exception e) {
@@ -208,7 +208,7 @@ public class MCCCController {
                 return termsRepository.save(newTerms);
             });
 
-            Ressource resource = new Ressource();
+            Resource resource = new Resource();
             resource.setLabel(dto.getLabel());
             resource.setName(dto.getName());
             resource.setApogeeCode(dto.getApogeeCode());
@@ -217,10 +217,10 @@ public class MCCCController {
             resource.setTerms(terms);
             resource.setPath(path);
 
-            Ressource savedResource = ressourceRepository.save(resource);
+            Resource savedResource = resourceRepository.save(resource);
 
 
-            RessourceSheet resourceSheet = new RessourceSheet();
+            ResourceSheet resourceSheet = new ResourceSheet();
             resourceSheet.setResource(savedResource);
             resourceSheet.setYear(LocalDate.now());
             resourceSheetRepository.save(resourceSheet);
@@ -293,7 +293,7 @@ public class MCCCController {
                 link.setIdSAE(sae.getIdSAE());
                 saeLinkResourceRepository.save(link);
             }
-            Ressource reloadedResource = ressourceRepository.findById(savedResource.getIdResource())
+            Resource reloadedResource = resourceRepository.findById(savedResource.getIdResource())
             .orElseThrow(() -> new RuntimeException("Failed to reload saved resource"));
             MCCCResourceDTO resultDto = mcccMapper.toDTO(reloadedResource);
             return ResponseEntity.ok(resultDto);
@@ -312,7 +312,7 @@ public class MCCCController {
     public ResponseEntity<?> updateMCCCResource(@PathVariable Long id, @RequestBody iut.unilim.fr.back.dto.ResourceDTO dto) {
         try {
             // Find existing resource
-            Ressource resource = ressourceRepository.findById(id)
+            Resource resource = resourceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Resource not found with id: " + id));
 
             // Update basic fields
@@ -339,7 +339,7 @@ public class MCCCController {
                 resource.setPath(path);
             }
 
-            ressourceRepository.save(resource);
+            resourceRepository.save(resource);
 
             // Update HoursPerStudent
             List<HoursPerStudent> existingHours = hoursPerStudentRepository.findByResource_IdResource(id);
@@ -498,19 +498,19 @@ public class MCCCController {
     public ResponseEntity<?> deleteMCCCResource(@PathVariable Long id) {
         try {
             // Check if resource exists
-            if (!ressourceRepository.existsById(id)) {
+            if (!resourceRepository.existsById(id)) {
                 return ResponseEntity.notFound().build();
             }
 
             // Delete all NationalProgramObjective entries referencing RessourceSheets of this resource
-            List<iut.unilim.fr.back.entity.RessourceSheet> sheets = resourceSheetRepository.findByResource_IdResource(id);
-            for (iut.unilim.fr.back.entity.RessourceSheet sheet : sheets) {
+            List<ResourceSheet> sheets = resourceSheetRepository.findByResource_IdResource(id);
+            for (ResourceSheet sheet : sheets) {
                 List<iut.unilim.fr.back.entity.NationalProgramObjective> objectives = nationalProgramObjectiveRepository.findByResourceSheet_IdResourceSheet(sheet.getIdResourceSheet());
                 nationalProgramObjectiveRepository.deleteAll(objectives);
             }
 
             // Now delete the resource (and other cascading deletes as before)
-            ressourceRepository.deleteById(id);
+            resourceRepository.deleteById(id);
             return ResponseEntity.ok().build();
 
         } catch (Exception e) {
@@ -1011,7 +1011,7 @@ public class MCCCController {
         try {
             List<SAE> saes = saeRepository.findByPathId(pathId);
             List<UE> ues = ueRepository.findByPath_IdPath(pathId);
-            List<Ressource> resources = ressourceRepository.findByPathId(pathId);
+            List<Resource> resources = resourceRepository.findByPathId(pathId);
 
             MCCCPathDataDTO dto = new MCCCPathDataDTO(
                 mcccSaeMapper.toDTOList(saes),

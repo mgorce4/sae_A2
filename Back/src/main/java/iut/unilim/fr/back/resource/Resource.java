@@ -1,8 +1,8 @@
-package iut.unilim.fr.back.Ressource;
+package iut.unilim.fr.back.resource;
 
 import java.util.List;
-public class Ressource {
-    private String ressourceName;
+public class Resource {
+    private String resourceName;
     private String refUE;
     private int groupsNb;
     private int studentsNb;
@@ -40,7 +40,7 @@ public class Ressource {
 
     }
 
-    public static class RessourceMonitoring{
+    public static class ResourceMonitoring {
         private String formStudents;
         private String formTeacher;
         private String remarque;
