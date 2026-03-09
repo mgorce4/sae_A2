@@ -2,24 +2,25 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
+import { getIdFromToken, getFirstnameFromToken, getLastnameFromToken, getInstitutionLocationFromToken } from '@/utils/jwt.js'
 
 import { status, institutionLocation } from '../main'
 status.value = 'Professeur'
-institutionLocation.value = localStorage.institutionLocation
+institutionLocation.value = getInstitutionLocationFromToken()
 
 const resourceSheetsDTO = ref([]) // DTOs with all data pre-loaded
 
 onMounted(async () => {
     try {
-        const userId = localStorage.idUser
+        const userId = getIdFromToken()
 
         if (!userId) {
-            console.error('No user ID found in localStorage')
+            console.error('No user ID found in JWT token')
             return
         }
 
-        const firstName = localStorage.firstName || localStorage.firstname || ''
-        const lastName = localStorage.lastName || localStorage.lastname || ''
+        const firstName = getFirstnameFromToken()
+        const lastName = getLastnameFromToken()
         const userName = `${firstName} ${lastName}`.trim()
 
         console.log('userId:', userId, '| userName:', userName)

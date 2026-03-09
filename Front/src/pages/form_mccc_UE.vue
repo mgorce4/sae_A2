@@ -5,6 +5,7 @@ import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
 import { router } from '@/router'
 import { useRoute } from 'vue-router'
+import { getIdFromToken, getIdInstitutionFromToken } from '@/utils/jwt.js'
 
 const route = useRoute()
 
@@ -87,7 +88,7 @@ const preventInvalidChars = (event) => {
 function getUESemesterInstitution() {
     const pathId = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
     const semester = parseInt(route.query.id)
-    const institutionId = parseInt(localStorage.idInstitution)
+    const institutionId = getIdInstitutionFromToken()
 
     console.log('=== FILTRAGE UE POUR AFFICHAGE ===')
     console.log('PathId:', pathId)
@@ -125,7 +126,7 @@ watch([ueList, display_more_area], () => {
 const reloadUEs = async () => {
     try {
         const pathId = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
-        const institutionId = parseInt(localStorage.idInstitution)
+        const institutionId = getIdInstitutionFromToken()
 
         console.log('=== DEBUG RELOAD UEs ===')
         console.log('route.query.pathId:', route.query.pathId)
@@ -258,7 +259,7 @@ const save = async () => {
 
     try {
         // Vérifier que l'utilisateur est connecté
-        if (!localStorage.idUser) {
+        if (!getIdFromToken()) {
             alert('Erreur : Veuillez vous reconnecter.')
             return
         }
@@ -283,7 +284,7 @@ const save = async () => {
             name: name_comp.value,
             competenceLevel: competenceLevelNum,
             semester: semester,
-            userId: parseInt(localStorage.idUser),
+            userId: getIdFromToken(),
             termsCode: terms.value,
             pathId: pathId, // Utiliser pathId directement
         }
@@ -324,7 +325,7 @@ const updateUE = async (ue) => {
             name: ue.name,
             competenceLevel: parseInt(ue.competenceLevel),
             semester: ue.semester,
-            userId: parseInt(localStorage.idUser),
+            userId: getIdFromToken(),
             termsCode: ue.termsCode || null,
             pathId: pathId && !isNaN(pathId) ? pathId : ue.pathId,
         }
