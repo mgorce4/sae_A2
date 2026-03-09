@@ -17,7 +17,7 @@ import static iut.unilim.fr.back.controllerBack.LogController.writeInPdfLog;
 @Service
 public class ResourceGetterService {
     @Autowired
-    private RessourceRepository ressourceRepository;
+    private ResourceRepository ressourceRepository;
     @Autowired
     private ResourceSheetRepository resourceSheetRepository;
 
@@ -111,12 +111,12 @@ public class ResourceGetterService {
             initializePlaceHolderValues();
             int multi_skill_limit = 1;
 
-            Optional<RessourceSheet> resultResourceSheet = Optional.empty();
+            Optional<ResourceSheet> resultResourceSheet = Optional.empty();
             Long id;
             String label;
 
 
-            Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(resourceName);
+            Optional<Resource> resultResource = ressourceRepository.findFirstByLabelStartingWith(resourceName);
 
         if (resultResource.isPresent()) {
             resultResourceSheet = resourceSheetRepository.findFirstByResource_IdResource(resultResource.get().getIdResource());
@@ -125,7 +125,7 @@ public class ResourceGetterService {
 
         if (resultResource.isPresent() && resultResourceSheet.isPresent()) {
             this.resourceName = resourceName;
-            Ressource resource = resultResource.get();
+            Resource resource = resultResource.get();
 
             id = resource.getIdResource();
 

@@ -105,3 +105,21 @@
 )
    - feedBack(Student: bien; Pedagogical team: bien; Improvements: pas maélioration)
 [09:03:2026 15:19:20:926] atest(6) create a pdf for resource sheet: R1.01_ressource_sheet.pdf
+[09:03:2026 16:19:26:175] Could not get the resource sheet from the database because there is no resource with id = Inconnu
+[09:03:2026 16:19:26:177] Attempt to get from database with resource name: Inconnu
+-> Inconnu not found in resources tables
+[09:03:2026 16:19:26:399] Get resource 
+     - id : 1
+     - label : Initiation Dev
+[09:03:2026 16:19:26:424] Get from database :
+   - Resource (Init: Dev; IU EN FOR 001; UE1; Professeur Test;)
+   - department(Informatique)
+   - objectives(Apprendre Java)
+   - skills([Savoir coder])
+   - saes([SAE 1])
+   - terms([Ecrit])
+   - keywords([Java, Spring])
+   - hoursStudent([10.0, 10.0, 10.0, 30.0])
+   - hoursNP([10.0, 10.0, 10.0, 30.0])
+   - pedagoContent( DS: Aucun contenue pour cette catégorie; CM: Aucun contenue pour cette catégorie; TD: Aucun contenue pour cette catégorie; TP: Aucun contenue pour cette catégorie)
+   - feedBack(Student: Good; Pedagogical team: RAS; Improvements: None)
