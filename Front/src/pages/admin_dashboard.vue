@@ -17,10 +17,23 @@ const goToNext = (url, status) => {
 </script>
 
 <template>
-   <button class="btn1" @click="goToNext('/mccc-select-path',Admin)">MCCC</button>
-   <button class="btn1" @click="goToNext('/admin-ressources-sheet',Admin)">Vue Fiche professeur</button>
-   <button class="btn1" @click="goToNext('/admin-user',Admin)">Vue utilisateur</button>
+    <div id="admin_template">
+        <a class="button" @click="goToNext('/mccc-select-path',Admin)">MCCC</a>
+        <a class="button" @click="goToNext('/admin-ressources-sheet',Admin)">Vue Fiche professeur</a>
+        <a class="button" @click="goToNext('/admin-user',Admin)">Vue utilisateur</a>
+    </div>
 </template>
 
 <style>
+
+#admin_template {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 30vw;
+    margin: 0 auto;
+    gap: 1vw;
+    padding: 2vw
+}
+
 </style>
