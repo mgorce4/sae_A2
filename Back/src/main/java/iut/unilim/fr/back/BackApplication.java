@@ -3,13 +3,11 @@ package iut.unilim.fr.back;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @SpringBootApplication
 public class BackApplication implements CommandLineRunner {
 
-    @Autowired
-    private MailTestSender mailTestSender;
+
 
     public static void main(String[] args) {
         SpringApplication.run(BackApplication.class, args);

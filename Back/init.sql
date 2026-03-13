@@ -298,7 +298,6 @@ INSERT INTO TASK (name, description, delivery , id_User) VALUES
 
 
 INSERT INTO ACCESSRIGHT ( id_User,accessRight) VALUES
-(47,1);
 (1, 1),
 (1, 2),
 (1, 3),
