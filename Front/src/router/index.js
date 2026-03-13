@@ -8,6 +8,7 @@ import DsbrProf from '../pages/teacher_dashboard.vue'
 
 import AdminDashboard from '../pages/admin_dashboard.vue'
 import AdminRS from '../pages/admin_ressources_sheet.vue'
+import AdminUser from '../pages/admin_user.vue'
 
 import MCCCSelectForm from '../pages/mccc_select_form.vue'
 import MCCCDisplay from '../pages/mccc_display.vue'
@@ -25,6 +26,7 @@ import addTeacherPage from '../pages/add_teacher_page.vue'
 import SyncadiaPresentation from '../pages/Syncadia_presentation_page.vue'
 import MultiAccessRightDashboard from '../pages/multi_access_right_dashboard.vue'
 
+
 const routes = [
   { path: '/', component: Login },
   {path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound},
@@ -33,6 +35,7 @@ const routes = [
 
   { path: '/admin-dashboard', component: AdminDashboard },
   { path: '/admin-ressources-sheet', component: AdminRS },
+  { path: '/admin-user', component: AdminUser },
 
   { path: '/mccc-select-form', component: MCCCSelectForm },
   { path: '/mccc-display', component: MCCCDisplay },

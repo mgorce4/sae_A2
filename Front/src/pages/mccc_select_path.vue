@@ -19,7 +19,7 @@ const errors = ref({
 
 
 
-const goToResourceSheet = (url, pathId) => {
+const goToRessourceSheet = (url, pathId) => {
     localStorage.pathId = pathId
     router.push({
         path: url,
@@ -334,7 +334,7 @@ const access_right = getAccessRightsFromToken()
                         class="path"
                         v-on:mouseover="cours.show = true"
                         v-on:mouseout="!cours.edit ? (cours.show = false) : null"
-                        @click="goToResourceSheet('/mccc-select-form', cours.idPath)"
+                        @click="goToRessourceSheet('/mccc-select-form', cours.idPath)"
                     >
                         <p>{{ cours.name }}</p>
                         <div v-show="cours.show || cours.edit" @click.stop>
