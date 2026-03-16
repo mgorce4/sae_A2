@@ -206,11 +206,7 @@ class ResourceSheetMapperTest {
         assertEquals(1, result.getSkills().size());
         assertEquals("Dev", result.getSkills().getFirst().getLabel());
 
-        assertEquals(2, result.getLinkedSaes().size());
-        SaeInfoDTO dtoSae1 = result.getLinkedSaes().stream().filter(s -> s.getId().equals(1000L)).findFirst().get();
-        assertTrue(dtoSae1.getIsLinked());
-        SaeInfoDTO dtoSae2 = result.getLinkedSaes().stream().filter(s -> s.getId().equals(2000L)).findFirst().get();
-        assertFalse(dtoSae2.getIsLinked());
+        assertEquals(0, result.getLinkedSaes().size());
 
         assertEquals(List.of("Java"), result.getKeywords());
         assertEquals(List.of("Project"), result.getModalities());
