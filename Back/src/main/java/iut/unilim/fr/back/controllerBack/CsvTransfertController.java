@@ -63,7 +63,6 @@ public class CsvTransfertController {
             StringBuilder logMessage = new StringBuilder(userName + " get from ResourceSheet :\n");
             // En tete
             csvBuilder.append("Département; Référence UE; Référence Ressouce; Professeur référent; SAÉs; Heures; Heures Alternance; DS; CM; TD; TP; Retour de l'équipe pédagogique; Retour étudiant; Amélioration à mettre en oeuvre\n");
-            // TODO: N'est append que le header
             if (userDepartment.isEmpty()) {
                 List<ResourceSheetDTO> resourcesSheets = rsDTOController.getResourceSheetsByResourceId(resultResource.get().getIdResource());
                 for (ResourceSheetDTO res : resourcesSheets) {

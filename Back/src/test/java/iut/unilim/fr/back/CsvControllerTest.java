@@ -87,7 +87,7 @@ class CsvTransfertControllerTest {
                 .thenReturn(Optional.of(mockResource));
 
         ResourceSheetDTO dto = mock(ResourceSheetDTO.class);
-        when(dto.getDepartment()).thenReturn("Info");
+        when(dto.getDepartment()).thenReturn("Informatique");
         when(dto.getMainTeacher()).thenReturn("Prof");
 
         UeInfoDTO ue = new UeInfoDTO(); ue.setLabel("UE1");
@@ -107,8 +107,7 @@ class CsvTransfertControllerTest {
         track.setStudentFeedback("OK");
         when(dto.getTracking()).thenReturn(track);
 
-        when(rsDTOController.getResourceSheetsByResourceId(78L)).thenReturn(List.of(dto));
-
+        when(rsDTOController.getAllResourceSheets()).thenReturn(List.of(dto));
         ResponseEntity<ByteArrayResource> response = csvController.generateCsv(resourceName);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -117,7 +116,6 @@ class CsvTransfertControllerTest {
         String csvContent = new String(response.getBody().getByteArray(), StandardCharsets.UTF_8);
         assertTrue(csvContent.startsWith("\uFEFF"));
         System.out.println(csvContent);
-        // TODO : Correct ts
         assertTrue(csvContent.contains("R1.01"));
         assertTrue(csvContent.contains("Info"));
         assertTrue(csvContent.contains("Prof"));
