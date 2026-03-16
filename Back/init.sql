@@ -5,6 +5,13 @@ CREATE TABLE INSTITUTION(
     name TEXT NOT NULL,
     location TEXT NOT NULL
 );
+
+CREATE TABLE YEAR_DATES(
+    id_YearDates SERIAL PRIMARY KEY,
+    start_year DATE NOT NULL,
+    end_year DATE NOT NULL,
+    id_institution INT REFERENCES INSTITUTION(id_institution)
+);
 CREATE TABLE USERSYNCADIA(
     id_User SERIAL PRIMARY KEY,
     firstname TEXT NOT NULL,
