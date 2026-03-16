@@ -6,8 +6,6 @@ import { API_BASE_URL } from '@/config/api.js'
 import { status } from '@/main.js'
 import { getIdFromToken, getIdInstitutionFromToken, getInstitutionNameFromToken, getInstitutionLocationFromToken } from '@/utils/jwt.js'
 
-const teacher_acces_right = 1
-
 let display_more_area = ref(false)
 let is_modifying = ref(false)
 
@@ -17,6 +15,7 @@ const teacher_name = ref("")
 const teacher_firstname = ref("")
 const teacher_mail = ref("")
 const teacher_id = ref(0)
+const access_right = ref(0)
 
 const errors = ref({
     name: false,
@@ -31,47 +30,38 @@ const error_messages = ref({
 })
 
 const teachers = ref([])
+const administrations = ref([])
 
 const attachAccordionListeners = () => {
     nextTick(() => {
-        const acc = document.getElementsByClassName('accordion_teacher')
-        for (let i = 0; i < acc.length; i++) {
+        const accordions = document.querySelectorAll('.accordion_teacher')
 
-            if (acc[i].getAttribute('data-accordion') === 'add-modify-teacher') {
-                acc[i].addEventListener('click', function () {
-                    this.classList.toggle('active')
-                    const panel = this.nextElementSibling
-                    if (panel.style.maxHeight) {
-                        panel.style.maxHeight = null
-                    } else {
-                        panel.style.maxHeight = panel.scrollHeight + 'vw'
-                        panel.style.padding = '0 18px'
-                    }
-                })
-            } else {
-                const newElement = acc[i].cloneNode(true)
-                acc[i].parentNode.replaceChild(newElement, acc[i])
+        accordions.forEach((accordion) => {
+            accordion.onclick = function () {
+                this.classList.toggle('active')
+                const panel = this.nextElementSibling
 
-                newElement.addEventListener('click', function () {
-                    this.classList.toggle('active')
-                    const panel = this.nextElementSibling
-                    if (panel.style.maxHeight) {
-                        panel.style.maxHeight = null
-                    } else {
-                        // Calculate the actual height including error messages
-                        panel.style.maxHeight = panel.scrollHeight + 'vw'
-                        panel.style.padding = '0 18px'
-                    }
-                })
+                if (!panel) {
+                    return
+                }
+
+                if (panel.style.maxHeight) {
+                    panel.style.maxHeight = null
+                    panel.style.padding = null
+                } else {
+                    panel.style.maxHeight = panel.scrollHeight + 'px'
+                    panel.style.padding = '0 18px'
+                }
             }
-        }
+        })
     })
 }
 
 onMounted(async () => {
     const response = await axios.get(`${API_BASE_URL}/api/access-rights`)
-    teachers.value = response.data.filter((ar) => ar.accessRight === 1)
-    teachers.value = teachers.value.filter((teacher) => teacher.user.institution.idInstitution === getIdInstitutionFromToken())
+    const usersInInstitution = response.data.filter((entry) => entry.user.institution.idInstitution === getIdInstitutionFromToken())
+    teachers.value = usersInInstitution.filter((ar) => ar.accessRight === 1)
+    administrations.value = usersInInstitution.filter((ar) => ar.accessRight === 2)
 
     await nextTick()
     attachAccordionListeners()
@@ -145,9 +135,10 @@ const save = async () => {
             let id = user.idUser
 
             const access_right_payload = {
-                accessRight : teacher_acces_right,
+                accessRight : access_right.value,
                 idUser : id,
             }
+            console.log("access-right-payload : ", access_right_payload)
 
             await axios.post(`${API_BASE_URL}/api/access-rights`, access_right_payload);
         } else {
@@ -176,7 +167,9 @@ const save = async () => {
 
 async function reloadTeachers() {
     const response = await axios.get(`${API_BASE_URL}/api/access-rights`)
-    teachers.value = response.data.filter((ar) => ar.accessRight === teacher_acces_right).filter((teacher) => teacher.user.institution.idInstitution === getIdInstitutionFromToken())
+    const usersInInstitution = response.data.filter((entry) => entry.user.institution.idInstitution === getIdInstitutionFromToken())
+    teachers.value = usersInInstitution.filter((ar) => ar.accessRight === 1)
+    administrations.value = usersInInstitution.filter((ar) => ar.accessRight === 2)
 }
 
 function modify(teacher) {
@@ -246,7 +239,7 @@ const deleteTeacher = async (id) => {
             <p>Retour</p>
         </div>
 
-        <div id="background">
+        <div class="background">
             <div id="form">
                 <div id="header">
                     <p id="title">Ajouter un professeur</p>
@@ -266,7 +259,7 @@ const deleteTeacher = async (id) => {
                         <div style="margin-left: 15vw; padding-top: 1vw">
                             <div class="sub_div_panel">
                                 <label style="font-size: 1vw;">Nom : </label>
-                                <input type="text" class="input" v-model="teacher_name">
+                                <input type="text" class="input" style=" height: 3vh; width: 17vw; font-size: 1.5vh;" v-model="teacher_name">
                                 <input style="margin-left: 11.5vw" class="btn1" type="reset" value="Annuler" v-on:click="display_more_area = !display_more_area" />
                             </div>
 
@@ -274,7 +267,7 @@ const deleteTeacher = async (id) => {
 
                             <div class="sub_div_panel">
                                 <label style="font-size: 1vw;">Prenom : </label>
-                                <input type="text" class="input" v-model="teacher_firstname">
+                                <input type="text" class="input" style=" height: 3vh; width: 17vw; font-size: 1.5vh;" v-model="teacher_firstname">
                                 <input style="margin-left: 10vw" id="save" class="btn1" type="button" value="Sauvegarder" v-on:click="save()" />
                             </div>
 
@@ -282,7 +275,20 @@ const deleteTeacher = async (id) => {
 
                             <div class="sub_div_panel">
                                 <label style="font-size: 1vw;">Mail : </label>
-                                <input type="text" class="input" style="width: 17vw;" v-model="teacher_mail">
+                                <input type="text" class="input" style=" height: 3vh; width: 17vw; font-size: 1.5vh;" v-model="teacher_mail">
+                            </div>
+
+                            <p v-if="errors.mail" class="error_message" style="text-align: left">{{ error_messages.mail }}</p>
+
+                            <div class="sub_div_panel container-fluid">
+                                <label style="font-size: 1vw;">Statut : </label>
+                                <div class="component ue_div">
+                                    <select id="ue_select" class="input" v-model="access_right" style=" height: 3vh; width: 8vw; font-size: 1.5vh;">
+                                        <option value="">Sélectionner une UE</option>
+                                        <option value="1">professeur</option>
+                                        <option value="2">Administration</option>
+                                    </select>
+                                </div>
                             </div>
 
                             <p v-if="errors.mail" class="error_message" style="text-align: left">{{ error_messages.mail }}</p>
@@ -293,38 +299,77 @@ const deleteTeacher = async (id) => {
                 </form>
             </div>
 
-            <div id="form_resources">
-                <p v-if="teachers.length > 0">Professeurs enregistrés : </p>
-                <p v-else>Aucun professeurs n'a été enregistré</p>
+            <div class="container-fluid" >                
+                <div id="form_resources">
+                    <p v-if="teachers.length > 0">Professeurs enregistrés : </p>
+                    <p v-else>Aucun professeurs n'a été enregistré</p>
 
-                <div v-for="teacher in teachers" :key="teacher.idUser" style="color: white" >
-                    <a class="accordion_teacher" id="dark_bar">{{teacher.user.firstname}} {{teacher.user.lastname}}</a>
+                    <div v-for="teacher in teachers" :key="teacher.idUser" style="color: white" >
+                        <a class="accordion_teacher" id="dark_bar">{{teacher.user.firstname}} {{teacher.user.lastname}}</a>
 
-                    <div class="panel">
-                        <div class="hours_grid" style="gap: 1vw">
-                            <div style="display: flex; padding-top: 0; gap: 0.3vw">
-                                <p>Nom : </p>
-                                <p>{{teacher.user.firstname}}</p>
+                        <div class="panel">
+                            <div class="hours_grid" style="gap: 1vw">
+                                <div style="display: flex; padding-top: 0; gap: 0.3vw">
+                                    <p>Nom : </p>
+                                    <p>{{teacher.user.firstname}}</p>
+                                </div>
+
+                                <div style="display: flex; padding-top: 0; gap: 0.3vw">
+                                    <p>Prenom : </p>
+                                    <p>{{teacher.user.lastname}}</p>
+                                </div>
+
+                                <div style="display: flex; padding-top: 0; gap: 0.3vw">
+                                    <p>Identifiant : </p>
+                                    <p>{{teacher.user.username}}</p>
+                                </div>
+
+                                <div style="display: flex; padding-top: 0; gap: 0.3vw">
+                                    <p>Mail : </p>
+                                    <p>{{teacher.user.mail}}</p>
+                                </div>
                             </div>
-
-                            <div style="display: flex; padding-top: 0; gap: 0.3vw">
-                                <p>Prenom : </p>
-                                <p>{{teacher.user.lastname}}</p>
-                            </div>
-
-                            <div style="display: flex; padding-top: 0; gap: 0.3vw">
-                                <p>Identifiant : </p>
-                                <p>{{teacher.user.username}}</p>
-                            </div>
-
-                            <div style="display: flex; padding-top: 0; gap: 0.3vw">
-                                <p>Mail : </p>
-                                <p>{{teacher.user.mail}}</p>
+                            <div style="background-color: transparent; display: flex; padding: 0; margin-top: 0; margin-bottom: 1vh; justify-content: center; align-items: center">
+                                <input class="btn1" type="button" value="Supprimer" v-on:click="deleteTeacher(teacher.idUser)"/>
+                                <input class="btn1" type="button" value="Modifier" v-on:click="is_modifying = true; display_more_area = true; modify(teacher)" />
                             </div>
                         </div>
-                        <div style="background-color: transparent; display: flex; padding: 0; margin-top: 0; margin-bottom: 1vh; justify-content: center; align-items: center">
-                            <input class="btn1" type="button" value="Supprimer" v-on:click="deleteTeacher(teacher.idUser)"/>
-                            <input class="btn1" type="button" value="Modifier" v-on:click="is_modifying = true; display_more_area = true; modify(teacher)" />
+                    </div>
+                </div>
+                                
+                <div id="form_resources">
+                    <p v-if="administrations.length > 0">Utilisateurs administration enregistrés : </p>
+                    <p v-else>Aucun utilisateur n'a été enregistré</p>
+
+                    <div v-for="adminUser in administrations" :key="adminUser.idUser" style="color: white" >
+                        <a class="accordion_teacher" id="dark_bar">{{adminUser.user.firstname}} {{adminUser.user.lastname}}</a>
+
+                        <div class="panel">
+                            <div class="hours_grid" style="gap: 1vw">
+                                <div style="display: flex; padding-top: 0; gap: 0.3vw">
+                                    <p>Nom : </p>
+                                    <p>{{adminUser.user.firstname}}</p>
+                                </div>
+
+                                <div style="display: flex; padding-top: 0; gap: 0.3vw">
+                                    <p>Prenom : </p>
+                                    <p>{{adminUser.user.lastname}}</p>
+                                </div>
+
+                                <div style="display: flex; padding-top: 0; gap: 0.3vw">
+                                    <p>Identifiant : </p>
+                                    <p>{{adminUser.user.username}}</p>
+                                </div>
+
+                                <div style="display: flex; padding-top: 0; gap: 0.3vw">
+                                    <p>Mail : </p>
+                                    <p>{{adminUser.user.mail}}</p>
+                                </div>
+                            </div>
+                            <div style="background-color: transparent; display: flex; padding: 0; margin-top: 0; margin-bottom: 1vh; justify-content: center; align-items: center">
+                                <input class="btn1" type="button" value="Supprimer" v-on:click="deleteTeacher(adminUser.idUser)"/>
+                                <input class="btn1" type="button" value="Modifier" v-on:click="is_modifying = true; display_more_area = true; modify(adminUser)" />
+                            </div>
                         </div>
                     </div>
                 </div>

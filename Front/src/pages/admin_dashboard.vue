@@ -22,6 +22,7 @@ const goToNext = (url, status) => {
         <a class="button" @click="goToNext('/admin-ressources-sheet',Admin)">Vue Fiche professeur</a>
         <a class="button" @click="goToNext('/admin-user',Admin)">Vue utilisateur</a>
     </div>
+
 </template>
 
 <style>

@@ -246,7 +246,7 @@ const deleteTeacher = async (id) => {
             <p>Retour</p>
         </div>
 
-        <div id="background">
+        <div class="background">
             <div id="form">
                 <div id="header">
                     <p id="title">Ajouter un professeur</p>
@@ -334,9 +334,9 @@ const deleteTeacher = async (id) => {
     </div>
 </template>
 
-<style scoped>
+<style>
 
-#background {
+.background {
     height: auto;
     background-color: var(--main-theme-background-color);
     border-radius: 15px;
