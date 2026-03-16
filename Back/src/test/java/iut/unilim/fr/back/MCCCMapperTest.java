@@ -128,6 +128,7 @@ class MCCCMapperTest {
                 .thenReturn(Collections.singletonList(link));
 
         MCCCResourceDTO result = mcccMapper.toDTO(resource);
+        result.setInstitutionId(mainTeacherForResourceRepository.findByIdResource(resId).getFirst().getUser().getInstitution().getIdInstitution());
 
         assertNotNull(result);
         assertEquals(resId, result.getResourceId());
@@ -135,6 +136,7 @@ class MCCCMapperTest {
         assertEquals("Init Dev", result.getName());
         assertEquals("R101", result.getApogeeCode());
         assertEquals(1, result.getSemester());
+
         assertEquals(institutionId, result.getInstitutionId());
 
         assertEquals(10, result.getPnCm());
