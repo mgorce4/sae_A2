@@ -12,7 +12,7 @@ public class LogController {
     private static final String openSymbol = "[";
     private static final String closeSymbol = "] ";
     private static final String format = "dd:MM:yyyy HH:mm:ss:SS";
-    private static String logsPath = "logs/";
+    private static final String logsPath = "logs/"; // Final pour la securite, pour faire passer les tests, il faut enlever final
     public static void writeInPdfLog(String message) {
         String fileName = logsPath + ".pdf_log.txt";
         Path path = Paths.get(fileName);
