@@ -104,7 +104,7 @@ public class CsvTransfertController {
         return new ResponseEntity<>(new ByteArrayResource(s), HttpStatus.NOT_FOUND);
     }
 
-    @PostMapping("/import")
+    @PostMapping("/importTeacher")
     public ResponseEntity<?> importTeachers(
             @RequestParam("file") MultipartFile file
     ) {
