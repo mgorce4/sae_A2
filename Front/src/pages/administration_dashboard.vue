@@ -541,13 +541,6 @@ input[type='date']::-webkit-calendar-picker-indicator {
     padding-bottom: 1vw;
 }
 
-#top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 1vw;
-}
-
 #list-of-resources {
     flex: 1;
     overflow-y: auto; /* Scrollbar uniquement sur le contenu */

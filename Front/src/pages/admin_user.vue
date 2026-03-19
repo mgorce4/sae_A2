@@ -16,6 +16,7 @@ const teacher_firstname = ref("")
 const teacher_mail = ref("")
 const teacher_id = ref(0)
 const access_right = ref(0)
+const show_popup = ref(false)
 
 const errors = ref({
     name: false,
@@ -228,7 +229,9 @@ const deleteTeacher = async (id) => {
     }
 }
 
-
+function toggleShowPopUp() {
+    show_popup.value = !show_popup.value
+}
 </script>
 
 <template>
@@ -301,8 +304,17 @@ const deleteTeacher = async (id) => {
 
             <div class="container-fluid" style="align-items: start;">                
                 <div id="form_resources" style="width: 50%;">
-                    <p v-if="teachers.length > 0">Professeurs enregistrés : </p>
-                    <p v-else>Aucun professeurs n'a été enregistré</p>
+                    <div class="container-fluid spb" style="font-size: 1.5vw; color: var(--main-theme-secondary-color);">
+                        <p v-if="teachers.length > 0">Professeurs enregistrés : </p>
+                        <p v-else>Aucun professeurs n'a été enregistré</p>
+                    
+                        <div style="display: flex; align-items: center">
+                            <div v-show="show_popup" id="popup">
+                                Vous pouvez modifier le statut/droit d'accès d'un utilisateur en cliquant sur le bouton modifier.
+                            </div>
+                            <p v-if="status" class="btn_how_to" @click="toggleShowPopUp">ⓘ</p>
+                        </div>
+                    </div>
 
                     <div v-for="teacher in teachers" :key="teacher.idUser" style="color: white" >
                         <a class="accordion_teacher" id="dark_bar">{{teacher.user.firstname}} {{teacher.user.lastname}}</a>
@@ -338,8 +350,17 @@ const deleteTeacher = async (id) => {
                 </div>
                                 
                 <div id="form_resources" style="width: 50%;">
-                    <p v-if="administrations.length > 0">Utilisateurs administration enregistrés : </p>
-                    <p v-else>Aucun utilisateur n'a été enregistré</p>
+                    <div class="container-fluid spb" style="font-size: 1.5vw; color: var(--main-theme-secondary-color);">
+                        <p v-if="administrations.length > 0">Utilisateurs administration enregistrés : </p>
+                        <p v-else>Aucun utilisateur n'a été enregistré</p>
+                    
+                        <div style="display: flex; align-items: center">
+                            <div v-show="show_popup" id="popup">
+                                Vous pouvez modifier le statut/droit d'accès d'un utilisateur en cliquant sur le bouton modifier.
+                            </div>
+                            <p v-if="status" class="btn_how_to" @click="toggleShowPopUp">ⓘ</p>
+                        </div>
+                    </div>
 
                     <div v-for="adminUser in administrations" :key="adminUser.idUser" style="color: white" >
                         <a class="accordion_teacher" id="dark_bar">{{adminUser.user.firstname}} {{adminUser.user.lastname}}</a>
