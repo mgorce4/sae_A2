@@ -25,6 +25,7 @@ import HelpCenter from '../pages/help_center.vue'
 import addTeacherPage from '../pages/add_teacher_page.vue'
 import SyncadiaPresentation from '../pages/Syncadia_presentation_page.vue'
 import MultiAccessRightDashboard from '../pages/multi_access_right_dashboard.vue'
+import MailPage from '../pages/mail_Page.vue'
 
 
 const routes = [
@@ -49,7 +50,8 @@ const routes = [
   { path: '/help-center', component: HelpCenter },
   { path: '/add-teacher-page', component: addTeacherPage },
   { path: '/syncadia-presentation', component: SyncadiaPresentation },
-  { path: '/multi_access_right_dashboard', component: MultiAccessRightDashboard },
+  { path: '/multi-access-right-dashboard', component: MultiAccessRightDashboard },
+  {path: '/mail-page', component: MailPage}
 ]
 
 export const router = createRouter({

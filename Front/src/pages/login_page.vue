@@ -45,7 +45,7 @@ function redirect(accessRights) {
         redirectSingle(accessRights[0])
     } else if (accessRights.length > 1) {
         status.value = 'Multiple'
-        redirectlink.value = '/multi_access_right_dashboard'
+        redirectlink.value = '/multi-access-right-dashboard'
     }
     router.push(redirectlink.value)
 }
