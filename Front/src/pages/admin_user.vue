@@ -242,11 +242,11 @@ const deleteTeacher = async (id) => {
         <div class="background">
             <div id="form">
                 <div id="header">
-                    <p id="title">Ajouter un professeur</p>
+                    <p id="title">Ajouter un utilisateur</p>
                 </div>
 
                 <div id="dark_bar">
-                    <p>Ajouter d'un utilisateur</p>
+                    <p>Ajout d'un utilisateur</p>
                     <button id="button_more" v-on:click="display_more_area = !display_more_area;  addTeacher()">
                         {{ display_more_area ? '-' : '+' }}
                     </button>
@@ -299,8 +299,8 @@ const deleteTeacher = async (id) => {
                 </form>
             </div>
 
-            <div class="container-fluid" >                
-                <div id="form_resources">
+            <div class="container-fluid" style="align-items: start;">                
+                <div id="form_resources" style="width: 50%;">
                     <p v-if="teachers.length > 0">Professeurs enregistrés : </p>
                     <p v-else>Aucun professeurs n'a été enregistré</p>
 
@@ -337,7 +337,7 @@ const deleteTeacher = async (id) => {
                     </div>
                 </div>
                                 
-                <div id="form_resources">
+                <div id="form_resources" style="width: 50%;">
                     <p v-if="administrations.length > 0">Utilisateurs administration enregistrés : </p>
                     <p v-else>Aucun utilisateur n'a été enregistré</p>
 

@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
+import { status } from '@/main.js'
 import { useRoute } from 'vue-router'
 import { getAccessRightsFromToken } from '@/utils/jwt.js'
 
@@ -145,10 +146,12 @@ const access_right = getAccessRightsFromToken()
 <template>
     <div id="main">
         <div class="component spb">
-            <div id="return_arrow">
-                <RouterLink id="back_arrow" to="/dashboard-administration" v-if="access_right.length == 1">←</RouterLink>
-                <RouterLink to="/multi_access_right_dashboard" id="back_arrow" v-else>←</RouterLink>
-                <p>Retour</p>
+            <div style="display: flex; align-items: center; height: 1vw">
+                <div v-if="access_right.length == 1">
+                    <RouterLink v-if="status==='Administration'" id="back_arrow" to="/dashboard-administration">←</RouterLink>
+                    <RouterLink v-else-if="status==='Admin'" id="back_arrow" to="/admin-dashboard">←</RouterLink>
+                </div>
+                <p class="back">Retour à l'accueil</p>
             </div>
 
             <p v-if="is_main_teacher_defined()" id="ref_resource">

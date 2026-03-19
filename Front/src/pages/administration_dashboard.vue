@@ -247,7 +247,7 @@ function toggleShowPopUp() {
 </script>
 
 <template>
-    <div id="main_div">
+    <div class="main_div">
         <div id="sub_div_for_MCCC_and_calender">
             <div id="MCCC_div">
                 <!-- link into MCCC page -->
@@ -415,7 +415,7 @@ function toggleShowPopUp() {
     font-size: 1.5vw;
 }
 
-#main_div {
+.main_div {
     display: flex;
     align-items: flex-start; /* Alignement en haut */
     height: 100%;
@@ -426,11 +426,11 @@ function toggleShowPopUp() {
     margin-top: 3.2vw;
 }
 
-#main_div > div {
+.main_div > div {
     border-radius: 15px;
 }
 
-#main_div > div > div {
+.main_div > div > div {
     /* -- for MCCC-div and calender-div -- */
     border-radius: 15px;
 }
