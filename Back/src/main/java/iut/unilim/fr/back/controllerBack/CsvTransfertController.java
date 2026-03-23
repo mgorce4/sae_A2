@@ -140,7 +140,6 @@ public class CsvTransfertController {
     @PostMapping("/import-excel-resources")
     public ResponseEntity<?> importResourcesFromExcel(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("semester") Long semester,
             @RequestParam("pathId") Long pathId
     ) {
         UserDetailsImpl currentUser = getCurrentUser();
