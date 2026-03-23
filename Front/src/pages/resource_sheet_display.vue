@@ -5,6 +5,7 @@ import { API_BASE_URL } from '@/config/api.js'
 import { status } from '@/main.js'
 import { useRoute } from 'vue-router'
 import { getAccessRightsFromToken } from '@/utils/jwt.js'
+import { router } from '@/router/index.js'
 
 const route = useRoute()
 
@@ -141,6 +142,15 @@ onMounted(async () => {
 
 const access_right = getAccessRightsFromToken()
 
+const goToMailPage = (url, label) => {
+    router.push({
+        path: url,
+        query: {
+            label: label
+        }
+    })
+}
+
 </script>
 
 <template>
@@ -154,12 +164,18 @@ const access_right = getAccessRightsFromToken()
                 <p class="back">Retour à l'accueil</p>
             </div>
 
-            <p v-if="is_main_teacher_defined()" id="ref_resource">
-                Référent module : {{ resource_sheet.mainTeacher }}
-            </p>
-            <p v-else id="ref_resource">
-                Référent module : Aucun professeur référent pour le module
-            </p>
+            <div style="display: flex; flex-direction: column; align-items: center">
+                <p v-if="is_main_teacher_defined()" id="ref_resource">
+                    Référent module : {{ resource_sheet.mainTeacher }}
+                </p>
+                <p v-else id="ref_resource">
+                    Référent module : Aucun professeur référent pour le module
+                </p>
+
+                <button class="btn1" @click="goToMailPage('/mail-page',resource_sheet.resourceLabel)">
+                    Envoyer un mail
+                </button>
+            </div>
         </div>
 
         <div id="resource_sheet_display">
