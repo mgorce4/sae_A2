@@ -30,6 +30,14 @@ public class LogController {
         System.out.println(logMessage);
     }
 
+    public static void writeInMailLogs(String message) {
+        String fileName = logsPath + ".mail_log.txt";
+        Path path = Paths.get(fileName);
+
+        String logMessage = writeInLog(message, path);
+        System.out.println(logMessage);
+    }
+
     private static String writeInLog(String message, Path path) {
         SimpleDateFormat logDate = new SimpleDateFormat(format);
         String logMessage = openSymbol + logDate.format(new Date()) + closeSymbol + message + "\n";

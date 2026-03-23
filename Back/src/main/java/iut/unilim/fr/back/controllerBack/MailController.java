@@ -1,6 +1,7 @@
 package iut.unilim.fr.back.controllerBack;
 
 import iut.unilim.fr.back.entity.UserSyncadia;
+import iut.unilim.fr.back.security.UserDetailsImpl;
 import iut.unilim.fr.back.service.UserSyncadiaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -8,6 +9,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+
+import static iut.unilim.fr.back.controllerBack.LogController.writeInMailLogs;
+import static iut.unilim.fr.back.security.UserDetailsImpl.getCurrentUser;
 
 @RestController
 public class MailController {
@@ -24,6 +28,7 @@ public class MailController {
         message.setText("Le SMTP fonctionne !");
         message.setFrom("smtp-butinfo02@unilim.fr");
         mailSender.send(message);
+        writeInMailLogs("Mail sent from smtp-butinfo02@unilim.fr to " + to);
         return "Mail envoyé à " + to;
     }
 
@@ -40,6 +45,7 @@ public class MailController {
         mailMessage.setText(message);
         mailMessage.setFrom("no-reply@syncadia.fr");
         mailSender.send(mailMessage);
+        writeInMailLogs("Mail sent from no-reply@syncadia.fr to " + mail);
         return "Mail envoyé à " + mail;
     }
 
@@ -57,7 +63,12 @@ public class MailController {
                 mailMessage.setFrom("no-reply@syncadia.fr");
                 mailSender.send(mailMessage);
                 result.append("Mail envoyé à ").append(mail).append("\n");
+                writeInMailLogs("Mail sent from no-reply@syncadia.fr to " + mail);
             } else {
+                UserDetailsImpl currentUser = getCurrentUser();
+                String userName = currentUser.getUsername();
+                Long currentUserId = currentUser.getId();
+                writeInMailLogs(userName + " ("+ currentUserId + ") failed to sent a mail to a user with id = " + userId + " because it doesn't exist.");
                 result.append("Utilisateur non trouvé pour l'id ").append(userId).append("\n");
             }
         }
