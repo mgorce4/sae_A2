@@ -30,6 +30,14 @@ public class LogController {
         System.out.println(logMessage);
     }
 
+    public static void debugCsvLogs(Integer debugID, String debugName, String message) {
+        String fileName = logsPath + ".csv_log.txt";
+        Path path = Paths.get(fileName);
+
+        String logMessage = debug(debugID, debugName, message, path);
+        System.out.println(logMessage);
+    }
+
     public static void writeInMailLogs(String message) {
         String fileName = logsPath + ".mail_log.txt";
         Path path = Paths.get(fileName);
@@ -55,6 +63,25 @@ public class LogController {
         }
         catch (IOException e) {
             logMessage = openSymbol + logDate.format(new Date()) + closeSymbol + e.getMessage() + "\n";
+        }
+        return logMessage + "\n";
+    }
+    private static String debug(Integer debugId, String debugName, String message, Path path) {
+        String logMessage = "DEBUG"+debugId.toString()+"!"+debugName.toUpperCase() + " " + message + "\n";
+
+        try {
+            if (!Files.exists(path)) {
+                logMessage = "DEBUG"+debugId.toString()+"!"+debugName.toUpperCase()+ " " +"Create log file\n" + logMessage;
+            }
+            Files.writeString(
+                    path,
+                    logMessage,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.APPEND
+            );
+        }
+        catch (IOException e) {
+            logMessage = "DEBUG"+debugId.toString()+"!"+debugName.toUpperCase() + " " + e.getMessage() + "\n";
         }
         return logMessage + "\n";
     }
