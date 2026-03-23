@@ -13,6 +13,7 @@ public class LogController {
     private static final String closeSymbol = "] ";
     private static final String format = "dd:MM:yyyy HH:mm:ss:SS";
     private static String logsPath = "logs/"; // Final pour la securite, pour faire passer les tests, il faut enlever final
+    // TODO : Gestion journalière de logs avec un fichier par jour
     public static void writeInPdfLog(String message) {
         String fileName = logsPath + ".pdf_log.txt";
         Path path = Paths.get(fileName);
@@ -67,11 +68,11 @@ public class LogController {
         return logMessage + "\n";
     }
     private static String debug(Integer debugId, String debugName, String message, Path path) {
-        String logMessage = "DEBUG"+debugId.toString()+"!"+debugName.toUpperCase() + " " + message + "\n";
+        String logMessage = "DEBUG"+debugId+"!"+debugName.toUpperCase() + " " + message + "\n";
 
         try {
             if (!Files.exists(path)) {
-                logMessage = "DEBUG"+debugId.toString()+"!"+debugName.toUpperCase()+ " " +"Create log file\n" + logMessage;
+                logMessage = "DEBUG"+debugId+"!"+debugName.toUpperCase()+ " " +"Create log file\n" + logMessage;
             }
             Files.writeString(
                     path,
@@ -81,7 +82,7 @@ public class LogController {
             );
         }
         catch (IOException e) {
-            logMessage = "DEBUG"+debugId.toString()+"!"+debugName.toUpperCase() + " " + e.getMessage() + "\n";
+            logMessage = "DEBUG"+debugId+"!"+debugName.toUpperCase() + " " + e.getMessage() + "\n";
         }
         return logMessage + "\n";
     }

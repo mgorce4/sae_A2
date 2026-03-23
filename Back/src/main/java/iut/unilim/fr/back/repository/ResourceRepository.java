@@ -16,6 +16,7 @@ public interface ResourceRepository extends JpaRepository<Resource, Long> {
         List<Resource> findByPathIdAndSemester(@Param("pathId") Long pathId, @Param("semester") Integer semester);
     Optional<Resource> findFirstByLabelStartingWith(String resourceName);
     List<Resource> findBySemester(Integer semester);
+    boolean existsByLabel(String name);
 
     @Query("SELECT DISTINCT r FROM Resource r " +
            "JOIN UeCoefficient uc ON uc.resource.idResource = r.idResource " +
