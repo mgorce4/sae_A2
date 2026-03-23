@@ -153,7 +153,6 @@ public class CsvTransfertController {
                         .body("An error occurred: User not found");
             }
 
-            writeInCsvLogs(userName + " try to import an excel file, but he has no institution");
             Optional<UserSyncadia> userOpt = userSyncadiaRepository.findById(userId);
             if (userOpt.isEmpty() || userOpt.get().getInstitution() == null) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -165,7 +164,7 @@ public class CsvTransfertController {
             excelResourceImportService.importResourcesFromExcel(file, institutionId, pathId);
 
             writeInCsvLogs(userName + "(" + userId + ") imported Resources from Excel");
-            return ResponseEntity.ok("Import Excel des ressources réussi avec succès.");
+            return ResponseEntity.ok("Statut 200");
 
         } catch (Exception e) {
             e.printStackTrace(); // TODO : Supp dans ver final
