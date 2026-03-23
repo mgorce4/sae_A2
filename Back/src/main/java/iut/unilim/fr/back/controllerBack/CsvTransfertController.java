@@ -8,6 +8,7 @@ import iut.unilim.fr.back.entity.UserSyncadia;
 import iut.unilim.fr.back.repository.ResourceRepository;
 import iut.unilim.fr.back.repository.UserSyncadiaRepository;
 import iut.unilim.fr.back.security.UserDetailsImpl;
+import iut.unilim.fr.back.service.ExcelResourceImportService;
 import iut.unilim.fr.back.service.TeacherImportCsvService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -35,6 +36,9 @@ public class CsvTransfertController {
     private TeacherImportCsvService teacherImportCsvService;
     @Autowired
     private UserSyncadiaRepository userSyncadiaRepository;
+
+    @Autowired
+    private ExcelResourceImportService excelResourceImportService;
 
     @Autowired
     private ResourceSheetDTOController rsDTOController;
@@ -130,6 +134,45 @@ public class CsvTransfertController {
             writeInCsvLogs(currentUser + " got an error while importing professor in CSV : " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error : " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/import-excel-resources")
+    public ResponseEntity<?> importResourcesFromExcel(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("semester") Long semester,
+            @RequestParam("pathId") Long pathId
+    ) {
+        UserDetailsImpl currentUser = getCurrentUser();
+        Long userId = currentUser.getId();
+        String userName = currentUser.getUsername();
+
+        try {
+            if (userName.isEmpty()) {
+                writeInCsvLogs(userName + "(" + userId + ") attempt to import an Excel file, but an error occurred: User not found.");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("An error occurred: User not found");
+            }
+
+            writeInCsvLogs(userName + " try to import an excel file, but he has no institution");
+            Optional<UserSyncadia> userOpt = userSyncadiaRepository.findById(userId);
+            if (userOpt.isEmpty() || userOpt.get().getInstitution() == null) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("L'utilisateur n'est rattaché à aucune institution.");
+            }
+
+            Long institutionId = userOpt.get().getInstitution().getIdInstitution();
+
+            excelResourceImportService.importResourcesFromExcel(file, institutionId, pathId);
+
+            writeInCsvLogs(userName + "(" + userId + ") imported Resources from Excel");
+            return ResponseEntity.ok("Import Excel des ressources réussi avec succès.");
+
+        } catch (Exception e) {
+            e.printStackTrace(); // TODO : Supp dans ver final
+            writeInCsvLogs(currentUser.getUsername() + " got an error while importing Excel : " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors de l'import Excel : " + e.getMessage());
         }
     }
 
