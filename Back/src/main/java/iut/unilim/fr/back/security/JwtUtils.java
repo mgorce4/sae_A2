@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -34,6 +35,7 @@ public class JwtUtils {
 
         io.jsonwebtoken.JwtBuilder builder = Jwts.builder()
                 .subject(userPrincipal.getUsername())
+            .id(UUID.randomUUID().toString())
                 .claim("roles", roles)
                 .claim("id", userPrincipal.getId())
                 .issuedAt(new Date())
