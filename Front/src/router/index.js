@@ -7,8 +7,10 @@ import AdministrationDashboard from '../pages/administration_dashboard.vue'
 import DsbrProf from '../pages/teacher_dashboard.vue'
 
 import AdminDashboard from '../pages/admin_dashboard.vue'
-import AdminRS from '../pages/admin_ressources_sheet.vue'
 import AdminUser from '../pages/admin_user.vue'
+
+import SupAdminDasboard from '../pages/SupAdminDasboard.vue'
+import AddInstitutPage from '../pages/add_institut_page.vue'
 
 import MCCCSelectForm from '../pages/mccc_select_form.vue'
 import MCCCDisplay from '../pages/mccc_display.vue'
@@ -30,13 +32,15 @@ import MailPage from '../pages/mail_Page.vue'
 
 const routes = [
   { path: '/', component: Login },
-  {path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound},
+  { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound },
   { path: '/dashboard-administration', component: AdministrationDashboard },
   { path: '/teacher-dashboard', component: DsbrProf },
 
   { path: '/admin-dashboard', component: AdminDashboard },
-  { path: '/admin-ressources-sheet', component: AdminRS },
   { path: '/admin-user', component: AdminUser },
+
+  { path: '/sup-admin-dashboard', component: SupAdminDasboard},
+  { path: '/add-institut-page', component: AddInstitutPage },
 
   { path: '/mccc-select-form', component: MCCCSelectForm },
   { path: '/mccc-display', component: MCCCDisplay },
@@ -75,7 +79,7 @@ router.beforeEach((to) => {
   if (token && to.path === '/') {
     const roles = getAccessRightsFromToken()
     if (roles.length === 1) {
-      const map = { 1: '/teacher-dashboard', 2: '/dashboard-administration', 3: '/admin-dashboard' }
+      const map = { 1: '/teacher-dashboard', 2: '/dashboard-administration', 3: '/admin-dashboard', 4:'/sup-admin-dashboard' }
       return { path: map[roles[0]] || '/' }
     } else if (roles.length > 1) {
       return { path: '/multi_access_right_dashboard' }

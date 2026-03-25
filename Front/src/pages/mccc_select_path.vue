@@ -264,6 +264,7 @@ const access_right = getAccessRightsFromToken()
             <div v-if="access_right.length == 1">
                 <RouterLink v-if="status==='Administration'" id="back_arrow" to="/dashboard-administration">←</RouterLink>
                 <RouterLink v-else-if="status==='Admin'" id="back_arrow" to="/admin-dashboard">←</RouterLink>
+                <RouterLink v-else-if="status==='Super Admin'" id="back_arrow" to="/sup-admin-dashboard">←</RouterLink>
             </div>
             <RouterLink to="/multi-access-right-dashboard" id="back_arrow" v-else>←</RouterLink>
             <p class="back">Retour à l'accueil</p>

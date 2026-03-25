@@ -155,7 +155,7 @@ const save = async () => {
         await reloadTeachers()
         attachAccordionListeners()
 
-        console.log('professeur sauvegardée avec succès')
+        console.log('professeur sauvegardé avec succès')
     } catch (error) {
         console.error('Erreur lors de la sauvegarde:', error)
         if (error.response) {
@@ -239,6 +239,7 @@ function toggleShowPopUp() {
         <div id="return_arrow">
             <RouterLink v-if="status==='Administration'" id="back_arrow" to="/control-center">←</RouterLink>
             <RouterLink v-else-if="status==='Admin'" id="back_arrow" to="/admin-dashboard">←</RouterLink>
+            <RouterLink v-else-if="status==='Super Admin'" id="back_arrow" to="/sup-admin-dashboard">←</RouterLink>
             <p>Retour</p>
         </div>
 
