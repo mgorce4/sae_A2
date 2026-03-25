@@ -3,7 +3,8 @@ import { onMounted, ref } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
 import {
-    getIdInstitutionFromToken
+    getIdInstitutionFromToken,
+    getToken
 } from '@/utils/jwt.js'
 import { router } from '@/router/index.js'
 import { useRoute } from 'vue-router'
@@ -24,13 +25,21 @@ const sendMail = async () => {
     }
 
     try {
-        const params = {
-            userId: receiver.value.user.idUser,
-            subject: mail_object.value,
-            message: mail_body.value
-        }
-
-        const response = await axios.post(`${API_BASE_URL}/api/send-mail-to-user`, { params })
+        const token = getToken()
+        const response = await axios.post(
+            `${API_BASE_URL}/api/send-mail-to-user`,
+            {
+                userId: receiver.value.user.idUser,
+                subject: mail_object.value,
+                message: mail_body.value
+            },
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        )
         alert("Mail envoyé avec succès !")
         mail_object.value = ""
         mail_body.value = ""
