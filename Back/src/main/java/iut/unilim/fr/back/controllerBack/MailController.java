@@ -33,16 +33,16 @@ public class MailController {
     }
 
     @PostMapping("/api/send-mail-to-user")
-    public String sendMailToUser(@RequestParam Long userId, @RequestParam String subject, @RequestParam String message) {
-        Optional<UserSyncadia> userOpt = userSyncadiaService.getUserById(userId);
+    public String sendMailToUser(@RequestBody SendMailRequest request) {
+        Optional<UserSyncadia> userOpt = userSyncadiaService.getUserById(request.userId);
         if (userOpt.isEmpty()) {
             return "Utilisateur non trouvé";
         }
         String mail = userOpt.get().getMail();
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setTo(mail);
-        mailMessage.setSubject(subject);
-        mailMessage.setText(message);
+        mailMessage.setSubject(request.subject);
+        mailMessage.setText(request.message);
         mailMessage.setFrom("no-reply@syncadia.fr");
         mailSender.send(mailMessage);
         writeInMailLogs("Mail sent from no-reply@syncadia.fr to " + mail);
@@ -73,6 +73,19 @@ public class MailController {
             }
         }
         return result.toString();
+    }
+
+    public static class SendMailRequest {
+        public Long userId;
+        public String subject;
+        public String message;
+
+        public Long getUserId() { return userId; }
+        public void setUserId(Long userId) { this.userId = userId; }
+        public String getSubject() { return subject; }
+        public void setSubject(String subject) { this.subject = subject; }
+        public String getMessage() { return message; }
+        public void setMessage(String message) { this.message = message; }
     }
 
     public static class UsersMailRequest {
