@@ -48,8 +48,4 @@ public class Resource {
 
     }
 
-    public void isComplete() {
-        //TODO
-    }
-
 }
