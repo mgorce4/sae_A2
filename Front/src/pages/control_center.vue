@@ -5,6 +5,68 @@ import { getAccessRightsFromToken } from '@/utils/jwt.js'
 import { router } from '@/router'
 
 const show_popup = ref(false)
+const pathId = ref(1)
+const fileInputRef = ref(null)
+const isLoading = ref(false)
+const message = ref('')
+const isError = ref(false)
+
+const triggerFilePicker = () => {
+  fileInputRef.value.click()
+}
+
+const uploadExcel = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  isLoading.value = true
+  message.value = ''
+  isError.value = false
+
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('pathId', pathId.value)
+
+  const rawToken = localStorage.getItem('jwt_token') || sessionStorage.getItem('token')
+
+  if (!rawToken) {
+    message.value = "Erreur : Pas d'utilisateurs."
+    isError.value = true
+    isLoading.value = false
+    return
+  }
+
+  const token = rawToken.replace(/^["']|["']$/g, '')
+
+  console.log("Token envoyé (nettoyé) :", token.substring(0, 20) + "...") 
+
+  try {
+    const response = await fetch('http://localhost:8080/api/csv/import-excel-resources', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}` 
+      },
+      body: formData
+    })
+
+    const responseText = await response.text()
+
+    if (response.ok) {
+      message.value = responseText || "Importation réussie !"
+      isError.value = false
+    } else {
+      message.value = `Erreur (${response.status}) : ${responseText}`
+      isError.value = true
+    }
+  } catch (error) {
+    console.error(error)
+    message.value = "Erreur réseau"
+    isError.value = true
+  } finally {
+    isLoading.value = false
+    if (fileInputRef.value) fileInputRef.value.value = ''
+  }
+}
 
 function toggleShowPopUp() {
     show_popup.value = !show_popup.value
@@ -69,6 +131,18 @@ const goToNext = (url, status) => {
 
             <div id="right_component">
                 <button class="button" style=" width: 31.5vw; margin: 3vh 1vw;" @click="goToNext('/add-teacher-page',Administration)">Ajout professeur</button>
+                <input
+                  type="file"
+                  ref="fileInputRef"
+                  accept=".xlsx, .xls"
+                  style="display: none"
+                  @change="uploadExcel"
+                />
+                <button @click="triggerFilePicker" :disabled="isLoading">
+                  {{ isLoading ? 'Importation en cours...' : 'Importer des ressources (Excel)' }}
+                </button>
+
+                <p v-if="message" :style="{ color: isError ? 'red' : 'green' }">{{ message }}</p>
             </div>
         </div>
     </div>
