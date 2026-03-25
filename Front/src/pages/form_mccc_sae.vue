@@ -2,14 +2,12 @@
 import { onMounted, ref, computed, nextTick, watch } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
-import { status } from '../main'
 import { router } from '@/router'
 import { useRoute } from 'vue-router'
 import { getIdInstitutionFromToken } from '@/utils/jwt.js'
 
 const route = useRoute()
 
-status.value = 'Administration'
 
 let display_add_modify_area = ref(false)
 let display_add_ue = ref(false)

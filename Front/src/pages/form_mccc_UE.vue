@@ -1,5 +1,4 @@
 <script setup>
-import { status } from '../main'
 import { onMounted, ref, nextTick, watch } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
@@ -8,8 +7,6 @@ import { useRoute } from 'vue-router'
 import { getIdFromToken, getIdInstitutionFromToken } from '@/utils/jwt.js'
 
 const route = useRoute()
-
-status.value = 'Administration'
 
 let display_more_area = ref(false)
 

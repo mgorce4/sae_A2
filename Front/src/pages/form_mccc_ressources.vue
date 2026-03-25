@@ -8,8 +8,6 @@ import { getIdInstitutionFromToken } from '@/utils/jwt.js'
 
 const route = useRoute()
 
-status.value = 'Administration'
-
 let display_more_area = ref(false)
 let is_modifying = ref(false)
 let resource_id_to_modify = ref(null)
