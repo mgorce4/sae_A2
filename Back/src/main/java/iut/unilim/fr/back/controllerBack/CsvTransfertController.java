@@ -121,7 +121,13 @@ public class CsvTransfertController {
                 writeInCsvLogs(userName + "(" + userId + ") attempt to import a CSV file, but an error as occurred because he was not found.");
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("An error as occurred: User not found");
-            } else {
+            }
+            else if (userSyncadiaRepository.findById(userId).isEmpty()) {
+                writeInCsvLogs(userName + "(" + userId + ") attempt to import a CSV file, but an error as occurred because there is not user with a corresponding ID.");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("An error as occurred: User not found");
+            }
+            else {
                 Institution inst = userSyncadiaRepository.findById(userId).get().getInstitution();
                 Long institutionId = inst.getIdInstitution();
                 teacherImportCsvService.importTeachers(file, institutionId, userName);
@@ -161,7 +167,7 @@ public class CsvTransfertController {
 
             Long institutionId = userOpt.get().getInstitution().getIdInstitution();
 
-            excelResourceImportService.importResourcesFromExcel(file, institutionId, pathId);
+            excelResourceImportService.importResourcesFromExcel(file, institutionId);
 
             writeInCsvLogs(userName + "(" + userId + ") imported Resources from Excel");
             return ResponseEntity.ok("Statut 200");

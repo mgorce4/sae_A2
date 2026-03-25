@@ -44,7 +44,7 @@ class ExcelResourceImportServiceTest {
         MockMultipartFile file = new MockMultipartFile("file", "test.xlsx",
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelContent);
 
-        excelService.importResourcesFromExcel(file, institutionId, pathId);
+        excelService.importResourcesFromExcel(file, institutionId);
 
         verify(ressourceRepository, times(1)).saveAll(ressourceListCaptor.capture());
 
@@ -74,7 +74,7 @@ class ExcelResourceImportServiceTest {
         MockMultipartFile file = new MockMultipartFile("file", "vide.xlsx",
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", out.toByteArray());
 
-        excelService.importResourcesFromExcel(file, 1L, 1L);
+        excelService.importResourcesFromExcel(file, 1L);
 
         verify(ressourceRepository, never()).saveAll(anyList());
     }
