@@ -169,7 +169,6 @@ public class CsvTransfertController {
 
             excelResourceImportService.importResourcesFromExcel(file, institutionId);
 
-            writeInCsvLogs(userName + "(" + userId + ") imported Resources from Excel");
             return ResponseEntity.ok("Statut 200");
 
         } catch (Exception e) {

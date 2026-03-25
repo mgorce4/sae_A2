@@ -4,9 +4,11 @@ import iut.unilim.fr.back.dto.ResourceDTO;
 import iut.unilim.fr.back.entity.Institution;
 import iut.unilim.fr.back.entity.Path;
 import iut.unilim.fr.back.entity.Resource;
+import iut.unilim.fr.back.entity.UE;
 import iut.unilim.fr.back.repository.InstitutionRepository;
 import iut.unilim.fr.back.repository.PathRepository;
 import iut.unilim.fr.back.repository.ResourceRepository;
+import iut.unilim.fr.back.repository.UERepository;
 import iut.unilim.fr.back.security.UserDetailsImpl;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -32,15 +34,14 @@ import static iut.unilim.fr.back.security.UserDetailsImpl.getCurrentUser;
 @Service
 public class ExcelResourceImportService {
 
-    private final Integer resourceDebugId = 1;
-    private final Integer pathDebugId = 2;
-
     @Autowired
     private ResourceRepository resourceRepository;
     @Autowired
     private PathRepository pathRepository;
     @Autowired
     private InstitutionRepository institutionRepository;
+    @Autowired
+    private UERepository ueRepository;
 
     @Transactional
     public void importResourcesFromExcel(MultipartFile file, Long institutionId) throws Exception {
@@ -69,8 +70,45 @@ public class ExcelResourceImportService {
 
                 Integer currentSemester = null;
 
+                Map<String, UE> parsedUesInfo = new HashMap<>();
+
                 for (Row row : sheet) {
                     if (row == null) continue;
+
+                    for (int c = 0; c < row.getLastCellNum(); c++) {
+                        Cell cell = row.getCell(c);
+                        if (cell == null) continue;
+                        String val = getStringValue(cell).trim().toUpperCase();
+
+                        if (val.contains("CODE APOGEE DE L'UE") || val.contains("CODE APOGÉE DE L'UE")) {
+                            Row labelRow = sheet.getRow(row.getRowNum() - 1);
+                            Row nameRow = sheet.getRow(row.getRowNum() + 1);
+                            Row levelRow = sheet.getRow(row.getRowNum() + 2);
+
+                            if (labelRow != null && nameRow != null && levelRow != null) {
+                                for (int col = c + 1; col < row.getLastCellNum(); col++) {
+                                    String extractedUeLabel = getStringValue(labelRow.getCell(col)).trim().toUpperCase();
+                                    if (extractedUeLabel.matches("UE\\s*\\d+\\.\\d+")) {
+                                        UE parsedUe = new UE();
+                                        parsedUe.setLabel(extractedUeLabel);
+                                        parsedUe.setEuApogeeCode(getStringValue(row.getCell(col)).trim());
+                                        parsedUe.setName(getStringValue(nameRow.getCell(col)).trim());
+
+                                        String levelStr = getStringValue(levelRow.getCell(col)).trim();
+                                        int level = 1;
+                                        Matcher mLevel = Pattern.compile("\\d+").matcher(levelStr);
+                                        if (mLevel.find()) {
+                                            level = Integer.parseInt(mLevel.group());
+                                        }
+                                        parsedUe.setCompetenceLevel(level);
+
+                                        parsedUesInfo.put(extractedUeLabel.replace(" ", ""), parsedUe);
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                    }
 
                     String firstCellVal = getStringValue(row.getCell(0)).trim().toUpperCase();
 
@@ -158,12 +196,38 @@ public class ExcelResourceImportService {
                                 }
 
                                 Double coef = getNumericValue(row.getCell(entry.getKey()), 0.0);
-                                debugCsvLogs(resourceDebugId, "ACTUAL_RESOURCE", resourceDTO.getLabel());
-                                debugCsvLogs(resourceDebugId, "IF_STATEMENT", String.valueOf(coef > 0 && !addedUes.contains(ueLabel)));
                                 if (coef > 0 && !addedUes.contains(ueLabel)) {
                                     ResourceDTO.UeCoefficientDTO ueDto = new ResourceDTO.UeCoefficientDTO();
                                     ueDto.setUeLabel(ueLabel);
                                     ueDto.setCoefficient(coef);
+
+                                    String standardUeLabel = ueLabel.replace(" ", "");
+                                    Integer finalCurrentSemester = currentSemester;
+                                    UE ueEntity = ueRepository.findByLabelAndPath_IdPath(ueLabel, resolvedPathId)
+                                            .orElseGet(() -> {
+                                                UE newUe = new UE();
+                                                newUe.setLabel(ueLabel);
+                                                newUe.setSemester(finalCurrentSemester != null ? finalCurrentSemester : 1);
+
+                                                UE parsedInfo = parsedUesInfo.get(standardUeLabel);
+                                                if (parsedInfo != null) {
+                                                    newUe.setEuApogeeCode(parsedInfo.getEuApogeeCode());
+                                                    newUe.setName(parsedInfo.getName());
+                                                    newUe.setCompetenceLevel(parsedInfo.getCompetenceLevel());
+                                                } else {
+                                                    newUe.setEuApogeeCode("INCONNU");
+                                                    newUe.setName(ueLabel);
+                                                    newUe.setCompetenceLevel(1);
+                                                }
+
+                                                Path path = pathRepository.findById(resolvedPathId).orElse(null);
+                                                newUe.setPath(path);
+
+                                                return ueRepository.save(newUe);
+                                            });
+
+                                    ueDto.setUeId(ueEntity.getUeNumber());
+
                                     ueCoefficients.add(ueDto);
 
                                     StringBuilder fgyeul = new StringBuilder();
@@ -171,9 +235,6 @@ public class ExcelResourceImportService {
                                         fgyeul.append(u).append(", ");
                                     }
                                     addedUes.add(ueLabel);
-                                    debugCsvLogs(resourceDebugId , "ADDED", ueLabel);
-                                    debugCsvLogs(resourceDebugId, "COEF", String.valueOf(coef));
-                                    debugCsvLogs(resourceDebugId,"LIST_ADDED_UE", fgyeul.toString() + "\n");
                                 }
                             }
 
@@ -220,6 +281,7 @@ public class ExcelResourceImportService {
                 for (ResourceDTO.UeCoefficientDTO ueCoef : ueCoefficients) {
                     logContent.append("     -UE : ").append(ueCoef.getUeLabel()).append("\n");
                     logContent.append("     -Coef : ").append(ueCoef.getCoefficient()).append("\n");
+                    logContent.append("     -UeId généré en BDD : ").append(ueCoef.getUeId()).append("\n");
                 }
 
                 writeInCsvLogs(userName + " (" + userId + ") import a resource from a xlsx with values : \n" +
@@ -244,11 +306,11 @@ public class ExcelResourceImportService {
         }
 
         if (!entitiesToSave.isEmpty()) {
-            // resourceRepository.saveAll(entitiesToSave);
-            writeInCsvLogs("\nNormalement, enregistrement DB" + "\n" +
-                    skippedCount + " enties skipped");
+            resourceRepository.saveAll(entitiesToSave);
+            writeInCsvLogs(userName + " (" + userId + ") has saved " +entitiesToSave.size() + "entities in the DB " + "\n" +
+                    skippedCount + " entities skipped");
         } else {
-            writeInCsvLogs(userName + " (" + userId + ") : No new resource to save from xslx file.");
+            writeInCsvLogs(userName + " (" + userId + ") : No new resource to save from xslx file. Skipped " + skippedCount + " entities.");
         }
     }
 
@@ -296,9 +358,10 @@ public class ExcelResourceImportService {
                     newPath.setInstitution(inst);
 
                     writeInCsvLogs("A new path has been created while importing xlsx file : " + pathName + " with number : " + pathNumber + ".");
-                    return pathRepository.save(newPath);
+
+                    return pathRepository.saveAndFlush(newPath);
                 });
-        debugCsvLogs(pathDebugId, "PATH_NUMBER", finalPath.getNumber().toString());
+
 
         return finalPath.getIdPath();
     }
@@ -310,6 +373,12 @@ public class ExcelResourceImportService {
         ressource.setApogeeCode(dto.getApogeeCode());
         ressource.setSemester(dto.getSemester());
         ressource.setDiffMultiCompetences(false);
+
+        if (dto.getPathId() != null) {
+            Path path = pathRepository.findById(dto.getPathId()).orElse(null);
+            ressource.setPath(path);
+        }
+
         return ressource;
     }
 
