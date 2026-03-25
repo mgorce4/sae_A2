@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
 import {
-    getIdInstitutionFromToken,
+    getIdInstitutionFromToken
 } from '@/utils/jwt.js'
 import { router } from '@/router/index.js'
 import { useRoute } from 'vue-router'
@@ -18,7 +18,30 @@ const mail_object = ref("")
 const mail_body = ref("")
 
 const sendMail = async () => {
-    console.log("test")
+    if (!receiver.value || !receiver.value.user || !receiver.value.user.idUser) {
+        alert("Veuillez sélectionner un destinataire.")
+        return
+    }
+
+    try {
+        const params = {
+            userId: receiver.value.user.idUser,
+            subject: mail_object.value,
+            message: mail_body.value
+        }
+
+        const response = await axios.post(`${API_BASE_URL}/api/send-mail-to-user`, { params })
+        alert("Mail envoyé avec succès !")
+        mail_object.value = ""
+        mail_body.value = ""
+        receiver.value = ""
+        document.getElementById("input_receiver").value = ""
+
+        console.log('Mail envoyé avec succès:', response.data)
+    } catch (err) {
+        console.error('Erreur envoi mail', err)
+        alert("Erreur lors de l'envoi du mail. Veuillez réessayer.")
+    }
 }
 
 const receiver = ref("")
