@@ -172,7 +172,6 @@ public class CsvTransfertController {
             return ResponseEntity.ok("Statut 200");
 
         } catch (Exception e) {
-            e.printStackTrace(); // TODO : Supp dans ver final
             writeInCsvLogs(currentUser.getUsername() + " got an error while importing Excel : " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Erreur lors de l'import Excel : " + e.getMessage());

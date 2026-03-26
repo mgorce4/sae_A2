@@ -12,10 +12,13 @@ public class LogController {
     private static final String openSymbol = "[";
     private static final String closeSymbol = "] ";
     private static final String format = "dd:MM:yyyy HH:mm:ss:SS";
+    private static final String fileNameFormat = "dd-MM-yyyy";
     private static String logsPath = "logs/"; // Final pour la securite, pour faire passer les tests, il faut enlever final
     // TODO : Gestion journalière de logs avec un fichier par jour
     public static void writeInPdfLog(String message) {
-        String fileName = logsPath + ".pdf_log.txt";
+        SimpleDateFormat fileDate = new SimpleDateFormat(fileNameFormat);
+        String fileName = logsPath + "pdf/pdf_log"+ fileDate.format(new Date()) +".txt";
+
         Path path = Paths.get(fileName);
 
         String logMessage = writeInLog(message, path);
@@ -24,7 +27,9 @@ public class LogController {
     }
 
     public static void writeInCsvLogs(String message) {
-        String fileName = logsPath + ".csv_log.txt";
+        SimpleDateFormat fileDate = new SimpleDateFormat(fileNameFormat);
+        String fileName = logsPath + "csv/csv_log+"+ fileDate.format(new Date()) + ".txt";
+
         Path path = Paths.get(fileName);
 
         String logMessage = writeInLog(message, path);
@@ -32,15 +37,16 @@ public class LogController {
     }
 
     public static void debugCsvLogs(Integer debugID, String debugName, String message) {
-        String fileName = logsPath + ".csv_log.txt";
-        Path path = Paths.get(fileName);
+        SimpleDateFormat fileDate = new SimpleDateFormat(fileNameFormat);
+        String fileName = logsPath + "csv/csv_debug+"+ fileDate.format(new Date()) + ".txt";        Path path = Paths.get(fileName);
 
         String logMessage = debug(debugID, debugName, message, path);
         System.out.println(logMessage);
     }
 
     public static void writeInMailLogs(String message) {
-        String fileName = logsPath + ".mail_log.txt";
+        SimpleDateFormat fileDate = new SimpleDateFormat(fileNameFormat);
+        String fileName = logsPath + "mail/mail_log"+ fileDate +".txt";
         Path path = Paths.get(fileName);
 
         String logMessage = writeInLog(message, path);
