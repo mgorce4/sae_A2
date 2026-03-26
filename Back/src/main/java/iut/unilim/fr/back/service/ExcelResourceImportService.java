@@ -229,11 +229,6 @@ public class ExcelResourceImportService {
                                     ueDto.setUeId(ueEntity.getUeNumber());
 
                                     ueCoefficients.add(ueDto);
-
-                                    StringBuilder fgyeul = new StringBuilder();
-                                    for (String u : addedUes) {
-                                        fgyeul.append(u).append(", ");
-                                    }
                                     addedUes.add(ueLabel);
                                 }
                             }
