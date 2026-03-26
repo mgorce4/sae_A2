@@ -13,8 +13,7 @@ public class LogController {
     private static final String closeSymbol = "] ";
     private static final String format = "dd:MM:yyyy HH:mm:ss:SS";
     private static final String fileNameFormat = "dd-MM-yyyy";
-    private static String logsPath = "logs/"; // Final pour la securite, pour faire passer les tests, il faut enlever final
-    // TODO : Gestion journalière de logs avec un fichier par jour
+    private static final String logsPath = "logs/"; // Final pour la securite, pour faire passer les tests, il faut enlever final
     public static void writeInPdfLog(String message) {
         SimpleDateFormat fileDate = new SimpleDateFormat(fileNameFormat);
         String fileName = logsPath + "pdf/pdf_log"+ fileDate.format(new Date()) +".txt";
