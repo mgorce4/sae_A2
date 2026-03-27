@@ -48,7 +48,7 @@ onMounted(async () => {
                 <p v-if="resourceSheetsDTO.length === 0" style="color: white; padding: 1vw">
                     Aucune resource trouvée. Vous n'êtes professeur d'aucune resource.
                 </p>
-                <RouterLink v-for="sheet in resourceSheetsDTO" :key="sheet.id" id="sheets" :to="`/form-ressource-sheet?id=${sheet.id}`">
+                <RouterLink v-for="sheet in resourceSheetsDTO" :key="sheet.id" id="sheets" :to="`/form-resource-sheet?id=${sheet.id}`">
                     <p>{{ sheet.resourceLabel }}</p>
                 </RouterLink>
             </div>

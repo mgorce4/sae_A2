@@ -12,9 +12,12 @@ public class LogController {
     private static final String openSymbol = "[";
     private static final String closeSymbol = "] ";
     private static final String format = "dd:MM:yyyy HH:mm:ss:SS";
-    private static final String logsPath = "logs/";
+    private static final String fileNameFormat = "dd-MM-yyyy";
+    private static final String logsPath = "logs/"; // Final pour la securite, pour faire passer les tests, il faut enlever final
     public static void writeInPdfLog(String message) {
-        String fileName = logsPath + ".pdf_log.txt";
+        SimpleDateFormat fileDate = new SimpleDateFormat(fileNameFormat);
+        String fileName = logsPath + "pdf/pdf_log"+ fileDate.format(new Date()) +".txt";
+
         Path path = Paths.get(fileName);
 
         String logMessage = writeInLog(message, path);
@@ -23,15 +26,26 @@ public class LogController {
     }
 
     public static void writeInCsvLogs(String message) {
-        String fileName = logsPath + ".csv_log.txt";
+        SimpleDateFormat fileDate = new SimpleDateFormat(fileNameFormat);
+        String fileName = logsPath + "csv/csv_log"+ fileDate.format(new Date()) + ".txt";
+
         Path path = Paths.get(fileName);
 
         String logMessage = writeInLog(message, path);
         System.out.println(logMessage);
     }
 
+    public static void debugCsvLogs(Integer debugID, String debugName, String message) {
+        String fileName = logsPath + "csv/csv_debug.txt";
+        Path path = Paths.get(fileName);
+
+        String logMessage = debug(debugID, debugName, message, path);
+        System.out.println(logMessage);
+    }
+
     public static void writeInMailLogs(String message) {
-        String fileName = logsPath + ".mail_log.txt";
+        SimpleDateFormat fileDate = new SimpleDateFormat(fileNameFormat);
+        String fileName = logsPath + "mail/mail_log"+ fileDate +".txt";
         Path path = Paths.get(fileName);
 
         String logMessage = writeInLog(message, path);
@@ -55,6 +69,25 @@ public class LogController {
         }
         catch (IOException e) {
             logMessage = openSymbol + logDate.format(new Date()) + closeSymbol + e.getMessage() + "\n";
+        }
+        return logMessage + "\n";
+    }
+    private static String debug(Integer debugId, String debugName, String message, Path path) {
+        String logMessage = "DEBUG"+debugId+"!"+debugName.toUpperCase() + " " + message + "\n";
+
+        try {
+            if (!Files.exists(path)) {
+                logMessage = "DEBUG"+debugId+"!"+debugName.toUpperCase()+ " " +"Create debug file\n" + logMessage;
+            }
+            Files.writeString(
+                    path,
+                    logMessage,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.APPEND
+            );
+        }
+        catch (IOException e) {
+            logMessage = "DEBUG"+debugId+"!"+debugName.toUpperCase() + " " + e.getMessage() + "\n";
         }
         return logMessage + "\n";
     }

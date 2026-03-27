@@ -27,7 +27,6 @@ public class NationalProgramObjectiveController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // TODO: Changer les reSSources ( voir avec max )
     @GetMapping("/ressource-sheet/{idResourceSheet}")
     public List<NationalProgramObjective> getNationalProgramObjectivesByResourceSheetId(@PathVariable Long idResourceSheet) {
         return nationalProgramObjectiveService.getNationalProgramObjectivesByResourceSheetId(idResourceSheet);
