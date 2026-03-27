@@ -3,6 +3,7 @@ package iut.unilim.fr.back.controllerBack;
 import iut.unilim.fr.back.entity.UserSyncadia;
 import iut.unilim.fr.back.security.UserDetailsImpl;
 import iut.unilim.fr.back.service.UserSyncadiaService;
+import iut.unilim.fr.back.service.ResourceSheetReminderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -19,6 +20,8 @@ public class MailController {
     private JavaMailSender mailSender;
     @Autowired
     private UserSyncadiaService userSyncadiaService;
+    @Autowired
+    private ResourceSheetReminderService resourceSheetReminderService;
 
     @GetMapping("/api/test-mail")
     public String sendTestMail(@RequestParam(defaultValue = "") String to) {
@@ -98,5 +101,16 @@ public class MailController {
         public void setSubject(String subject) { this.subject = subject; }
         public String getMessage() { return message; }
         public void setMessage(String message) { this.message = message; }
+    }
+
+    @PostMapping("/api/test-resource-sheet-reminders")
+    public String testResourceSheetReminders() {
+        try {
+            resourceSheetReminderService.sendResourceSheetReminders();
+            return "Test des rappels lancé - vérifiez les logs";
+        } catch (Exception e) {
+            writeInMailLogs("ERROR: Test des rappels échoué - " + e.getMessage());
+            return "Erreur: " + e.getMessage();
+        }
     }
 }
