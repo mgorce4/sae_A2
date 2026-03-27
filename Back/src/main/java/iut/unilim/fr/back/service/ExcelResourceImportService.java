@@ -12,18 +12,13 @@ import iut.unilim.fr.back.repository.UERepository;
 import iut.unilim.fr.back.security.UserDetailsImpl;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -221,6 +216,13 @@ public class ExcelResourceImportService {
                                                 }
 
                                                 Path path = pathRepository.findById(resolvedPathId).orElse(null);
+
+                                                debugCsvLogs(1, "UE", newUe.getName());
+                                                if  (path != null) {
+                                                    debugCsvLogs(1,"UE_PATH_ID", path.getIdPath().toString());
+                                                } else {
+                                                    debugCsvLogs(1, "UE+PATH_ID", "none");
+                                                }
                                                 newUe.setPath(path);
 
                                                 return ueRepository.save(newUe);
@@ -234,6 +236,9 @@ public class ExcelResourceImportService {
                             }
 
                             resourceDTO.setUeCoefficients(ueCoefficients);
+                            debugCsvLogs(1, "RESOURCE_LABEL", resourceDTO.getLabel());
+                            debugCsvLogs(1,"RESOURCE_NAME",  resourceDTO.getName());
+                            debugCsvLogs(1, "RESOURCE_PATH", resourceDTO.getPathId().toString() + "\n");
                             dtos.add(resourceDTO);
                         }
                     }
@@ -244,7 +249,8 @@ public class ExcelResourceImportService {
         List<Resource> entitiesToSave = new ArrayList<>();
         int skippedCount = 0;
         for (ResourceDTO dto : dtos) {
-            if (resourceRepository.existsByLabel(dto.getLabel().trim())) {
+            Optional<Resource> dtoResource = resourceRepository.findFirstByLabelAndPath_IdPath(dto.getLabel(), dto.getPathId());
+            if (dtoResource.isPresent()) {
                 skippedCount++;
                 writeInCsvLogs("\nSkipped: " + dto.getLabel());
             } else {

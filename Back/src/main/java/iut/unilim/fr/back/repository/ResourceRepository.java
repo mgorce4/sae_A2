@@ -23,5 +23,10 @@ public interface ResourceRepository extends JpaRepository<Resource, Long> {
            "JOIN UE ue ON ue.ueNumber = uc.ue.ueNumber " +
            "WHERE ue.path.idPath = :pathId")
     List<Resource> findByPathId(@Param("pathId") Long pathId);
+
+    boolean existsByPath_IdPath(Long pathId);
+
+    boolean existsByLabelAndPath_IdPath(String label, Long pathIdPath);
+    Optional<Resource> findFirstByLabelAndPath_IdPath(String label, Long pathId);
 }
 
