@@ -27,7 +27,7 @@ public class LogController {
 
     public static void writeInCsvLogs(String message) {
         SimpleDateFormat fileDate = new SimpleDateFormat(fileNameFormat);
-        String fileName = logsPath + "csv/csv_log+"+ fileDate.format(new Date()) + ".txt";
+        String fileName = logsPath + "csv/csv_log"+ fileDate.format(new Date()) + ".txt";
 
         Path path = Paths.get(fileName);
 
@@ -36,8 +36,8 @@ public class LogController {
     }
 
     public static void debugCsvLogs(Integer debugID, String debugName, String message) {
-        SimpleDateFormat fileDate = new SimpleDateFormat(fileNameFormat);
-        String fileName = logsPath + "csv/csv_debug+"+ fileDate.format(new Date()) + ".txt";        Path path = Paths.get(fileName);
+        String fileName = logsPath + "csv/csv_debug.txt";
+        Path path = Paths.get(fileName);
 
         String logMessage = debug(debugID, debugName, message, path);
         System.out.println(logMessage);
@@ -77,7 +77,7 @@ public class LogController {
 
         try {
             if (!Files.exists(path)) {
-                logMessage = "DEBUG"+debugId+"!"+debugName.toUpperCase()+ " " +"Create log file\n" + logMessage;
+                logMessage = "DEBUG"+debugId+"!"+debugName.toUpperCase()+ " " +"Create debug file\n" + logMessage;
             }
             Files.writeString(
                     path,

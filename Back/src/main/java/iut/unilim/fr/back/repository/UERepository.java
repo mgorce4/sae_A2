@@ -18,5 +18,6 @@ public interface UERepository extends JpaRepository<UE, Long> {
     void deleteByPath_IdPath(Long pathId);
 
 
+    String existsByLabelAndPath_IdPath(String label, Long pathIdPath);
 }
 

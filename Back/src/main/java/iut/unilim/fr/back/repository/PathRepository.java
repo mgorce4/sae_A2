@@ -11,5 +11,7 @@ import java.util.Optional;
 public interface PathRepository extends JpaRepository<Path, Long> {
     List<Path> findByInstitution_IdInstitution(Long institutionId);
     Optional<Path> findByInstitution_IdInstitutionAndNumber(Long institutionId, Integer number);
+
+    boolean existsById(Long pathId);
 }
 
