@@ -40,7 +40,7 @@ public class ResourceSheetReminderService {
      * Vérifie les fiches ressources non remplies et envoie des rappels par email
      * Exécuté tous les jours à 08:00
      */
-    @Scheduled(cron = "0 8 * * *")
+    @Scheduled(cron = "0 0 8 * * *")
     public void sendResourceSheetReminders() {
         logger.info("Démarrage de la vérification des fiches ressources à remplir...");
 
