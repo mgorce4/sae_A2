@@ -38,6 +38,11 @@ public class ExcelResourceImportService {
     @Autowired
     private UERepository ueRepository;
 
+    int first = 1;
+    int second = 2;
+    int notExistingIndex = -first;
+    int firstOccurence = 0;
+
     @Transactional
     public void importResourcesFromExcel(MultipartFile file, Long institutionId) throws Exception {
         List<ResourceDTO> dtos = new ArrayList<>();
@@ -57,10 +62,12 @@ public class ExcelResourceImportService {
                     continue;
                 }
 
-                int colLabel = -1;
-                int colApogee = -1;
-                int colFI = -1;
-                int colAlt = -1;
+                int colLabel = notExistingIndex;
+                int colApogee = notExistingIndex;
+                int colFI = notExistingIndex;
+                int colAlt = notExistingIndex;
+                double defaultValue = 0.0;
+                int indexFirstRow = 0;
                 Map<Integer, String> colUeCoefs = new HashMap<>();
 
                 Integer currentSemester = null;
@@ -76,12 +83,12 @@ public class ExcelResourceImportService {
                         String val = getStringValue(cell).trim().toUpperCase();
 
                         if (val.contains("CODE APOGEE DE L'UE") || val.contains("CODE APOGÉE DE L'UE")) {
-                            Row labelRow = sheet.getRow(row.getRowNum() - 1);
-                            Row nameRow = sheet.getRow(row.getRowNum() + 1);
-                            Row levelRow = sheet.getRow(row.getRowNum() + 2);
+                            Row labelRow = sheet.getRow(row.getRowNum() - first);
+                            Row nameRow = sheet.getRow(row.getRowNum() + first);
+                            Row levelRow = sheet.getRow(row.getRowNum() + second);
 
                             if (labelRow != null && nameRow != null && levelRow != null) {
-                                for (int col = c + 1; col < row.getLastCellNum(); col++) {
+                                for (int col = c + first; col < row.getLastCellNum(); col++) {
                                     String extractedUeLabel = getStringValue(labelRow.getCell(col)).trim().toUpperCase();
                                     if (extractedUeLabel.matches("UE\\s*\\d+\\.\\d+")) {
                                         UE parsedUe = new UE();
@@ -90,7 +97,7 @@ public class ExcelResourceImportService {
                                         parsedUe.setName(getStringValue(nameRow.getCell(col)).trim());
 
                                         String levelStr = getStringValue(levelRow.getCell(col)).trim();
-                                        int level = 1;
+                                        int level = first;
                                         Matcher mLevel = Pattern.compile("\\d+").matcher(levelStr);
                                         if (mLevel.find()) {
                                             level = Integer.parseInt(mLevel.group());
@@ -105,18 +112,18 @@ public class ExcelResourceImportService {
                         }
                     }
 
-                    String firstCellVal = getStringValue(row.getCell(0)).trim().toUpperCase();
+                    String firstCellVal = getStringValue(row.getCell(firstOccurence)).trim().toUpperCase();
 
                     if (firstCellVal.contains("SEMESTRE")) {
                         Matcher m = Pattern.compile("SEMESTRE\\s+(\\d+)").matcher(firstCellVal);
                         if (m.find()) {
-                            currentSemester = Integer.parseInt(m.group(1));
-                            colLabel = -1; colApogee = -1; colFI = -1; colAlt = -1;
+                            currentSemester = Integer.parseInt(m.group(first));
+                            colLabel = notExistingIndex; colApogee = notExistingIndex; colFI = notExistingIndex; colAlt = notExistingIndex;
                             colUeCoefs.clear();
                         }
                     }
 
-                    if (colLabel == -1) {
+                    if (colLabel == notExistingIndex) {
                         for (Cell cell : row) {
                             if (sheet.isColumnHidden(cell.getColumnIndex())) continue;
 
@@ -134,7 +141,7 @@ public class ExcelResourceImportService {
                         }
                     }
 
-                    if (colLabel != -1 && colFI != -1) {
+                    if (colLabel != notExistingIndex && colFI != notExistingIndex) {
                         String labelCell = getStringValue(row.getCell(colLabel)).trim();
 
                         if (labelCell.matches("^R\\d\\.[a-zA-Z0-9.]+.*")) {
@@ -142,37 +149,37 @@ public class ExcelResourceImportService {
 
                             Matcher m = Pattern.compile("^(R\\d\\.[a-zA-Z0-9.]+)\\s*[|\\-]?\\s*(.*)$").matcher(labelCell);
                             if (m.find()) {
-                                resourceDTO.setLabel(m.group(1).trim());
-                                resourceDTO.setName(m.group(2).trim());
+                                resourceDTO.setLabel(m.group(first).trim());
+                                resourceDTO.setName(m.group(second).trim());
                             } else {
                                 resourceDTO.setLabel(labelCell);
                                 resourceDTO.setName(labelCell);
                             }
 
-                            String apogeeCode = colApogee != -1 ? getStringValue(row.getCell(colApogee), "") : "";
+                            String apogeeCode = colApogee != notExistingIndex ? getStringValue(row.getCell(colApogee), "") : "";
                             resourceDTO.setApogeeCode(apogeeCode);
-                            int semester = currentSemester != null ? currentSemester : 1;
+                            int semester = currentSemester != null ? currentSemester : first;
                             resourceDTO.setSemester(semester);
                             resourceDTO.setInstitutionId(institutionId);
                             resourceDTO.setPathId(resolvedPathId);
                             resourceDTO.setTermsCode(" ");
 
-                            Double initialCm = getNumericValue(row.getCell(colFI), 0.0);
+                            Double initialCm = getNumericValue(row.getCell(colFI), defaultValue);
                             resourceDTO.setInitialCm(initialCm);
-                            Double initialTd = getNumericValue(row.getCell(colFI + 1), 0.0);
+                            Double initialTd = getNumericValue(row.getCell(colFI + first), defaultValue);
                             resourceDTO.setInitialTd(initialTd);
-                            Double initialTp = getNumericValue(row.getCell(colFI + 2), 0.0);
+                            Double initialTp = getNumericValue(row.getCell(colFI + second), defaultValue);
                             resourceDTO.setInitialTp(initialTp);
 
-                            if (colAlt != -1) {
-                                Double alternanceCm = getNumericValue(row.getCell(colAlt), 0.0);
+                            if (colAlt != notExistingIndex) {
+                                Double alternanceCm = getNumericValue(row.getCell(colAlt), defaultValue);
                                 resourceDTO.setAlternanceCm(alternanceCm);
-                                Double alternanceTd = getNumericValue(row.getCell(colAlt + 1), 0.0);
+                                Double alternanceTd = getNumericValue(row.getCell(colAlt + first), defaultValue);
                                 resourceDTO.setAlternanceTd(alternanceTd);
-                                Double alternanceTp = getNumericValue(row.getCell(colAlt + 2), 0.0);
+                                Double alternanceTp = getNumericValue(row.getCell(colAlt + second), defaultValue);
                                 resourceDTO.setAlternanceTp(alternanceTp);
                             } else {
-                                resourceDTO.setAlternanceCm(0.0); resourceDTO.setAlternanceTd(0.0); resourceDTO.setAlternanceTp(0.0);
+                                resourceDTO.setAlternanceCm(defaultValue); resourceDTO.setAlternanceTd(defaultValue); resourceDTO.setAlternanceTp(defaultValue);
                             }
 
                             resourceDTO.setMainTeachers(new ArrayList<>());
@@ -190,8 +197,8 @@ public class ExcelResourceImportService {
                                     continue;
                                 }
 
-                                Double coef = getNumericValue(row.getCell(entry.getKey()), 0.0);
-                                if (coef > 0 && !addedUes.contains(ueLabel)) {
+                                Double coef = getNumericValue(row.getCell(entry.getKey()), defaultValue);
+                                if (coef > indexFirstRow && !addedUes.contains(ueLabel)) {
                                     ResourceDTO.UeCoefficientDTO ueDto = new ResourceDTO.UeCoefficientDTO();
                                     ueDto.setUeLabel(ueLabel);
                                     ueDto.setCoefficient(coef);
@@ -202,7 +209,7 @@ public class ExcelResourceImportService {
                                             .orElseGet(() -> {
                                                 UE newUe = new UE();
                                                 newUe.setLabel(ueLabel);
-                                                newUe.setSemester(finalCurrentSemester != null ? finalCurrentSemester : 1);
+                                                newUe.setSemester(finalCurrentSemester != null ? finalCurrentSemester : first);
 
                                                 UE parsedInfo = parsedUesInfo.get(standardUeLabel);
                                                 if (parsedInfo != null) {
@@ -212,16 +219,16 @@ public class ExcelResourceImportService {
                                                 } else {
                                                     newUe.setEuApogeeCode("INCONNU");
                                                     newUe.setName(ueLabel);
-                                                    newUe.setCompetenceLevel(1);
+                                                    newUe.setCompetenceLevel(first);
                                                 }
 
                                                 Path path = pathRepository.findById(resolvedPathId).orElse(null);
 
-                                                debugCsvLogs(1, "UE", newUe.getName());
+                                                debugCsvLogs(first, "UE", newUe.getName());
                                                 if  (path != null) {
-                                                    debugCsvLogs(1,"UE_PATH_ID", path.getIdPath().toString());
+                                                    debugCsvLogs(first,"UE_PATH_ID", path.getIdPath().toString());
                                                 } else {
-                                                    debugCsvLogs(1, "UE+PATH_ID", "none");
+                                                    debugCsvLogs(first, "UE+PATH_ID", "none");
                                                 }
                                                 newUe.setPath(path);
 
@@ -236,9 +243,9 @@ public class ExcelResourceImportService {
                             }
 
                             resourceDTO.setUeCoefficients(ueCoefficients);
-                            debugCsvLogs(1, "RESOURCE_LABEL", resourceDTO.getLabel());
-                            debugCsvLogs(1,"RESOURCE_NAME",  resourceDTO.getName());
-                            debugCsvLogs(1, "RESOURCE_PATH", resourceDTO.getPathId().toString() + "\n");
+                            debugCsvLogs(first, "RESOURCE_LABEL", resourceDTO.getLabel());
+                            debugCsvLogs(first,"RESOURCE_NAME",  resourceDTO.getName());
+                            debugCsvLogs(first, "RESOURCE_PATH", resourceDTO.getPathId().toString() + "\n");
                             dtos.add(resourceDTO);
                         }
                     }
@@ -317,11 +324,12 @@ public class ExcelResourceImportService {
 
     private Long extractAndResolvePath(Sheet sheet, Long institutionId) {
         String pathRawString = null;
+        int nbCol = 10;
 
-        for (int r = 0; r < 10; r++) {
+        for (int r = 0; r < nbCol; r++) {
             Row row = sheet.getRow(r);
-            if (row != null && row.getCell(0) != null) {
-                String val = getStringValue(row.getCell(0)).trim().replaceAll("^\"|\"$", "");
+            if (row != null && row.getCell(firstOccurence) != null) {
+                String val = getStringValue(row.getCell(firstOccurence)).trim().replaceAll("^\"|\"$", "");
                 if (val.toLowerCase().contains("parcours")) {
                     pathRawString = val;
                     break;
@@ -332,6 +340,7 @@ public class ExcelResourceImportService {
         if (pathRawString == null) return null;
 
         int pathNumber;
+        int nonExistantPathIndex = 99;
         String pathName;
 
         if (pathRawString.toLowerCase().contains("parcours commun")) {
@@ -340,10 +349,10 @@ public class ExcelResourceImportService {
         } else {
             Matcher m = Pattern.compile("(?i)Parcours\\s+(\\d+)\\s*:\\s*(.*)").matcher(pathRawString);
             if (m.find()) {
-                pathNumber = Integer.parseInt(m.group(1));
-                pathName = m.group(2).trim();
+                pathNumber = Integer.parseInt(m.group(first));
+                pathName = m.group(second).trim();
             } else {
-                pathNumber = 99;
+                pathNumber = nonExistantPathIndex;
                 pathName = pathRawString;
             }
         }
