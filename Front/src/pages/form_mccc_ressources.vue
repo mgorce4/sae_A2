@@ -90,7 +90,7 @@ const access_right_teacher = 1
 
 // UE filtrées par semestre (comme pour les SAE)
 const filteredUeTableV2 = computed(() => {
-    return UEs.value.filter((ue) => ue.semester == semesterNumber.value)
+    return UEs.value.filter((ue) => Number(ue.semester) === Number(semesterNumber.value))
 })
 
 /*
@@ -704,9 +704,9 @@ onMounted(async () => {
     ])
 
     access_rights.value = access_rights.value
-        .filter((ar) => ar.user.institution.idInstitution == getIdInstitutionFromToken())
-        .filter((ar) => ar.accessRight == access_right_teacher)
-    saes.value = saes.value.filter((saes) => saes.semester == route.query.id)
+        .filter((ar) => Number(ar.user.institution.idInstitution) === Number(getIdInstitutionFromToken()))
+        .filter((ar) => Number(ar.accessRight) === access_right_teacher)
+    saes.value = saes.value.filter((sae) => Number(sae.semester) === Number(route.query.id))
     // Ne reset les checked que si on n'est PAS en modification
     if (!is_modifying.value) {
         saes.value = saes.value.map((sae) => ({ ...sae, checked: false }))
@@ -878,7 +878,9 @@ onMounted(async () => {
 })
 
 function getUEsByInstitution() {
-    return UEs.value.filter((ue) => ue.institutionId == getIdInstitutionFromToken()).filter((ue) => ue.semester == route.query.id)
+    return UEs.value
+        .filter((ue) => Number(ue.institutionId) === Number(getIdInstitutionFromToken()))
+        .filter((ue) => Number(ue.semester) === Number(route.query.id))
 }
 
 function getResourcesBySemester() {
@@ -941,6 +943,73 @@ total_work_study.value = computed(() => {
 
 const show_popup = ref(false)
 
+const resourceImportFile = ref(null)
+const resourceImportFileName = ref('')
+const resourceImportHasHeader = ref(false)
+const resourceImportIsLoading = ref(false)
+const resourceImportMessage = ref('')
+const resourceImportIsError = ref(false)
+
+async function reloadCurrentResources() {
+    const response = await axios.get(
+        `${API_BASE_URL}/api/v2/mccc/resources/path/${pathId.value}/semester/${semesterNumber.value}`,
+    )
+    resources.value = response.data
+}
+
+function onResourceImportFileChange(event) {
+    const file = event.target.files?.[0]
+    if (!file) {
+        resourceImportFile.value = null
+        resourceImportFileName.value = ''
+        return
+    }
+
+    resourceImportFile.value = file
+    resourceImportFileName.value = file.name
+    resourceImportMessage.value = ''
+    resourceImportIsError.value = false
+}
+
+async function uploadResourcesCsv() {
+    if (!resourceImportFile.value) {
+        resourceImportMessage.value = 'Veuillez selectionner un fichier.'
+        resourceImportIsError.value = true
+        return
+    }
+
+    resourceImportIsLoading.value = true
+    resourceImportMessage.value = ''
+    resourceImportIsError.value = false
+
+    try {
+        const formData = new FormData()
+        formData.append('file', resourceImportFile.value)
+        formData.append('pathId', pathId.value)
+        formData.append('hasHeader', String(resourceImportHasHeader.value))
+
+        // Endpoint backend existant d'import des ressources.
+        const response = await axios.post(
+            `${API_BASE_URL}/api/csv/import-excel-resources`,
+            formData,
+            {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            },
+        )
+
+        resourceImportMessage.value = response.data || 'Import termine avec succes.'
+        await reloadCurrentResources()
+    } catch (error) {
+        resourceImportIsError.value = true
+        resourceImportMessage.value =
+            error?.response?.data || 'Erreur lors de l\'import du fichier ressources.'
+    } finally {
+        resourceImportIsLoading.value = false
+        resourceImportFile.value = null
+        resourceImportFileName.value = ''
+    }
+}
+
 function toggleShowPopUp() {
     show_popup.value = !show_popup.value
 }
@@ -966,12 +1035,70 @@ function toggleShowPopUp() {
                     </button>
                 </div>
 
+                <div style="margin-top: 1vh; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 1.2vh;">
+                    <p style="font-size: 1.5vw; color: white; margin-bottom: 1vh;">Importer des ressources :</p>
+
+                    <div class="component" style="color : white; display: flex; align-items: center; gap: 0.8vw; margin-bottom: 0.8vh;">
+                        <input
+                            type="file"
+                            accept=".csv,.xlsx,.xls"
+                            @change="onResourceImportFileChange"
+                        />
+                        <span style="color: white; font-size: 0.9vw;" v-if="resourceImportFileName">{{ resourceImportFileName }}</span>
+
+                    </div>
+
+                    <div class="component" style="display: flex; align-items: center; gap: 0.5vw; margin-top: 0.6vh; margin-bottom: 0.8vh;">
+                        <input id="resource-csv-header" type="checkbox" v-model="resourceImportHasHeader">
+                        <label for="resource-csv-header" style="color: white; font-size: 0.9vw;">Le CSV contient une ligne d'entete</label>
+                    </div>
+
+                    <div style="margin-bottom: 1vh; color: white; font-size: 1vw;">
+                        <p style="margin: 0 0 0.4vh 0;">Exemple de fichier :</p>
+                        <p style="margin: 0 0 0.2vh 0; opacity: 0.9; font-size: 1.5vw;">Colonnes obligatoires</p>
+                        <div style="display: grid; grid-template-columns: 16vw 1fr; gap: 0.2vh 1vw; opacity: 0.92; font-size: 1.05vw;">
+                            <p style="margin: 0; font-weight: 600;">Nom de colonne</p>
+                            <p style="margin: 0; font-weight: 600;">Exemple concret</p>
+                            <p style="margin: 0;">label</p><p style="margin: 0;">R1.01</p>
+                            <p style="margin: 0;">name</p><p style="margin: 0;">Developpement Web</p>
+                            <p style="margin: 0;">apogeeCode</p><p style="margin: 0;">APO-R101</p>
+                            <p style="margin: 0;">semester</p><p style="margin: 0;">1</p>
+                            <p style="margin: 0;">initialCm / initialTd / initialTp</p><p style="margin: 0;">10 / 12 / 14</p>
+                        </div>
+
+                        <p style="margin: 0.6vh 0 0.2vh 0; opacity: 0.9; font-size: 1.5vw;">Colonnes optionnelles</p>
+                        <div style="display: grid; grid-template-columns: 16vw 1fr; gap: 0.2vh 1vw; opacity: 0.92; font-size: 1.05vw;">
+                            <p style="margin: 0;">alternanceCm / alternanceTd / alternanceTp</p><p style="margin: 0;">8 / 10 / 12</p>
+                            <p style="margin: 0;">termsCode</p><p style="margin: 0;">TC</p>
+                            <p style="margin: 0;">mainTeacherUsername</p><p style="margin: 0;">jdupont</p>
+                            <p style="margin: 0;">teacherUsernames</p><p style="margin: 0;">jdupont,mlefevre</p>
+                            <p style="margin: 0;">linkedSaeLabels</p><p style="margin: 0;">SAE1.01,SAE1.02</p>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 1vw; margin-top: 0.6vh;">
+                        <button
+                            class="btn1"
+                            type="button"
+                            :disabled="resourceImportIsLoading || !resourceImportFileName"
+                            @click="uploadResourcesCsv"
+                        >
+                            {{ resourceImportIsLoading ? 'Import en cours...' : 'Importer CSV' }}
+                        </button>
+                        <p
+                            v-if="resourceImportMessage"
+                            :style="{ color: resourceImportIsError ? '#ff8c8c' : '#9cf2a8', margin: 0 }"
+                        >
+                            {{ resourceImportMessage }}
+                        </p>
+                    </div>
+                </div>
+
                 <a
                     class="accordion"
                     id="dark_bar"
                     style="width: 97%"
                     v-show="display_more_area"
-                    method="post"
                     v-on:submit.prevent=""
                 >
                     {{
@@ -1181,7 +1308,7 @@ function toggleShowPopUp() {
                                         >
                                     </div>
 
-                                    <p v-if="getUEsByInstitution().length == 0">Aucune UE créée</p>
+                                    <p v-if="getUEsByInstitution().length === 0">Aucune UE créée</p>
 
                                     <div v-else>
                                         <div

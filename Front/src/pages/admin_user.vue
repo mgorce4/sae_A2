@@ -1,6 +1,6 @@
 <script setup>
 
-import { nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
 import { status } from '@/main.js'
@@ -38,6 +38,56 @@ const error_messages = ref({
 
 const teachers = ref([])
 const administrations = ref([])
+
+const csvFileName = ref('')
+const csvRows = ref([])
+const csvHasHeader = ref(false)
+const csvMapping = ref({
+    lastname: 0,
+    firstname: 1,
+    mail: 2,
+})
+const csvIsImporting = ref(false)
+const csvImportResult = ref({
+    success: 0,
+    failed: 0,
+})
+const csvErrorMessage = ref('')
+
+const csvColumnCount = computed(() => {
+    if (csvRows.value.length === 0) {
+        return 0
+    }
+
+    return csvRows.value.reduce((max, row) => Math.max(max, row.length), 0)
+})
+
+const csvColumnOptions = computed(() => {
+    return Array.from({ length: csvColumnCount.value }, (_, index) => {
+        if (csvHasHeader.value && csvRows.value[0] && csvRows.value[0][index]) {
+            const headerValue = String(csvRows.value[0][index]).trim()
+            return {
+                value: index,
+                label: `Colonne ${index + 1} (${headerValue})`,
+            }
+        }
+
+        return {
+            value: index,
+            label: `Colonne ${index + 1}`,
+        }
+    })
+})
+
+const csvDataRows = computed(() => {
+    if (!csvHasHeader.value) {
+        return csvRows.value
+    }
+
+    return csvRows.value.slice(1)
+})
+
+const csvPreviewRows = computed(() => csvDataRows.value.slice(0, 5))
 
 const attachAccordionListeners = () => {
     nextTick(() => {
@@ -78,31 +128,221 @@ function addTeacher() {
     title.value = "Ajouter un professeur"
 }
 
-function getUsername(users) {
+function splitCsvLine(line, delimiter) {
+    const values = []
+    let current = ''
+    let inQuotes = false
 
-    // on créer l'identifiant
-    const base = ( (teacher_firstname.value && teacher_firstname.value.charAt(0)) || '' ) + (teacher_name.value || '')
-    const base_username = base.toLowerCase().trim()
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i]
 
-    // on vérifie que l'identifiant n'existe pas déjà
-    const existing = new Set()
-    if (Array.isArray(users)) {
-        for (const u of users) {
-            // gère plusieurs shapes : soit u.user.username (access-rights entries), soit u.username (raw users)
-            const username = u && u.user && u.user.username ? u.user.username : (u && u.username ? u.username : undefined)
-            if (typeof username === 'string') {
-                existing.add(username.toLowerCase())
+        if (char === '"') {
+            const nextChar = line[i + 1]
+            if (inQuotes && nextChar === '"') {
+                current += '"'
+                i++
+            } else {
+                inQuotes = !inQuotes
+            }
+            continue
+        }
+
+        if (char === delimiter && !inQuotes) {
+            values.push(current.trim())
+            current = ''
+            continue
+        }
+
+        current += char
+    }
+
+    values.push(current.trim())
+    return values
+}
+
+function detectCsvDelimiter(text) {
+    const sampleLine = text
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .find((line) => line.length > 0)
+
+    if (!sampleLine) {
+        return ','
+    }
+
+    const delimiters = [',', ';', '\t']
+    let bestDelimiter = ','
+    let bestCount = -1
+
+    delimiters.forEach((delimiter) => {
+        const count = sampleLine.split(delimiter).length
+        if (count > bestCount) {
+            bestCount = count
+            bestDelimiter = delimiter
+        }
+    })
+
+    return bestDelimiter
+}
+
+function parseCsvText(text) {
+    const delimiter = detectCsvDelimiter(text)
+
+    return text
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+        .map((line) => splitCsvLine(line, delimiter))
+}
+
+function resetCsvMapping() {
+    const defaults = [0, 1, 2]
+
+    csvMapping.value = {
+        lastname: defaults[0] < csvColumnCount.value ? defaults[0] : 0,
+        firstname: defaults[1] < csvColumnCount.value ? defaults[1] : 0,
+        mail: defaults[2] < csvColumnCount.value ? defaults[2] : 0,
+    }
+}
+
+function onCsvFileChange(event) {
+    const file = event.target.files?.[0]
+
+    csvErrorMessage.value = ''
+    csvImportResult.value = { success: 0, failed: 0 }
+
+    if (!file) {
+        csvFileName.value = ''
+        csvRows.value = []
+        return
+    }
+
+    csvFileName.value = file.name
+
+    const reader = new FileReader()
+    reader.onload = (loadEvent) => {
+        const content = String(loadEvent.target?.result || '')
+        const parsedRows = parseCsvText(content)
+
+        if (parsedRows.length === 0) {
+            csvRows.value = []
+            csvErrorMessage.value = 'Le fichier CSV est vide ou invalide.'
+            return
+        }
+
+        csvRows.value = parsedRows
+        resetCsvMapping()
+    }
+
+    reader.onerror = () => {
+        csvRows.value = []
+        csvErrorMessage.value = 'Impossible de lire le fichier CSV.'
+    }
+
+    reader.readAsText(file, 'UTF-8')
+}
+
+async function createUserWithAccessRight(payload, selectedAccessRight) {
+    const userResponse = await axios.post(`${API_BASE_URL}/api/users`, payload)
+    const user = userResponse.data
+
+    await axios.post(`${API_BASE_URL}/api/access-rights`, {
+        accessRight: selectedAccessRight,
+        idUser: user.idUser,
+    })
+}
+
+async function importTeachersFromCsv() {
+    csvErrorMessage.value = ''
+    csvImportResult.value = { success: 0, failed: 0 }
+
+    if (csvDataRows.value.length === 0) {
+        csvErrorMessage.value = 'Veuillez charger un fichier CSV avant import.'
+        return
+    }
+
+    const selectedIndexes = [
+        csvMapping.value.lastname,
+        csvMapping.value.firstname,
+        csvMapping.value.mail,
+    ]
+
+    if (new Set(selectedIndexes).size !== selectedIndexes.length) {
+        csvErrorMessage.value = 'Chaque champ doit utiliser une colonne differente.'
+        return
+    }
+
+    if (!getIdFromToken()) {
+        csvErrorMessage.value = 'Veuillez vous reconnecter avant d\'importer.'
+        return
+    }
+
+    csvIsImporting.value = true
+
+    let success = 0
+    let failed = 0
+    const allUsersResp = await axios.get(`${API_BASE_URL}/api/users`)
+    const allUsers = Array.isArray(allUsersResp.data) ? allUsersResp.data : []
+    const usedUsernames = new Set(
+        allUsers
+            .map((user) => user?.username)
+            .filter((username) => typeof username === 'string' && username.length > 0)
+            .map((username) => username.toLowerCase()),
+    )
+
+    try {
+        for (const row of csvDataRows.value) {
+            const lastname = String(row[csvMapping.value.lastname] || '').trim()
+            const firstname = String(row[csvMapping.value.firstname] || '').trim()
+            const mail = String(row[csvMapping.value.mail] || '').trim()
+
+            if (!lastname || !firstname || !mail) {
+                failed++
+                continue
+            }
+
+            const username = getUsername(firstname, lastname, usedUsernames)
+            const payload = {
+                firstname,
+                lastname,
+                username,
+                password: `${username}123`,
+                mail,
+                institution: {
+                    idInstitution: getIdInstitutionFromToken(),
+                    name: getInstitutionNameFromToken(),
+                    location: getInstitutionLocationFromToken(),
+                },
+            }
+
+            try {
+                await createUserWithAccessRight(payload, 1)
+                success++
+            } catch (error) {
+                failed++
+                console.error('Erreur import ligne CSV:', error)
             }
         }
-    }
 
-    // si l'identifiant existe déjà, on ajoute un suffixe numérique croissant jusqu'à trouver un identifiant unique
-    let candidate = base_username || 'user'
+        csvImportResult.value = { success, failed }
+        await reloadTeachers()
+        attachAccordionListeners()
+    } finally {
+        csvIsImporting.value = false
+    }
+}
+
+function getUsername(firstname, lastname, usedUsernames) {
+    const baseRaw = `${firstname?.trim()?.charAt(0) || ''}${lastname?.trim() || ''}`
+    const baseUsername = baseRaw.toLowerCase().replace(/\s+/g, '') || 'user'
+
+    let candidate = baseUsername
     let suffix = 1
-    while (existing.has(candidate)) {
-        candidate = (base_username || 'user') + suffix
+    while (usedUsernames.has(candidate)) {
+        candidate = `${baseUsername}${suffix}`
         suffix++
     }
+    usedUsernames.add(candidate)
     return candidate
 }
 
@@ -127,7 +367,7 @@ const save = async () => {
         hasError = true
     }
 
-    if (teacher_mail.value ===""){
+    if (teacher_mail.value === "") {
         errors.value.mail = true
         hasError = true
     }
@@ -137,19 +377,21 @@ const save = async () => {
     }
 
     try {
-        // is user logged in
         if (!getIdFromToken()) {
             alert('Erreur : Veuillez vous reconnecter.')
             return
         }
 
         // Récupère tous les users côté serveur pour éviter toute collision non détectée
-        const all_users_resp = await axios.get(`${API_BASE_URL}/api/users`)
-        const all_users = Array.isArray(all_users_resp.data) ? all_users_resp.data : []
-
-        // inclure à la vérification tous les utilisateurs de l'établissement (professeurs + administration)
-        // on passe maintenant la liste complète d'utilisateurs (raw) à getUsername
-        const username_calc = getUsername(all_users)
+        const allUsersResp = await axios.get(`${API_BASE_URL}/api/users`)
+        const allUsers = Array.isArray(allUsersResp.data) ? allUsersResp.data : []
+        const usedUsernames = new Set(
+            allUsers
+                .map((user) => user?.username)
+                .filter((username) => typeof username === 'string' && username.length > 0)
+                .map((username) => username.toLowerCase()),
+        )
+        const username_calc = getUsername(teacher_firstname.value, teacher_name.value, usedUsernames)
 
         const payload = {
             firstname : teacher_firstname.value,
@@ -165,27 +407,17 @@ const save = async () => {
         }
 
         if (!is_modifying.value) {
-            let user_response = await axios.post(`${API_BASE_URL}/api/users`, payload);
-            [teacher_firstname, teacher_name, teacher_mail].forEach((r) => r.value = '')
+            await createUserWithAccessRight(payload, access_right.value)
+            ;[teacher_firstname, teacher_name, teacher_mail].forEach((r) => {
+                r.value = ''
+            })
             display_more_area.value = false
-
-            // get the id of the new user
-            let user = user_response.data
-            let id = user.idUser
-
-            const access_right_payload = {
-                accessRight : access_right.value,
-                idUser : id,
-            }
-            console.log("access-right-payload : ", access_right_payload)
-
-            await axios.post(`${API_BASE_URL}/api/access-rights`, access_right_payload);
         } else {
-            const user_id = teacher_id
+            await axios.put(`${API_BASE_URL}/api/users/${teacher_id.value}`, payload)
 
-            await axios.put(`${API_BASE_URL}/api/users/${user_id.value}`, payload);
-
-            [teacher_firstname, teacher_name, teacher_mail].forEach((r) => r.value = '')
+            ;[teacher_firstname, teacher_name, teacher_mail].forEach((r) => {
+                r.value = ''
+            })
             display_more_area.value = false
             is_modifying.value = false
         }
@@ -257,7 +489,7 @@ const deleteTeacher = async (id) => {
         }
 
         await axios.delete(`${API_BASE_URL}/api/users/${id}`)
-        await axios.delete(`${API_BASE_URL}/api/access-rights/1/${id}`)
+        await axios.delete(`${API_BASE_URL}/api/access-rights/${access_right.value || 1}/${id}`)
 
         await reloadTeachers()
 
@@ -278,7 +510,7 @@ const access_right_list = getAccessRightsFromToken()
 <template>
     <div id="main">
         <div id="return_arrow">
-            <div v-if="access_right_list.length == 1">
+            <div v-if="Number(access_right_list.length) === 1">
                 <RouterLink v-if="status==='Administration'" id="back_arrow" to="/dashboard-administration">←</RouterLink>
                 <RouterLink v-else-if="status==='Admin'" id="back_arrow" to="/admin-dashboard">←</RouterLink>
                 <RouterLink v-else-if="status==='Super Admin'" id="back_arrow" to="/sup-admin-dashboard">←</RouterLink>
@@ -345,6 +577,67 @@ const access_right_list = getAccessRightsFromToken()
 
                     </div>
                 </form>
+
+                <div style="margin-top: 2vh; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 2vh;">
+                    <p style="font-size: 1.5vw; color: white; margin-bottom: 1vh;">Importer des professeurs depuis un CSV :</p>
+
+                    <div class="sub_div_panel" style="display: flex; align-items: center; gap: 0.8vw;">
+                        <input style="color: white; margin-top: 1vw;" type="file" accept=".csv,text/csv" @change="onCsvFileChange">
+                    </div>
+
+                    <div class="sub_div_panel" style="display: flex; align-items: center; gap: 0.5vw; margin-top: 1vh;">
+                        <input id="csv-header" type="checkbox" v-model="csvHasHeader">
+                        <label for="csv-header" style="color: white; font-size: 0.9vw;">Le CSV contient une ligne d'entete</label>
+                    </div>
+
+                    <div v-if="csvColumnOptions.length > 0" style="margin-top: 1.2vh;">
+                        <p style="font-size: 1.5vw; color: white; margin-bottom: 2vh;">Associer les colonnes :</p>
+
+                        <div class="sub_div_panel" style="display: flex; align-items: center; gap: 1vw;">
+                            <label style="color: white; width: 9vw;">Nom</label>
+                            <select class="input" v-model.number="csvMapping.lastname" style="height: 3vh; width: 14vw; font-size: 1.4vh;">
+                                <option v-for="option in csvColumnOptions" :key="`lastname-${option.value}`" :value="option.value">{{ option.label }}</option>
+
+                            </select>
+                        </div>
+
+                        <div class="sub_div_panel" style="display: flex; align-items: center; gap: 1vw;">
+                            <label style="color: white; width: 9vw;">Prenom</label>
+                            <select class="input" v-model.number="csvMapping.firstname" style="height: 3vh; width: 14vw; font-size: 1.4vh;">
+                                <option v-for="option in csvColumnOptions" :key="`firstname-${option.value}`" :value="option.value">{{ option.label }}</option>
+                            </select>
+                        </div>
+
+                        <div class="sub_div_panel" style="display: flex; align-items: center; gap: 1vw;">
+                            <label style="color: white; width: 9vw;">Adresse mail</label>
+                            <select class="input" v-model.number="csvMapping.mail" style="height: 3vh; width: 14vw; font-size: 1.4vh;">
+                                <option v-for="option in csvColumnOptions" :key="`mail-${option.value}`" :value="option.value">{{ option.label }}</option>
+                            </select>
+                        </div>
+
+                        <div v-if="csvPreviewRows.length > 0" style="margin-top: 1vh; color: white; font-size: 0.85vw;">
+                            <p style="margin-bottom: 0.4vh;">Apercu (5 lignes max) :</p>
+                            <div v-for="(row, index) in csvPreviewRows" :key="`preview-${index}`" style="opacity: 0.9;">
+                                {{ row.join(' | ') }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 1vw; margin-top: 1.2vh;">
+                        <input
+                            class="btn1"
+                            type="button"
+                            :value="csvIsImporting ? 'Import en cours...' : 'Importer CSV'"
+                            :disabled="csvIsImporting"
+                            @click="importTeachersFromCsv"
+                        />
+                        <span style="color: white; font-size: 0.9vw;" v-if="csvImportResult.success || csvImportResult.failed">
+                            Import termine: {{ csvImportResult.success }} ajoute(s), {{ csvImportResult.failed }} echec(s)
+                        </span>
+                    </div>
+
+                    <p v-if="csvErrorMessage" class="error_message" style="text-align: left; margin-top: 0.8vh;">{{ csvErrorMessage }}</p>
+                </div>
             </div>
 
             <div class="container-fluid" style="align-items: start;">
