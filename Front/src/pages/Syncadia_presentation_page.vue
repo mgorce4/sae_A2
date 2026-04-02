@@ -20,7 +20,7 @@ const access_right = getAccessRightsFromToken()
         <div id="center">
             <div style="display: flex; align-items: center; height: 1vw">
                 <RouterLink id="back_arrow" :to="goToDashboard" v-if="access_right.length == 1">←</RouterLink>
-                <RouterLink to="/multi_access_right_dashboard" id="back_arrow" v-else>←</RouterLink>
+                <RouterLink to="/multi-access-right-dashboard" id="back_arrow" v-else>←</RouterLink>
                 <p>Retour</p>
             </div>
         </div>

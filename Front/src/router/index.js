@@ -82,7 +82,7 @@ router.beforeEach((to) => {
       const map = { 1: '/teacher-dashboard', 2: '/dashboard-administration', 3: '/admin-dashboard', 4:'/sup-admin-dashboard' }
       return { path: map[roles[0]] || '/' }
     } else if (roles.length > 1) {
-      return { path: '/multi_access_right_dashboard' }
+      return { path: '/multi-access-right-dashboard' }
     }
   }
 })

@@ -33,7 +33,7 @@ const current_how_to = computed(() => {
 
 const goToDashboard = () => {
     if (access_rights.length > 1) {
-        router.push('/multi_access_right_dashboard')
+        router.push('/multi-access-right-dashboard')
     } else {
         router.push(routes[status.value] || '/')
     }

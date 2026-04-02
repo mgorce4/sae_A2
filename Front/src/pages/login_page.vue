@@ -1,14 +1,10 @@
 <script setup>
 import { userName, institutionLocation, removeUser, status } from '../main.js'
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import axios from 'axios'
 import { router } from '@/router'
 import { API_BASE_URL } from '@/config/api.js'
 import { setToken, getAccessRightsFromToken, getFirstnameFromToken, getLastnameFromToken, getInstitutionLocationFromToken } from '@/utils/jwt.js'
-
-onMounted(() => {
-    removeUser()
-})
 
 const username = ref('')
 const password = ref('')
@@ -34,7 +30,7 @@ async function addItem() {
 
         // Les droits d'accès sont lus directement depuis le payload du JWT (signé)
         redirect(getAccessRightsFromToken())
-    } catch (error) {
+    } catch {
         loginError.value = true
         removeUser()
     }
@@ -46,6 +42,10 @@ function redirect(accessRights) {
     } else if (accessRights.length > 1) {
         status.value = 'Multiple'
         redirectlink.value = '/multi-access-right-dashboard'
+    } else {
+        loginError.value = true
+        removeUser()
+        return
     }
     router.push(redirectlink.value)
 }
