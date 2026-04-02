@@ -1,26 +1,28 @@
 <script setup>
-import { status } from '../main'
-import { router } from '@/router'
 import { getAccessRightsFromToken } from '@/utils/jwt.js'
 
-const routes = {
-    Administration: '/dashboard-administration',
-    Professeur: '/teacher-dashboard',
-}
-
-const goToDashboard = () => {
-    router.push(routes[status.value] || '/')
-}
-
 const access_right = getAccessRightsFromToken()
+
+function getBackRoute() {
+    if (access_right.length > 1) return '/multi-access-right-dashboard'
+
+    const role = access_right[0]
+    const routeByRole = {
+        1: '/teacher-dashboard',
+        2: '/dashboard-administration',
+        3: '/admin-dashboard',
+        4: '/sup-admin-dashboard',
+    }
+
+    return routeByRole[role] || '/'
+}
 </script>
 
 <template>
     <div id="justified">
         <div id="center">
             <div style="display: flex; align-items: center; height: 1vw">
-                <RouterLink id="back_arrow" :to="goToDashboard" v-if="access_right.length == 1">←</RouterLink>
-                <RouterLink to="/multi-access-right-dashboard" id="back_arrow" v-else>←</RouterLink>
+                <RouterLink id="back_arrow" :to="getBackRoute()">←</RouterLink>
                 <p>Retour</p>
             </div>
         </div>
