@@ -45,7 +45,6 @@ qui renforce la cohérence et la pertinence de ce choix.</p>
             </div>
         </div>
     </div>
-
 </template>
 
 <style>
