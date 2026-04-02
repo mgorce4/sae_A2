@@ -17,8 +17,6 @@ const errors = ref({
     coursNb: false,
 })
 
-
-
 const goToResourceSheet = (url, pathId) => {
     localStorage.pathId = pathId
     router.push({

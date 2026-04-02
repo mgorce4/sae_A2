@@ -115,7 +115,7 @@ function toggleShowPopUp() {
 <template>
     <div id="form_select_page">
         <div style="display: flex; align-items: center; height: 1vw;justify-content: space-between; margin-bottom: 3vw">
-            <div style="display: flex">
+            <div style="display: flex; align-items: center">
                 <RouterLink class="back_arrow" to="/mccc-select-path">←</RouterLink>
                 <p class="back" >Retour</p>
             </div>
