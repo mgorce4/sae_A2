@@ -81,8 +81,30 @@ function addTeacher() {
     title.value = "Ajouter un professeur"
 }
 
-function getUsername() {
-    return (teacher_firstname.value.charAt(0) + teacher_name.value).toLowerCase()
+function getUsername(users) {
+
+    // on créer l'identifiant
+    const base = ( (teacher_firstname.value && teacher_firstname.value.charAt(0)) || '' ) + (teacher_name.value || '')
+    const base_username = base.toLowerCase()
+
+    // on vérifie que l'identifiant n'existe pas déjà
+    const existing = new Set()
+    if (Array.isArray(users)) {
+        for (const u of users) {
+            if (u && u.user && typeof u.user.username === 'string') {
+                existing.add(u.user.username)
+            }
+        }
+    }
+
+    // si l'identifiant existe déjà, on ajoute un suffixe numérique croissant jusqu'à trouver un identifiant unique
+    let candidate = base_username || 'user'
+    let suffix = 1
+    while (existing.has(candidate)) {
+        candidate = base_username + suffix
+        suffix++
+    }
+    return candidate
 }
 
 const save = async () => {
@@ -122,11 +144,14 @@ const save = async () => {
             return
         }
 
+        // calculez username une seule fois pour garder cohérence
+        const username_calc = getUsername(teachers.value)
+
         const payload = {
             firstname : teacher_firstname.value,
             lastname : teacher_name.value,
-            username : getUsername(),
-            password : getUsername() + '123',
+            username : username_calc,
+            password : username_calc + '123',
             mail : teacher_mail.value,
             institution : {
                 idInstitution : getIdInstitutionFromToken(),

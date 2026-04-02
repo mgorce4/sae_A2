@@ -175,7 +175,7 @@ const goToMailPage = (url, resourceId) => {
                 </p>
 
                 <!--
-                // TODO
+                // TODO : try to send mail to more than 1 user
                 <button class="btn1" @click="goToMailPage('/mail-page',resource_sheet.id)">
                     Envoyer un mail
                 </button> -->

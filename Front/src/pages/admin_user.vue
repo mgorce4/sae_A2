@@ -78,8 +78,32 @@ function addTeacher() {
     title.value = "Ajouter un professeur"
 }
 
-function getUsername() {
-    return (teacher_firstname.value.charAt(0) + teacher_name.value).toLowerCase()
+function getUsername(users) {
+
+    // on créer l'identifiant
+    const base = ( (teacher_firstname.value && teacher_firstname.value.charAt(0)) || '' ) + (teacher_name.value || '')
+    const base_username = base.toLowerCase().trim()
+
+    // on vérifie que l'identifiant n'existe pas déjà
+    const existing = new Set()
+    if (Array.isArray(users)) {
+        for (const u of users) {
+            // gère plusieurs shapes : soit u.user.username (access-rights entries), soit u.username (raw users)
+            const username = u && u.user && u.user.username ? u.user.username : (u && u.username ? u.username : undefined)
+            if (typeof username === 'string') {
+                existing.add(username.toLowerCase())
+            }
+        }
+    }
+
+    // si l'identifiant existe déjà, on ajoute un suffixe numérique croissant jusqu'à trouver un identifiant unique
+    let candidate = base_username || 'user'
+    let suffix = 1
+    while (existing.has(candidate)) {
+        candidate = (base_username || 'user') + suffix
+        suffix++
+    }
+    return candidate
 }
 
 const save = async () => {
@@ -119,11 +143,19 @@ const save = async () => {
             return
         }
 
+        // Récupère tous les users côté serveur pour éviter toute collision non détectée
+        const all_users_resp = await axios.get(`${API_BASE_URL}/api/users`)
+        const all_users = Array.isArray(all_users_resp.data) ? all_users_resp.data : []
+
+        // inclure à la vérification tous les utilisateurs de l'établissement (professeurs + administration)
+        // on passe maintenant la liste complète d'utilisateurs (raw) à getUsername
+        const username_calc = getUsername(all_users)
+
         const payload = {
             firstname : teacher_firstname.value,
             lastname : teacher_name.value,
-            username : getUsername(),
-            password : getUsername() + '123',
+            username : username_calc,
+            password : username_calc + '123',
             mail : teacher_mail.value,
             institution : {
                 idInstitution : getIdInstitutionFromToken(),
@@ -300,7 +332,7 @@ const access_right_list = getAccessRightsFromToken()
                                 <label style="font-size: 1vw;">Statut : </label>
                                 <div class="component ue_div">
                                     <select id="ue_select" class="input" v-model="access_right" style=" height: 3vh; width: 8vw; font-size: 1.5vh;">
-                                        <option value="">Sélectionner une UE</option>
+                                        <option value="">Sélectionner un statut</option>
                                         <option value="1">professeur</option>
                                         <option value="2">Administration</option>
                                     </select>
@@ -336,12 +368,12 @@ const access_right_list = getAccessRightsFromToken()
                             <div class="hours_grid" style="gap: 1vw">
                                 <div style="display: flex; padding-top: 0; gap: 0.3vw">
                                     <p>Nom : </p>
-                                    <p>{{teacher.user.firstname}}</p>
+                                    <p>{{teacher.user.lastname}}</p>
                                 </div>
 
                                 <div style="display: flex; padding-top: 0; gap: 0.3vw">
                                     <p>Prenom : </p>
-                                    <p>{{teacher.user.lastname}}</p>
+                                    <p>{{teacher.user.firstname}}</p>
                                 </div>
 
                                 <div style="display: flex; padding-top: 0; gap: 0.3vw">
@@ -382,12 +414,12 @@ const access_right_list = getAccessRightsFromToken()
                             <div class="hours_grid" style="gap: 1vw">
                                 <div style="display: flex; padding-top: 0; gap: 0.3vw">
                                     <p>Nom : </p>
-                                    <p>{{adminUser.user.firstname}}</p>
+                                    <p>{{adminUser.user.lastname}}</p>
                                 </div>
 
                                 <div style="display: flex; padding-top: 0; gap: 0.3vw">
                                     <p>Prenom : </p>
-                                    <p>{{adminUser.user.lastname}}</p>
+                                    <p>{{adminUser.user.firstname}}</p>
                                 </div>
 
                                 <div style="display: flex; padding-top: 0; gap: 0.3vw">
