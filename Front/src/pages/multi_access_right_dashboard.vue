@@ -9,8 +9,8 @@ import { getAccessRightsFromToken } from '@/utils/jwt.js'
 const map_colors = {
     'Professeur': 'var(--onglet-teacher-color)',
     'Administration': 'var(--onglet-administration-color)',
-    'Admin': 'var(--sub-scrollbar-color)',
-    'Super Admin': 'var(--pop-up-background-color)',
+    'Admin': 'var(--onglet-multi-admin-dashboard-color)',
+    'Super Admin': 'var(--onglet-multi-super-admin-color)',
 }
 
 let isTeacher = ref(true)
@@ -65,8 +65,8 @@ const hasMultipleRights = access_rights.includes(4)
             <div style="display: flex">
                 <p class="onglet" v-if="hasTeacherRight" v-on:click="changeColorsTemplate('Professeur')">Professeur</p>
                 <p class="onglet" v-if="hasAdministrationRight" style="margin-left: 0; background-color: var(--onglet-administration-color)" v-on:click="changeColorsTemplate('Administration')">Administration</p>
-                <p class="onglet" v-if="hasAdminRight" style="margin-left: 0; background-color: var(--sub-scrollbar-color)" v-on:click="changeColorsTemplate('Admin')">Admin</p>
-                <p class="onglet" v-if="hasMultipleRights" style="margin-left: 0; background-color: var(--pop-up-background-color)" v-on:click="changeColorsTemplate('Super Admin')">Super Admin</p>
+                <p class="onglet" v-if="hasAdminRight" style="margin-left: 0; background-color: var(--onglet-multi-admin-dashboard-color)" v-on:click="changeColorsTemplate('Admin')">Admin</p>
+                <p class="onglet" v-if="hasMultipleRights" style="margin-left: 0; background-color: var(--onglet-multi-super-admin-color)" v-on:click="changeColorsTemplate('Super Admin')">Super Admin</p>
             </div>
             <div id="template">
                 <teacher_dashboard v-if="isTeacher" />
