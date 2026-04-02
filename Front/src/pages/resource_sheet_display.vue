@@ -2,7 +2,6 @@
 import { onMounted, ref } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
-import { status } from '@/main.js'
 import { useRoute } from 'vue-router'
 import { getAccessRightsFromToken } from '@/utils/jwt.js'
 import { router } from '@/router/index.js'
@@ -142,6 +141,20 @@ onMounted(async () => {
 
 const access_right = getAccessRightsFromToken()
 
+function getBackRoute() {
+    if (access_right.length > 1) return '/multi-access-right-dashboard'
+
+    const role = access_right[0]
+    const routeByRole = {
+        1: '/teacher-dashboard',
+        2: '/dashboard-administration',
+        3: '/admin-dashboard',
+        4: '/sup-admin-dashboard',
+    }
+
+    return routeByRole[role] || '/'
+}
+
 const goToMailPage = (url, resourceId) => {
     router.push({
         path: url,
@@ -157,12 +170,7 @@ const goToMailPage = (url, resourceId) => {
     <div id="main">
         <div class="component spb">
             <div style="display: flex; align-items: center; height: 1vw">
-                <div v-if="access_right.length == 1">
-                    <RouterLink v-if="status==='Administration'" id="back_arrow" to="/dashboard-administration">←</RouterLink>
-                    <RouterLink v-else-if="status==='Admin'" id="back_arrow" to="/admin-dashboard">←</RouterLink>
-                    <RouterLink v-else-if="status==='Super Admin'" id="back_arrow" to="/sup-admin-dashboard">←</RouterLink>
-                </div>
-                <RouterLink id="back_arrow" to="/multi-access-right-dashboard">←</RouterLink>
+                <RouterLink id="back_arrow" :to="getBackRoute()">←</RouterLink>
                 <p class="back">Retour à l'accueil</p>
             </div>
 
