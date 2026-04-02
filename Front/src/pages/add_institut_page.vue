@@ -4,7 +4,13 @@ import { nextTick, onMounted, ref } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
 import { status } from '@/main.js'
-import { getIdFromToken, getIdInstitutionFromToken, getInstitutionNameFromToken, getInstitutionLocationFromToken } from '@/utils/jwt.js'
+import {
+    getIdFromToken,
+    getIdInstitutionFromToken,
+    getInstitutionNameFromToken,
+    getInstitutionLocationFromToken,
+    getAccessRightsFromToken
+} from '@/utils/jwt.js'
 
 
 let display_more_area = ref(false)
@@ -180,13 +186,17 @@ const deleteInstitut = async (id) => {
     }
 }
 
+const access_right_list = getAccessRightsFromToken()
 
 </script>
 
 <template>
     <div id="main">
         <div id="return_arrow">
-            <RouterLink id="back_arrow" to="/sup-admin-dashboard">←</RouterLink>
+            <div v-if="access_right_list.length == 1">
+                <RouterLink id="back_arrow" to="/sup-admin-dashboard">←</RouterLink>
+            </div>
+            <RouterLink to="/multi-access-right-dashboard" id="back_arrow" v-else>←</RouterLink>
             <p>Retour</p>
         </div>
 

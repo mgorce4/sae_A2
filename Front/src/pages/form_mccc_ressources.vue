@@ -1219,9 +1219,6 @@ function toggleShowPopUp() {
                                 <div style="margin-top: 5px">
                                     <div class="component" style="justify-content: center">
                                         <label for="teacher">Professeur(s) référent(s) : </label>
-                                        <button class="button_more" id="button_main_teacher_plus">
-                                            +
-                                        </button>
                                     </div>
 
                                     <div
@@ -1260,13 +1257,10 @@ function toggleShowPopUp() {
                                             </div>
                                         </div>
 
-                                        <button class="button_more" id="button_main_teacher_cross">
-                                            x
-                                        </button>
                                     </div>
                                     <p id="error_main_teacher" class="error_message"></p>
 
-                                    <div class="component" style="justify-content: center" v-if="teachers_list.length >= 2">
+                                    <div class="component" style="justify-content: center" v-if="teachers_list.length >= 0">
                                         <label for="teacher">Professeur(s) associé(s) : </label>
                                         <button class="button_more" id="button_teacher_plus">
                                             +
@@ -1279,7 +1273,7 @@ function toggleShowPopUp() {
                                         class="component teacher_row"
                                         style="justify-content: center"
                                     >
-                                        <div class="teacher_select_container" v-if="teachers_list.length >= 2">
+                                        <div class="teacher_select_container" v-if="teachers_list.length >= 0">
                                             <input
                                                 type="text"
                                                 class="input teacher"

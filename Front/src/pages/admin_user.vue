@@ -4,7 +4,13 @@ import { nextTick, onMounted, ref } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
 import { status } from '@/main.js'
-import { getIdFromToken, getIdInstitutionFromToken, getInstitutionNameFromToken, getInstitutionLocationFromToken } from '@/utils/jwt.js'
+import {
+    getIdFromToken,
+    getIdInstitutionFromToken,
+    getInstitutionNameFromToken,
+    getInstitutionLocationFromToken,
+    getAccessRightsFromToken
+} from '@/utils/jwt.js'
 
 let display_more_area = ref(false)
 let is_modifying = ref(false)
@@ -232,14 +238,20 @@ const deleteTeacher = async (id) => {
 function toggleShowPopUp() {
     show_popup.value = !show_popup.value
 }
+
+const access_right_list = getAccessRightsFromToken()
+
 </script>
 
 <template>
     <div id="main">
         <div id="return_arrow">
-            <RouterLink v-if="status==='Administration'" id="back_arrow" to="/control-center">←</RouterLink>
-            <RouterLink v-else-if="status==='Admin'" id="back_arrow" to="/admin-dashboard">←</RouterLink>
-            <RouterLink v-else-if="status==='Super Admin'" id="back_arrow" to="/sup-admin-dashboard">←</RouterLink>
+            <div v-if="access_right_list.length == 1">
+                <RouterLink v-if="status==='Administration'" id="back_arrow" to="/dashboard-administration">←</RouterLink>
+                <RouterLink v-else-if="status==='Admin'" id="back_arrow" to="/admin-dashboard">←</RouterLink>
+                <RouterLink v-else-if="status==='Super Admin'" id="back_arrow" to="/sup-admin-dashboard">←</RouterLink>
+            </div>
+            <RouterLink to="/multi-access-right-dashboard" id="back_arrow" v-else>←</RouterLink>
             <p>Retour</p>
         </div>
 
@@ -303,12 +315,12 @@ function toggleShowPopUp() {
                 </form>
             </div>
 
-            <div class="container-fluid" style="align-items: start;">                
+            <div class="container-fluid" style="align-items: start;">
                 <div id="form_resources" style="width: 50%;">
                     <div class="container-fluid spb" style="font-size: 1.5vw; color: var(--main-theme-secondary-color);">
                         <p v-if="teachers.length > 0">Professeurs enregistrés : </p>
                         <p v-else>Aucun professeurs n'a été enregistré</p>
-                    
+
                         <div style="display: flex; align-items: center">
                             <div v-show="show_popup" id="popup">
                                 Vous pouvez modifier le statut/droit d'accès d'un utilisateur en cliquant sur le bouton modifier.
@@ -349,12 +361,12 @@ function toggleShowPopUp() {
                         </div>
                     </div>
                 </div>
-                                
+
                 <div id="form_resources" style="width: 50%;">
                     <div class="container-fluid spb" style="font-size: 1.5vw; color: var(--main-theme-secondary-color);">
                         <p v-if="administrations.length > 0">Utilisateurs administration enregistrés : </p>
                         <p v-else>Aucun utilisateur n'a été enregistré</p>
-                    
+
                         <div style="display: flex; align-items: center">
                             <div v-show="show_popup" id="popup">
                                 Vous pouvez modifier le statut/droit d'accès d'un utilisateur en cliquant sur le bouton modifier.

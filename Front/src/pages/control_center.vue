@@ -1,7 +1,9 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { status } from '@/main.js'
-import { getAccessRightsFromToken } from '@/utils/jwt.js'
+import axios from 'axios'
+import { API_BASE_URL } from '@/config/api.js'
+import { getAccessRightsFromToken, getIdInstitutionFromToken } from '@/utils/jwt.js'
 import { router } from '@/router'
 
 const show_popup = ref(false)
@@ -68,6 +70,79 @@ const uploadExcel = async (event) => {
   }
 }
 
+const startDate = ref('')
+const endGame = ref('')
+const deliveryDatesId = ref(null)
+
+const errors= ref({
+    startDate: false,
+    endGame: false,
+})
+
+/* # en lien avec le saveDateYear
+const errorMessages = ref({
+    startDate: 'La date de début n\'est pas bonne',
+    endGame: 'La date de fin n\'est pas bonne',
+})*/
+
+const normalizeDateForInput = (dateValue) => {
+    if (!dateValue) return ''
+    if (typeof dateValue === 'string') return dateValue.slice(0, 10)
+    return new Date(dateValue).toISOString().slice(0, 10)
+}
+
+const loadSavedYearDates = async () => {
+    try {
+        const institutionId = getIdInstitutionFromToken()
+        if (!institutionId) {
+            return
+        }
+
+        const response = await axios.get(
+            `${API_BASE_URL}/api/year-dates/v2/institution/${institutionId}/latest`,
+            { skipAuthRedirect: true }
+        )
+
+        if (response.data) {
+            startDate.value = normalizeDateForInput(response.data.startYear)
+            endGame.value = normalizeDateForInput(response.data.endYear)
+            deliveryDatesId.value = response.data.idYearDates ?? null
+        }
+    } catch (error) {
+        if (error?.response?.status !== 404) {
+            console.error('Error loading year dates: ', error)
+        }
+    }
+}
+
+/* #en lien avec le saveDateYear
+const checkCurrentSchoolYearDates = async (institutionId) => {
+    if (!institutionId) return { exists: false, yearDates: null }
+
+    try {
+        const response = await axios.get(
+            `${API_BASE_URL}/api/year-dates/v2/institution/${institutionId}`,
+            { skipAuthRedirect: true }
+        )
+
+        const rows = Array.isArray(response.data) ? response.data : []
+        const today = new Date().toISOString().slice(0, 10)
+
+        const current = rows.find((row) => {
+            const start = (row.startYear || '').slice(0, 10)
+            const end = (row.endYear || '').slice(0, 10)
+            return start && end && start <= today && today <= end
+        })
+
+        return { exists: Boolean(current), yearDates: current || null }
+    } catch (error) {
+        if (error?.response?.status !== 404) {
+            console.error('Error checking current school year dates:', error)
+        }
+        return { exists: false, yearDates: null }
+    }
+}*/
+
 function toggleShowPopUp() {
     show_popup.value = !show_popup.value
 }
@@ -82,6 +157,82 @@ const goToNext = (url, status) => {
         }
     })
 }
+
+/*TODO: Manque la possibilité de modifier les dates (si une date existe, on la remplace sinon on la laisse)
+const saveDateYear = async () =>{
+
+    const hasError = ref(false)
+    errors.value={
+        startDate: false,
+        endGame: false,
+    }
+
+    if (startDate.value===endGame.value){
+        errors.value.endGame = true
+    }
+
+    if (startDate.value == '' || endGame.value == '') {
+        errors.value.startDate = true,
+        errors.value.endGame = true
+    }
+
+    if (startDate.value > endGame.value){
+        errors.value.endGame=true;    
+    }
+
+    if (errors.value.startDate) {
+        hasError.value = true
+        console.error(errorMessages.value.startDate)
+    }
+
+    if (errors.value.endGame) {
+        hasError.value = true
+        console.error(errorMessages.value.endGame)
+    }
+
+    if (hasError.value) {
+        return
+    }
+
+    try {
+        const institutionId = getIdInstitutionFromToken()
+        if (!institutionId) {
+            console.error('Institution non trouvée')
+            return
+        }
+
+        const yearDatesData = {
+            startYear: startDate.value,
+            endYear: endGame.value,
+            institutionId: parseInt(institutionId),
+        }
+
+        const { exists, yearDates } = await checkCurrentSchoolYearDates(institutionId)
+
+        const response = exists && yearDates?.idYearDates
+            ? await axios.put(
+                `${API_BASE_URL}/api/year-dates/v2/${yearDates.idYearDates}`,
+                yearDatesData
+            )
+            : await axios.post(
+                `${API_BASE_URL}/api/year-dates/v2`,
+                yearDatesData
+            )
+        
+        deliveryDatesId.value = response.data.idYearDates
+        startDate.value = normalizeDateForInput(response.data.startYear ?? startDate.value)
+        endGame.value = normalizeDateForInput(response.data.endYear ?? endGame.value)
+
+    } catch (error) {
+        console.error('Error saving year dates: ', error)
+    }
+}*/
+
+onMounted(async () => {
+    await loadSavedYearDates()
+})
+
+
 </script>
 
 <template>
@@ -111,17 +262,32 @@ const goToNext = (url, status) => {
                         <div style="margin-bottom: 1vw">
                             <div style="display: flex; gap: 1vw; margin-top: 1vw">
                                 <p>Date de début : </p>
-                                <input type="date" id="start_date" name="start_date">
+                                <input
+                                    type="date"
+                                    v-model="startDate"
+                                    name="start-year"
+                                    :min="new Date().toISOString().split('T')[0]"
+                                />
                             </div>
 
                             <div style="display: flex; gap: 2.5vw; margin-top: 1vw">
                                 <p>Date de fin : </p>
-                                <input type="date" id="end_date" name="end_date">
+                                <input
+                                    type="date"
+                                    v-model="endGame"
+                                    name="end-year"
+                                    :min="new Date().toISOString().split('T')[0]"
+                                />
                             </div>
                         </div>
+                        
+                        <p class="error_message" v-show="errors.endGame">
+                            Attention, les dates sont invalides.
+                        </p>
 
                         <div id="button_help">
-                            <button class="btn1">Sauvegarder</button>
+                            <!--@click="saveDateYear"-->
+                            <button class="btn1" >Sauvegarder</button>
                         </div>
                     </div>
                 </div>
@@ -130,7 +296,7 @@ const goToNext = (url, status) => {
             </div>
 
             <div id="right_component">
-                <button class="button" style=" width: 31.5vw; margin: 3vh 1vw;" @click="goToNext('/add-teacher-page',Administration)">Ajout professeur</button>
+                <button class="button" style="font-size: 2vw; width: 31.5vw; margin: 3vh 1vw;" @click="goToNext('/add-teacher-page',Administration)">Ajout professeur</button>
                 <input
                   type="file"
                   ref="fileInputRef"
@@ -138,8 +304,8 @@ const goToNext = (url, status) => {
                   style="display: none"
                   @change="uploadExcel"
                 />
-                <button @click="triggerFilePicker" :disabled="isLoading">
-                  {{ isLoading ? 'Importation en cours...' : 'Importer des ressources (Excel)' }}
+                <button class="button" style="font-size: 2vw; width: 31.5vw; margin: 3vh 1vw;"  @click="triggerFilePicker" :disabled="isLoading">
+                  {{ isLoading ? 'Importation en cours...' : 'Importer des MCCC (Excel)' }}
                 </button>
 
                 <p v-if="message" :style="{ color: isError ? 'red' : 'green' }">{{ message }}</p>
