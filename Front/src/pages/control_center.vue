@@ -79,10 +79,11 @@ const errors= ref({
     endGame: false,
 })
 
+/* # en lien avec le saveDateYear
 const errorMessages = ref({
     startDate: 'La date de début n\'est pas bonne',
     endGame: 'La date de fin n\'est pas bonne',
-})
+})*/
 
 const normalizeDateForInput = (dateValue) => {
     if (!dateValue) return ''
@@ -114,6 +115,7 @@ const loadSavedYearDates = async () => {
     }
 }
 
+/* #en lien avec le saveDateYear
 const checkCurrentSchoolYearDates = async (institutionId) => {
     if (!institutionId) return { exists: false, yearDates: null }
 
@@ -139,7 +141,7 @@ const checkCurrentSchoolYearDates = async (institutionId) => {
         }
         return { exists: false, yearDates: null }
     }
-}
+}*/
 
 function toggleShowPopUp() {
     show_popup.value = !show_popup.value
@@ -156,6 +158,7 @@ const goToNext = (url, status) => {
     })
 }
 
+/*TODO: Manque la possibilité de modifier les dates (si une date existe, on la remplace sinon on la laisse)
 const saveDateYear = async () =>{
 
     const hasError = ref(false)
@@ -223,7 +226,7 @@ const saveDateYear = async () =>{
     } catch (error) {
         console.error('Error saving year dates: ', error)
     }
-}
+}*/
 
 onMounted(async () => {
     await loadSavedYearDates()
@@ -283,7 +286,8 @@ onMounted(async () => {
                         </p>
 
                         <div id="button_help">
-                            <button class="btn1" @click="saveDateYear">Sauvegarder</button>
+                            <!--@click="saveDateYear"-->
+                            <button class="btn1" >Sauvegarder</button>
                         </div>
                     </div>
                 </div>
