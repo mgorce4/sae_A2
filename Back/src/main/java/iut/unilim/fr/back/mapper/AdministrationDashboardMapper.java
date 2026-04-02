@@ -18,7 +18,7 @@ public class AdministrationDashboardMapper {
     /**
      * Convert a ResourceSheet entity to AdministrationDashboardDTO
      */
-    public AdministrationDashboardDTO toDTO(RessourceSheet resourceSheet) {
+    public AdministrationDashboardDTO toDTO(ResourceSheet resourceSheet) {
         AdministrationDashboardDTO dto = new AdministrationDashboardDTO();
 
         // Resource sheet information
@@ -27,7 +27,7 @@ public class AdministrationDashboardMapper {
 
         // Resource information
         if (resourceSheet.getResource() != null) {
-            Ressource resource = resourceSheet.getResource();
+            Resource resource = resourceSheet.getResource();
             dto.setResourceId(resource.getIdResource());
             dto.setResourceLabel(resource.getLabel());
             dto.setResourceName(resource.getName());
@@ -71,7 +71,7 @@ public class AdministrationDashboardMapper {
     /**
      * Convert multiple resource sheets to DTOs
      */
-    public List<AdministrationDashboardDTO> toDTOList(List<RessourceSheet> resourceSheets) {
+    public List<AdministrationDashboardDTO> toDTOList(List<ResourceSheet> resourceSheets) {
         return resourceSheets.stream()
             .map(this::toDTO)
             .collect(Collectors.toList());

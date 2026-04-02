@@ -3,17 +3,26 @@ package iut.unilim.fr.back;
 import iut.unilim.fr.back.controller.ResourceSheetDTOController;
 import iut.unilim.fr.back.controllerBack.CsvTransfertController;
 import iut.unilim.fr.back.dto.*;
-import iut.unilim.fr.back.entity.Ressource;
-import iut.unilim.fr.back.repository.RessourceRepository;
-import iut.unilim.fr.back.repository.RessourceSheetRepository;
+import iut.unilim.fr.back.entity.Institution;
+import iut.unilim.fr.back.entity.Resource;
+import iut.unilim.fr.back.entity.UserSyncadia;
+import iut.unilim.fr.back.repository.ResourceRepository;
+import iut.unilim.fr.back.repository.ResourceSheetRepository;
+import iut.unilim.fr.back.repository.UserSyncadiaRepository;
+import iut.unilim.fr.back.security.UserDetailsImpl;
+import iut.unilim.fr.back.service.TeacherImportCsvService;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,34 +30,64 @@ import java.util.Optional;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CsvTransfertControllerTest {
 
     @Mock
-    private RessourceRepository ressourceRepository;
+    private ResourceRepository resourceRepository;
     @Mock
-    private RessourceSheetRepository ressourceSheetRepository;
+    private ResourceSheetRepository resourceSheetRepository;
     @Mock
     private ResourceSheetDTOController rsDTOController;
 
+    @Mock
+    private UserSyncadiaRepository userSyncadiaRepository;
+    @Mock
+    private TeacherImportCsvService teacherImportCsvService;
+
     @InjectMocks
     private CsvTransfertController csvController;
+
+    private MockedStatic<UserDetailsImpl> mockedUserDetails;
+    private UserDetailsImpl mockUser;
+    private UserSyncadia dbUser;
+
+    @BeforeEach
+    void setUp() {
+        mockUser = mock(UserDetailsImpl.class);
+        lenient().when(mockUser.getId()).thenReturn(1L);
+        lenient().when(mockUser.getUsername()).thenReturn("admin");
+
+        mockedUserDetails = mockStatic(UserDetailsImpl.class);
+        mockedUserDetails.when(UserDetailsImpl::getCurrentUser).thenReturn(mockUser);
+
+        dbUser = new UserSyncadia();
+        Institution inst = new Institution();
+        inst.setIdInstitution(1L);
+        inst.setName("Informatique");
+        dbUser.setInstitution(inst);
+    }
+
+    @AfterEach
+    void tearDown() {
+        mockedUserDetails.close();
+    }
 
     @Test
     void testGenerateCsv_Success() {
         String resourceName = "R1.01";
 
-        Ressource mockRessource = new Ressource();
-        mockRessource.setIdResource(1L);
-        when(ressourceRepository.findFirstByLabelStartingWith(resourceName))
-                .thenReturn(Optional.of(mockRessource));
+        when(userSyncadiaRepository.findById(1L)).thenReturn(Optional.of(dbUser));
+
+        Resource mockResource = new Resource();
+        mockResource.setIdResource(1L);
+        when(resourceRepository.findFirstByLabelStartingWith(resourceName))
+                .thenReturn(Optional.of(mockResource));
 
         ResourceSheetDTO dto = mock(ResourceSheetDTO.class);
-
-        when(dto.getDepartment()).thenReturn("Info");
+        when(dto.getDepartment()).thenReturn("Informatique");
         when(dto.getMainTeacher()).thenReturn("Prof");
 
         UeInfoDTO ue = new UeInfoDTO(); ue.setLabel("UE1");
@@ -68,30 +107,79 @@ class CsvTransfertControllerTest {
         track.setStudentFeedback("OK");
         when(dto.getTracking()).thenReturn(track);
 
-        when(rsDTOController.getResourceSheetsByResourceId(1L)).thenReturn(List.of(dto));
-
-        ResponseEntity<ByteArrayResource> response = csvController.generateCsv(resourceName, "", "UserTest");
+        when(rsDTOController.getAllResourceSheets()).thenReturn(List.of(dto));
+        ResponseEntity<ByteArrayResource> response = csvController.generateCsv(resourceName);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
 
         String csvContent = new String(response.getBody().getByteArray(), StandardCharsets.UTF_8);
-
         assertTrue(csvContent.startsWith("\uFEFF"));
-
+        System.out.println(csvContent);
         assertTrue(csvContent.contains("R1.01"));
-
         assertTrue(csvContent.contains("Info"));
         assertTrue(csvContent.contains("Prof"));
     }
 
     @Test
-    void testGenerateCsv_NotFound() {
-        when(ressourceRepository.findFirstByLabelStartingWith("Inconnu"))
+    void testGenerateCsv_ResourceNotFound() {
+        when(userSyncadiaRepository.findById(1L)).thenReturn(Optional.of(dbUser));
+        when(resourceRepository.findFirstByLabelStartingWith("Inconnu"))
                 .thenReturn(Optional.empty());
 
-        ResponseEntity<ByteArrayResource> response = csvController.generateCsv("Inconnu", "", "User");
+        ResponseEntity<ByteArrayResource> response = csvController.generateCsv("Inconnu");
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    void testImportTeachers_Success() throws Exception {
+        MultipartFile file = new org.springframework.mock.web.MockMultipartFile("file", "test.csv", "text/csv", "data".getBytes());
+
+        when(userSyncadiaRepository.findById(1L)).thenReturn(Optional.of(dbUser));
+
+        ResponseEntity<?> response = csvController.importTeachers(file);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().toString().contains("Import successfully"));
+
+        verify(teacherImportCsvService).importTeachers(file, 1L, "admin");
+    }
+
+    @Test
+    void testImportTeachers_UserMissingUsername() throws Exception {
+        MultipartFile file = new org.springframework.mock.web.MockMultipartFile("file", "test.csv", "text/csv", "data".getBytes());
+
+        when(mockUser.getUsername()).thenReturn("");
+
+        ResponseEntity<?> response = csvController.importTeachers(file);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().toString().contains("User not found"));
+    }
+
+    @Test
+    void testCleanCsv() {
+        assertEquals("normal; ", CsvTransfertController.cleanCsv("normal"));
+        assertEquals("with a coma, there is an other data; ", CsvTransfertController.cleanCsv("with a coma; there is an other data"));
+        assertEquals("; ", CsvTransfertController.cleanCsv(null));
+    }
+
+    @Test
+    void testCreatePedagoContent_Empty() {
+        StringBuilder result = CsvTransfertController.createPedagoContent(Collections.emptyList());
+        assertEquals("Aucun contenue pour cette catégorie", result.toString());
+    }
+
+    @Test
+    void testCreatePedagoContent_WithData() {
+        PedagogicalContentDTO.ContentItemDTO item = new PedagogicalContentDTO.ContentItemDTO();
+        item.setOrder(1);
+        item.setContent("Test Content");
+
+        StringBuilder result = CsvTransfertController.createPedagoContent(List.of(item));
+        assertEquals("1. Test Content, ", result.toString());
     }
 }

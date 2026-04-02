@@ -23,6 +23,9 @@ public class UserSyncadia {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false)
+    private String mail;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_institution")
     private Institution institution;
@@ -30,12 +33,13 @@ public class UserSyncadia {
     public UserSyncadia() {
     }
 
-    public UserSyncadia(Long idUser, String firstname, String lastname, String username, String password, Institution institution) {
+    public UserSyncadia(Long idUser, String firstname, String lastname, String username, String password, String mail, Institution institution) {
         this.idUser = idUser;
         this.firstname = firstname;
         this.lastname = lastname;
         this.username = username;
         this.password = password;
+        this.mail = mail;
         this.institution = institution;
     }
 
@@ -77,6 +81,14 @@ public class UserSyncadia {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getMail() {
+        return mail;
+    }
+
+    public void setMail(String mail) {
+        this.mail = mail;
     }
 
     public Institution getInstitution() {

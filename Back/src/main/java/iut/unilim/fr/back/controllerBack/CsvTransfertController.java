@@ -2,89 +2,180 @@ package iut.unilim.fr.back.controllerBack;
 
 import iut.unilim.fr.back.controller.ResourceSheetDTOController;
 import iut.unilim.fr.back.dto.*;
-import iut.unilim.fr.back.entity.Ressource;
-import iut.unilim.fr.back.repository.RessourceRepository;
-import iut.unilim.fr.back.repository.RessourceSheetRepository;
+import iut.unilim.fr.back.entity.Institution;
+import iut.unilim.fr.back.entity.Resource;
+import iut.unilim.fr.back.entity.UserSyncadia;
+import iut.unilim.fr.back.repository.ResourceRepository;
+import iut.unilim.fr.back.repository.UserSyncadiaRepository;
+import iut.unilim.fr.back.security.UserDetailsImpl;
+import iut.unilim.fr.back.service.ExcelResourceImportService;
+import iut.unilim.fr.back.service.TeacherImportCsvService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static iut.unilim.fr.back.controllerBack.LogController.writeInCsvLogs;
+import static iut.unilim.fr.back.security.UserDetailsImpl.getCurrentUser;
 import static iut.unilim.fr.back.service.ResourceGetterService.*;
 
 @RestController
 @RequestMapping("/api/csv")
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"}, allowCredentials = "true")
 public class CsvTransfertController {
     @Autowired
-    private RessourceRepository ressourceRepository;
+    private ResourceRepository resourceRepository;
     @Autowired
-    private RessourceSheetRepository ressourceSheetRepository;
+    private TeacherImportCsvService teacherImportCsvService;
+    @Autowired
+    private UserSyncadiaRepository userSyncadiaRepository;
+
+    @Autowired
+    private ExcelResourceImportService excelResourceImportService;
 
     @Autowired
     private ResourceSheetDTOController rsDTOController;
 
     @GetMapping("/generate")
-    public ResponseEntity<ByteArrayResource> generateCsv(@RequestParam String resourceName, @RequestParam(required = false, defaultValue = "") String userDepartment, @RequestParam String userName) {
-        Optional<Ressource> resultResource = ressourceRepository.findFirstByLabelStartingWith(resourceName);
-        List<ExportCsvDTO> csvContents = new ArrayList<>();
+    public ResponseEntity<ByteArrayResource> generateCsv(@RequestParam String resourceName) {
+        UserDetailsImpl currentUser = getCurrentUser();
+        Long userId = currentUser.getId();
+        String userName = currentUser.getUsername();
 
-        if (resultResource.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        Optional<UserSyncadia> user = userSyncadiaRepository.findById(userId);
+        if (user.isPresent()) {
 
+            Institution institution = user.get().getInstitution();
+            String userDepartment = institution.getName();
 
-        StringBuilder csvBuilder = new StringBuilder();
-        StringBuilder logMessage = new StringBuilder(userName + " get from ResourceSheet :\n");
-        // En tete
-        csvBuilder.append("Département; Référence UE; Référence Ressouce; Professeur référent; SAÉs; Heures; Heures Alternance; DS; CM; TD; TP; Retour de l'équipe pédagogique; Retour étudiant; Amélioration à mettre en oeuvre\n");
+            Optional<Resource> resultResource = resourceRepository.findFirstByLabelStartingWith(resourceName);
+            List<ExportCsvDTO> csvContents = new ArrayList<>();
 
-        if (userDepartment.isEmpty()) {
-            List<ResourceSheetDTO> resourcesSheets = rsDTOController.getResourceSheetsByResourceId(resultResource.get().getIdResource());
-            for (ResourceSheetDTO res : resourcesSheets) {
-                csvContents.add(getExportCsvDTO(resourceName, res));
+            if (resultResource.isEmpty()) {
+                return ResponseEntity.notFound().build();
             }
-        }
-        else {
-            List<ResourceSheetDTO> allResourceSheets = rsDTOController.getAllResourceSheets();
-            List<ResourceSheetDTO> departmentResourceSheets = new ArrayList<>();
 
-            for (ResourceSheetDTO res : allResourceSheets) {
-                if (Objects.equals(res.getDepartment(), userDepartment)) {
-                    departmentResourceSheets.add(res);
+
+            StringBuilder csvBuilder = new StringBuilder();
+            StringBuilder logMessage = new StringBuilder(userName + " get from ResourceSheet :\n");
+            // En tete
+            csvBuilder.append("Département; Référence UE; Référence Ressouce; Professeur référent; SAÉs; Heures; Heures Alternance; DS; CM; TD; TP; Retour de l'équipe pédagogique; Retour étudiant; Amélioration à mettre en oeuvre\n");
+            if (userDepartment.isEmpty()) {
+                List<ResourceSheetDTO> resourcesSheets = rsDTOController.getResourceSheetsByResourceId(resultResource.get().getIdResource());
+                for (ResourceSheetDTO res : resourcesSheets) {
+                    csvContents.add(getExportCsvDTO(resourceName, res));
                 }
             }
-            for (ResourceSheetDTO res : departmentResourceSheets) {
-                csvContents.add(getExportCsvDTO(resourceName, res));
+            else {
+                List<ResourceSheetDTO> allResourceSheets = rsDTOController.getAllResourceSheets();
+                System.out.println(allResourceSheets.size());
+                List<ResourceSheetDTO> departmentResourceSheets = new ArrayList<>();
+
+                for (ResourceSheetDTO res : allResourceSheets) {
+                    if (Objects.equals(res.getDepartment(), userDepartment)) {
+                        departmentResourceSheets.add(res);
+                    }
+                }
+                for (ResourceSheetDTO res : departmentResourceSheets) {
+                    csvContents.add(getExportCsvDTO(resourceName, res));
+                }
             }
+            for (ExportCsvDTO csvContent: csvContents) {
+                csvBuilder.append(generateCsvFromResource(csvContent));
+                logMessage.append(csvContent.getLogs());
+            }
+
+            byte[] csvBytes = ("\uFEFF" + csvBuilder.toString()).getBytes(StandardCharsets.UTF_8);
+            ByteArrayResource resource = new ByteArrayResource(csvBytes);
+
+            String fileName = resourceName + ".csv";
+
+            writeInCsvLogs(logMessage + " in file " + fileName);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                    .contentType(MediaType.parseMediaType("text/csv"))
+                    .contentLength(csvBytes.length)
+                    .body(resource);
         }
-        for (ExportCsvDTO csvContent: csvContents) {
-            csvBuilder.append(generateCsvFromResource(csvContent));
-            logMessage.append(csvContent.getLogs());
+        byte[] s= HexFormat.of().formatHex("-1".getBytes()).getBytes();
+        return new ResponseEntity<>(new ByteArrayResource(s), HttpStatus.NOT_FOUND);
+    }
+
+    @PostMapping("/importTeacher")
+    public ResponseEntity<?> importTeachers(
+            @RequestParam("file") MultipartFile file
+    ) {
+        UserDetailsImpl currentUser = getCurrentUser();
+        Long userId = currentUser.getId();
+        String userName = currentUser.getUsername();
+
+        try {
+            if (userName.isEmpty()) {
+                writeInCsvLogs(userName + "(" + userId + ") attempt to import a CSV file, but an error as occurred because he was not found.");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("An error as occurred: User not found");
+            }
+            else if (userSyncadiaRepository.findById(userId).isEmpty()) {
+                writeInCsvLogs(userName + "(" + userId + ") attempt to import a CSV file, but an error as occurred because there is not user with a corresponding ID.");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("An error as occurred: User not found");
+            }
+            else {
+                Institution inst = userSyncadiaRepository.findById(userId).get().getInstitution();
+                Long institutionId = inst.getIdInstitution();
+                teacherImportCsvService.importTeachers(file, institutionId, userName);
+                writeInCsvLogs(userName + "(" + userId + ") imported from CSV file successfully");
+                return ResponseEntity.ok("Import successfully");
+            }
+
+
+        } catch (Exception e) {
+            writeInCsvLogs(currentUser + " got an error while importing professor in CSV : " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error : " + e.getMessage());
         }
+    }
 
-        byte[] csvBytes = ("\uFEFF" + csvBuilder.toString()).getBytes(StandardCharsets.UTF_8);
-        ByteArrayResource resource = new ByteArrayResource(csvBytes);
+    @PostMapping("/import-excel-resources")
+    public ResponseEntity<?> importResourcesFromExcel(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("pathId") Long pathId
+    ) {
+        UserDetailsImpl currentUser = getCurrentUser();
+        Long userId = currentUser.getId();
+        String userName = currentUser.getUsername();
 
-        String fileName = resourceName + ".csv";
+        try {
+            if (userName.isEmpty()) {
+                writeInCsvLogs(userName + "(" + userId + ") attempt to import an Excel file, but an error occurred: User not found.");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("An error occurred: User not found");
+            }
 
-        writeInCsvLogs(logMessage.toString() + " in file " + fileName);
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
-                .contentType(MediaType.parseMediaType("text/csv"))
-                .contentLength(csvBytes.length)
-                .body(resource);
+            Optional<UserSyncadia> userOpt = userSyncadiaRepository.findById(userId);
+            if (userOpt.isEmpty() || userOpt.get().getInstitution() == null) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("L'utilisateur n'est rattaché à aucune institution.");
+            }
+
+            Long institutionId = userOpt.get().getInstitution().getIdInstitution();
+
+            excelResourceImportService.importResourcesFromExcel(file, institutionId);
+
+            return ResponseEntity.ok("Statut 200");
+
+        } catch (Exception e) {
+            writeInCsvLogs(currentUser.getUsername() + " got an error while importing Excel : " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors de l'import Excel : " + e.getMessage());
+        }
     }
 
     private ExportCsvDTO getExportCsvDTO(String resourceRef, ResourceSheetDTO res) {
@@ -182,7 +273,7 @@ public class CsvTransfertController {
         return pedagoContentBuilder;
     }
 
-    private String cleanCsv(String content) {
+    public static String cleanCsv(String content) {
         String returnValue = content;
         if (content==null) {
             returnValue = "";

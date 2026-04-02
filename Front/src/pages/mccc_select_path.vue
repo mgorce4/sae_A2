@@ -2,7 +2,9 @@
 import { onMounted, ref, nextTick, watch, computed } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
+import { status } from '@/main.js'
 import { router } from '@/router'
+import { getAccessRightsFromToken, getIdInstitutionFromToken } from '@/utils/jwt.js'
 
 const display_more_area = ref(false)
 const coursName = ref('')
@@ -15,9 +17,7 @@ const errors = ref({
     coursNb: false,
 })
 
-
-
-const goToRessourceSheet = (url, pathId) => {
+const goToResourceSheet = (url, pathId) => {
     localStorage.pathId = pathId
     router.push({
         path: url,
@@ -83,12 +83,13 @@ watch([coursList, display_more_area], () => {
 onMounted(async () => {
     try {
         const response = await axios.get(`${API_BASE_URL}/api/paths`)
+        const institutionId = getIdInstitutionFromToken()
         // Filtrer les paths par institution et ajouter la propriété show
         coursList.value = response.data
             .filter(
                 (path) =>
                     path.institution &&
-                    path.institution.idInstitution === parseInt(localStorage.idInstitution),
+                    path.institution.idInstitution === institutionId,
             )
             .map((path) => ({
                 ...path,
@@ -141,7 +142,8 @@ const save = async () => {
     }
 
     // Vérifier que l'institution est définie
-    if (!localStorage.idInstitution) {
+    const institutionId = getIdInstitutionFromToken()
+    if (!institutionId) {
         console.error('Institution non définie. Veuillez vous reconnecter.')
         alert('Erreur : Institution non définie. Veuillez vous reconnecter.')
         return
@@ -152,7 +154,7 @@ const save = async () => {
             name: coursName.value,
             number: parseInt(coursNb.value),
             institution: {
-                idInstitution: parseInt(localStorage.idInstitution),
+                idInstitution: institutionId,
             },
         }
         console.log('Envoi des données du parcours:', response)
@@ -170,7 +172,7 @@ const save = async () => {
             .filter(
                 (path) =>
                     path.institution &&
-                    path.institution.idInstitution === parseInt(localStorage.idInstitution),
+                    path.institution.idInstitution === institutionId,
             )
             .map((path) => ({
                 ...path,
@@ -198,7 +200,7 @@ const updateCourse = async (cours) => {
             name: cours.name,
             number: parseInt(cours.number),
             institution: {
-                idInstitution: parseInt(localStorage.idInstitution),
+                idInstitution: getIdInstitutionFromToken(),
             },
         }
 
@@ -212,7 +214,7 @@ const updateCourse = async (cours) => {
             .filter(
                 (path) =>
                     path.institution &&
-                    path.institution.idInstitution === parseInt(localStorage.idInstitution),
+                    path.institution.idInstitution === getIdInstitutionFromToken(),
             )
             .map((path) => ({
                 ...path,
@@ -240,7 +242,7 @@ const del = async (id) => {
             .filter(
                 (path) =>
                     path.institution &&
-                    path.institution.idInstitution === parseInt(localStorage.idInstitution),
+                    path.institution.idInstitution === getIdInstitutionFromToken(),
             )
             .map((path) => ({
                 ...path,
@@ -250,12 +252,19 @@ const del = async (id) => {
         console.error('Erreur lors de la suppression', error)
     }
 }
+
+const access_right = getAccessRightsFromToken()
 </script>
 
 <template>
     <div id="form_select_page">
         <div style="display: flex; align-items: center; height: 1vw">
-            <RouterLink class="back_arrow" to="/dashboard-administration">←</RouterLink>
+            <div v-if="access_right.length == 1">
+                <RouterLink v-if="status==='Administration'" id="back_arrow" to="/dashboard-administration">←</RouterLink>
+                <RouterLink v-else-if="status==='Admin'" id="back_arrow" to="/admin-dashboard">←</RouterLink>
+                <RouterLink v-else-if="status==='Super Admin'" id="back_arrow" to="/sup-admin-dashboard">←</RouterLink>
+            </div>
+            <RouterLink to="/multi-access-right-dashboard" id="back_arrow" v-else>←</RouterLink>
             <p class="back">Retour à l'accueil</p>
         </div>
         <div id="background_path">
@@ -324,7 +333,7 @@ const del = async (id) => {
                         class="path"
                         v-on:mouseover="cours.show = true"
                         v-on:mouseout="!cours.edit ? (cours.show = false) : null"
-                        @click="goToRessourceSheet('/mccc-select-form', cours.idPath)"
+                        @click="goToResourceSheet('/mccc-select-form', cours.idPath)"
                     >
                         <p>{{ cours.name }}</p>
                         <div v-show="cours.show || cours.edit" @click.stop>
@@ -337,14 +346,14 @@ const del = async (id) => {
                                 "
                             >
                                 <button
-                                    v-if="!cours.edit"
+                                    v-if="!cours.edit && status != 'Admin'"
                                     @click="cours.edit = true"
                                     class="btn_modify"
                                 >
                                     Modifier
                                 </button>
                                 <button
-                                    v-if="!cours.edit"
+                                    v-if="!cours.edit && status != 'Admin'"
                                     class="btn_modify"
                                     @click="del(cours.idPath)"
                                 >

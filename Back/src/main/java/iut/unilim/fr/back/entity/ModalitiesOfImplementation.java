@@ -17,12 +17,12 @@ public class ModalitiesOfImplementation {
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_ResourceSheet", nullable = false)
-    private RessourceSheet resourceSheet;
+    private ResourceSheet resourceSheet;
 
     public ModalitiesOfImplementation() {
     }
 
-    public ModalitiesOfImplementation(String modality, RessourceSheet resourceSheet) {
+    public ModalitiesOfImplementation(String modality, ResourceSheet resourceSheet) {
         this.modality = modality;
         this.resourceSheet = resourceSheet;
     }
@@ -35,11 +35,11 @@ public class ModalitiesOfImplementation {
         this.modality = modality;
     }
 
-    public RessourceSheet getResourceSheet() {
+    public ResourceSheet getResourceSheet() {
         return resourceSheet;
     }
 
-    public void setResourceSheet(RessourceSheet resourceSheet) {
+    public void setResourceSheet(ResourceSheet resourceSheet) {
         this.resourceSheet = resourceSheet;
     }
 

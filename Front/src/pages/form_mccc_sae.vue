@@ -2,13 +2,12 @@
 import { onMounted, ref, computed, nextTick, watch } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
-import { status } from '../main'
 import { router } from '@/router'
 import { useRoute } from 'vue-router'
+import { getIdInstitutionFromToken } from '@/utils/jwt.js'
 
 const route = useRoute()
 
-status.value = 'Administration'
 
 let display_add_modify_area = ref(false)
 let display_add_ue = ref(false)
@@ -47,6 +46,7 @@ console.log('SAE TABLE V2 : ', saeTableV2)
 console.log('UE TABLE V2 : ', ueTableV2)
 
 const semesterNumber = ref(route.query.id)
+const pathId = ref(parseInt(route.query.pathId) || parseInt(localStorage.pathId) || null)
 console.log('semestre saé : ', semesterNumber.value)
 
 // Filter SAE data by semester
@@ -109,7 +109,7 @@ const preventInvalidChars = (event) => {
 
 onMounted(async () => {
     const pathId = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
-    const institutionId = parseInt(localStorage.idInstitution)
+    const institutionId = getIdInstitutionFromToken()
 
     if (!pathId || isNaN(pathId)) {
         console.error('PathId manquant ou invalide')
@@ -128,6 +128,11 @@ onMounted(async () => {
     const response = await axios.get(`${API_BASE_URL}/api/v2/mccc/saes/path/${pathId}`)
     // Filtrer par institution pour sécurité supplémentaire
     saeTableV2.value = response.data.filter((sae) => sae.institutionId === institutionId)
+
+    // filter the resources by alphabetical order with sort and localeCompare
+    // localeCompare return a negative number if a is before b, a positive number if a is after b and 0 if they are equal
+    // the number returned by localeCompare is used by sort to order the elements of the array
+    saeTableV2.value.sort((a, b) => a.label.localeCompare(b.label))
 
     const responseUe = await axios.get(`${API_BASE_URL}/api/v2/mccc/ues/path/${pathId}`)
     // Filtrer par institution et trier
@@ -331,7 +336,7 @@ function saveSae() {
 
     // Prepare DTO
     const pathId = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
-    const institutionId = parseInt(localStorage.idInstitution)
+    const institutionId = getIdInstitutionFromToken()
 
     const saeDTO = {
         label: addModifySaeLabel.value,
@@ -365,7 +370,7 @@ function saveSae() {
     if (addModifySdSaeModified.value === null) {
         // Create new SAE
         axios
-            .post('\/api/v2/mccc/saes', saeDTO)
+            .post(`${API_BASE_URL}/api/v2/mccc/saes`, saeDTO)
             .then(async (response) => {
                 console.log('SAE créée:', response.data)
                 // Reload SAEs
@@ -441,7 +446,7 @@ async function deleteSae(saeId) {
 
         // Reload SAEs
         const pathId = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
-        const institutionId = parseInt(localStorage.idInstitution)
+        const institutionId = getIdInstitutionFromToken()
         const responseReload = await axios.get(
             `${API_BASE_URL}/api/v2/mccc/saes/path/${pathId}`,
         )

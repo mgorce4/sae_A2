@@ -2,45 +2,36 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
+import { getIdFromToken, getFirstnameFromToken, getLastnameFromToken, getInstitutionLocationFromToken } from '@/utils/jwt.js'
 
 import { status, institutionLocation } from '../main'
 status.value = 'Professeur'
-institutionLocation.value = localStorage.institutionLocation
+institutionLocation.value = getInstitutionLocationFromToken()
 
 const resourceSheetsDTO = ref([]) // DTOs with all data pre-loaded
 
 onMounted(async () => {
     try {
-        const userId = localStorage.idUser
+        const userId = getIdFromToken()
 
         if (!userId) {
-            console.error('No user ID found in localStorage')
+            console.error('No user ID found in JWT token')
             return
         }
 
-        const firstName = localStorage.firstName || localStorage.firstname || ''
-        const lastName = localStorage.lastName || localStorage.lastname || ''
+        const firstName = getFirstnameFromToken()
+        const lastName = getLastnameFromToken()
         const userName = `${firstName} ${lastName}`.trim()
 
         console.log('userId:', userId, '| userName:', userName)
 
-        //all the resources-sheets
-        const response = await axios.get(`${API_BASE_URL}/api/v2/resource-sheets`)
-        
-        console.log('Total fiches:', response.data.length)
-        
-        //To get the mainTeacher and the teacher
-        resourceSheetsDTO.value = response.data.filter(sheet => {
-            const isMainTeacher = sheet.mainTeacher === userName
-            const isInTeachers = sheet.teachers && sheet.teachers.includes(userName)
-            
-            if (isMainTeacher || isInTeachers) {
-                console.log('Match:', sheet.resourceLabel, '| mainTeacher:', sheet.mainTeacher, '| teachers:', sheet.teachers)
-            }
-            return isMainTeacher || isInTeachers
-        })
-
-        console.log(`${resourceSheetsDTO.value.length} fiche(s) pour ${userName}`)
+        // Mesure du temps de chargement API
+        const start = performance.now()
+        const response = await axios.get(`${API_BASE_URL}/api/v2/resource-sheets/for-user/${userId}`)
+        const end = performance.now()
+        console.log(`Chargement API: ${(end - start).toFixed(2)} ms`)
+        resourceSheetsDTO.value = response.data
+        console.log(`Total fiches pour ${userName}:`, resourceSheetsDTO.value.length)
     } catch (error) {
         console.error('Error loading resource sheets:', error)
     }
@@ -50,12 +41,12 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div id="ressources">
+    <div id="resources">
         <div id="for_scroll_bar" style="overflow-y: auto; overflow-x: hidden; margin: 1vw; height: 24vw">
             <p id="title">Vos ressources :</p>
             <div id="div_sheets">
                 <p v-if="resourceSheetsDTO.length === 0" style="color: white; padding: 1vw">
-                    Aucune ressource trouvée. Vous n'êtes professeur d'aucune ressource.
+                    Aucune resource trouvée. Vous n'êtes professeur d'aucune resource.
                 </p>
                 <RouterLink v-for="sheet in resourceSheetsDTO" :key="sheet.id" id="sheets" :to="`/form-ressource-sheet?id=${sheet.id}`">
                     <p>{{ sheet.resourceLabel }}</p>
@@ -66,7 +57,7 @@ onMounted(async () => {
 </template>
 
 <style>
-#ressources {
+#resources {
     height: 25vw;
     margin: 3vw 14vw;
     justify-content: center;

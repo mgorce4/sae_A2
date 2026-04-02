@@ -2,6 +2,7 @@ import { createApp, ref } from 'vue'
 import './style.css'
 import App from './App.vue'
 import { router } from './router/index.js'
+import './utils/jwt.js' // Enregistre les intercepteurs axios JWT pour toute l'application
 
 export const status = ref('')
 export const userName = ref('')
@@ -10,18 +11,13 @@ export const institutionLocation = ref('')
 export function removeUser() {
     if (typeof window === 'undefined') return
 
-    const ls = window.localStorage
+    // Seul le jwt_token est dans localStorage — on le supprime
+    window.localStorage.removeItem('jwt_token')
 
-    ls.removeItem('access_rights')
-    ls.removeItem('firstname')
-    ls.removeItem('idUser')
-    ls.removeItem('institutionLocation')
-    ls.removeItem('institutionName')
-    ls.removeItem('lastname')
-    ls.removeItem('password')
-    ls.removeItem('username')
-    ls.removeItem('status')
-    ls.removeItem('idInstitution')
+    // Réinitialiser les états réactifs globaux pour que le header se mette à jour
+    status.value = ''
+    userName.value = ''
+    institutionLocation.value = ''
 }
 
 

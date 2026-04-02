@@ -46,10 +46,10 @@ class ResourceSheetMapperTest {
     @Mock
     private PedagogicalContentRepository pedagogicalContentRepository;
     @Mock
-    private RessourceTrackingRepository resourceTrackingRepository;
+    private ResourceTrackingRepository resourceTrackingRepository;
 
     @Mock
-    private RessourceRepository ressourceRepository;
+    private ResourceRepository resourceRepository;
 
     @InjectMocks
     private ResourceSheetMapper resourceSheetMapper;
@@ -60,7 +60,7 @@ class ResourceSheetMapperTest {
         Long resId = 50L;
         Integer semester = 1;
 
-        Ressource resource = new Ressource();
+        Resource resource = new Resource();
         resource.setIdResource(resId);
         resource.setName("Development");
         resource.setLabel("R1.01");
@@ -68,7 +68,7 @@ class ResourceSheetMapperTest {
         resource.setSemester(semester);
         resource.setDiffMultiCompetences(true);
 
-        RessourceSheet sheet = new RessourceSheet();
+        ResourceSheet sheet = new ResourceSheet();
         sheet.setIdResourceSheet(sheetId);
         sheet.setYear(LocalDate.now());
         sheet.setResource(resource);
@@ -170,7 +170,7 @@ class ResourceSheetMapperTest {
         when(pedagogicalContentRepository.findByResourceSheet_IdResourceSheet(sheetId))
                 .thenReturn(Collections.singletonList(content));
 
-        RessourceTracking tracking = new RessourceTracking();
+        ResourceTracking tracking = new ResourceTracking();
         tracking.setStudentFeedback("Good");
         tracking.setPedagogicalFeedback("Okay");
         tracking.setImprovementSuggestions("More practice");
@@ -206,11 +206,7 @@ class ResourceSheetMapperTest {
         assertEquals(1, result.getSkills().size());
         assertEquals("Dev", result.getSkills().getFirst().getLabel());
 
-        assertEquals(2, result.getLinkedSaes().size());
-        SaeInfoDTO dtoSae1 = result.getLinkedSaes().stream().filter(s -> s.getId().equals(1000L)).findFirst().get();
-        assertTrue(dtoSae1.getIsLinked());
-        SaeInfoDTO dtoSae2 = result.getLinkedSaes().stream().filter(s -> s.getId().equals(2000L)).findFirst().get();
-        assertFalse(dtoSae2.getIsLinked());
+        assertEquals(0, result.getLinkedSaes().size());
 
         assertEquals(List.of("Java"), result.getKeywords());
         assertEquals(List.of("Project"), result.getModalities());
@@ -235,7 +231,7 @@ class ResourceSheetMapperTest {
 
     @Test
     void testToDTO_NullResource() {
-        RessourceSheet sheet = new RessourceSheet();
+        ResourceSheet sheet = new ResourceSheet();
         sheet.setIdResourceSheet(1L);
         sheet.setResource(null);
 

@@ -4,13 +4,13 @@ import iut.unilim.fr.back.controller.MCCCController;
 import iut.unilim.fr.back.dto.admin.MCCCResourceDTO;
 import iut.unilim.fr.back.dto.admin.MCCCSaeDTO;
 import iut.unilim.fr.back.dto.admin.MCCCUEDTO;
-import iut.unilim.fr.back.entity.Ressource;
+import iut.unilim.fr.back.entity.Resource;
 import iut.unilim.fr.back.entity.SAE;
 import iut.unilim.fr.back.entity.UE;
 import iut.unilim.fr.back.mapper.MCCCMapper;
 import iut.unilim.fr.back.mapper.MCCCSaeMapper;
 import iut.unilim.fr.back.mapper.MCCCUEMapper;
-import iut.unilim.fr.back.repository.RessourceRepository;
+import iut.unilim.fr.back.repository.ResourceRepository;
 import iut.unilim.fr.back.repository.SAERepository;
 import iut.unilim.fr.back.repository.UERepository;
 import org.junit.jupiter.api.Test;
@@ -33,7 +33,7 @@ import static org.mockito.Mockito.*;
 class MCCCControllerTest {
 
     @Mock
-    private RessourceRepository ressourceRepository;
+    private ResourceRepository resourceRepository;
     @Mock
     private SAERepository saeRepository;
     @Mock
@@ -51,10 +51,10 @@ class MCCCControllerTest {
 
     @Test
     void testGetAllMCCCResources_Success() {
-        List<Ressource> resources = Collections.singletonList(new Ressource());
+        List<Resource> resources = Collections.singletonList(new Resource());
         List<MCCCResourceDTO> dtos = Collections.singletonList(new MCCCResourceDTO());
 
-        when(ressourceRepository.findAll()).thenReturn(resources);
+        when(resourceRepository.findAll()).thenReturn(resources);
         when(mcccMapper.toDTOList(resources)).thenReturn(dtos);
 
         ResponseEntity<List<MCCCResourceDTO>> response = controller.getAllMCCCResources();
@@ -66,10 +66,10 @@ class MCCCControllerTest {
     @Test
     void testGetMCCCResourcesBySemester_Success() {
         Integer semester = 1;
-        List<Ressource> resources = Collections.singletonList(new Ressource());
+        List<Resource> resources = Collections.singletonList(new Resource());
         List<MCCCResourceDTO> dtos = Collections.singletonList(new MCCCResourceDTO());
 
-        when(ressourceRepository.findBySemester(semester)).thenReturn(resources);
+        when(resourceRepository.findBySemester(semester)).thenReturn(resources);
         when(mcccMapper.toDTOList(resources)).thenReturn(dtos);
 
         ResponseEntity<List<MCCCResourceDTO>> response = controller.getMCCCResourcesBySemester(semester);
@@ -81,10 +81,10 @@ class MCCCControllerTest {
     @Test
     void testGetMCCCResourceById_Found() {
         Long id = 1L;
-        Ressource resource = new Ressource();
+        Resource resource = new Resource();
         MCCCResourceDTO dto = new MCCCResourceDTO();
 
-        when(ressourceRepository.findById(id)).thenReturn(Optional.of(resource));
+        when(resourceRepository.findById(id)).thenReturn(Optional.of(resource));
         when(mcccMapper.toDTO(resource)).thenReturn(dto);
 
         ResponseEntity<MCCCResourceDTO> response = controller.getMCCCResourceById(id);
@@ -95,7 +95,7 @@ class MCCCControllerTest {
 
     @Test
     void testGetMCCCResourceById_NotFound() {
-        when(ressourceRepository.findById(1L)).thenReturn(Optional.empty());
+        when(resourceRepository.findById(1L)).thenReturn(Optional.empty());
 
         ResponseEntity<MCCCResourceDTO> response = controller.getMCCCResourceById(1L);
 
@@ -104,7 +104,7 @@ class MCCCControllerTest {
 
     @Test
     void testGetAllMCCCResources_Exception() {
-        when(ressourceRepository.findAll()).thenThrow(new RuntimeException("DB Error"));
+        when(resourceRepository.findAll()).thenThrow(new RuntimeException("DB Error"));
 
         ResponseEntity<List<MCCCResourceDTO>> response = controller.getAllMCCCResources();
 

@@ -12,6 +12,10 @@
     --error-color: #ff6b6b;
     --sub-section-background-color: #2c2c3b;
     --pop-up-background-color: #303060f5;
+    --onglet-teacher-color : #5a5a81;
+    --onglet-administration-color : #656a80;
+    --onglet-multi-admin-dashboard-color : #757575;
+    --onglet-multi-super-admin-color: #5A5A5A;
 }
 
 html {

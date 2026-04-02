@@ -24,12 +24,12 @@ public class HoursPerStudent {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_resource")
-    private Ressource resource;
+    private Resource resource;
 
     public HoursPerStudent() {
     }
 
-    public HoursPerStudent(Long idHoursPerStudent, Boolean hasAlternance, Double cm, Double td, Double tp, Ressource resource) {
+    public HoursPerStudent(Long idHoursPerStudent, Boolean hasAlternance, Double cm, Double td, Double tp, Resource resource) {
         this.idHoursPerStudent = idHoursPerStudent;
         this.hasAlternance = hasAlternance;
         this.cm = cm;
@@ -78,11 +78,11 @@ public class HoursPerStudent {
         this.tp = tp;
     }
 
-    public Ressource getResource() {
+    public Resource getResource() {
         return resource;
     }
 
-    public void setResource(Ressource resource) {
+    public void setResource(Resource resource) {
         this.resource = resource;
     }
 }

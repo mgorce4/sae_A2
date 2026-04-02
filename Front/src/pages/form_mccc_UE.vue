@@ -1,14 +1,12 @@
 <script setup>
-import { status } from '../main'
 import { onMounted, ref, nextTick, watch } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
 import { router } from '@/router'
 import { useRoute } from 'vue-router'
+import { getIdFromToken, getIdInstitutionFromToken } from '@/utils/jwt.js'
 
 const route = useRoute()
-
-status.value = 'Administration'
 
 let display_more_area = ref(false)
 
@@ -87,7 +85,7 @@ const preventInvalidChars = (event) => {
 function getUESemesterInstitution() {
     const pathId = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
     const semester = parseInt(route.query.id)
-    const institutionId = parseInt(localStorage.idInstitution)
+    const institutionId = getIdInstitutionFromToken()
 
     console.log('=== FILTRAGE UE POUR AFFICHAGE ===')
     console.log('PathId:', pathId)
@@ -125,7 +123,7 @@ watch([ueList, display_more_area], () => {
 const reloadUEs = async () => {
     try {
         const pathId = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
-        const institutionId = parseInt(localStorage.idInstitution)
+        const institutionId = getIdInstitutionFromToken()
 
         console.log('=== DEBUG RELOAD UEs ===')
         console.log('route.query.pathId:', route.query.pathId)
@@ -152,6 +150,11 @@ const reloadUEs = async () => {
         // Filtrer par institution seulement (pas par semestre, c'est fait dans getUESemesterInstitution)
         ueList.value = response.data.filter((ue) => ue.institutionId === institutionId)
 
+        // filter the resources by alphabetical order with sort and localeCompare
+        // localeCompare return a negative number if a is before b, a positive number if a is after b and 0 if they are equal
+        // the number returned by localeCompare is used by sort to order the elements of the array
+        ueList.value.sort((a, b) => a.label.localeCompare(b.label))
+
         console.log('=== RELOAD UEs ===')
         console.log(
             `UEs chargées pour institution ${institutionId} et path ${pathId}:`,
@@ -176,13 +179,13 @@ onMounted(async () => {
     console.log('=== FORM MCCC UE - ONMOUNTED ===')
     console.log('route.query:', route.query)
     console.log('localStorage.pathId:', localStorage.pathId)
-    
+
     // S'assurer que le pathId est dans localStorage si disponible dans query
     if (route.query.pathId && !localStorage.pathId) {
         localStorage.pathId = route.query.pathId
         console.log('PathId stocké dans localStorage:', route.query.pathId)
     }
-    
+
     await reloadUEs()
     attachAccordionListeners()
 })
@@ -253,7 +256,7 @@ const save = async () => {
 
     try {
         // Vérifier que l'utilisateur est connecté
-        if (!localStorage.idUser) {
+        if (!getIdFromToken()) {
             alert('Erreur : Veuillez vous reconnecter.')
             return
         }
@@ -278,7 +281,7 @@ const save = async () => {
             name: name_comp.value,
             competenceLevel: competenceLevelNum,
             semester: semester,
-            userId: parseInt(localStorage.idUser),
+            userId: getIdFromToken(),
             termsCode: terms.value,
             pathId: pathId, // Utiliser pathId directement
         }
@@ -319,7 +322,7 @@ const updateUE = async (ue) => {
             name: ue.name,
             competenceLevel: parseInt(ue.competenceLevel),
             semester: ue.semester,
-            userId: parseInt(localStorage.idUser),
+            userId: getIdFromToken(),
             termsCode: ue.termsCode || null,
             pathId: pathId && !isNaN(pathId) ? pathId : ue.pathId,
         }

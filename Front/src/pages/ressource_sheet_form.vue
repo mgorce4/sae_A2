@@ -5,10 +5,13 @@ import { status } from '../main'
 import { onMounted, ref, nextTick, computed } from 'vue'
 import { router } from '@/router'
 import { useRoute } from 'vue-router'
+import { getAccessRightsFromToken } from '@/utils/jwt.js'
 
 const route = useRoute()
 
 status.value = 'Professeur'
+
+const access_right = getAccessRightsFromToken()
 
 const resourceSheetId = ref(route.query.id)
 
@@ -52,8 +55,11 @@ const ueLabels = computed(() => {
 })
 
 const institutionName = computed(() => resourceSheetDTO.value?.department || '###')
-const resourceName = computed(() => resourceSheetDTO.value?.resourceName || 'Nom de la ressource')
+const resourceName = computed(() => resourceSheetDTO.value?.resourceName || 'Nom de la resource')
 const resourceLabel = computed(() => resourceSheetDTO.value?.resourceLabel || '###')
+
+const resourceObjetive = computed(() => resourceSheetDTO.value?.objective || '')
+const resourceSkills = computed(() => resourceSheetDTO.value?.skills || [])
 
 const hoursPerStudent = computed(() => resourceSheetDTO.value?.hoursPN || null)
 const hoursPerStudentAlternance = computed(() => resourceSheetDTO.value?.hoursPNAlternance || null)
@@ -767,12 +773,18 @@ const show_popup_pedago = ref(false)
 function toggleShowPopUpPedago() {
     show_popup_pedago.value = !show_popup_pedago.value
 }
+
+const isObjectiveAndSkillsFilled = computed(() => {
+    return resourceObjetive.value === "" && resourceSkills.value.length === 0;
+})
+
 </script>
 <template>
-    <div id="Ressource_Sheet">
-        <div id="return_Arrow" @click="goBack">
-            <RouterLink id="back_arrow" to="/teacher-dashboard">←</RouterLink>
-            <p>Retour</p>
+    <div id="Resource_Sheet">
+        <div style="display: flex; align-items: center; height: 1vw; margin-bottom: 2vw">
+            <RouterLink to="/teacher-dashboard" id="back_arrow" v-if="access_right.length == 1">←</RouterLink>
+            <RouterLink to="/multi-access-right-dashboard" id="back_arrow" v-else>←</RouterLink>
+            <p class="back">Retour à l'accueil</p>
         </div>
         <div id="background_Form">
             <div class="header_Form">
@@ -783,16 +795,16 @@ function toggleShowPopUpPedago() {
                 <p>{{ institutionName }}</p>
             </div>
             <div class="ref_Section">
-                <p>Réf. ressource :</p>
+                <p>Réf. resource :</p>
                 <p>{{ resourceLabel }}</p>
             </div>
             <div id="form">
-                <button class="accordion" id="dark_Bar">Objectif de la ressource *</button>
+                <button class="accordion" id="dark_Bar">Objectif de la resource *</button>
                 <div class="panel">
                     <textarea
                         id="text_area_styled"
                         v-model="localObjectiveContent"
-                        placeholder="Saisissez les objectifs de la ressource..."
+                        placeholder="Saisissez les objectifs de la resource..."
                     ></textarea>
                     <span v-if="validationErrors.objective" class="error-message"
                         >Merci de remplir ce champ</span
@@ -846,7 +858,7 @@ function toggleShowPopUpPedago() {
                     <p class="section_title">SAE(s) concérnée(s) *</p>
                     <p v-if="status" class="btn_how_to" @click="toggleShowPopUpPedago">ⓘ</p>
                     <div v-show="show_popup_pedago" id="popup_sae">
-                        Cliquer sur l'interrupteur pour lier une SAE à cette ressource
+                        Cliquer sur l'interrupteur pour lier une SAE à cette resource
                     </div>
                 </div>
                 <div v-if="saeList.length === 0" class="no_sae_message">
@@ -1267,7 +1279,7 @@ function toggleShowPopUpPedago() {
                 >
             </div>
             <div id="form">
-                <p class="section_title">Suivi de la ressource / module</p>
+                <p class="section_title">Suivi de la resource / module</p>
                 <div>
                     <p>Retour de l'équipe pédagogique et des acteurs impactés</p>
                     <textarea
@@ -1295,14 +1307,15 @@ function toggleShowPopUpPedago() {
 
             <!-- Save button container -->
             <div class="save-button-container">
-                <button id="button_save" @click="saveResourceSheet">Sauvegarder</button>
+                <button v-if="isObjectiveAndSkillsFilled" id="button_save" @click="saveResourceSheet">Sauvegarder</button>
+                <button v-else id="button_save" @click="saveResourceSheet">Modifier</button>
             </div>
         </div>
     </div>
 </template>
 
 <style>
-#Ressource_Sheet {
+#Resource_Sheet {
     margin: 3vw 14vw;
     justify-content: center;
 }

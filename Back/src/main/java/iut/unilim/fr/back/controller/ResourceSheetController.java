@@ -1,7 +1,7 @@
 package iut.unilim.fr.back.controller;
 
-import iut.unilim.fr.back.entity.RessourceSheet;
-import iut.unilim.fr.back.service.RessourceSheetService;
+import iut.unilim.fr.back.entity.ResourceSheet;
+import iut.unilim.fr.back.service.ResourceSheetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,45 +12,45 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class ResourceSheetController {
     @Autowired
-    private RessourceSheetService resourceSheetService;
+    private ResourceSheetService resourceSheetService;
 
     @GetMapping
-    public List<RessourceSheet> getAllResourceSheets() {
-        return resourceSheetService.getAllRessourceSheets();
+    public List<ResourceSheet> getAllResourceSheets() {
+        return resourceSheetService.getAllResourceSheets();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<RessourceSheet> getResourceSheetById(@PathVariable Long id) {
-        return resourceSheetService.getRessourceSheetById(id)
+    public ResponseEntity<ResourceSheet> getResourceSheetById(@PathVariable Long id) {
+        return resourceSheetService.getResourceSheetById(id)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/{id}/details")
-    public ResponseEntity<RessourceSheet> getResourceSheetByIdWithDetails(@PathVariable Long id) {
-        return resourceSheetService.getRessourceSheetByIdWithDetails(id)
+    public ResponseEntity<ResourceSheet> getResourceSheetByIdWithDetails(@PathVariable Long id) {
+        return resourceSheetService.getResourceSheetByIdWithDetails(id)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/resource/{resourceId}")
-    public List<RessourceSheet> getResourceSheetsByResourceId(@PathVariable Long resourceId) {
-        return resourceSheetService.getRessourceSheetsByResourceId(resourceId);
+    public List<ResourceSheet> getResourceSheetsByResourceId(@PathVariable Long resourceId) {
+        return resourceSheetService.getResourceSheetsByResourceId(resourceId);
     }
 
     @PostMapping
-    public RessourceSheet createResourceSheet(@RequestBody RessourceSheet resourceSheet) {
-        return resourceSheetService.createRessourceSheet(resourceSheet);
+    public ResourceSheet createResourceSheet(@RequestBody ResourceSheet resourceSheet) {
+        return resourceSheetService.createResourceSheet(resourceSheet);
     }
 
     @PutMapping("/{id}")
-    public RessourceSheet updateResourceSheet(@PathVariable Long id, @RequestBody RessourceSheet resourceSheet) {
-        return resourceSheetService.updateRessourceSheet(id, resourceSheet);
+    public ResourceSheet updateResourceSheet(@PathVariable Long id, @RequestBody ResourceSheet resourceSheet) {
+        return resourceSheetService.updateResourceSheet(id, resourceSheet);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteResourceSheet(@PathVariable Long id) {
-        resourceSheetService.deleteRessourceSheet(id);
+        resourceSheetService.deleteResourceSheet(id);
         return ResponseEntity.noContent().build();
     }
 }

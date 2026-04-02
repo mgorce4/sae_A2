@@ -4,11 +4,14 @@ import { ref, computed } from 'vue'
 import how_to_administration from '../userGuidePages/how_to_administration.vue'
 import how_to_teacher from '../userGuidePages/how_to_teacher.vue'
 import { router } from '@/router'
+import { getAccessRightsFromToken, getStatusFromToken, getFirstnameFromToken, getLastnameFromToken } from '@/utils/jwt.js'
 
-status.value = localStorage.status
-userName.value = localStorage.lastname + ' ' + localStorage.firstname
+// Dérivé du JWT à chaque chargement — non falsifiable
+status.value = getStatusFromToken()
+userName.value = (getLastnameFromToken() + ' ' + getFirstnameFromToken()).trim()
 
 const show_how_to_popup = ref(false)
+const access_rights = getAccessRightsFromToken()
 
 const togglePopup = () => {
     show_how_to_popup.value = !show_how_to_popup.value
@@ -29,7 +32,11 @@ const current_how_to = computed(() => {
 })
 
 const goToDashboard = () => {
-    router.push(routes[status.value] || '/')
+    if (access_rights.length > 1) {
+        router.push('/multi_access_right_dashboard')
+    } else {
+        router.push(routes[status.value] || '/')
+    }
 }
 
 const handleDisconnect = () => {
@@ -50,7 +57,7 @@ const handleDisconnect = () => {
                     />
                 </a>
                 <div id="dividing_line"></div>
-                <p id="app_name">Syncadia</p>
+                <p id="app_name" @click="router.push('/syncadia-presentation')" style="cursor: pointer">Syncadia</p>
             </div>
             <div v-show="status" id="user_name_and_pp" class="container-fluid">
                 <p v-if="userName" id="user_name">{{ userName }}</p>

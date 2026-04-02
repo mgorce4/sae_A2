@@ -36,7 +36,7 @@ public class ResourceSheetMapper {
     private SAELinkResourceRepository saeLinkResourceRepository;
 
     @Autowired
-    private RessourceRepository ressourceRepository;
+    private ResourceRepository resourceRepository;
 
     @Autowired
     private KeywordRepository keywordRepository;
@@ -54,20 +54,20 @@ public class ResourceSheetMapper {
     private PedagogicalContentRepository pedagogicalContentRepository;
 
     @Autowired
-    private RessourceTrackingRepository resourceTrackingRepository;
+    private ResourceTrackingRepository resourceTrackingRepository;
 
     /**
-     * Converts a RessourceSheet to a complete ResourceSheetDTO
+     * Converts a ResourceSheet to a complete ResourceSheetDTO
      * ALL data is loaded in a single operation
      */
-    public ResourceSheetDTO toDTO(RessourceSheet resourceSheet) {
+    public ResourceSheetDTO toDTO(ResourceSheet resourceSheet) {
         ResourceSheetDTO dto = new ResourceSheetDTO();
 
         // Basic information
         dto.setId(resourceSheet.getIdResourceSheet());
         dto.setYear(resourceSheet.getYear());
 
-        Ressource resource = resourceSheet.getResource();
+        Resource resource = resourceSheet.getResource();
         if (resource == null) {
             return dto; // Returns an empty DTO if no resource
         }
@@ -230,7 +230,7 @@ public class ResourceSheetMapper {
             .collect(Collectors.toList());
     }
 
-    private List<SaeInfoDTO> getLinkedSaes(Ressource resource) {
+    private List<SaeInfoDTO> getLinkedSaes(Resource resource) {
         // Get SAEs linked to this specific resource
         List<SAELinkResource> linkedSaes = saeLinkResourceRepository.findByIdResource(resource.getIdResource());
         List<Long> linkedSaeIds = linkedSaes.stream()
@@ -472,9 +472,9 @@ public class ResourceSheetMapper {
     }
 
     private ResourceTrackingDTO getTracking(Long resourceSheetId) {
-        List<RessourceTracking> trackingList = resourceTrackingRepository.findByResourceSheet_IdResourceSheet(resourceSheetId);
+        List<ResourceTracking> trackingList = resourceTrackingRepository.findByResourceSheet_IdResourceSheet(resourceSheetId);
         if (!trackingList.isEmpty()) {
-            RessourceTracking tracking = trackingList.get(0);
+            ResourceTracking tracking = trackingList.get(0);
             return new ResourceTrackingDTO(
                 tracking.getPedagogicalFeedback(),
                 tracking.getStudentFeedback(),

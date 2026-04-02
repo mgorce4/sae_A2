@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,7 +14,7 @@ import java.util.stream.Collectors;
 public class ResourceSheetUpdateService {
 
     @Autowired
-    private RessourceSheetRepository ressourceSheetRepository;
+    private ResourceSheetRepository resourceSheetRepository;
 
     @Autowired
     private NationalProgramObjectiveRepository nationalProgramObjectiveRepository;
@@ -39,7 +38,7 @@ public class ResourceSheetUpdateService {
     private PedagogicalContentRepository pedagogicalContentRepository;
 
     @Autowired
-    private RessourceTrackingRepository resourceTrackingRepository;
+    private ResourceTrackingRepository resourceTrackingRepository;
 
     /**
      * Update a resource sheet with new data
@@ -48,7 +47,7 @@ public class ResourceSheetUpdateService {
     @Transactional
     public void updateResourceSheet(Long resourceSheetId, ResourceSheetUpdateDTO updateDTO) {
         // Verify the resource sheet exists
-        RessourceSheet resourceSheet = ressourceSheetRepository.findById(resourceSheetId)
+        ResourceSheet resourceSheet = resourceSheetRepository.findById(resourceSheetId)
             .orElseThrow(() -> new RuntimeException("Resource sheet not found: " + resourceSheetId));
 
         // 1. Update Objective
@@ -77,7 +76,7 @@ public class ResourceSheetUpdateService {
         updateTracking(resourceSheet, updateDTO.getTracking());
     }
 
-    private void updateObjective(RessourceSheet resourceSheet, String objective) {
+    private void updateObjective(ResourceSheet resourceSheet, String objective) {
         if (objective == null) return;
 
         // Find existing or create new
@@ -98,7 +97,7 @@ public class ResourceSheetUpdateService {
         }
     }
 
-    private void updateSkills(RessourceSheet resourceSheet, List<ResourceSheetUpdateDTO.SkillUpdateDTO> skills) {
+    private void updateSkills(ResourceSheet resourceSheet, List<ResourceSheetUpdateDTO.SkillUpdateDTO> skills) {
         if (skills == null) return;
 
         // Delete existing skills
@@ -118,7 +117,7 @@ public class ResourceSheetUpdateService {
         }
     }
 
-    private void updateKeywords(RessourceSheet resourceSheet, List<String> keywords) {
+    private void updateKeywords(ResourceSheet resourceSheet, List<String> keywords) {
         if (keywords == null) return;
 
         // Delete existing keywords
@@ -136,7 +135,7 @@ public class ResourceSheetUpdateService {
         }
     }
 
-    private void updateModalities(RessourceSheet resourceSheet, List<String> modalities) {
+    private void updateModalities(ResourceSheet resourceSheet, List<String> modalities) {
         if (modalities == null) return;
 
         // Delete existing modalities
@@ -155,7 +154,7 @@ public class ResourceSheetUpdateService {
         }
     }
 
-    private void updateSaeLinks(RessourceSheet resourceSheet, List<Long> linkedSaeIds) {
+    private void updateSaeLinks(ResourceSheet resourceSheet, List<Long> linkedSaeIds) {
         if (linkedSaeIds == null) return;
 
         Long resourceId = resourceSheet.getResource().getIdResource();
@@ -194,7 +193,7 @@ public class ResourceSheetUpdateService {
         }
     }
 
-    private void updateTeacherHours(RessourceSheet resourceSheet, ResourceSheetUpdateDTO.HoursUpdateDTO hours, boolean isAlternance) {
+    private void updateTeacherHours(ResourceSheet resourceSheet, ResourceSheetUpdateDTO.HoursUpdateDTO hours, boolean isAlternance) {
         // Find existing teacher hours for this resource sheet and alternance type
         List<TeacherHours> existingHours =
             teacherHoursRepository.findByResourceSheet_IdResourceSheet(resourceSheet.getIdResourceSheet());
@@ -228,7 +227,7 @@ public class ResourceSheetUpdateService {
         teacherHoursRepository.save(teacherHours);
     }
 
-    private void updatePedagogicalContent(RessourceSheet resourceSheet, ResourceSheetUpdateDTO.PedagogicalContentUpdateDTO content) {
+    private void updatePedagogicalContent(ResourceSheet resourceSheet, ResourceSheetUpdateDTO.PedagogicalContentUpdateDTO content) {
         if (content == null) return;
 
         // Find existing or create new
@@ -260,16 +259,16 @@ public class ResourceSheetUpdateService {
             .collect(Collectors.joining(","));
     }
 
-    private void updateTracking(RessourceSheet resourceSheet, ResourceSheetUpdateDTO.ResourceTrackingUpdateDTO tracking) {
+    private void updateTracking(ResourceSheet resourceSheet, ResourceSheetUpdateDTO.ResourceTrackingUpdateDTO tracking) {
         if (tracking == null) return;
 
         // Find existing or create new
-        List<RessourceTracking> existingTracking =
+        List<ResourceTracking> existingTracking =
             resourceTrackingRepository.findByResourceSheet_IdResourceSheet(resourceSheet.getIdResourceSheet());
 
-        RessourceTracking resTracking;
+        ResourceTracking resTracking;
         if (existingTracking.isEmpty()) {
-            resTracking = new RessourceTracking();
+            resTracking = new ResourceTracking();
             resTracking.setResourceSheet(resourceSheet);
         } else {
             resTracking = existingTracking.get(0);

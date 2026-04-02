@@ -1,8 +1,10 @@
 <script setup>
 
-import { nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
+import { status } from '@/main.js'
+import { getIdFromToken, getIdInstitutionFromToken, getInstitutionNameFromToken, getInstitutionLocationFromToken } from '@/utils/jwt.js'
 
 const teacher_acces_right = 1
 
@@ -13,19 +15,72 @@ let title = ref("")
 
 const teacher_name = ref("")
 const teacher_firstname = ref("")
+const teacher_mail = ref("")
 const teacher_id = ref(0)
 
 const errors = ref({
     name: false,
     firstname: false,
+    mail: false,
 })
 
 const error_messages = ref({
     name: "Le nom doit être renseigné",
     firstname: "Le prenom doit être renseigné",
+    mail: "Le mail doit être renseigné",
 })
 
 const teachers = ref([])
+
+const csvFileName = ref('')
+const csvRows = ref([])
+const csvHasHeader = ref(false)
+const csvMapping = ref({
+    lastname: 0,
+    firstname: 1,
+    mail: 2,
+})
+const csvIsImporting = ref(false)
+const csvImportResult = ref({
+    success: 0,
+    failed: 0,
+})
+const csvErrorMessage = ref('')
+
+const csvColumnCount = computed(() => {
+    if (csvRows.value.length === 0) {
+        return 0
+    }
+
+    return csvRows.value.reduce((max, row) => Math.max(max, row.length), 0)
+})
+
+const csvColumnOptions = computed(() => {
+    return Array.from({ length: csvColumnCount.value }, (_, index) => {
+        if (csvHasHeader.value && csvRows.value[0] && csvRows.value[0][index]) {
+            const headerValue = String(csvRows.value[0][index]).trim()
+            return {
+                value: index,
+                label: `Colonne ${index + 1} (${headerValue})`,
+            }
+        }
+
+        return {
+            value: index,
+            label: `Colonne ${index + 1}`,
+        }
+    })
+})
+
+const csvDataRows = computed(() => {
+    if (!csvHasHeader.value) {
+        return csvRows.value
+    }
+
+    return csvRows.value.slice(1)
+})
+
+const csvPreviewRows = computed(() => csvDataRows.value.slice(0, 5))
 
 const attachAccordionListeners = () => {
     nextTick(() => {
@@ -66,6 +121,7 @@ const attachAccordionListeners = () => {
 onMounted(async () => {
     const response = await axios.get(`${API_BASE_URL}/api/access-rights`)
     teachers.value = response.data.filter((ar) => ar.accessRight === 1)
+    teachers.value = teachers.value.filter((teacher) => teacher.user.institution.idInstitution === getIdInstitutionFromToken())
 
     await nextTick()
     attachAccordionListeners()
@@ -75,8 +131,219 @@ function addTeacher() {
     title.value = "Ajouter un professeur"
 }
 
-function getUsername() {
-    return (teacher_firstname.value.charAt(0) + teacher_name.value).toLowerCase()
+function splitCsvLine(line, delimiter) {
+    const values = []
+    let current = ''
+    let inQuotes = false
+
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i]
+
+        if (char === '"') {
+            const nextChar = line[i + 1]
+            if (inQuotes && nextChar === '"') {
+                current += '"'
+                i++
+            } else {
+                inQuotes = !inQuotes
+            }
+            continue
+        }
+
+        if (char === delimiter && !inQuotes) {
+            values.push(current.trim())
+            current = ''
+            continue
+        }
+
+        current += char
+    }
+
+    values.push(current.trim())
+    return values
+}
+
+function detectCsvDelimiter(text) {
+    const sampleLine = text
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .find((line) => line.length > 0)
+
+    if (!sampleLine) {
+        return ','
+    }
+
+    const delimiters = [',', ';', '\t']
+    let bestDelimiter = ','
+    let bestCount = -1
+
+    delimiters.forEach((delimiter) => {
+        const count = sampleLine.split(delimiter).length
+        if (count > bestCount) {
+            bestCount = count
+            bestDelimiter = delimiter
+        }
+    })
+
+    return bestDelimiter
+}
+
+function parseCsvText(text) {
+    const delimiter = detectCsvDelimiter(text)
+
+    return text
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+        .map((line) => splitCsvLine(line, delimiter))
+}
+
+function resetCsvMapping() {
+    const defaults = [0, 1, 2]
+
+    csvMapping.value = {
+        lastname: defaults[0] < csvColumnCount.value ? defaults[0] : 0,
+        firstname: defaults[1] < csvColumnCount.value ? defaults[1] : 0,
+        mail: defaults[2] < csvColumnCount.value ? defaults[2] : 0,
+    }
+}
+
+function onCsvFileChange(event) {
+    const file = event.target.files?.[0]
+
+    csvErrorMessage.value = ''
+    csvImportResult.value = { success: 0, failed: 0 }
+
+    if (!file) {
+        csvFileName.value = ''
+        csvRows.value = []
+        return
+    }
+
+    csvFileName.value = file.name
+
+    const reader = new FileReader()
+    reader.onload = (loadEvent) => {
+        const content = String(loadEvent.target?.result || '')
+        const parsedRows = parseCsvText(content)
+
+        if (parsedRows.length === 0) {
+            csvRows.value = []
+            csvErrorMessage.value = 'Le fichier CSV est vide ou invalide.'
+            return
+        }
+
+        csvRows.value = parsedRows
+        resetCsvMapping()
+    }
+
+    reader.onerror = () => {
+        csvRows.value = []
+        csvErrorMessage.value = 'Impossible de lire le fichier CSV.'
+    }
+
+    reader.readAsText(file, 'UTF-8')
+}
+
+async function createUserWithAccessRight(payload, selectedAccessRight) {
+    const userResponse = await axios.post(`${API_BASE_URL}/api/users`, payload)
+    const user = userResponse.data
+
+    await axios.post(`${API_BASE_URL}/api/access-rights`, {
+        accessRight: selectedAccessRight,
+        idUser: user.idUser,
+    })
+}
+
+async function importTeachersFromCsv() {
+    csvErrorMessage.value = ''
+    csvImportResult.value = { success: 0, failed: 0 }
+
+    if (csvDataRows.value.length === 0) {
+        csvErrorMessage.value = 'Veuillez charger un fichier CSV avant import.'
+        return
+    }
+
+    const selectedIndexes = [
+        csvMapping.value.lastname,
+        csvMapping.value.firstname,
+        csvMapping.value.mail,
+    ]
+
+    if (new Set(selectedIndexes).size !== selectedIndexes.length) {
+        csvErrorMessage.value = 'Chaque champ doit utiliser une colonne differente.'
+        return
+    }
+
+    if (!getIdFromToken()) {
+        csvErrorMessage.value = 'Veuillez vous reconnecter avant d\'importer.'
+        return
+    }
+
+    csvIsImporting.value = true
+
+    let success = 0
+    let failed = 0
+    const usedUsernames = new Set(
+        teachers.value
+            .map((entry) => entry?.user?.username)
+            .filter((username) => typeof username === 'string' && username.length > 0)
+            .map((username) => username.toLowerCase()),
+    )
+
+    try {
+        for (const row of csvDataRows.value) {
+            const lastname = String(row[csvMapping.value.lastname] || '').trim()
+            const firstname = String(row[csvMapping.value.firstname] || '').trim()
+            const mail = String(row[csvMapping.value.mail] || '').trim()
+
+            if (!lastname || !firstname || !mail) {
+                failed++
+                continue
+            }
+
+            const username = getUsername(firstname, lastname, usedUsernames)
+            const payload = {
+                firstname,
+                lastname,
+                username,
+                password: `${username}123`,
+                mail,
+                institution: {
+                    idInstitution: getIdInstitutionFromToken(),
+                    name: getInstitutionNameFromToken(),
+                    location: getInstitutionLocationFromToken(),
+                },
+            }
+
+            try {
+                await createUserWithAccessRight(payload, teacher_acces_right)
+                success++
+            } catch (error) {
+                failed++
+                console.error('Erreur import ligne CSV:', error)
+            }
+        }
+
+        csvImportResult.value = { success, failed }
+        await reloadTeachers()
+        attachAccordionListeners()
+    } finally {
+        csvIsImporting.value = false
+    }
+}
+
+function getUsername(firstname, lastname, usedUsernames) {
+    const baseRaw = `${firstname?.trim()?.charAt(0) || ''}${lastname?.trim() || ''}`
+    const base = baseRaw.toLowerCase().replace(/\s+/g, '') || 'user'
+    let candidate = base
+    let suffix = 1
+    while (usedUsernames.has(candidate)) {
+        candidate = `${base}${suffix}`
+        suffix++
+    }
+    usedUsernames.add(candidate)
+    return candidate
 }
 
 const save = async () => {
@@ -85,6 +352,7 @@ const save = async () => {
     errors.value = {
         name: false,
         firstname: false,
+        mail: false,
     }
 
     let hasError = false
@@ -99,50 +367,51 @@ const save = async () => {
         hasError = true
     }
 
+    if (teacher_mail.value === "") {
+        errors.value.mail = true
+        hasError = true
+    }
+
     if (hasError) {
         return
     }
 
     try {
         // is user logged in
-        if (!localStorage.idUser) {
+        if (!getIdFromToken()) {
             alert('Erreur : Veuillez vous reconnecter.')
             return
         }
 
+        const usedUsernames = new Set(
+            teachers.value
+                .map((entry) => entry?.user?.username)
+                .filter((username) => typeof username === 'string' && username.length > 0)
+                .map((username) => username.toLowerCase()),
+        )
+        const username_calc = getUsername(teacher_firstname.value, teacher_name.value, usedUsernames)
+
         const payload = {
             firstname : teacher_firstname.value,
             lastname : teacher_name.value,
-            username : getUsername(),
-            password : getUsername() + '123',
+            username : username_calc,
+            password : username_calc + '123',
+            mail : teacher_mail.value,
             institution : {
-                idInstitution : parseInt(localStorage.idInstitution),
-                name : localStorage.institutionName,
-                location : localStorage.institutionLocation,
+                idInstitution : getIdInstitutionFromToken(),
+                name : getInstitutionNameFromToken(),
+                location : getInstitutionLocationFromToken(),
             },
         }
 
         if (!is_modifying.value) {
-            let user_response = await axios.post(`${API_BASE_URL}/api/users`, payload);
-            [teacher_firstname, teacher_name].forEach((r) => r.value = '')
+            await createUserWithAccessRight(payload, teacher_acces_right)
+            [teacher_firstname, teacher_name, teacher_mail].forEach((r) => r.value = '')
             display_more_area.value = false
-
-            // get the id of the new user
-            let user = user_response.data
-            let id = user.idUser
-
-            const access_right_payload = {
-                accessRight : teacher_acces_right,
-                idUser : id,
-            }
-
-            await axios.post(`${API_BASE_URL}/api/access-rights`, access_right_payload);
         } else {
-            const user_id = teacher_id
+            await axios.put(`${API_BASE_URL}/api/users/${teacher_id.value}`, payload)
 
-            await axios.put(`${API_BASE_URL}/api/users/${user_id.value}`, payload);
-
-            [teacher_firstname, teacher_name].forEach((r) => r.value = '')
+            [teacher_firstname, teacher_name, teacher_mail].forEach((r) => r.value = '')
             display_more_area.value = false
             is_modifying.value = false
         }
@@ -163,13 +432,16 @@ const save = async () => {
 
 async function reloadTeachers() {
     const response = await axios.get(`${API_BASE_URL}/api/access-rights`)
-    teachers.value = response.data.filter((ar) => ar.accessRight === teacher_acces_right).filter((teacher) => teacher.user.institution.idInstitution === parseInt(localStorage.idInstitution))
+    teachers.value = response.data
+        .filter((ar) => ar.accessRight === teacher_acces_right)
+        .filter((teacher) => teacher.user.institution.idInstitution === getIdInstitutionFromToken())
 }
 
 function modify(teacher) {
     title.value = "Modifier un professeur"
     teacher_name.value = teacher.user.lastname
     teacher_firstname.value = teacher.user.firstname
+    teacher_mail.value = teacher.user.mail
     teacher_id.value = teacher.idUser
 }
 
@@ -211,7 +483,7 @@ const deleteTeacher = async (id) => {
         }
 
         await axios.delete(`${API_BASE_URL}/api/users/${id}`)
-        await axios.delete(`${API_BASE_URL}/api/access-rights/1/${id}`)
+        await axios.delete(`${API_BASE_URL}/api/access-rights/${teacher_acces_right}/${id}`)
 
         await reloadTeachers()
 
@@ -221,23 +493,25 @@ const deleteTeacher = async (id) => {
     }
 }
 
+
 </script>
 
 <template>
     <div id="main">
         <div id="return_arrow">
-            <RouterLink id="back_arrow" to="/control-center">←</RouterLink>
+            <RouterLink v-if="status==='Administration'" id="back_arrow" to="/control-center">←</RouterLink>
+            <RouterLink v-else-if="status==='Admin'" id="back_arrow" to="/admin-dashboard">←</RouterLink>
             <p>Retour</p>
         </div>
 
-        <div id="background">
+        <div class="background">
             <div id="form">
                 <div id="header">
                     <p id="title">Ajouter un professeur</p>
                 </div>
 
                 <div id="dark_bar">
-                    <h2>Ajouter un professeur</h2>
+                    <p>Ajouter un professeur</p>
                     <button id="button_more" v-on:click="display_more_area = !display_more_area;  addTeacher()">
                         {{ display_more_area ? '-' : '+' }}
                     </button>
@@ -249,7 +523,7 @@ const deleteTeacher = async (id) => {
                     <div class="panel" style="display: flex">
                         <div style="margin-left: 15vw; padding-top: 1vw">
                             <div class="sub_div_panel">
-                                <label>Nom : </label>
+                                <label style="font-size: 1vw;">Nom : </label>
                                 <input type="text" class="input" v-model="teacher_name">
                                 <input style="margin-left: 11.5vw" class="btn1" type="reset" value="Annuler" v-on:click="display_more_area = !display_more_area" />
                             </div>
@@ -257,16 +531,84 @@ const deleteTeacher = async (id) => {
                             <p v-if="errors.name" class="error_message" style="text-align: left">{{ error_messages.name }}</p>
 
                             <div class="sub_div_panel">
-                                <label>Prenom : </label>
+                                <label style="font-size: 1vw;">Prenom : </label>
                                 <input type="text" class="input" v-model="teacher_firstname">
                                 <input style="margin-left: 10vw" id="save" class="btn1" type="button" value="Sauvegarder" v-on:click="save()" />
                             </div>
 
                             <p v-if="errors.firstname" class="error_message" style="text-align: left">{{ error_messages.firstname }}</p>
+
+                            <div class="sub_div_panel">
+                                <label style="font-size: 1vw;">Mail : </label>
+                                <input type="text" class="input" style="width: 17vw;" v-model="teacher_mail">
+                            </div>
+
+                            <p v-if="errors.mail" class="error_message" style="text-align: left">{{ error_messages.mail }}</p>
+
                         </div>
 
                     </div>
                 </form>
+
+                <div style="margin-top: 2vh; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 2vh;">
+                    <p style="font-size: 1.5vw; color: white; margin-bottom: 1vh;">Importer des professeurs depuis un CSV :</p>
+
+                    <div class="sub_div_panel" style="display: flex; align-items: center; gap: 0.8vw;">
+                        <input style="color: white; margin-top: 1vw;" type="file" accept=".csv,text/csv" @change="onCsvFileChange">
+                    </div>
+
+                    <div class="sub_div_panel" style="display: flex; align-items: center; gap: 0.5vw; margin-top: 1vh;">
+                        <input id="csv-header-admin" type="checkbox" v-model="csvHasHeader">
+                        <label for="csv-header-admin" style="color: white; font-size: 0.9vw;">Le CSV contient une ligne d'entete</label>
+                    </div>
+
+                    <div v-if="csvColumnOptions.length > 0" style="margin-top: 1.2vh;">
+                        <p style="font-size: 1.5vw; color: white; margin-bottom: 2vh;">Associer les colonnes :</p>
+
+                        <div class="sub_div_panel" style="display: flex; align-items: center; gap: 1vw;">
+                            <label style="color: white; width: 9vw;">Nom: </label>
+                            <select class="input" v-model.number="csvMapping.lastname" style="height: 3vh; width: 14vw; font-size: 1.4vh;">
+                                <option v-for="option in csvColumnOptions" :key="`lastname-${option.value}`" :value="option.value">{{ option.label }}</option>
+                            </select>
+                        </div>
+
+                        <div class="sub_div_panel" style="display: flex; align-items: center; gap: 1vw;">
+                            <label style="color: white; width: 9vw;">Prenom: </label>
+                            <select class="input" v-model.number="csvMapping.firstname" style="height: 3vh; width: 14vw; font-size: 1.4vh;">
+                                <option v-for="option in csvColumnOptions" :key="`firstname-${option.value}`" :value="option.value">{{ option.label }}</option>
+                            </select>
+                        </div>
+
+                        <div class="sub_div_panel" style="display: flex; align-items: center; gap: 1vw;">
+                            <label style="color: white; width: 9vw;">Adresse mail: </label>
+                            <select class="input" v-model.number="csvMapping.mail" style="height: 3vh; width: 14vw; font-size: 1.4vh;">
+                                <option v-for="option in csvColumnOptions" :key="`mail-${option.value}`" :value="option.value">{{ option.label }}</option>
+                            </select>
+                        </div>
+
+                        <div v-if="csvPreviewRows.length > 0" style="margin-top: 1vh; color: white; font-size: 0.85vw;">
+                            <p style="margin-bottom: 0.4vh;">Apercu (5 lignes) :</p>
+                            <div v-for="(row, index) in csvPreviewRows" :key="`preview-${index}`" style="opacity: 0.9;">
+                                {{ row.join(' | ') }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 1vw; margin-top: 1.2vh;">
+                        <input
+                            class="btn1"
+                            type="button"
+                            :value="csvIsImporting ? 'Import en cours...' : 'Importer CSV'"
+                            :disabled="csvIsImporting"
+                            @click="importTeachersFromCsv"
+                        />
+                        <span style="color: white; font-size: 0.9vw;" v-if="csvImportResult.success || csvImportResult.failed">
+                            Import termine: {{ csvImportResult.success }} ajoute(s), {{ csvImportResult.failed }} echec(s)
+                        </span>
+                    </div>
+
+                    <p v-if="csvErrorMessage" class="error_message" style="text-align: left; margin-top: 0.8vh;">{{ csvErrorMessage }}</p>
+                </div>
             </div>
 
             <div id="form_resources">
@@ -293,10 +635,14 @@ const deleteTeacher = async (id) => {
                                 <p>{{teacher.user.username}}</p>
                             </div>
 
-                            <div style="background-color: transparent; display: flex; padding: 0; margin-bottom: 0; gap: 0.3vw; justify-content: center; align-items: center">
-                                <input class="btn1" type="button" value="Supprimer" v-on:click="deleteTeacher(teacher.idUser)"/>
-                                <input class="btn1" type="button" value="Modifier" v-on:click="is_modifying = true; display_more_area = true; modify(teacher)" />
+                            <div style="display: flex; padding-top: 0; gap: 0.3vw">
+                                <p>Mail : </p>
+                                <p>{{teacher.user.mail}}</p>
                             </div>
+                        </div>
+                        <div style="background-color: transparent; display: flex; padding: 0; margin-top: 0; margin-bottom: 1vh; justify-content: center; align-items: center">
+                            <input class="btn1" type="button" value="Supprimer" v-on:click="deleteTeacher(teacher.idUser)"/>
+                            <input class="btn1" type="button" value="Modifier" v-on:click="is_modifying = true; display_more_area = true; modify(teacher)" />
                         </div>
                     </div>
                 </div>
@@ -306,9 +652,9 @@ const deleteTeacher = async (id) => {
     </div>
 </template>
 
-<style scoped>
+<style>
 
-#background {
+.background {
     height: auto;
     background-color: var(--main-theme-background-color);
     border-radius: 15px;

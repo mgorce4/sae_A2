@@ -99,7 +99,7 @@ public class MCCCUEMapper {
         return coefficients.stream()
             .filter(c -> c.getResource() != null)
             .map(c -> {
-                Ressource resource = c.getResource();
+                Resource resource = c.getResource();
                 return new ResourceCoefficientDTO(
                     resource.getLabel(),
                     resource.getName(),

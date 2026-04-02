@@ -5,6 +5,7 @@ import { API_BASE_URL } from '@/config/api.js'
 import { status } from '@/main.js'
 import { router } from '@/router'
 import { useRoute } from 'vue-router'
+import { getIdInstitutionFromToken } from '@/utils/jwt.js'
 
 const route = useRoute()
 
@@ -22,7 +23,7 @@ const pathId = ref(null)
 onMounted(async () => {
     // Récupérer le pathId depuis l'URL ou localStorage
     pathId.value = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
-    const institutionId = parseInt(localStorage.idInstitution)
+    const institutionId = getIdInstitutionFromToken()
 
     if (!pathId.value || isNaN(pathId.value)) {
         console.error('PathId manquant ou invalide dans l\'URL')
@@ -41,30 +42,22 @@ onMounted(async () => {
     }
 
     try {
-        // Charger les données filtrées par path
-        const saes = await axios.get(`${API_BASE_URL}/api/v2/mccc/saes/path/${pathId.value}`)
-        // Filtrer par institution pour sécurité supplémentaire
-        saeTable.value = saes.data.filter(sae =>
-            sae.institutionId === institutionId
-        )
+        const startTime = performance.now()
 
-        const ues = await axios.get(`${API_BASE_URL}/api/v2/mccc/ues/path/${pathId.value}`)
-        // Filtrer par institution pour sécurité supplémentaire
-        ueTable.value = ues.data.filter(ue =>
-            ue.institutionId === institutionId
-        )
+        // Un seul appel API pour récupérer toutes les données du parcours
+        const { data } = await axios.get(`${API_BASE_URL}/api/v2/mccc/all/path/${pathId.value}`)
 
-        const resources = await axios.get(`${API_BASE_URL}/api/v2/mccc/resources/path/${pathId.value}`)
-        // Filtrer par institution pour sécurité supplémentaire
-        resourceTable.value = resources.data.filter(resource =>
-            resource.institutionId === institutionId
-        )
+        saeTable.value = data.saes.filter(sae => sae.institutionId === institutionId)
+        ueTable.value = data.ues.filter(ue => ue.institutionId === institutionId)
+        resourceTable.value = data.resources.filter(resource => resource.institutionId === institutionId)
 
+        const duration = (performance.now() - startTime).toFixed(2)
         console.log(`Données chargées pour le parcours ${pathId.value} et institution ${institutionId}:`, {
             saes: saeTable.value.length,
             ues: ueTable.value.length,
             resources: resourceTable.value.length
         })
+        console.log(`Temps de chargement des données API : ${duration} ms`)
     } catch (error) {
         console.error('Erreur lors du chargement des données:', error)
         alert('Erreur lors du chargement des données du parcours')
@@ -96,7 +89,7 @@ const getStatusForSemester = (semester) => {
 
 const show_popup = ref(false)
 
-const goToRessourceSheet = (url, semester, pathId) => {
+const goToResourceSheet = (url, semester, pathId) => {
     console.log('=== NAVIGATION MCCC SELECT FORM ===')
     console.log('url:', url)
     console.log('semester:', semester)
@@ -122,7 +115,7 @@ function toggleShowPopUp() {
 <template>
     <div id="form_select_page">
         <div style="display: flex; align-items: center; height: 1vw;justify-content: space-between; margin-bottom: 3vw">
-            <div style="display: flex">
+            <div style="display: flex; align-items: center">
                 <RouterLink class="back_arrow" to="/mccc-select-path">←</RouterLink>
                 <p class="back" >Retour</p>
             </div>
@@ -140,11 +133,13 @@ function toggleShowPopUp() {
                     <p class="semester_display">Semestre {{ 2*index+index2+1 }}</p>
                     <p class="status_display" v-show="!btn">{{ getStatusForSemester(2*index+index2+1) }}</p>
                     <div v-show="btn" class="container-fluid spe">
-                        <button v-show="btn" class="btn_form_acces" @click="goToRessourceSheet('/form-mccc-UE', (2*index+index2+1), pathId)">UE</button>
-                        <button v-show="hasResourceInSemester(2*index+index2+1) || hasUEInSemester(2*index+index2+1)" class="btn_form_acces" @click="goToRessourceSheet('/form-mccc-ressources', (2*index+index2+1), pathId)">Ressource</button>
-                        <button v-show="hasSAEInSemester(2*index+index2+1) || hasUEInSemester(2*index+index2+1)" class="btn_form_acces" @click="goToRessourceSheet('/form-mccc-sae', (2*index+index2+1), pathId)">SAÉ</button>
+                        <button v-show="btn" class="btn_form_acces" @click="goToResourceSheet('/form-mccc-UE', (2*index+index2+1), pathId)">UE</button>
+                        <button v-show="hasResourceInSemester(2*index+index2+1) || hasUEInSemester(2*index+index2+1)" class="btn_form_acces" @click="goToResourceSheet('/form-mccc-ressources', (2*index+index2+1), pathId)">Ressource</button>
+                        <button v-show="hasSAEInSemester(2*index+index2+1) || hasUEInSemester(2*index+index2+1)" class="btn_form_acces" @click="goToResourceSheet('/form-mccc-sae', (2*index+index2+1), pathId)">SAÉ</button>
                     </div>
-                    <!-- <button v-show="btn && hasUEInSemester(2*index+index2+1)" class="btn_form_acces btn_display_mccc" @click="goToRessourceSheet('/mccc-display', (2*index+index2+1), pathId)">Affichage des MCCC</button> -->
+                    <button v-show="btn && hasUEInSemester(2*index+index2+1)" class="btn_form_acces btn_display_mccc" @click="goToResourceSheet('/mccc-display', (2*index+index2+1), pathId)">
+                        Affichage des MCCC
+                    </button>
                 </div>
             </div>
         </div>

@@ -27,9 +27,9 @@ public class NationalProgramObjectiveController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/ressource-sheet/{idRessourceSheet}")
-    public List<NationalProgramObjective> getNationalProgramObjectivesByRessourceSheetId(@PathVariable Long idRessourceSheet) {
-        return nationalProgramObjectiveService.getNationalProgramObjectivesByRessourceSheetId(idRessourceSheet);
+    @GetMapping("/ressource-sheet/{idResourceSheet}")
+    public List<NationalProgramObjective> getNationalProgramObjectivesByResourceSheetId(@PathVariable Long idResourceSheet) {
+        return nationalProgramObjectiveService.getNationalProgramObjectivesByResourceSheetId(idResourceSheet);
     }
 
     @PostMapping

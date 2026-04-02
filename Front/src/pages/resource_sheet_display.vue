@@ -2,7 +2,10 @@
 import { onMounted, ref } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
+import { status } from '@/main.js'
 import { useRoute } from 'vue-router'
+import { getAccessRightsFromToken } from '@/utils/jwt.js'
+import { router } from '@/router/index.js'
 
 const route = useRoute()
 
@@ -118,45 +121,65 @@ function is_improvement_suggestions_defined() {
 onMounted(async () => {
     console.log('=== RESOURCE SHEET DISPLAY - ONMOUNTED ===')
     console.log('resource_label from query:', resource_label)
-    
+
     try {
         const response = await axios.get(`${API_BASE_URL}/api/v2/resource-sheets`)
         console.log('Resource sheets reçues:', response.data.length)
-        
+
         resource_sheet.value = response.data.find((sheet) => sheet.resourceLabel === resource_label)
-        
+
         if (resource_sheet.value) {
             console.log('Fiche trouvée:', resource_sheet.value)
         } else {
             console.error('Aucune fiche trouvée avec le label:', resource_label)
-            alert(`Aucune fiche de ressource trouvée avec le label: ${resource_label}`)
+            alert(`Aucune fiche de resource trouvée avec le label: ${resource_label}`)
         }
     } catch (error) {
         console.error('Erreur lors du chargement des fiches:', error)
-        alert('Erreur lors du chargement de la fiche de ressource')
+        alert('Erreur lors du chargement de la fiche de resource')
     }
 })
+
+const access_right = getAccessRightsFromToken()
+
+const goToMailPage = (url, resourceId) => {
+    router.push({
+        path: url,
+        query: {
+            resourceId: resourceId
+        }
+    })
+}
+
 </script>
 
 <template>
     <div id="main">
         <div class="component spb">
-            <div id="return_arrow">
-                <RouterLink
-                    id="back_arrow"
-                    to="/dashboard-administration"
-                >
-                    ←
-                </RouterLink>
-                <p>Retour</p>
+            <div style="display: flex; align-items: center; height: 1vw">
+                <div v-if="access_right.length == 1">
+                    <RouterLink v-if="status==='Administration'" id="back_arrow" to="/dashboard-administration">←</RouterLink>
+                    <RouterLink v-else-if="status==='Admin'" id="back_arrow" to="/admin-dashboard">←</RouterLink>
+                    <RouterLink v-else-if="status==='Super Admin'" id="back_arrow" to="/sup-admin-dashboard">←</RouterLink>
+                </div>
+                <RouterLink id="back_arrow" to="/multi-access-right-dashboard">←</RouterLink>
+                <p class="back">Retour à l'accueil</p>
             </div>
 
-            <p v-if="is_main_teacher_defined()" id="ref_resource">
-                Référent module : {{ resource_sheet.mainTeacher }}
-            </p>
-            <p v-else id="ref_resource">
-                Référent module : Aucun professeur référent pour le module
-            </p>
+            <div style="display: flex; flex-direction: column; align-items: center">
+                <p v-if="is_main_teacher_defined()" id="ref_resource">
+                    Référent module : {{ resource_sheet.mainTeacher }}
+                </p>
+                <p v-else id="ref_resource">
+                    Référent module : Aucun professeur référent pour le module
+                </p>
+
+                <!--
+                // TODO : try to send mail to more than 1 user
+                <button class="btn1" @click="goToMailPage('/mail-page',resource_sheet.id)">
+                    Envoyer un mail
+                </button> -->
+            </div>
         </div>
 
         <div id="resource_sheet_display">
@@ -167,18 +190,18 @@ onMounted(async () => {
                 </p>
                 <p v-else style="max-width: 1vw">
                     Aucune UE pour <br />
-                    cette ressource
+                    cette resource
                 </p>
 
                 <p v-if="is_resource_name_defined()" class="title">
                     {{ resource_sheet.resourceName }}
                 </p>
-                <p v-else class="title">Aucun nom pour cette ressource</p>
+                <p v-else class="title">Aucun nom pour cette resource</p>
 
                 <p v-if="is_department_defined()">DEP : {{ resource_sheet.department }}</p>
                 <p v-else>
                     DEP : Aucun département <br />
-                    pour cette ressource
+                    pour cette resource
                 </p>
             </div>
 
@@ -186,7 +209,7 @@ onMounted(async () => {
                 <p v-if="is_resource_label_defined()">
                     Réf. Ressource : {{ resource_sheet.resourceLabel }}
                 </p>
-                <p v-else>Réf. Ressource : Aucun label pour cette ressource</p>
+                <p v-else>Réf. Ressource : Aucun label pour cette resource</p>
             </div>
 
             <div id="panel_NP">
@@ -197,7 +220,7 @@ onMounted(async () => {
                         {{ resource_sheet.objective }}
                     </p>
                     <p v-else class="skill-input skill-input-description">
-                        Aucun objectif pour cette ressource
+                        Aucun objectif pour cette resource
                     </p>
                 </div>
             </div>
@@ -255,7 +278,7 @@ onMounted(async () => {
 
                 <div v-else class="sae_switches_container">
                     <div class="sae_switch_item">
-                        <span class="sae_label">Aucune SAE n'est liée à cette ressource</span>
+                        <span class="sae_label">Aucune SAE n'est liée à cette resource</span>
                     </div>
                 </div>
             </div>
@@ -587,7 +610,7 @@ onMounted(async () => {
             </div>
 
             <div id="form">
-                <p class="section_title">Suivi de la ressource / module</p>
+                <p class="section_title">Suivi de la resource / module</p>
                 <div>
                     <p>Retour de l'équipe pédagogique et des acteurs impactés</p>
                     <p

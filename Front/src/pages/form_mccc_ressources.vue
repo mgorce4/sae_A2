@@ -4,10 +4,9 @@ import { onMounted, ref, nextTick, watch, computed } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
 import { useRoute } from 'vue-router'
+import { getIdInstitutionFromToken } from '@/utils/jwt.js'
 
 const route = useRoute()
-
-status.value = 'Administration'
 
 let display_more_area = ref(false)
 let is_modifying = ref(false)
@@ -91,7 +90,7 @@ const access_right_teacher = 1
 
 // UE filtrées par semestre (comme pour les SAE)
 const filteredUeTableV2 = computed(() => {
-    return UEs.value.filter((ue) => ue.semester == semesterNumber.value)
+    return UEs.value.filter((ue) => Number(ue.semester) === Number(semesterNumber.value))
 })
 
 /*
@@ -225,7 +224,7 @@ function addMainTeacherEvents(div) {
     })
 }
 
-// Fonction pour modifier une ressource
+// Fonction pour modifier une resource
 async function modifyResource(resource) {
     console.log('=== MODIFICATION RESSOURCE ===', resource)
 
@@ -237,7 +236,7 @@ async function modifyResource(resource) {
     // Attendre que le DOM soit mis à jour
     await nextTick()
 
-    // Charger les données de la ressource dans le formulaire
+    // Charger les données de la resource dans le formulaire
     await nextTick();
     resource_label.value = resource.label ?? ''
     resource_name.value = resource.name ?? ''
@@ -348,14 +347,14 @@ async function modifyResource(resource) {
         // Scroll vers le formulaire
         document.getElementById('dark_bar').scrollIntoView({ behavior: 'smooth' })
     } catch (error) {
-        console.error('❌ Erreur lors du chargement de la ressource:', error)
-        alert('Erreur lors du chargement de la ressource pour modification')
+        console.error('❌ Erreur lors du chargement de la resource:', error)
+        alert('Erreur lors du chargement de la resource pour modification')
     }
 }
 
-// Fonction pour supprimer une ressource
+// Fonction pour supprimer une resource
 async function deleteResource(resourceId) {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette ressource ?')) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette resource ?')) {
         return
     }
 
@@ -375,7 +374,7 @@ async function deleteResource(resourceId) {
     } catch (error) {
         console.error('❌ Erreur lors de la suppression:', error)
         alert(
-            'Erreur lors de la suppression de la ressource: ' +
+            'Erreur lors de la suppression de la resource: ' +
                 (error.response?.data || error.message),
         )
     }
@@ -391,7 +390,7 @@ function setErrorMessage(elementId, message) {
     }
 }
 
-// Fonction de sauvegarde de ressource - Comme saveSae
+// Fonction de sauvegarde de resource - Comme saveSae
 async function saveResource() {
     /* display errors messages */
     // DEBUG: Log teachers_list and access_rights before mapping
@@ -409,12 +408,12 @@ async function saveResource() {
 
     if (!resource_label.value) {
         errors.value.label = true
-        setErrorMessage('error_resource_label', "L'intitulé de la ressource est obligatoire")
+        setErrorMessage('error_resource_label', "L'intitulé de la resource est obligatoire")
         hasErrors = true
     }
     if (!resource_name.value) {
         errors.value.name = true
-        setErrorMessage('error_resource_name', 'Le nom de la ressource est obligatoire')
+        setErrorMessage('error_resource_name', 'Le nom de la resource est obligatoire')
         hasErrors = true
     }
     if (!apogee_code.value) {
@@ -447,7 +446,7 @@ async function saveResource() {
 
     // Validate UE coefficients
     // Les valeurs sont maintenant gérées automatiquement par v-model
-    
+
     // Check if at least one UE is selected
     let hasValidUE = false
     for (let i = 0; i < ue_list.value.length; i++) {
@@ -566,7 +565,7 @@ async function saveResource() {
     // Prepare DTO
     const pathId = parseInt(route.query.pathId)
     console.log(pathId)
-    const institutionId = parseInt(localStorage.idInstitution)
+    const institutionId = getIdInstitutionFromToken()
     console.log(institutionId)
 
     const resourceDTO = {
@@ -602,7 +601,7 @@ async function saveResource() {
         linkedSaesIds: saes.value.filter((sae) => sae.checked).map((sae) => sae.saeId),
     }
 
-    console.log('📤 Envoi du DTO ressource:', resourceDTO)
+    console.log('📤 Envoi du DTO resource:', resourceDTO)
 
     try {
         if (is_modifying.value && resource_id_to_modify.value) {
@@ -652,7 +651,7 @@ async function saveResource() {
     } catch (error) {
         console.error('❌ Erreur lors de la sauvegarde:', error)
         alert(
-            'Erreur lors de la sauvegarde de la ressource: ' +
+            'Erreur lors de la sauvegarde de la resource: ' +
                 (error.response?.data || error.message),
         )
     }
@@ -661,7 +660,7 @@ async function saveResource() {
 onMounted(async () => {
     pathId.value = parseInt(route.query.pathId) || parseInt(localStorage.pathId)
     semesterNumber.value = parseInt(route.query.id)
-    institutionId.value = parseInt(localStorage.idInstitution)
+    institutionId.value = getIdInstitutionFromToken()
 
     if (!pathId.value || isNaN(pathId.value)) {
         alert('Erreur : pathId manquant')
@@ -705,9 +704,9 @@ onMounted(async () => {
     ])
 
     access_rights.value = access_rights.value
-        .filter((ar) => ar.user.institution.idInstitution == localStorage.idInstitution)
-        .filter((ar) => ar.accessRight == access_right_teacher)
-    saes.value = saes.value.filter((saes) => saes.semester == route.query.id)
+        .filter((ar) => Number(ar.user.institution.idInstitution) === Number(getIdInstitutionFromToken()))
+        .filter((ar) => Number(ar.accessRight) === access_right_teacher)
+    saes.value = saes.value.filter((sae) => Number(sae.semester) === Number(route.query.id))
     // Ne reset les checked que si on n'est PAS en modification
     if (!is_modifying.value) {
         saes.value = saes.value.map((sae) => ({ ...sae, checked: false }))
@@ -809,7 +808,7 @@ onMounted(async () => {
                 }
             })
 
-            if (index_to_remove !== -1 && teachers_list.value.length > 1) {
+            if (index_to_remove !== -1 && teachers_list.value.length > 0) {
                 teachers_list.value = teachers_list.value.filter((_, i) => i !== index_to_remove)
                 show_teacher_list.value = show_teacher_list.value.filter(
                     (_, i) => i !== index_to_remove,
@@ -879,11 +878,17 @@ onMounted(async () => {
 })
 
 function getUEsByInstitution() {
-    return UEs.value.filter((ue) => ue.institutionId == localStorage.idInstitution)
+    return UEs.value
+        .filter((ue) => Number(ue.institutionId) === Number(getIdInstitutionFromToken()))
+        .filter((ue) => Number(ue.semester) === Number(route.query.id))
 }
 
 function getResourcesBySemester() {
-    return resources.value
+
+    // filter the resources by alphabetical order with sort and localeCompare
+    // localeCompare return a negative number if a is before b, a positive number if a is after b and 0 if they are equal
+    // the number returned by localeCompare is used by sort to order the elements of the array
+    return resources.value.sort((a, b) => a.label.localeCompare(b.label))
 }
 
 function getUEFromResource(resource) {
@@ -938,13 +943,80 @@ total_work_study.value = computed(() => {
 
 const show_popup = ref(false)
 
+const resourceImportFile = ref(null)
+const resourceImportFileName = ref('')
+const resourceImportHasHeader = ref(false)
+const resourceImportIsLoading = ref(false)
+const resourceImportMessage = ref('')
+const resourceImportIsError = ref(false)
+
+async function reloadCurrentResources() {
+    const response = await axios.get(
+        `${API_BASE_URL}/api/v2/mccc/resources/path/${pathId.value}/semester/${semesterNumber.value}`,
+    )
+    resources.value = response.data
+}
+
+function onResourceImportFileChange(event) {
+    const file = event.target.files?.[0]
+    if (!file) {
+        resourceImportFile.value = null
+        resourceImportFileName.value = ''
+        return
+    }
+
+    resourceImportFile.value = file
+    resourceImportFileName.value = file.name
+    resourceImportMessage.value = ''
+    resourceImportIsError.value = false
+}
+
+async function uploadResourcesCsv() {
+    if (!resourceImportFile.value) {
+        resourceImportMessage.value = 'Veuillez selectionner un fichier.'
+        resourceImportIsError.value = true
+        return
+    }
+
+    resourceImportIsLoading.value = true
+    resourceImportMessage.value = ''
+    resourceImportIsError.value = false
+
+    try {
+        const formData = new FormData()
+        formData.append('file', resourceImportFile.value)
+        formData.append('pathId', pathId.value)
+        formData.append('hasHeader', String(resourceImportHasHeader.value))
+
+        // Endpoint backend existant d'import des ressources.
+        const response = await axios.post(
+            `${API_BASE_URL}/api/csv/import-excel-resources`,
+            formData,
+            {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            },
+        )
+
+        resourceImportMessage.value = response.data || 'Import termine avec succes.'
+        await reloadCurrentResources()
+    } catch (error) {
+        resourceImportIsError.value = true
+        resourceImportMessage.value =
+            error?.response?.data || 'Erreur lors de l\'import du fichier ressources.'
+    } finally {
+        resourceImportIsLoading.value = false
+        resourceImportFile.value = null
+        resourceImportFileName.value = ''
+    }
+}
+
 function toggleShowPopUp() {
     show_popup.value = !show_popup.value
 }
 </script>
 
 <template>
-    <div id="ressource">
+    <div id="resource">
         <div id="return_arrow">
             <RouterLink id="back_arrow" to="/mccc-select-form">←</RouterLink>
             <p>Retour</p>
@@ -952,15 +1024,74 @@ function toggleShowPopUp() {
 
         <div id="background_form">
             <div id="form">
-                <div id="header_ressource">
+                <div id="header_resource">
                     <p id="title">Ressources</p>
                 </div>
 
                 <div id="dark_bar">
-                    <h2>{{ is_modifying ? 'Modifier une ressource' : 'Ajouter une ressource' }}</h2>
+                    <h2>{{ is_modifying ? 'Modifier une resource' : 'Ajouter une resource' }}</h2>
                     <button id="button_more" v-on:click="display_more_area = !display_more_area">
                         {{ display_more_area ? '-' : '+' }}
                     </button>
+                </div>
+
+                <div style="margin-top: 1vh; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 1.2vh;">
+                    <p style="font-size: 1.5vw; color: white; margin-bottom: 1vh;">Importer des ressources :</p>
+
+                    <div class="component" style="color : white; display: flex; align-items: center; gap: 0.8vw; margin-bottom: 0.8vh;">
+                        <input
+                            type="file"
+                            accept=".csv,.xlsx,.xls"
+                            @change="onResourceImportFileChange"
+                        />
+                        <span style="color: white; font-size: 0.9vw;" v-if="resourceImportFileName">{{ resourceImportFileName }}</span>
+
+                    </div>
+
+                    <div class="component" style="display: flex; align-items: center; gap: 0.5vw; margin-top: 0.6vh; margin-bottom: 0.8vh;">
+                        <input id="resource-csv-header" type="checkbox" v-model="resourceImportHasHeader">
+                        <label for="resource-csv-header" style="color: white; font-size: 0.9vw;">Le CSV contient une ligne d'entete</label>
+                    </div>
+
+                    <div style="margin-bottom: 1vh; color: white; font-size: 1vw;">
+                        <p style="margin: 0 0 0.4vh 0;">Exemple de fichier :</p>
+                        <p style="margin: 0 0 0.2vh 0; opacity: 0.9; font-size: 1.5vw;">Colonnes obligatoires</p>
+                        <div style="display: grid; grid-template-columns: 16vw 1fr; gap: 0.2vh 1vw; opacity: 0.92; font-size: 1.05vw;">
+                            <p style="margin: 0; font-weight: 600;">Nom de colonne</p>
+                            <p style="margin: 0; font-weight: 600;">Exemple concret</p>
+                            <p style="margin: 0;">label</p><p style="margin: 0;">R1.01</p>
+                            <p style="margin: 0;">name</p><p style="margin: 0;">Developpement Web</p>
+                            <p style="margin: 0;">apogeeCode</p><p style="margin: 0;">APO-R101</p>
+                            <p style="margin: 0;">semester</p><p style="margin: 0;">1</p>
+                            <p style="margin: 0;">initialCm / initialTd / initialTp</p><p style="margin: 0;">10 / 12 / 14</p>
+                        </div>
+
+                        <p style="margin: 0.6vh 0 0.2vh 0; opacity: 0.9; font-size: 1.5vw;">Colonnes optionnelles</p>
+                        <div style="display: grid; grid-template-columns: 16vw 1fr; gap: 0.2vh 1vw; opacity: 0.92; font-size: 1.05vw;">
+                            <p style="margin: 0;">alternanceCm / alternanceTd / alternanceTp</p><p style="margin: 0;">8 / 10 / 12</p>
+                            <p style="margin: 0;">termsCode</p><p style="margin: 0;">TC</p>
+                            <p style="margin: 0;">mainTeacherUsername</p><p style="margin: 0;">jdupont</p>
+                            <p style="margin: 0;">teacherUsernames</p><p style="margin: 0;">jdupont,mlefevre</p>
+                            <p style="margin: 0;">linkedSaeLabels</p><p style="margin: 0;">SAE1.01,SAE1.02</p>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 1vw; margin-top: 0.6vh;">
+                        <button
+                            class="btn1"
+                            type="button"
+                            :disabled="resourceImportIsLoading || !resourceImportFileName"
+                            @click="uploadResourcesCsv"
+                        >
+                            {{ resourceImportIsLoading ? 'Import en cours...' : 'Importer CSV' }}
+                        </button>
+                        <p
+                            v-if="resourceImportMessage"
+                            :style="{ color: resourceImportIsError ? '#ff8c8c' : '#9cf2a8', margin: 0 }"
+                        >
+                            {{ resourceImportMessage }}
+                        </p>
+                    </div>
                 </div>
 
                 <a
@@ -968,18 +1099,17 @@ function toggleShowPopUp() {
                     id="dark_bar"
                     style="width: 97%"
                     v-show="display_more_area"
-                    method="post"
                     v-on:submit.prevent=""
                 >
                     {{
-                        is_modifying ? 'Modification de la ressource :' : "Ajout d'une ressource :"
+                        is_modifying ? 'Modification de la resource :' : "Ajout d'une resource :"
                     }}
                 </a>
 
                 <div class="panel_resource" v-show="display_more_area">
                     <div id="left">
                         <div>
-                            <label for="resource_label">Intitulé de la ressource : </label>
+                            <label for="resource_label">Intitulé de la resource : </label>
                             <input
                                 id="resource_label"
                                 type="text"
@@ -990,7 +1120,7 @@ function toggleShowPopUp() {
                         <p id="error_resource_label" class="error_message"></p>
 
                         <div>
-                            <label for="resource_name">Nom de la ressource : </label>
+                            <label for="resource_name">Nom de la resource : </label>
                             <input
                                 id="resource_name"
                                 type="text"
@@ -1178,7 +1308,7 @@ function toggleShowPopUp() {
                                         >
                                     </div>
 
-                                    <p v-if="getUEsByInstitution().length == 0">Aucune UE créée</p>
+                                    <p v-if="getUEsByInstitution().length === 0">Aucune UE créée</p>
 
                                     <div v-else>
                                         <div
@@ -1216,9 +1346,6 @@ function toggleShowPopUp() {
                                 <div style="margin-top: 5px">
                                     <div class="component" style="justify-content: center">
                                         <label for="teacher">Professeur(s) référent(s) : </label>
-                                        <button class="button_more" id="button_main_teacher_plus">
-                                            +
-                                        </button>
                                     </div>
 
                                     <div
@@ -1257,13 +1384,10 @@ function toggleShowPopUp() {
                                             </div>
                                         </div>
 
-                                        <button class="button_more" id="button_main_teacher_cross">
-                                            x
-                                        </button>
                                     </div>
                                     <p id="error_main_teacher" class="error_message"></p>
 
-                                    <div class="component" style="justify-content: center">
+                                    <div class="component" style="justify-content: center" v-if="teachers_list.length >= 0">
                                         <label for="teacher">Professeur(s) associé(s) : </label>
                                         <button class="button_more" id="button_teacher_plus">
                                             +
@@ -1276,7 +1400,7 @@ function toggleShowPopUp() {
                                         class="component teacher_row"
                                         style="justify-content: center"
                                     >
-                                        <div class="teacher_select_container">
+                                        <div class="teacher_select_container" v-if="teachers_list.length >= 0">
                                             <input
                                                 type="text"
                                                 class="input teacher"
@@ -1306,7 +1430,7 @@ function toggleShowPopUp() {
                                             </div>
                                         </div>
 
-                                        <button class="button_more" id="button_teacher_cross">
+                                        <button class="button_more" id="button_teacher_cross" v-if="teachers_list.length >= 2">
                                             x
                                         </button>
                                     </div>
@@ -1319,7 +1443,7 @@ function toggleShowPopUp() {
             </div>
             <div id="form_resources">
                 <p v-if="getResourcesBySemester().length > 0">Ressources créées :</p>
-                <p v-else>Aucune ressource n'a été créée</p>
+                <p v-else>Aucune resource n'a été créée</p>
 
                 <div v-for="resource in getResourcesBySemester()" :key="resource.resourceId">
                     <a class="accordion" id="dark_bar" style="width: 97%"
@@ -1364,7 +1488,7 @@ function toggleShowPopUp() {
                                         <p>Total : {{ resource.alternanceTotal || 0 }}</p>
                                     </div>
                                     <div v-else>
-                                        <p>La ressource n'est pas en alternance</p>
+                                        <p>La resource n'est pas en alternance</p>
                                     </div>
                                 </div>
                             </div>
@@ -1464,7 +1588,7 @@ function toggleShowPopUp() {
 </template>
 
 <style>
-#ressource {
+#resource {
     margin: 3vw 14vw;
     justify-content: center;
 }
@@ -1491,7 +1615,7 @@ function toggleShowPopUp() {
     padding-bottom: 17px;
 }
 
-#header_ressource {
+#header_resource {
     background-color: var(--main-theme-secondary-background-color);
     height: auto;
     border-radius: 10px;

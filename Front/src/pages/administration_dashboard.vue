@@ -5,12 +5,13 @@ import { status, institutionLocation } from '../main'
 import { onMounted } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
+import { getToken, removeToken, getIdInstitutionFromToken, getInstitutionLocationFromToken, getFirstnameFromToken, getLastnameFromToken } from '@/utils/jwt.js'
 import { router } from '@/router'
 
 /* constantes */
-
-status.value = 'Administration'
 institutionLocation.value = localStorage.institutionLocation
+status.value = 'Administration'
+institutionLocation.value = getInstitutionLocationFromToken()
 
 const show_popup = ref(false)
 
@@ -29,61 +30,70 @@ const selectedSheets = ref([]) // Pour stocker les IDs des fiches sélectionnée
 const paths = ref([]) // Liste des parcours pour l'institution
 const pathId = ref(null) // ID du parcours sélectionné
 
-onMounted(async () => {
-    console.log('=== ADMINISTRATION DASHBOARD - ONMOUNTED DEBUT ===')
-    console.log('status:', status.value)
-    console.log('localStorage.idInstitution:', localStorage.idInstitution)
+function getAuthHeaders() {
+    const token = getToken()
+    return token ? { Authorization: `Bearer ${token}` } : {}
+}
 
-    try {
-        console.log('Chargement des resource sheets...')
-        const response = await axios.get(`${API_BASE_URL}/api/v2/resource-sheets`)
-        resource_sheets.value = response.data
+async function loadData() {
+    const institutionId = getIdInstitutionFromToken()
+    const startTime = performance.now()
+    const headers = getAuthHeaders()
+
+    const [sheetsResult, datesResult, pathsResult] = await Promise.allSettled([
+        axios.get(`${API_BASE_URL}/api/v2/resource-sheets/institution/${institutionId}`, { headers, skipAuthRedirect: true }),
+        institutionId
+            ? axios.get(`${API_BASE_URL}/api/final-delivery-dates/institution/${institutionId}`, { headers, skipAuthRedirect: true })
+            : Promise.resolve(null),
+        axios.get(`${API_BASE_URL}/api/paths`, { headers, skipAuthRedirect: true }),
+    ])
+
+    const endTime = performance.now()
+    console.log(`API load time: ${Math.round(endTime - startTime)} ms`)
+
+    // Si toutes les requêtes retournent 401, le token est invalide → rediriger vers login
+    const allUnauthorized = [sheetsResult, datesResult, pathsResult].every(
+        r => r.status === 'rejected' && r.reason?.response?.status === 401
+    )
+    if (allUnauthorized) {
+        console.warn('Token invalide ou expiré, redirection vers la page de connexion')
+        removeToken()
+        window.location.hash = '#/'
+        return
+    }
+
+    // Resource sheets
+    if (sheetsResult.status === 'fulfilled') {
+        resource_sheets.value = sheetsResult.value.data
         console.log('Resource sheets chargées:', resource_sheets.value.length)
-    } catch (error) {
-        console.error('Error loading resource sheets:', error)
+    } else {
+        console.error('Error loading resource sheets:', sheetsResult.reason)
         resource_sheets.value = []
     }
 
-    // Load delivery dates for the current institution
-    try {
-        const institutionId = localStorage.idInstitution
-        if (institutionId) {
-            const datesResponse = await axios.get(
-                `${API_BASE_URL}/api/final-delivery-dates/institution/${institutionId}`,
-            )
-            if (datesResponse.data) {
-                deliveryDatesId.value = datesResponse.data.idFinalDelivery
-                firstDeliveryDate.value = datesResponse.data.firstDelivery || ''
-                secondDeliveryDate.value = datesResponse.data.secondDelivery || ''
-            }
-        }
-    } catch (error) {
-        // 404 is normal if no dates exist yet for this institution
-        if (error.response?.status !== 404) {
-            console.error('Error loading delivery dates:', error)
-        }
+    // Delivery dates
+    if (datesResult.status === 'fulfilled' && datesResult.value?.data) {
+        deliveryDatesId.value = datesResult.value.data.idFinalDelivery
+        firstDeliveryDate.value = datesResult.value.data.firstDelivery || ''
+        secondDeliveryDate.value = datesResult.value.data.secondDelivery || ''
+    } else if (datesResult.status === 'rejected' && datesResult.reason?.response?.status !== 404) {
+        console.error('Error loading delivery dates:', datesResult.reason)
     }
 
-    // Load paths for the current institution
-    try {
-        const institutionId = localStorage.idInstitution
-        console.log('=== CHARGEMENT PARCOURS ADMIN DASHBOARD ===')
-        console.log('institutionId:', institutionId)
-
-        if (institutionId) {
-            const pathsResponse = await axios.get(`${API_BASE_URL}/api/paths`)
-            console.log('Tous les parcours reçus:', pathsResponse.data)
-
-            paths.value = pathsResponse.data.filter(
-                (path) => path.institution?.idInstitution === parseInt(institutionId),
-            )
-
-            console.log('Parcours filtrés pour institution', institutionId, ':', paths.value)
-        }
-    } catch (error) {
-        console.error('Error loading paths:', error)
+    // Paths
+    if (pathsResult.status === 'fulfilled') {
+        paths.value = pathsResult.value.data.filter(
+            (path) => path.institution?.idInstitution === parseInt(institutionId),
+        )
+        console.log('Parcours filtrés pour institution', institutionId, ':', paths.value)
+    } else {
+        console.error('Error loading paths:', pathsResult.reason)
         paths.value = []
     }
+}
+
+onMounted(async () => {
+    await loadData()
 })
 
 function getResourcesForSemester(semester) {
@@ -94,7 +104,6 @@ function getResourcesForSemester(semester) {
 
     let filteredSheets = resource_sheets.value
         .filter((sheet) => sheet.semester === semester)
-        .filter((sheet) => sheet.institutionId == localStorage.idInstitution)
 
     // Filtrer par path si un path est sélectionné
     if (pathId.value !== null) {
@@ -109,7 +118,7 @@ function getResourcesForSemester(semester) {
 
 async function saveDeliveryDates() {
     try {
-        const institutionId = localStorage.idInstitution
+        const institutionId = getIdInstitutionFromToken()
         if (!institutionId) {
             console.error('Institution non trouvée')
             return
@@ -124,14 +133,16 @@ async function saveDeliveryDates() {
         }
 
         // Use the save-by-institution endpoint which automatically handles create or update
+        const headers = getAuthHeaders()
         const response = await axios.post(
             `${API_BASE_URL}/api/final-delivery-dates/save-by-institution`,
             deliveryDatesData,
+            { headers },
         )
         deliveryDatesId.value = response.data.idFinalDelivery
 
-        // Reload the page to show the updated dates
-        window.location.reload()
+        // Reload data without full page reload
+        await loadData()
     } catch (error) {
         console.error('Error saving delivery dates:', error)
     }
@@ -160,7 +171,7 @@ async function downloadSheets() {
         return
     }
 
-    const userName = localStorage.username || 'user'
+    const userName = (localStorage.getItem('firstname') + ' ' + localStorage.getItem('lastname')).trim() || 'user'
     console.log('userName:', userName)
 
     try {
@@ -179,6 +190,7 @@ async function downloadSheets() {
                         userName: userName,
                     },
                     responseType: 'blob',
+                    headers: getAuthHeaders(),
                 })
 
                 console.log('Réponse reçue, création du lien de téléchargement...')
@@ -187,7 +199,7 @@ async function downloadSheets() {
                 const url = window.URL.createObjectURL(new Blob([response.data]))
                 const link = document.createElement('a')
                 link.href = url
-                link.setAttribute('download', `${sheet.resourceLabel}_ressource_sheet.pdf`)
+                link.setAttribute('download', `${sheet.resourceLabel}_resource_sheet.pdf`)
                 document.body.appendChild(link)
                 link.click()
                 link.remove()
@@ -220,7 +232,7 @@ async function downloadSheets() {
     }
 }
 
-const goToRessourceSheetDisplay = (url, label) => {
+const goToResourceSheetDisplay = (url, label) => {
     router.push({
         path: url,
         query: {
@@ -235,7 +247,7 @@ function toggleShowPopUp() {
 </script>
 
 <template>
-    <div id="main_div">
+    <div class="main_div">
         <div id="sub_div_for_MCCC_and_calender">
             <div id="MCCC_div">
                 <!-- link into MCCC page -->
@@ -270,11 +282,10 @@ function toggleShowPopUp() {
                 <button class="btn1" @click="saveDeliveryDates">Valider</button>
             </div>
 
-            <!-- work in progress
             <RouterLink class="button" to="/control-center">
                 Centre de controle
             </RouterLink>
-            -->
+
         </div>
 
         <div id="return_sheets_div">
@@ -283,9 +294,9 @@ function toggleShowPopUp() {
                     <p style="font-size: 1.8vw">Rendu des fiches</p>
                     <div style="display: flex; align-items: center">
                         <div v-show="show_popup" id="popup">
-                            Vous pouvez séléctionnez les fiches ressource en cochant le carré et
+                            Vous pouvez séléctionnez les fiches resource en cochant le carré et
                             cliquer sur l'image de la fléche pour télécharger la version PDF de la
-                            fiche ressource
+                            fiche resource
                         </div>
                         <p v-if="status" class="btn_how_to" @click="toggleShowPopUp">ⓘ</p>
                         <img
@@ -317,37 +328,63 @@ function toggleShowPopUp() {
                 </div>
             </div>
 
-            <div id="list-of-ressources">
+            <div id="list-of-resources">
                 <!-- usage of v-if and v-else to display a message if there is no sheet for the selected semester -->
                 <p v-if="getResourcesForSemester(selected_semester_sheets).length === 0">
                     Aucune fiche rendue pour ce semestre.
                 </p>
 
-                <div
-                    v-else
-                    class="ressource"
-                    v-for="sheet in getResourcesForSemester(selected_semester_sheets)"
-                    :key="sheet.id"
-                >
-                    <p class="ressource_label">{{ sheet.resourceLabel }}</p>
-                    <div style="gap: 5px">
-                        <button
-                            class="btn1"
-                            style="width: 5vw"
-                            @click="
-                                goToRessourceSheetDisplay(
+                <div v-else v-for="sheet in getResourcesForSemester(selected_semester_sheets)" :key="sheet.id">
+                    <div
+                        v-if="!sheet.hasTeacherHours"
+                        class="resource"
+                        style="background-color: var(--sub-scrollbar-color)"
+                    >
+                        <p class="resource_label">{{ sheet.resourceLabel }}</p>
+                        <div style="gap: 5px">
+                            <button
+                                class="btn1"
+                                style="width: 5vw"
+                                @click="
+                                goToResourceSheetDisplay(
                                     '/resource-sheet-display',
                                     sheet.resourceLabel,
                                 )
                             "
-                        >
-                            Visualiser
-                        </button>
-                        <input
-                            type="checkbox"
-                            :checked="isSheetSelected(sheet.id)"
-                            @change="toggleSheetSelection(sheet.id)"
-                        />
+                            >
+                                Visualiser
+                            </button>
+                            <input
+                                type="checkbox"
+                                :checked="isSheetSelected(sheet.id)"
+                                @change="toggleSheetSelection(sheet.id)"
+                            />
+                        </div>
+                    </div>
+
+                    <div v-else class="resource">
+
+                        <p class="resource_label">{{ sheet.resourceLabel }}</p>
+                        <div style="gap: 5px">
+
+                            <button
+                                class="btn1"
+                                style="width: 5vw"
+                                @click="
+                                goToResourceSheetDisplay(
+                                    '/resource-sheet-display',
+                                    sheet.resourceLabel,
+                                )
+                            "
+                            >
+                                Visualiser
+                            </button>
+                            <input
+                                type="checkbox"
+                                :checked="isSheetSelected(sheet.id)"
+                                @change="toggleSheetSelection(sheet.id)"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -378,7 +415,7 @@ function toggleShowPopUp() {
     font-size: 1.5vw;
 }
 
-#main_div {
+.main_div {
     display: flex;
     align-items: flex-start; /* Alignement en haut */
     height: 100%;
@@ -389,11 +426,11 @@ function toggleShowPopUp() {
     margin-top: 3.2vw;
 }
 
-#main_div > div {
+.main_div > div {
     border-radius: 15px;
 }
 
-#main_div > div > div {
+.main_div > div > div {
     /* -- for MCCC-div and calender-div -- */
     border-radius: 15px;
 }
@@ -404,7 +441,6 @@ function toggleShowPopUp() {
     width: 30%;
     display: flex;
     flex-direction: column;
-    margin-top: 5vw;
 }
 
 /* -- MCCC -- */
@@ -505,31 +541,24 @@ input[type='date']::-webkit-calendar-picker-indicator {
     padding-bottom: 1vw;
 }
 
-#top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 1vw;
-}
-
-#list-of-ressources {
+#list-of-resources {
     flex: 1;
     overflow-y: auto; /* Scrollbar uniquement sur le contenu */
     padding-right: 1vw; /* Espace à droite de la scrollbar */
 }
 
-#list-of-ressources::-webkit-scrollbar {
+#list-of-resources::-webkit-scrollbar {
     width: 0.8vw;
 }
 
-#list-of-ressources::-webkit-scrollbar-track {
+#list-of-resources::-webkit-scrollbar-track {
     margin: 1vw 0.5vw 1vw 0; /* Marge à droite */
     background: var(--main-theme-secondary-background-color);
     box-shadow: inset 0 0 1vw var(--sub-scrollbar-color);
     border-radius: 15px;
 }
 
-#list-of-ressources::-webkit-scrollbar-thumb {
+#list-of-resources::-webkit-scrollbar-thumb {
     background: var(--main-theme-secondary-color);
     border-radius: 15px;
     border: 0.2vw var(--main-theme-tertiary-color) solid;
@@ -540,7 +569,7 @@ input[type='date']::-webkit-calendar-picker-indicator {
     display: none;
 }
 
-.ressource {
+.resource {
     background-color: var(--sub-div-background-color);
     margin-bottom: 1vw;
     padding: 5px;
@@ -554,24 +583,24 @@ input[type='date']::-webkit-calendar-picker-indicator {
     margin-right: 1vw;
 }
 
-.ressource_label {
+.resource_label {
     max-width: 23vw;
     overflow: auto;
 }
 
-.ressource_label::-webkit-scrollbar {
+.resource_label::-webkit-scrollbar {
     width: 0.8vw;
     height: 0.6vw;
 }
 
-.ressource_label::-webkit-scrollbar-track {
+.resource_label::-webkit-scrollbar-track {
     margin: 1vw 0.5vw 1vw 0; /* Marge à droite */
     background: var(--main-theme-secondary-background-color);
     box-shadow: inset 0 0 1vw var(--sub-scrollbar-color);
     border-radius: 15px;
 }
 
-.ressource_label::-webkit-scrollbar-thumb {
+.resource_label::-webkit-scrollbar-thumb {
     background: var(--main-theme-secondary-color);
     border-radius: 15px;
     border: 0.2vw var(--main-theme-tertiary-color) solid;

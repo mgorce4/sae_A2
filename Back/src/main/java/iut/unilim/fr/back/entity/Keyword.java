@@ -17,7 +17,7 @@ public class Keyword {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_ResourceSheet", insertable = false, updatable = false)
-    private RessourceSheet resourceSheet;
+    private ResourceSheet resourceSheet;
 
     public Keyword() {
     }
@@ -43,11 +43,11 @@ public class Keyword {
         this.idResourceSheet = idResourceSheet;
     }
 
-    public RessourceSheet getResourceSheet() {
+    public ResourceSheet getResourceSheet() {
         return resourceSheet;
     }
 
-    public void setResourceSheet(RessourceSheet resourceSheet) {
+    public void setResourceSheet(ResourceSheet resourceSheet) {
         this.resourceSheet = resourceSheet;
     }
 

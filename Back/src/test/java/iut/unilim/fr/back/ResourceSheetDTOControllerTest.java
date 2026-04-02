@@ -3,9 +3,9 @@ package iut.unilim.fr.back;
 import iut.unilim.fr.back.controller.ResourceSheetDTOController;
 import iut.unilim.fr.back.dto.ResourceSheetDTO;
 import iut.unilim.fr.back.dto.ResourceSheetUpdateDTO;
-import iut.unilim.fr.back.entity.RessourceSheet;
+import iut.unilim.fr.back.entity.ResourceSheet;
 import iut.unilim.fr.back.mapper.ResourceSheetMapper;
-import iut.unilim.fr.back.repository.RessourceSheetRepository;
+import iut.unilim.fr.back.repository.ResourceSheetRepository;
 import iut.unilim.fr.back.service.ResourceSheetUpdateService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.*;
 class ResourceSheetDTOControllerTest {
 
     @Mock
-    private RessourceSheetRepository ressourceSheetRepository;
+    private ResourceSheetRepository resourceSheetRepository;
 
     @Mock
     private ResourceSheetMapper resourceSheetMapper;
@@ -42,9 +42,9 @@ class ResourceSheetDTOControllerTest {
 
     @Test
     void testGetAllResourceSheets() {
-        RessourceSheet sheet1 = new RessourceSheet();
-        RessourceSheet sheet2 = new RessourceSheet();
-        when(ressourceSheetRepository.findAll()).thenReturn(Arrays.asList(sheet1, sheet2));
+        ResourceSheet sheet1 = new ResourceSheet();
+        ResourceSheet sheet2 = new ResourceSheet();
+        when(resourceSheetRepository.findAll()).thenReturn(Arrays.asList(sheet1, sheet2));
 
         ResourceSheetDTO dto1 = new ResourceSheetDTO();
         ResourceSheetDTO dto2 = new ResourceSheetDTO();
@@ -54,17 +54,17 @@ class ResourceSheetDTOControllerTest {
         List<ResourceSheetDTO> result = controller.getAllResourceSheets();
 
         assertEquals(2, result.size());
-        verify(ressourceSheetRepository).findAll();
-        verify(resourceSheetMapper, times(2)).toDTO(any(RessourceSheet.class));
+        verify(resourceSheetRepository).findAll();
+        verify(resourceSheetMapper, times(2)).toDTO(any(ResourceSheet.class));
     }
 
     @Test
     void testGetResourceSheetById_Found() {
         Long id = 1L;
-        RessourceSheet sheet = new RessourceSheet();
+        ResourceSheet sheet = new ResourceSheet();
         ResourceSheetDTO dto = new ResourceSheetDTO();
 
-        when(ressourceSheetRepository.findById(id)).thenReturn(Optional.of(sheet));
+        when(resourceSheetRepository.findById(id)).thenReturn(Optional.of(sheet));
         when(resourceSheetMapper.toDTO(sheet)).thenReturn(dto);
 
         ResponseEntity<ResourceSheetDTO> response = controller.getResourceSheetById(id);
@@ -76,7 +76,7 @@ class ResourceSheetDTOControllerTest {
     @Test
     void testGetResourceSheetById_NotFound() {
         Long id = 1L;
-        when(ressourceSheetRepository.findById(id)).thenReturn(Optional.empty());
+        when(resourceSheetRepository.findById(id)).thenReturn(Optional.empty());
 
         ResponseEntity<ResourceSheetDTO> response = controller.getResourceSheetById(id);
 
@@ -88,14 +88,14 @@ class ResourceSheetDTOControllerTest {
     @Test
     void testGetResourceSheetsByResourceId() {
         Long resourceId = 5L;
-        RessourceSheet sheet = new RessourceSheet();
-        when(ressourceSheetRepository.findByResource_IdResource(resourceId)).thenReturn(Collections.singletonList(sheet));
+        ResourceSheet sheet = new ResourceSheet();
+        when(resourceSheetRepository.findByResource_IdResource(resourceId)).thenReturn(Collections.singletonList(sheet));
         when(resourceSheetMapper.toDTO(sheet)).thenReturn(new ResourceSheetDTO());
 
         List<ResourceSheetDTO> result = controller.getResourceSheetsByResourceId(resourceId);
 
         assertEquals(1, result.size());
-        verify(ressourceSheetRepository).findByResource_IdResource(resourceId);
+        verify(resourceSheetRepository).findByResource_IdResource(resourceId);
     }
 
     @Test
@@ -103,10 +103,10 @@ class ResourceSheetDTOControllerTest {
 
         Long id = 1L;
         ResourceSheetUpdateDTO updateDTO = new ResourceSheetUpdateDTO();
-        RessourceSheet existingSheet = new RessourceSheet();
+        ResourceSheet existingSheet = new ResourceSheet();
         ResourceSheetDTO updatedResultDTO = new ResourceSheetDTO();
 
-        when(ressourceSheetRepository.findById(id)).thenReturn(Optional.of(existingSheet));
+        when(resourceSheetRepository.findById(id)).thenReturn(Optional.of(existingSheet));
         when(resourceSheetMapper.toDTO(existingSheet)).thenReturn(updatedResultDTO);
 
         ResponseEntity<?> response = controller.updateResourceSheet(id, updateDTO);
@@ -121,7 +121,7 @@ class ResourceSheetDTOControllerTest {
     void testUpdateResourceSheet_NotFound() {
         Long id = 1L;
         ResourceSheetUpdateDTO updateDTO = new ResourceSheetUpdateDTO();
-        when(ressourceSheetRepository.findById(id)).thenReturn(Optional.empty());
+        when(resourceSheetRepository.findById(id)).thenReturn(Optional.empty());
 
         ResponseEntity<?> response = controller.updateResourceSheet(id, updateDTO);
 
@@ -133,9 +133,9 @@ class ResourceSheetDTOControllerTest {
     void testUpdateResourceSheet_Exception() {
         Long id = 1L;
         ResourceSheetUpdateDTO updateDTO = new ResourceSheetUpdateDTO();
-        RessourceSheet existingSheet = new RessourceSheet();
+        ResourceSheet existingSheet = new ResourceSheet();
 
-        when(ressourceSheetRepository.findById(id)).thenReturn(Optional.of(existingSheet));
+        when(resourceSheetRepository.findById(id)).thenReturn(Optional.of(existingSheet));
 
         doThrow(new RuntimeException("Erreur critique")).when(resourceSheetUpdateService).updateResourceSheet(id, updateDTO);
 

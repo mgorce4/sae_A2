@@ -17,12 +17,12 @@ public class NationalProgramObjective {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_ResourceSheet")
-    private RessourceSheet resourceSheet;
+    private ResourceSheet resourceSheet;
 
     public NationalProgramObjective() {
     }
 
-    public NationalProgramObjective(Long idNationalProgramObjective, String content, RessourceSheet resourceSheet) {
+    public NationalProgramObjective(Long idNationalProgramObjective, String content, ResourceSheet resourceSheet) {
         this.idNationalProgramObjective = idNationalProgramObjective;
         this.content = content;
         this.resourceSheet = resourceSheet;
@@ -44,11 +44,11 @@ public class NationalProgramObjective {
         this.content = content;
     }
 
-    public RessourceSheet getResourceSheet() {
+    public ResourceSheet getResourceSheet() {
         return resourceSheet;
     }
 
-    public void setResourceSheet(RessourceSheet resourceSheet) {
+    public void setResourceSheet(ResourceSheet resourceSheet) {
         this.resourceSheet = resourceSheet;
     }
 }

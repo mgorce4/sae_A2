@@ -2,7 +2,8 @@ package iut.unilim.fr.back.controllerBack;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
-import iut.unilim.fr.back.Ressource.HeaderAndFooter;
+import iut.unilim.fr.back.resource.HeaderAndFooter;
+import iut.unilim.fr.back.security.UserDetailsImpl;
 import iut.unilim.fr.back.service.ResourceGetterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 
 import static com.itextpdf.text.List.UNORDERED;
 import static iut.unilim.fr.back.controllerBack.LogController.writeInPdfLog;
+import static iut.unilim.fr.back.security.UserDetailsImpl.getCurrentUser;
 
 @RestController
 @RequestMapping("/api/pdf")
@@ -45,7 +47,11 @@ public class PdfController {
     private final int specialTableNbRow = 1;
 
     @GetMapping("/generate")
-    public ResponseEntity<Resource> generatePdf(@RequestParam String resourceName, @RequestParam String userName) {
+    public ResponseEntity<Resource> generatePdf(@RequestParam String resourceName) {
+        UserDetailsImpl currentUser = getCurrentUser();
+        Long userId = currentUser.getId();
+        String userName = currentUser.getUsername();
+
         res.setValuesFromResource(resourceName);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -63,27 +69,20 @@ public class PdfController {
 
         String resResourceName = res.getResourceName();
         if (!resResourceName.isEmpty()) {
-            String pdfFileName = resResourceName + "_ressource_sheet.pdf";
+            String pdfFileName = resResourceName + "_resource_sheet.pdf";
             try {
-                // Load the custom font from classpath
                 BaseFont customBaseFont;
                 try {
-                    System.out.println("DEBUG: Attempting to load font from: " + baseFont);
                     java.io.InputStream fontStream = getClass().getClassLoader().getResourceAsStream(baseFont);
                     if (fontStream != null) {
-                        System.out.println("DEBUG: Font stream found, reading bytes...");
                         byte[] fontBytes = fontStream.readAllBytes();
                         fontStream.close();
-                        System.out.println("DEBUG: Font bytes read: " + fontBytes.length + " bytes");
                         customBaseFont = BaseFont.createFont(baseFont, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, true, fontBytes, null);
-                        System.out.println("DEBUG: BaseFont created successfully");
                     } else {
-                        System.err.println("ERROR: Font file not found in classpath: " + baseFont);
                         writeInPdfLog("Font file not found in classpath: " + baseFont);
                         return ResponseEntity.internalServerError().build();
                     }
                 } catch (Exception fontException) {
-                    System.err.println("ERROR: Exception loading font: " + fontException.getClass().getName());
                     fontException.printStackTrace();
                     writeInPdfLog("Error loading font: " + fontException.getMessage() + " - " + fontException.getClass().getName());
                     return ResponseEntity.internalServerError().build();
@@ -159,7 +158,6 @@ public class PdfController {
                 document.add(table);
 
                 // hours repartition
-                // ------------------------------------------------------------------------------
                 boolean isAlternance = res.isAlternance();
                 Chunk hoursRepartition = new Chunk("Répartition des heures par élève:", contentFont);
                 ArrayList<PdfPTable> hours = new ArrayList<>();
@@ -174,7 +172,7 @@ public class PdfController {
                     applyGreyStyleOnCell(programmeContent, contentFont, internshipProgramTable, internshipRepartition, hours, customBaseFont);
 
                 }
-                
+
                 PdfPTable repartitionProgrammeTable = new PdfPTable(repartitionProgramNbColumn);
                 repartitionProgrammeTable.setWidthPercentage(widthPercentage);
 
@@ -185,8 +183,7 @@ public class PdfController {
 
                 contents.addAll(hours);
 
-                // ------------------------------------------------------------------------------
-                
+
                 Chunk pedagogicalContent = new Chunk("Contenue pédagogique", contentFont);
                 PdfPTable pedagoTable = new PdfPTable(pedagoTableNbColumn);
                 pedagoTable.setWidthPercentage(widthPercentage);
@@ -239,10 +236,8 @@ public class PdfController {
                 document.add(resourceTrackingTable);
                 document.close();
 
-                writeInPdfLog(userName + " create a pdf for resource sheet: " + pdfFileName);
+                writeInPdfLog(userName + "(" + userId + ") create a pdf for resource sheet: " + pdfFileName);
             } catch (Exception e) {
-                System.err.println("FATAL ERROR generating PDF:");
-                e.printStackTrace();
                 writeInPdfLog("EXCEPTION in PDF generation: " + e.getClass().getName() + " - " + e.getMessage());
                 if (e.getCause() != null) {
                     writeInPdfLog("CAUSED BY: " + e.getCause().getClass().getName() + " - " + e.getCause().getMessage());
@@ -250,16 +245,9 @@ public class PdfController {
                 return ResponseEntity.internalServerError().build();
             }
             byte[] pdfBytes = out.toByteArray();
-            if (pdfBytes == null || pdfBytes.length == 0) {
-                writeInPdfLog("Failed to generate PDF: empty output");
-                return ResponseEntity.internalServerError().build();
-            }
             ByteArrayResource resource = new ByteArrayResource(pdfBytes);
 
             MediaType pdfMediaType = MediaType.APPLICATION_PDF;
-            if (pdfMediaType == null) {
-                pdfMediaType = MediaType.APPLICATION_OCTET_STREAM;
-            }
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + pdfFileName + ".pdf\"")
@@ -267,7 +255,7 @@ public class PdfController {
                     .contentLength(pdfBytes.length)
                     .body(resource);
         } else {
-            writeInPdfLog( userName + " attempt to generate a resource sheet pdf, but no matches found for the resource name");
+            writeInPdfLog( userName + "(" + userId + ") attempt to generate a resource sheet pdf, but no matches found for the resource name");
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -369,7 +357,6 @@ public class PdfController {
         PdfPTable table = new PdfPTable(numColumns);
         table.setWidthPercentage(widthPercentage);
 
-        // Resource title
         PdfPCell cellLeft = new PdfPCell();
         cellLeft.setBorder(Rectangle.NO_BORDER);
 

@@ -1,8 +1,6 @@
 package iut.unilim.fr.back.mapper;
 
 import iut.unilim.fr.back.dto.admin.MCCCResourceDTO;
-import iut.unilim.fr.back.dto.admin.MCCCResourceDTO.TeacherInfoDTO;
-import iut.unilim.fr.back.dto.admin.MCCCResourceDTO.UECoefficientDTO;
 import iut.unilim.fr.back.entity.*;
 import iut.unilim.fr.back.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +33,7 @@ public class MCCCMapper {
     /**
      * Convert a Resource entity to MCCCResourceDTO
      */
-    public MCCCResourceDTO toDTO(Ressource resource) {
+    public MCCCResourceDTO toDTO(Resource resource) {
         MCCCResourceDTO dto = new MCCCResourceDTO();
 
         // Basic resource information
@@ -169,7 +167,7 @@ public class MCCCMapper {
      * Get institution ID from main teacher
      */
 
-    private Long getInstitutionIdFromPath(Ressource resource) {
+    private Long getInstitutionIdFromPath(Resource resource) {
     if (resource.getPath() != null && resource.getPath().getInstitution() != null) {
         return resource.getPath().getInstitution().getIdInstitution();
     }
@@ -245,7 +243,7 @@ public class MCCCMapper {
     /**
      * Convert multiple resources to DTOs
      */
-    public List<MCCCResourceDTO> toDTOList(List<Ressource> resources) {
+    public List<MCCCResourceDTO> toDTOList(List<Resource> resources) {
         return resources.stream()
             .map(this::toDTO)
             .collect(Collectors.toList());
