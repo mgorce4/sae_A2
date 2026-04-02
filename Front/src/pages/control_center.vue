@@ -79,11 +79,11 @@ const errors= ref({
     endGame: false,
 })
 
-/* # en lien avec le saveDateYear
+
 const errorMessages = ref({
     startDate: 'La date de début n\'est pas bonne',
     endGame: 'La date de fin n\'est pas bonne',
-})*/
+})
 
 const normalizeDateForInput = (dateValue) => {
     if (!dateValue) return ''
@@ -115,34 +115,6 @@ const loadSavedYearDates = async () => {
     }
 }
 
-/* #en lien avec le saveDateYear
-const checkCurrentSchoolYearDates = async (institutionId) => {
-    if (!institutionId) return { exists: false, yearDates: null }
-
-    try {
-        const response = await axios.get(
-            `${API_BASE_URL}/api/year-dates/v2/institution/${institutionId}`,
-            { skipAuthRedirect: true }
-        )
-
-        const rows = Array.isArray(response.data) ? response.data : []
-        const today = new Date().toISOString().slice(0, 10)
-
-        const current = rows.find((row) => {
-            const start = (row.startYear || '').slice(0, 10)
-            const end = (row.endYear || '').slice(0, 10)
-            return start && end && start <= today && today <= end
-        })
-
-        return { exists: Boolean(current), yearDates: current || null }
-    } catch (error) {
-        if (error?.response?.status !== 404) {
-            console.error('Error checking current school year dates:', error)
-        }
-        return { exists: false, yearDates: null }
-    }
-}*/
-
 function toggleShowPopUp() {
     show_popup.value = !show_popup.value
 }
@@ -158,7 +130,7 @@ const goToNext = (url, status) => {
     })
 }
 
-/*TODO: Manque la possibilité de modifier les dates (si une date existe, on la remplace sinon on la laisse)
+
 const saveDateYear = async () =>{
 
     const hasError = ref(false)
@@ -207,31 +179,43 @@ const saveDateYear = async () =>{
             institutionId: parseInt(institutionId),
         }
 
-        const { exists, yearDates } = await checkCurrentSchoolYearDates(institutionId)
+        let idToUpdate = deliveryDatesId.value
 
-        const response = exists && yearDates?.idYearDates
-            ? await axios.put(
-                `${API_BASE_URL}/api/year-dates/v2/${yearDates.idYearDates}`,
-                yearDatesData
+        if (!idToUpdate) {
+            try {
+                const latestResponse = await axios.get(
+                    `${API_BASE_URL}/api/year-dates/v2/institution/${institutionId}/latest`,
+                    { skipAuthRedirect: true }
+                )
+                idToUpdate = latestResponse?.data?.idYearDates ?? null
+            } catch (error) {
+                    if (error?.response?.status !== 404) {
+                    console.error('Erreur recupération de la date antérieure:', error)
+                }
+            }
+        }
+
+        const response = idToUpdate
+        ? await axios.put(
+            `${API_BASE_URL}/api/year-dates/v2/${idToUpdate}`,
+            yearDatesData
             )
-            : await axios.post(
-                `${API_BASE_URL}/api/year-dates/v2`,
-                yearDatesData
+        : await axios.post(
+            `${API_BASE_URL}/api/year-dates/v2`,
+            yearDatesData
             )
-        
-        deliveryDatesId.value = response.data.idYearDates
+
+        deliveryDatesId.value = response.data.idYearDates ?? idToUpdate
         startDate.value = normalizeDateForInput(response.data.startYear ?? startDate.value)
         endGame.value = normalizeDateForInput(response.data.endYear ?? endGame.value)
-
     } catch (error) {
-        console.error('Error saving year dates: ', error)
+        console.error('Erreur sauvegarde : ', error)
     }
-}*/
+}
 
 onMounted(async () => {
     await loadSavedYearDates()
 })
-
 
 </script>
 
@@ -286,8 +270,8 @@ onMounted(async () => {
                         </p>
 
                         <div id="button_help">
-                            <!--@click="saveDateYear"-->
-                            <button class="btn1" >Sauvegarder</button>
+
+                        <button class="btn1" @click="saveDateYear">Sauvegarder</button>
                         </div>
                     </div>
                 </div>
