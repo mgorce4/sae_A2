@@ -781,10 +781,10 @@ const isObjectiveAndSkillsFilled = computed(() => {
 </script>
 <template>
     <div id="Resource_Sheet">
-        <div id="return_Arrow" @click="goBack">
-            <RouterLink id="back_arrow" to="/teacher-dashboard" v-if="access_right.length == 1">←</RouterLink>
+        <div style="display: flex; align-items: center; height: 1vw; margin-bottom: 2vw">
+            <RouterLink to="/teacher-dashboard" id="back_arrow" v-if="access_right.length == 1">←</RouterLink>
             <RouterLink to="/multi-access-right-dashboard" id="back_arrow" v-else>←</RouterLink>
-            <p>Retour</p>
+            <p class="back">Retour à l'accueil</p>
         </div>
         <div id="background_Form">
             <div class="header_Form">

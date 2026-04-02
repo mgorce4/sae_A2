@@ -3,17 +3,10 @@ import { onMounted, ref } from 'vue'
 import axios from 'axios'
 import { API_BASE_URL } from '@/config/api.js'
 import {
-    getIdInstitutionFromToken,
     getToken
 } from '@/utils/jwt.js'
 import { router } from '@/router/index.js'
 import { useRoute } from 'vue-router'
-
-const show_popup = ref(false)
-
-const toggleShowPopUp = () => {
-    show_popup.value = !show_popup.value
-}
 
 const mail_object = ref("")
 const mail_body = ref("")
@@ -56,18 +49,46 @@ const sendMail = async () => {
 const receiver = ref("")
 
 const teachers = ref([])
+const resource = ref("")
+
+const route = useRoute()
+const resourceId = route.query.resourceId
+const label = ref("")
 
 onMounted(async () => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/api/access-rights`)
-        teachers.value = response.data
+        console.log(resourceId)
+        const responseResource = await axios.get(`${API_BASE_URL}/api/v2/resource-sheets/${resourceId}`)
 
-        teachers.value = teachers.value
-            .filter((teacher) => teacher && teacher.user && teacher.user.institution && teacher.user.institution.idInstitution === getIdInstitutionFromToken())
-            .filter((teacher) => teacher && (teacher.accessRight === 1 || teacher.accessRight === '1'))
+        // Récupère les main teachers et teachers, stocke-les dans teachers.value
+        const { data: mainTeachers } = await axios.get(`${API_BASE_URL}/api/main-teachers-for-resource`)
+        teachers.value.push(...(mainTeachers || []))
+
+        const { data: otherTeachers } = await axios.get(`${API_BASE_URL}/api/teachers-for-resource`)
+        teachers.value.push(...(otherTeachers || []))
+
+        // Normalise resourceId coté client (route.query peut être string)
+        const resource_id_number = Number(resourceId)
+
+        // Filtre les enseignants pour la ressource demandée (gère différentes formes possibles de l'objet)
+        teachers.value = teachers.value.filter(teacher => {
+            const id = teacher?.resource?.idResource ?? teacher?.idResource ?? teacher?.resourceId
+            return Number(id) === resource_id_number
+        })
+
+        // Trie par resource id (ascendant) pour un affichage stable
+        teachers.value.sort((a, b) => {
+            const a_id = Number(a?.resource?.idResource ?? a?.idResource ?? a?.resourceId ?? 0)
+            const b_id = Number(b?.resource?.idResource ?? b?.idResource ?? b?.resourceId ?? 0)
+            return a_id - b_id
+        })
+
+        resource.value = responseResource.data
     } catch (err) {
         console.error('Erreur récupération access-rights', err)
     }
+
+    label.value = resource.value.resourceLabel
 })
 
 const getUserFirstName = (teacher) => {
@@ -76,6 +97,12 @@ const getUserFirstName = (teacher) => {
 
 const getUserLastName = (teacher) => {
     return teacher && teacher.user ? teacher.user.lastname : ''
+}
+
+const getUserFullName = (teacher) => {
+    const firstName = getUserFirstName(teacher)
+    const lastName = getUserLastName(teacher)
+    return `${firstName} ${lastName}`.trim()
 }
 
 const goToResourceSheetDisplay = (url, label) => {
@@ -87,47 +114,27 @@ const goToResourceSheetDisplay = (url, label) => {
     })
 }
 
-const route = useRoute()
-const resource_label = route.query.label
-
-const getReceiver = (teacher) => {
-    const input_receiver = document.getElementById("input_receiver")
-
-    input_receiver.value = getUserFirstName(teacher) + " " + getUserLastName(teacher)
-    show_popup.value = false
-
-    try {
-        receiver.value = JSON.parse(JSON.stringify(teacher))
-    } catch (e) {
-        receiver.value = { user: teacher.user ? { id: teacher.user.id, firstname: teacher.user.firstname, lastname: teacher.user.lastname } : null }
-    }
-}
-
 </script>
 
 <template>
+    {{teachers}}
     <div id="main">
-        {{teachers}}
         <div id="return_arrow">
-            <button id="back_arrow" @click="goToResourceSheetDisplay('/resource-sheet-display', resource_label)">←</button>
+            <button id="back_arrow" @click="goToResourceSheetDisplay('/resource-sheet-display', label)">←</button>
             <p>Retour</p>
         </div>
         <form v-on:submit.prevent="sendMail" id="mail_form">
-            <p id="title">Envoi de mail</p>
+            <p id="title" style="margin-bottom: 0">Envoi de mail</p>
+            <p style="margin-bottom: 2vw">Vous envoyez un mail concernant la ressource {{resource.resourceLabel}} {{resource.resourceName}}</p>
 
             <div style="margin-bottom: 2vw">
                 <label class="label_login" style="padding-top: 0vw">Destinataire : </label>
 
-                <div style="display: block; margin-top: 1vw">
-                    <input class="keyword-input" type="text" required v-on:focus="toggleShowPopUp()"
-                           style="max-width: 15vw" id="input_receiver">
-
-                    <div  v-show="show_popup" class="show_main_teacher" style="max-width: 14.5vw" >
-                        <div v-for="teacher in teachers" :key="teacher.user ? teacher.user.id : teacher" @click="getReceiver(teacher)" class="main_teacher_name" id="teacher_selector">
-                            {{getUserFirstName(teacher)}} {{getUserLastName(teacher)}}
-                        </div>
-                    </div>
+                <div v-for="teacher in teachers" :key="`${teacher.user?.idUser}-${teacher.resource?.idResource}`">
+                  <input type="radio" :id="`teacher_${teacher.user?.idUser}_${teacher.resource?.idResource}`" name="receiver" v-model="receiver" :value="teacher">
+                  <label :for="`teacher_${teacher.user?.idUser}_${teacher.resource?.idResource}`">{{ getUserFullName(teacher) }}</label>
                 </div>
+
             </div>
 
             <label class="label_login" style="padding-top: 0vw">Objet du mail : </label>
