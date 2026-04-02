@@ -142,11 +142,11 @@ onMounted(async () => {
 
 const access_right = getAccessRightsFromToken()
 
-const goToMailPage = (url, label) => {
+const goToMailPage = (url, resourceId) => {
     router.push({
         path: url,
         query: {
-            label: label
+            resourceId: resourceId
         }
     })
 }
@@ -160,7 +160,9 @@ const goToMailPage = (url, label) => {
                 <div v-if="access_right.length == 1">
                     <RouterLink v-if="status==='Administration'" id="back_arrow" to="/dashboard-administration">←</RouterLink>
                     <RouterLink v-else-if="status==='Admin'" id="back_arrow" to="/admin-dashboard">←</RouterLink>
+                    <RouterLink v-else-if="status==='Super Admin'" id="back_arrow" to="/sup-admin-dashboard">←</RouterLink>
                 </div>
+                <RouterLink id="back_arrow" to="/multi-access-right-dashboard">←</RouterLink>
                 <p class="back">Retour à l'accueil</p>
             </div>
 
@@ -172,9 +174,11 @@ const goToMailPage = (url, label) => {
                     Référent module : Aucun professeur référent pour le module
                 </p>
 
-                <button class="btn1" @click="goToMailPage('/mail-page',resource_sheet.resourceLabel)">
+                <!--
+                // TODO
+                <button class="btn1" @click="goToMailPage('/mail-page',resource_sheet.id)">
                     Envoyer un mail
-                </button>
+                </button> -->
             </div>
         </div>
 

@@ -7,9 +7,9 @@ import { ref } from 'vue'
 import { getAccessRightsFromToken } from '@/utils/jwt.js'
 
 const map_colors = {
-    'Professeur': 'var(--onglet-techer-color)',
+    'Professeur': 'var(--onglet-teacher-color)',
     'Administration': 'var(--onglet-administration-color)',
-    'Admin': 'var(--onglet-admin-color)',
+    'Admin': 'var(--sub-scrollbar-color)',
     'Super Admin': 'var(--pop-up-background-color)',
 }
 
@@ -19,7 +19,7 @@ let isAdmin = ref(false)
 let isSuperAdmin = ref(false)
 
 const changeColorsTemplate = async (status) => {
-    const color = map_colors[status] || 'var(--onglet-techer-color)'
+    const color = map_colors[status] || 'var(--onglet-teacher-color)'
     document.getElementById("template").style.backgroundColor = color
 
     switch (status) {
@@ -65,7 +65,7 @@ const hasMultipleRights = access_rights.includes(4)
             <div style="display: flex">
                 <p class="onglet" v-if="hasTeacherRight" v-on:click="changeColorsTemplate('Professeur')">Professeur</p>
                 <p class="onglet" v-if="hasAdministrationRight" style="margin-left: 0; background-color: var(--onglet-administration-color)" v-on:click="changeColorsTemplate('Administration')">Administration</p>
-                <p class="onglet" v-if="hasAdminRight" style="margin-left: 0; background-color: var(--onglet-admin-color)" v-on:click="changeColorsTemplate('Admin')">Admin</p>
+                <p class="onglet" v-if="hasAdminRight" style="margin-left: 0; background-color: var(--sub-scrollbar-color)" v-on:click="changeColorsTemplate('Admin')">Admin</p>
                 <p class="onglet" v-if="hasMultipleRights" style="margin-left: 0; background-color: var(--pop-up-background-color)" v-on:click="changeColorsTemplate('Super Admin')">Super Admin</p>
             </div>
             <div id="template">
@@ -81,7 +81,7 @@ const hasMultipleRights = access_rights.includes(4)
 
 <style scoped>
 .onglet {
-    background-color: var(--onglet-techer-color);
+    background-color: var(--onglet-teacher-color);
     text-align: center;
     padding: 1vw;
     border-top-right-radius: 1vw;
@@ -101,7 +101,7 @@ const hasMultipleRights = access_rights.includes(4)
     border-top-right-radius: 1vw;
     padding: 1vw;
     margin: 0 2vw 2vw;
-    background-color: var(--onglet-techer-color);
+    background-color: var(--onglet-teacher-color);
 }
 
 </style>
