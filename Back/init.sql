@@ -284,7 +284,7 @@ INSERT INTO INSTITUTION (name, location) VALUES
 ('MMI', 'IUT de Brive'),
 ('TEST', 'IUT de Test');
 
-INSERT INTO USERSYNCADIA ( firstname, lastname, username, password, id_institution) VALUES
+INSERT INTO USERSYNCADIA ( firstname, lastname, username, password, id_institution, mail) VALUES
 ( 'Anais', 'Poursat', 'apoursat', 'Password123', 1),
 ( 'Tux', 'Linus', 'tlinus', 'TuxLePlusCool_1991_B)', 2),
 ('Thomas', 'Hugel', 'thugel', 'FanDeTux:)', 2),
@@ -305,7 +305,10 @@ INSERT INTO TASK (name, description, delivery , id_User) VALUES
 
 
 INSERT INTO ACCESSRIGHT ( id_User,accessRight) VALUES
-(47,1);
+(91, 1),
+(91,2),
+(91,3),
+(91,4);
 (1, 1),
 (1, 2),
 (1, 3),

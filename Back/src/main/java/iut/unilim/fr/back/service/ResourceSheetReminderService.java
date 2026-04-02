@@ -219,7 +219,7 @@ public class ResourceSheetReminderService {
                                   List<ResourceSheet> sheets) {
         StringBuilder body = new StringBuilder();
 
-        body.append("Bonjour ").append(firstName).append(" ").append(lastName).append(" de l'équipe Syncadia!\n\n");
+        body.append("Bonjour ").append(firstName).append(" ").append(lastName).append(" de la part del'équipe Syncadia!\n\n");
         body.append("Il vous reste ").append(timeRemaining).append(" pour remplir la(es) fiche(s) ressource suivante(s) :\n");
 
         for (ResourceSheet sheet : sheets) {
